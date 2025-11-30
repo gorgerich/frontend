@@ -1,15 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { HeroSection } from './components/HeroSection';
-import { StepperWorkflow } from './components/StepperWorkflow';
-import { PackagesSection } from './components/PackagesSection';
-import { FloatingCalculator } from './components/FloatingCalculator';
-import {
-  calculateTotal,
-  calculateBreakdown,
-} from './components/calculationUtils';
-
+import React, { useEffect, useState } from "react";
+import { HeroSection } from "./HeroSection";
+import { StepperWorkflow } from "./StepperWorkflow";
+import { PackagesSection } from "./PackagesSection";
+import { FloatingCalculator } from "./FloatingCalculator";
+import { calculateTotal, calculateBreakdown } from "./calculationUtils";
 export default function Home() {
   // Глобальный обработчик ошибок для предотвращения краша из-за hls.js и других внешних библиотек
   useEffect(() => {
@@ -273,19 +269,7 @@ export default function Home() {
         />
       </div>
 
-      {currentStep === 2 && (
-        <PackagesSection
-          formData={formData}
-          onUpdateFormData={handleUpdateFormData}
-        />
-      )}
-
-      {currentStep >= 1 && (
-        <FloatingCalculator
-          total={calculateTotal(formData, selectedCemeteryCategory)}
-          breakdown={calculateBreakdown(formData, selectedCemeteryCategory)}
-        />
-      )}
+      {/* Здесь позже добавим блок тарифов и калькулятор */}
     </div>
   );
 }
