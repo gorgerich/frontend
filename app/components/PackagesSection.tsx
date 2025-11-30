@@ -228,9 +228,9 @@ const additionalServices: AdditionalService[] = [
 
 interface PackagesSectionProps {
   formData: {
-    packageType: "standard" | "comfort" | "premium" | "custom" | "";
+   packageType: "" | "basic" | "standard" | "premium" | "custom" | "comfort";
     selectedAdditionalServices: string[];
-    serviceType?: "burial" | "cremation";
+    serviceType: string;
   };
   onUpdateFormData: (field: string, value: any) => void;
 }
@@ -239,9 +239,15 @@ export function PackagesSection({
   formData,
   onUpdateFormData,
 }: PackagesSectionProps) {
-  const [ceremonyType, setCeremonyType] = useState<"burial" | "cremation">(
-    formData.serviceType || "burial",
-  );
+  // Вычисляем корректное значение на основе formData.serviceType
+const initialServiceType: "burial" | "cremation" =
+  formData.serviceType === "burial" || formData.serviceType === "cremation"
+    ? formData.serviceType
+    : "burial";
+
+const [ceremonyType, setCeremonyType] = useState<"burial" | "cremation">(
+  initialServiceType
+);
 
   const PACKAGES =
     ceremonyType === "burial" ? PACKAGES_BURIAL : PACKAGES_CREMATION;
