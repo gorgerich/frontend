@@ -50,10 +50,13 @@ const DialogTrigger = React.forwardRef<
   };
 
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement, {
+  return React.cloneElement(
+    children as React.ReactElement<any>,
+    {
       onClick: handleClick,
-    });
-  }
+    } as React.HTMLAttributes<HTMLElement>
+  );
+}
 
   return (
     <button ref={ref} onClick={handleClick} {...props}>

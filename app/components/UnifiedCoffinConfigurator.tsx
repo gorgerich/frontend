@@ -345,9 +345,10 @@ export function UnifiedCoffinConfigurator({
       </div>
 
       <Tabs
-        value={activeTab}
-        onValueChange={(v) => setActiveTab(v as 'coffin' | 'wreath')}
-        className="w-full"
+  defaultValue={activeTab ?? "coffin"}
+  value={activeTab}
+  onValueChange={(v) => setActiveTab(v as "coffin" | "wreath")}
+  className="w-full"
       >
         <div className="bg-white border-b border-gray-200">
           <TabsList className="w-full h-auto p-1 bg-transparent rounded-none justify-start gap-1">
@@ -696,9 +697,9 @@ export function UnifiedCoffinConfigurator({
   <Label className="text-gray-900">Венок</Label>
 
   <RadioGroup
-    value={String(wreathType)}
-    onValueChange={(value) => setWreathType(Number(value))}
-    className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+  value={wreathType}
+  onValueChange={(value) => setWreathType(value)}
+  className="grid grid-cols-1 sm:grid-cols-3 gap-3"
   >
     {wreathOptions.map((type) => (
       <Label
@@ -725,12 +726,10 @@ export function UnifiedCoffinConfigurator({
           )}
         </div>
 
-        <div className="text-center">
-          <div className="text-sm text-gray-900">{type.name}</div>
-          <div className="text-xs text-gray-500">
-            от {type.price.toLocaleString('ru-RU')} ₽
-          </div>
-        </div>
+        <div className="text-sm text-gray-500">{type.name}</div>
+<div className="text-xs text-gray-500">
+  от {(type.price ?? 0).toLocaleString("ru-RU")} ₽
+</div>
       </Label>
     ))}
   </RadioGroup>
