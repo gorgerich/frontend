@@ -157,7 +157,10 @@ export default function Home() {
     deathDate: '',
     deathCertificate: '',
     relationship: '',
+    clientName: "",
+  clientEmail: "",
     dataConsent: false,
+    userEmail: "",
   };
 
   const [formData, setFormData] = useState(initialFormData);

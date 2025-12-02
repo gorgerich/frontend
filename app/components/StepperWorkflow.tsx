@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import CoffinConfigurator3D from "./CoffinConfigurator3D";
 import { Stepper } from "./Stepper";
 import {
   Card,
@@ -827,6 +828,9 @@ interface StepperWorkflowProps {
     needsFamilyTransport: boolean;
     familyTransportSeats: number;
     distance: string;
+    clientName: string;
+    clientEmail: string;
+    userEmail: string;
     needsPallbearers: boolean;
     packageType:
       | "basic"
@@ -2611,6 +2615,8 @@ export function StepperWorkflow({
         // Шаг 3: Атрибутика
         return (
           <div className="space-y-6">
+             {/* 3D-сцена зала и гроба */}
+      <CoffinConfigurator3D />
             <div className="bg-blue-500/10 backdrop-blur-sm border border-blue-300/30 rounded-full p-4">
               <p className="text-sm text-blue-900">
                 Настройте комплектацию с помощью
@@ -2844,7 +2850,7 @@ export function StepperWorkflow({
           </div>
         );
 
-      case 4:
+case 4:
       // Шаг 5: Подтверждение
       return (
         <div className="space-y-6">
@@ -2883,7 +2889,9 @@ export function StepperWorkflow({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Зал прощания:</span>
-                  <span className="text-gray-900">{formData.hasHall ? "Да" : "Нет"}</span>
+                  <span className="text-gray-900">
+                    {formData.hasHall ? "Да" : "Нет"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -2987,152 +2995,41 @@ export function StepperWorkflow({
             </div>
           </div>
 
-          {/* Итоговая смета + способы оплаты */}
+          {/* Итог + email + финальная кнопка */}
           <div className="bg-gray-900 text-white rounded-3xl p-6 shadow-lg space-y-6">
-            {/* Итоговая смета */}
-            <div>
-              <h4 className="mb-4">Итоговая смета</h4>
-              <div className="space-y-3">
-                <div className="flex justify-between pt-2">
-                  <span className="text-lg">Итого:</span>
-                  <span className="text-2xl">
-                    {calculateTotal().toLocaleString("ru-RU")} ₽
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <Button
-                  variant="outline"
-                  className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Договор
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
-                >
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Поделиться
-                </Button>
-              </div>
+            <div className="flex items-center justify-between">
+              <h4 className="text-lg">Итоговая стоимость</h4>
+              <span className="text-2xl">
+                {calculateTotal().toLocaleString("ru-RU")} ₽
+              </span>
             </div>
 
-            <div className="border-t border-white/20" />
-
-            {/* Способ оплаты */}
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <RubleSign className="h-6 w-6 text-white" />
-                <h4 className="text-lg text-white">Способ оплаты</h4>
-              </div>
-
-              {/* Переключатели способа оплаты */}
-              <div className="grid gap-3 md:grid-cols-3 mb-4">
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("card")}
-                  className={cn(
-                    "p-3 rounded-2xl border-2 text-left text-sm transition-all duration-200",
-                    paymentMethod === "card"
-                      ? "border-white bg-white/10"
-                      : "border-white/30 hover:border-white/60",
-                  )}
-                >
-                  Банковская карта
-                  <p className="text-xs text-white/70 mt-1">
-                    Оплата картой российского банка
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("sbp")}
-                  className={cn(
-                    "p-3 rounded-2xl border-2 text-left text-sm transition-all duration-200",
-                    paymentMethod === "sbp"
-                      ? "border-white bg-white/10"
-                      : "border-white/30 hover:border-white/60",
-                  )}
-                >
-                  СБП
-                  <p className="text-xs text-white/70 mt-1">
-                    Перевод через Систему быстрых платежей
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("installment")}
-                  className={cn(
-                    "p-3 rounded-2xl border-2 text-left text-sm transition-all duration-200",
-                    paymentMethod === "installment"
-                      ? "border-white bg-white/10"
-                      : "border-white/30 hover:border-white/60",
-                  )}
-                >
-                  Рассрочка 0%
-                  <p className="text-xs text-white/70 mt-1">На 6 месяцев без переплат</p>
-                </button>
-              </div>
-
-              {/* Детали по каждому способу */}
-              {paymentMethod === "card" && (
-                <div className="bg-white/10 border border-white/20 rounded-2xl p-4 text-sm text-white">
-                  Оплата банковской картой на защищённой платёжной странице.
-                </div>
-              )}
-
-              {paymentMethod === "sbp" && (
-                <div className="bg-white/10 border border-white/20 rounded-2xl p-4 text-sm text-white">
-                  После подтверждения бронирования мы сформируем QR-код для оплаты по СБП.
-                </div>
-              )}
-
-              {paymentMethod === "installment" && (
-                <div className="space-y-4 mt-4">
-                  <div className="bg-white/10 border border-white/20 rounded-2xl p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm text-white">Сумма к оплате</span>
-                      <span className="text-lg text-white">
-                        {calculateTotal().toLocaleString("ru-RU")} ₽
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-white">Ежемесячный платёж</span>
-                      <span className="text-lg text-white">
-                        {Math.ceil(calculateTotal() / 6).toLocaleString("ru-RU")} ₽
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-white/10 border border-white/20 rounded-2xl p-4">
-                    <p className="text-sm text-white">
-                      • Рассрочка без процентов на 6 месяцев
-                      <br />
-                      • Одобрение онлайн за 3 минуты
-                      <br />
-                      • Первый платёж через 30 дней
-                    </p>
-
-                    <Button className="w-full mt-4 bg-white hover:bg-white/90 text-black text-sm">
-                      Подать заявку
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Финальная кнопка подтверждения */}
-              <Button
-                className="w-full h-14 text-lg bg-white text-gray-900 hover:bg-gray-100 mt-6"
-                onClick={() => {
-                  alert("Бронирование оформлено! Детали отправлены на почту.");
-                }}
-              >
-                Подтвердить и забронировать
-              </Button>
+            <div className="space-y-3">
+              <Label htmlFor="userEmail" className="text-sm text-white">
+                Email для получения деталей и договора
+              </Label>
+              <Input
+                id="userEmail"
+                type="email"
+                className="bg-white text-gray-900 placeholder:text-gray-500"
+                placeholder="example@email.com"
+                value={formData.userEmail ?? ""}
+                onChange={(e) => onUpdateFormData("userEmail", e.target.value)}
+              />
+              <p className="text-xs text-white/70">
+                На эту почту придёт подтверждение заказа, договор и подробная
+                расшифровка услуг.
+              </p>
             </div>
+
+            <Button
+              className="w-full h-14 text-lg bg-white text-gray-900 hover:bg-gray-100"
+              onClick={() => {
+                alert("Бронирование оформлено! Детали отправлены на почту.");
+              }}
+            >
+              Подтвердить и забронировать
+            </Button>
           </div>
         </div>
       );

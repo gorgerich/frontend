@@ -128,7 +128,7 @@ export default function Home() {
   // Глобальное состояние формы для синхронизации между компонентами
   const initialFormData = {
     // Формат
-    serviceType: 'burial', // burial или cremation
+    serviceType: 'burial' as 'burial' | 'cremation',
     hasHall: true,
     hallDuration: 60,
     ceremonyType: 'civil', // civil, religious, combined
@@ -162,6 +162,11 @@ export default function Home() {
     deathCertificate: '',
     relationship: '',
     dataConsent: false,
+
+    // Контакты клиента (то, чего не хватало типу StepperWorkflowProps)
+    clientName: '',
+    clientEmail: '',
+    userEmail: '',
   };
 
   const [formData, setFormData] = useState(initialFormData);
