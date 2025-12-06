@@ -1,0 +1,56 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum ServiceType {
+  BURIAL
+  CREMATION
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  orders    Order[]
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  externalId    String?     @unique
+  user          User?       @relation(fields: [userId], references: [id])
+  userId        String?
+  status        OrderStatus @default(DRAFT)
+  serviceType   ServiceType
+  fullName      String?
+  totalAmount   Int         @default(0)
+  meta          Json?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id       String  @id @default(cuid())
+  order    Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId  String
+  label    String
+  amount   Int
+  quantity Int     @default(1)
+  kind     String?
+}
