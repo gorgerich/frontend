@@ -22,33 +22,30 @@ enum OrderStatus {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  orders    Order[]
+  id     Int     @id @default(autoincrement())
+  email  String  @unique
+  name   String?
+  orders Order[]
 }
 
 model Order {
-  id            String      @id @default(cuid())
-  externalId    String?     @unique
-  user          User?       @relation(fields: [userId], references: [id])
-  userId        String?
-  status        OrderStatus @default(DRAFT)
-  serviceType   ServiceType
-  fullName      String?
-  totalAmount   Int         @default(0)
-  meta          Json?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-
-  items         OrderItem[]
+  id           Int          @id @default(autoincrement())
+  userId       Int
+  user         User         @relation(fields: [userId], references: [id])
+  status       OrderStatus  @default(PENDING)
+  serviceType  ServiceType
+  externalId   String?      @unique
+  fullName     String?
+  totalAmount  Int
+  meta         Json
+  items        OrderItem[]
+  createdAt    DateTime     @default(now())
 }
 
 model OrderItem {
-  id       String  @id @default(cuid())
-  order    Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId  String
+  id       Int    @id @default(autoincrement())
+  orderId  Int
+  order    Order  @relation(fields: [orderId], references: [id])
   label    String
   amount   Int
   quantity Int     @default(1)

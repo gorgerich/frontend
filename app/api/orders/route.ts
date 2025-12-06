@@ -1,15 +1,9 @@
 // app/api/orders/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "../../lib/prisma";
 
-// Локальные типы, совпадающие по значениям с enum из Prisma
-type ServiceType = "BURIAL" | "CREMATION";
-type OrderStatus =
-| "DRAFT"
-| "PENDING"
-| "CONFIRMED"
-| "CANCELLED"
-| "COMPLETED";
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "../../lib/prisma";
 
 // Создание заказа
 export async function POST(req: NextRequest) {
@@ -39,8 +33,8 @@ update: { name: userName ?? null },
 create: { email: userEmail, name: userName ?? null },
 });
 
-// маппинг типа услуги из формы в enum-строку
-const serviceType: ServiceType =
+// строковый тип услуги
+const serviceType =
 formData?.serviceType === "cremation" ? "CREMATION" : "BURIAL";
 
 // создание заказа
@@ -48,13 +42,11 @@ const order = await prisma.order.create({
 data: {
 userId: user.id,
 externalId: externalId ?? null,
-status: "PENDING" as OrderStatus,
-serviceType, // используем вычисленный serviceType
-
+status: "PENDING",
+serviceType,
 fullName: formData?.fullName ?? null,
 totalAmount: typeof total === "number" ? total : 0,
 meta: formData ?? {},
-
 items: {
 create:
 Array.isArray(breakdown) && breakdown.length > 0
