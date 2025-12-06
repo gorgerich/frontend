@@ -1,7 +1,7 @@
 // app/api/orders/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { OrderStatus, ServiceType } from "@prisma/client";
-import { prisma } from `../../../lib/prisma`;
+import { prisma } from `../../lib/prisma`;
 
 // Создание заказа
 export async function POST(req: NextRequest) {
