@@ -6,19 +6,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-}
-
-enum ServiceType {
-  BURIAL
-  CREMATION
-}
-
-enum OrderStatus {
-  DRAFT
-  PENDING
-  CONFIRMED
-  CANCELLED
-  COMPLETED
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -29,25 +17,20 @@ model User {
 }
 
 model Order {
-  id           Int          @id @default(autoincrement())
+  id           Int    @id @default(autoincrement())
   userId       Int
-  user         User         @relation(fields: [userId], references: [id])
-  status       OrderStatus  @default(PENDING)
-  serviceType  ServiceType
-  externalId   String?      @unique
-  fullName     String?
-  totalAmount  Int
-  meta         Json
-  items        OrderItem[]
-  createdAt    DateTime     @default(now())
-}
+  user         User   @relation(fields: [userId], references: [id])
 
-model OrderItem {
-  id       Int    @id @default(autoincrement())
-  orderId  Int
-  order    Order  @relation(fields: [orderId], references: [id])
-  label    String
-  amount   Int
-  quantity Int     @default(1)
-  kind     String?
+  // Статус заказа как строка
+  status       String @default("PENDING") // DRAFT, PENDING, CONFIRMED, CANCELLED, COMPLETED
+
+  // Тип услуги как строка
+  serviceType  String // BURIAL, CREMATION и т.п.
+
+  // Итоговая сумма
+  totalAmount  Int
+
+  // Весь заказ как строка (JSON в виде текста)
+meta         String
 }
+ 

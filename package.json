@@ -10,7 +10,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "^7.1.0",
+    "@prisma/client": "^5.20.0",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-select": "^2.2.6",
@@ -23,6 +23,7 @@
     "lucide-react": "^0.555.0",
     "next": "16.0.5",
     "nodemailer": "^7.0.11",
+    "prisma": "^5.20.0",
     "react": "19.2.0",
     "react-day-picker": "^9.11.3",
     "react-dom": "19.2.0",
@@ -35,11 +36,11 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^7.0.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.5",
-    "prisma": "^7.1.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

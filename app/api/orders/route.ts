@@ -1,10 +1,10 @@
 // app/api/orders/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "../../../lib/prisma";
-import { sendOrderEmail } from "../../../lib/mailer";
+import { prisma } from "../../lib/prisma";
+import { sendOrderEmail } from "../../lib/mailer";
 
-export const runtime = "nodejs"; // обязательно для Prisma на Vercel
+export const runtime = "nodejs";
 
 type ServiceItem = {
   id?: string;
@@ -25,10 +25,10 @@ type OrderPayload = {
     age?: number;
   };
   ceremony?: {
-    date?: string; // ISO-строка или просто текст
+    date?: string;
     time?: string;
     place?: string;
-    type?: string; // захоронение / кремация и т.п.
+    type?: string; // "BURIAL" | "CREMATION" | др.
   };
   services?: ServiceItem[];
   notes?: string;
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
 
     const email = body.customer.email;
 
-    // 1. Создаём или обновляем пользователя
+    // 1. Пользователь
     const user = await prisma.user.upsert({
       where: { email },
       update: {
@@ -161,25 +161,43 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // 2. Считаем итоговую сумму по услугам
+    // 2. Итоговая сумма
     const total =
       body.services?.reduce((acc, s) => {
         const qty = s.quantity ?? 1;
         return acc + s.price * qty;
       }, 0) ?? 0;
 
-    // 3. Создаём заказ в БД (минимальная структура)
-    const order = await prisma.order.create({
-      data: {
-        userId: user.id,
-        status: "PENDING",
-      },
-    });
+    // 3. Строковый serviceType
+    const rawType = body.ceremony?.type?.toUpperCase();
+    const serviceType =
+      rawType === "CREMATION" || rawType === "BURIAL"
+        ? rawType
+        : "BURIAL"; // дефолт
 
-    // 4. Формируем HTML договора
+    // 4. meta
+    const meta = {
+      customer: body.customer,
+      deceased: body.deceased,
+      ceremony: body.ceremony,
+      services: body.services,
+      notes: body.notes,
+    };
+
+    // 5. Создаём заказ
+    const order = await prisma.order.create({
+  data: {
+    userId: user.id,
+    status: "PENDING",
+    serviceType,          // строка
+    totalAmount: total,
+    meta: JSON.stringify(meta), // ← строка
+  },
+});
+
+    // 6. Письмо
     const html = buildEmailHtml(body, total);
 
-    // 5. Отправляем письмо клиенту и тебе
     await sendOrderEmail({
       html,
       subject: `Договор и детали заказа №${order.id}`,
