@@ -35,32 +35,37 @@ type OrderPayload = {
 };
 
 function buildEmailHtml(order: OrderPayload, total: number) {
-  const servicesRows =
-    order.services && order.services.length
-      ? order.services
-          .map((s, index) => {
-            const qty = s.quantity ?? 1;
-            const sum = s.price * qty;
-            return `
-              <tr>
-                <td style="padding: 4px 8px; border: 1px solid #ddd;">${
-                  index + 1
-                }</td>
-                <td style="padding: 4px 8px; border: 1px solid #ddd;">${
-                  s.name
-                }</td>
-                <td style="padding: 4px 8px; border: 1px solid #ddd; text-align:right;">${qty}</td>
-                <td style="padding: 4px 8px; border: 1px solid #ddd; text-align:right;">${s.price.toLocaleString(
-                  "ru-RU"
-                )} ₽</td>
-                <td style="padding: 4px 8px; border: 1px solid #ddd; text-align:right;">${sum.toLocaleString(
-                  "ru-RU"
-                )} ₽</td>
-              </tr>
-            `;
-          })
-          .join("")
-      : `<tr><td colspan="5" style="padding: 8px; border: 1px solid #ddd; text-align:center;">Перечень услуг не заполнен</td></tr>`;
+  let servicesRows = "";
+
+  if (order.services && order.services.length) {
+    servicesRows = order.services
+      .map((s, index) => {
+        const qty = s.quantity ?? 1;
+        const sum = s.price * qty;
+        return `
+          <tr>
+            <td style="padding: 4px 8px; border: 1px solid #ddd;">${index + 1}</td>
+            <td style="padding: 4px 8px; border: 1px solid #ddd;">${s.name}</td>
+            <td style="padding: 4px 8px; border: 1px solid #ddd; text-align:right;">${qty}</td>
+            <td style="padding: 4px 8px; border: 1px solid #ddd; text-align:right;">${s.price.toLocaleString(
+              "ru-RU"
+            )} ₽</td>
+            <td style="padding: 4px 8px; border: 1px solid #ddd; text-align:right;">${sum.toLocaleString(
+              "ru-RU"
+            )} ₽</td>
+          </tr>
+        `;
+      })
+      .join("");
+  } else {
+    servicesRows = `
+      <tr>
+        <td colspan="5" style="padding: 8px; border: 1px solid #ddd; text-align:center;">
+          Перечень услуг не заполнен
+        </td>
+      </tr>
+    `;
+  }
 
   const ceremony = order.ceremony ?? {};
   const deceased = order.deceased ?? {};
@@ -168,14 +173,14 @@ export async function POST(req: NextRequest) {
         return acc + s.price * qty;
       }, 0) ?? 0;
 
-    // 3. Строковый serviceType
+    // 3. serviceType строкой
     const rawType = body.ceremony?.type?.toUpperCase();
     const serviceType =
       rawType === "CREMATION" || rawType === "BURIAL"
         ? rawType
-        : "BURIAL"; // дефолт
+        : "BURIAL";
 
-    // 4. meta
+    // 4. meta-объект
     const meta = {
       customer: body.customer,
       deceased: body.deceased,
@@ -186,14 +191,14 @@ export async function POST(req: NextRequest) {
 
     // 5. Создаём заказ
     const order = await prisma.order.create({
-  data: {
-    userId: user.id,
-    status: "PENDING",
-    serviceType,          // строка
-    totalAmount: total,
-    meta: JSON.stringify(meta), // ← строка
-  },
-});
+      data: {
+        userId: user.id,
+        status: "PENDING",
+        serviceType,
+        totalAmount: total,
+        meta: JSON.stringify(meta), // строка
+      },
+    });
 
     // 6. Письмо
     const html = buildEmailHtml(body, total);
@@ -212,7 +217,7 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("POST /api/orders error:", error);
+    console.error("ORDER API ERROR (POST):", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
@@ -229,7 +234,7 @@ export async function GET() {
 
     return NextResponse.json(orders, { status: 200 });
   } catch (error) {
-    console.error("GET /api/orders error:", error);
+    console.error("ORDER API ERROR (GET):", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
