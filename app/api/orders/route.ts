@@ -1,8 +1,8 @@
 // app/api/orders/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { sendOrderEmail } from "@/lib/mailer";
+import { prisma } from "../../../lib/prisma";
+import { sendOrderEmail } from "../../../lib/mailer";
 
 export const runtime = "nodejs"; // обязательно для Prisma на Vercel
 
