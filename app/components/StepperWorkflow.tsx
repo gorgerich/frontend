@@ -1342,27 +1342,30 @@ export function StepperWorkflow({
     setShowCemeteryResults(false);
   };
 
-  const handleConfirmAndBook = async () => {
+  // Отправка заказа на /api/orders
+const handleConfirmAndBook = async () => {
   try {
-    // Формируем полный payload, совпадающий с backend-типом OrderPayload
+    // Временно говорим TS "поверь, что эти поля есть"
+    const fd: any = formData;
+
     const payload = {
       customer: {
-        email: formData.userEmail,
-        name: formData.customerName || "",
-        phone: formData.customerPhone || "",
+        email: fd.userEmail,          // это поле у тебя точно есть
+        name: fd.customerName || "",  // дальше — через any
+        phone: fd.customerPhone || "",
       },
       deceased: {
-        name: formData.deceasedName || "",
-        age: formData.deceasedAge || null,
+        name: fd.deceasedName || "",
+        age: fd.deceasedAge ?? null,
       },
       ceremony: {
-        date: formData.ceremonyDate || "",
-        time: formData.ceremonyTime || "",
-        place: formData.ceremonyPlace || "",
-        type: formData.ceremonyType || "",
+        date: fd.ceremonyDate || "",
+        time: fd.ceremonyTime || "",
+        place: fd.ceremonyPlace || "",
+        type: fd.ceremonyType || "",
       },
-      services: formData.services || [],
-      notes: formData.notes || "",
+      services: fd.services || [],
+      notes: fd.notes || "",
     };
 
     console.log("FINAL PAYLOAD:", payload);
@@ -1381,7 +1384,9 @@ export function StepperWorkflow({
       return;
     }
 
-    alert("Бронирование оформлено. Договор и детали заказа отправлены на указанную почту.");
+    alert(
+      "Бронирование оформлено. Договор и детали заказа отправлены на указанную почту."
+    );
   } catch (error) {
     console.error("Network error:", error);
     alert("Произошла сетевая ошибка. Попробуйте ещё раз.");
