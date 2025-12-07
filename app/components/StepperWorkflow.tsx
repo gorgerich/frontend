@@ -1342,6 +1342,40 @@ export function StepperWorkflow({
     setShowCemeteryResults(false);
   };
 
+  // Отправка заказа на /api/orders и письма пользователю
+  const handleConfirmAndBook = async () => {
+    try {
+      // Отправляем минимум — email пользователя.
+      // Все остальные поля на бэке опциональны.
+      const payload = {
+        customer: {
+          email: formData.userEmail, // это поле у тебя уже есть
+        },
+      };
+
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error("Order API error", data);
+        alert("Ошибка при оформлении бронирования. Попробуйте ещё раз.");
+        return;
+      }
+
+      alert(
+        "Бронирование оформлено. Договор и детали заказа отправлены на указанную почту."
+      );
+    } catch (error) {
+      console.error("Network error", error);
+      alert("Произошла сетевая ошибка. Попробуйте ещё раз.");
+    }
+  };
+
   const renderStepContent = () => {
     switch (currentStep) {
     case 0:
@@ -2854,193 +2888,43 @@ export function StepperWorkflow({
         );
 
 case 4:
-      // Шаг 5: Подтверждение
       return (
-        <div className="space-y-6">
-          {/* Статус */}
-          <div className="bg-green-50 border border-green-200 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
-            <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-            <div>
-              <h3 className="text-green-900 mb-2">Все данные заполнены</h3>
-              <p className="text-sm text-green-700">
-                Пожалуйста, проверьте информацию перед бронированием
-              </p>
-            </div>
-          </div>
-
-          {/* Блоки-подтверждения по шагам */}
+        <div>
           <div className="space-y-4">
-            {/* Формат церемонии */}
-            <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm text-gray-500">Формат церемонии</h4>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleEditStep(0)}
-                  className="h-8 w-8 p-0"
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Формат:</span>
-                  <span className="text-gray-900">
-                    {formData.serviceType === "burial" ? "Захоронение" : "Кремация"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Зал прощания:</span>
-                  <span className="text-gray-900">
-                    {formData.hasHall ? "Да" : "Нет"}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <label
+              htmlFor="userEmail"
+              className="block text-sm text-white/80 mb-1"
+            >
+              Email для получения деталей и договора
+            </label>
 
-            {/* Логистика */}
-            <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm text-gray-500">Логистика</h4>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleEditStep(1)}
-                  className="h-8 w-8 p-0"
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">
-                    {formData.serviceType === "burial" ? "Кладбище:" : "Крематорий:"}
-                  </span>
-                  <span className="text-gray-900">{formData.cemetery || "—"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Катафалк:</span>
-                  <span className="text-gray-900">
-                    {formData.needsHearse ? "Да" : "Нет"}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <input
+              id="userEmail"
+              type="email"
+              className="bg-white text-gray-900 placeholder:text-gray-500 w-full rounded-xl px-4 py-3 outline-none"
+              placeholder="example@email.com"
+              value={formData.userEmail ?? ""}
+              onChange={(e) =>
+                onUpdateFormData("userEmail", e.target.value)
+              }
+            />
 
-            {/* Атрибутика */}
-            <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm text-gray-500">Атрибутика</h4>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleEditStep(2)}
-                  className="h-8 w-8 p-0"
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="space-y-2 text-sm">
-                {formData.packageType && formData.packageType !== "custom" ? (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Пакет:</span>
-                    <span className="text-gray-900">
-                      {PACKAGES.find((p) => p.id === formData.packageType)?.name || "—"}
-                    </span>
-                  </div>
-                ) : (
-                  <div>
-                    <span className="text-gray-600 block mb-2">Индивидуальный пакет</span>
-                    {formData.selectedAdditionalServices &&
-                    formData.selectedAdditionalServices.length > 0 ? (
-                      <div className="space-y-1">
-                        {formData.selectedAdditionalServices.map((serviceId) => {
-                          const service = additionalServices.find((s) => s.id === serviceId);
-                          return service ? (
-                            <div key={serviceId} className="text-xs text-gray-900">
-                              • {service.name}
-                            </div>
-                          ) : null;
-                        })}
-                      </div>
-                    ) : (
-                      <span className="text-xs text-gray-500">Услуги не выбраны</span>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Документы */}
-            <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm text-gray-500">Документы</h4>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleEditStep(3)}
-                  className="h-8 w-8 p-0"
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">ФИО:</span>
-                  <span className="text-gray-900">{formData.fullName || "—"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Дата рождения:</span>
-                  <span className="text-gray-900">{formData.birthDate || "—"}</span>
-                </div>
-              </div>
-            </div>
+            <p className="text-xs text-white/70">
+              На эту почту придёт подтверждение заказа, договор и подробная
+              расшифровка услуг.
+            </p>
           </div>
 
-          {/* Итог + email + финальная кнопка */}
-          <div className="bg-gray-900 text-white rounded-3xl p-6 shadow-lg space-y-6">
-            <div className="flex items-center justify-between">
-              <h4 className="text-lg">Итоговая стоимость</h4>
-              <span className="text-2xl">
-                {calculateTotal().toLocaleString("ru-RU")} ₽
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              <Label htmlFor="userEmail" className="text-sm text-white">
-                Email для получения деталей и договора
-              </Label>
-              <Input
-                id="userEmail"
-                type="email"
-                className="bg-white text-gray-900 placeholder:text-gray-500"
-                placeholder="example@email.com"
-                value={formData.userEmail ?? ""}
-                onChange={(e) => onUpdateFormData("userEmail", e.target.value)}
-              />
-              <p className="text-xs text-white/70">
-                На эту почту придёт подтверждение заказа, договор и подробная
-                расшифровка услуг.
-              </p>
-            </div>
-
+          <div className="mt-6">
             <Button
               className="w-full h-14 text-lg bg-white text-gray-900 hover:bg-gray-100"
-              onClick={() => {
-                alert("Бронирование оформлено! Детали отправлены на почту.");
-              }}
+              onClick={handleConfirmAndBook}
             >
               Подтвердить и забронировать
             </Button>
           </div>
         </div>
       );
-
-    default:
-      return null;
-  }
-};
 
 // ===== основной return компонента =====
   return (
