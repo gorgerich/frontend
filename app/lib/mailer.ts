@@ -1,61 +1,42 @@
 // app/lib/mailer.ts
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const smtpHost = process.env.SMTP_HOST;
-const smtpPort = Number(process.env.SMTP_PORT ?? "465");
-const smtpSecure = String(process.env.SMTP_SECURE ?? "true") === "true";
-const smtpUser = process.env.SMTP_USER;
-const smtpPass = process.env.SMTP_PASS;
+const resendApiKey = process.env.RESEND_API_KEY;
 
-if (!smtpHost || !smtpUser || !smtpPass) {
-  console.error("MAILER CONFIG ERROR: missing SMTP env", {
-    smtpHost,
-    smtpUser,
-    hasPass: Boolean(smtpPass),
-  });
+if (!resendApiKey) {
+  console.warn("RESEND_API_KEY is not set – emails will not be sent");
 }
 
-const transporter = nodemailer.createTransport({
-  host: smtpHost,
-  port: smtpPort,
-  secure: smtpSecure,
-  auth: {
-    user: smtpUser,
-    pass: smtpPass,
-  },
-});
+const resend = new Resend(resendApiKey);
 
-export type SendOrderEmailOptions = {
-  html: string;
-  subject: string;
-  customerEmail: string;
+type SendOrderEmailOptions = {
+  to: string;     // куда отправляем
+  subject: string; // тема письма
+  html: string;    // уже готовый HTML письма
 };
 
-export async function sendOrderEmail(options: SendOrderEmailOptions) {
-  const from = process.env.FROM_EMAIL || smtpUser;
-  const internal = process.env.ORDER_TARGET_EMAIL || smtpUser;
-
-  const to = [options.customerEmail, internal]
-    .filter(Boolean)
-    .join(", ");
-
-  if (!from || !to) {
-    throw new Error(
-      `MAILER CONFIG ERROR: invalid from/to. from=${from}, to=${to}`
-    );
+export async function sendOrderEmail({
+  to,
+  subject,
+  html,
+}: SendOrderEmailOptions) {
+  if (!resendApiKey) {
+    throw new Error("RESEND_API_KEY is missing");
   }
 
-  const info = await transporter.sendMail({
+  const from = process.env.FROM_EMAIL || "onboarding@resend.dev";
+
+  const { data, error } = await resend.emails.send({
     from,
     to,
-    subject: options.subject,
-    html: options.html,
+    subject,
+    html,
   });
 
-  console.log("MAIL SENT", {
-    messageId: info.messageId,
-    accepted: info.accepted,
-    rejected: info.rejected,
-    envelope: info.envelope,
-  });
+  if (error) {
+    // Пробрасываем ошибку наверх, её ловит /api/orders
+    throw error;
+  }
+
+  return data;
 }
