@@ -2926,6 +2926,11 @@ case 4:
         </div>
       );
 
+      default:
+      return null;
+  }
+};
+
 // ===== основной return компонента =====
   return (
     <div
