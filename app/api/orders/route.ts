@@ -5,10 +5,6 @@ import { sendOrderEmail } from "../../lib/mailer";
 
 export const runtime = "nodejs";
 
-// кому отправляем уведомление о новом заказе
-const ORDER_TARGET_EMAIL =
-  process.env.ORDER_TARGET_EMAIL || "gorgerichig@gmail.com";
-
 type ServiceItem = {
   id?: string;
   name: string;
@@ -31,11 +27,92 @@ type OrderPayload = {
     date?: string;
     time?: string;
     place?: string;
-    type?: string; // "BURIAL" | "CREMATION" | др.
+    type?: string;
   };
   services?: ServiceItem[];
   notes?: string;
 };
+
+/**
+ * Нормализация данных из фронта в единый формат OrderPayload.
+ * Поддерживает и вложенный формат (customer.email),
+ * и плоский (userEmail, customerName, deceasedName и т.п.).
+ */
+function normalizeOrderPayload(raw: any): OrderPayload {
+  const customerEmail =
+    raw?.customer?.email ??
+    raw?.userEmail ??
+    raw?.email ??
+    raw?.customer_email ??
+    "";
+
+  const customerName =
+    raw?.customer?.name ??
+    raw?.customerName ??
+    raw?.fullName ??
+    raw?.name ??
+    undefined;
+
+  const customerPhone =
+    raw?.customer?.phone ??
+    raw?.customerPhone ??
+    raw?.phoneNumber ??
+    raw?.phone ??
+    undefined;
+
+  const hasDeceased =
+    raw?.deceased ||
+    raw?.deceasedName ||
+    typeof raw?.deceasedAge === "number";
+
+  const deceased = hasDeceased
+    ? {
+        name: raw?.deceased?.name ?? raw?.deceasedName,
+        age: raw?.deceased?.age ?? raw?.deceasedAge,
+      }
+    : undefined;
+
+  const ceremonySource = raw?.ceremony ?? raw;
+
+  const hasCeremony =
+    ceremonySource?.ceremonyDate ||
+    ceremonySource?.ceremonyTime ||
+    ceremonySource?.ceremonyPlace ||
+    ceremonySource?.ceremonyType ||
+    ceremonySource?.date ||
+    ceremonySource?.time ||
+    ceremonySource?.place ||
+    ceremonySource?.type;
+
+  const ceremony = hasCeremony
+    ? {
+        date: ceremonySource?.ceremonyDate ?? ceremonySource?.date,
+        time: ceremonySource?.ceremonyTime ?? ceremonySource?.time,
+        place: ceremonySource?.ceremonyPlace ?? ceremonySource?.place,
+        type: ceremonySource?.ceremonyType ?? ceremonySource?.type,
+      }
+    : undefined;
+
+  const services: ServiceItem[] | undefined =
+    (raw?.services ??
+      raw?.selectedServices ??
+      raw?.cartItems) as ServiceItem[] | undefined;
+
+  const notes =
+    raw?.notes ?? raw?.comment ?? raw?.additionalWishes ?? undefined;
+
+  return {
+    customer: {
+      email: customerEmail,
+      name: customerName,
+      phone: customerPhone,
+    },
+    deceased,
+    ceremony,
+    services,
+    notes,
+  };
+}
 
 function buildEmailHtml(order: OrderPayload, total: number) {
   let servicesRows = "";
@@ -146,23 +223,20 @@ function buildEmailHtml(order: OrderPayload, total: number) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as OrderPayload;
+    const rawBody = await req.json();
 
-    // Логируем входящий payload, чтобы видеть его в Vercel Logs
-    console.log("ORDER BODY:", JSON.stringify(body, null, 2));
+    // Для отладки — можно посмотреть в Vercel Logs фактический payload
+    console.log("ORDER RAW BODY:", JSON.stringify(rawBody, null, 2));
 
-    // Достаём email клиента максимально безопасно
-    const customerEmail = body.customer?.email?.trim();
+    const body = normalizeOrderPayload(rawBody);
 
-    if (!customerEmail) {
-      console.warn("NO CUSTOMER EMAIL IN PAYLOAD");
+    if (!body.customer?.email) {
       return NextResponse.json(
-        { error: "Поле customer.email обязательно" },
+        { error: "Поле customer.email (userEmail) обязательно" },
         { status: 400 }
       );
     }
 
-    // Считаем итог
     const total =
       body.services?.reduce((acc, s) => {
         const qty = s.quantity ?? 1;
@@ -171,35 +245,22 @@ export async function POST(req: NextRequest) {
 
     const html = buildEmailHtml(body, total);
 
-    // Email менеджера
     const managerEmail =
       process.env.ORDER_TARGET_EMAIL || "gorgerichig@gmail.com";
 
-    // 1) Письмо менеджеру
-    try {
-      await sendOrderEmail({
-        to: managerEmail,
-        subject: "Новый заказ на сайте Tihiydom",
-        html,
-      });
-      console.log("MANAGER EMAIL SENT TO:", managerEmail);
-    } catch (err) {
-      console.error("MANAGER EMAIL ERROR:", err);
-    }
+    // Письмо менеджеру
+    await sendOrderEmail({
+      to: managerEmail,
+      subject: "Новый заказ похорон",
+      html,
+    });
 
-    // 2) Письмо клиенту
-    try {
-      await sendOrderEmail({
-        to: customerEmail,
-        subject: "Ваш заказ на организацию похорон",
-        html,
-      });
-      console.log("CUSTOMER EMAIL SENT TO:", customerEmail);
-    } catch (err) {
-      console.error("CUSTOMER EMAIL ERROR:", err);
-      // пользователю всё равно отвечаем success,
-      // чтобы из-за глюка почты не падал весь API
-    }
+    // Письмо клиенту
+    await sendOrderEmail({
+      to: body.customer.email,
+      subject: "Договор и детали вашего заказа",
+      html,
+    });
 
     const orderId = Date.now();
 
