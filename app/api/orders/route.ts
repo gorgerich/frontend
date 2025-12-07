@@ -2,7 +2,12 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { sendOrderEmail } from "../../lib/mailer";
+
 export const runtime = "nodejs";
+
+// кому отправляем уведомление о новом заказе
+const ORDER_TARGET_EMAIL =
+  process.env.ORDER_TARGET_EMAIL || "gorgerichig@gmail.com";
 
 type ServiceItem = {
   id?: string;
@@ -158,15 +163,20 @@ export async function POST(req: NextRequest) {
 
     const html = buildEmailHtml(body, total);
 
-   await sendOrderEmail({
-  to: process.env.ORDER_TARGET_EMAIL || body.customer.email,
-  subject: "Договор и детали заказа",
-  html,
-});
+    // отправляем письмо менеджеру
+    await sendOrderEmail({
+      to: ORDER_TARGET_EMAIL,
+      subject: "Новый заказ на сайте tihiydom",
+      html,
+    });
 
+    // можно дополнительно отправить копию клиенту, если нужно:
+    // await sendOrderEmail({
+    //   to: body.customer.email,
+    //   subject: "Ваш заказ на организацию похорон",
+    //   html,
+    // });
 
-
-    // orderId можно сгенерировать как timestamp, чтобы что-то вернуть фронту
     const orderId = Date.now();
 
     return NextResponse.json(
