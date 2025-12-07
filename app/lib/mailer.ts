@@ -1,46 +1,61 @@
 // app/lib/mailer.ts
 import nodemailer from "nodemailer";
 
-type SendOrderEmailOptions = {
+const smtpHost = process.env.SMTP_HOST;
+const smtpPort = Number(process.env.SMTP_PORT ?? "465");
+const smtpSecure = String(process.env.SMTP_SECURE ?? "true") === "true";
+const smtpUser = process.env.SMTP_USER;
+const smtpPass = process.env.SMTP_PASS;
+
+if (!smtpHost || !smtpUser || !smtpPass) {
+  console.error("MAILER CONFIG ERROR: missing SMTP env", {
+    smtpHost,
+    smtpUser,
+    hasPass: Boolean(smtpPass),
+  });
+}
+
+const transporter = nodemailer.createTransport({
+  host: smtpHost,
+  port: smtpPort,
+  secure: smtpSecure,
+  auth: {
+    user: smtpUser,
+    pass: smtpPass,
+  },
+});
+
+export type SendOrderEmailOptions = {
   html: string;
   subject: string;
   customerEmail: string;
 };
 
 export async function sendOrderEmail(options: SendOrderEmailOptions) {
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMTP_PORT ?? "465");
-  const secure = String(process.env.SMTP_SECURE ?? "true") === "true";
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const from = process.env.FROM_EMAIL || smtpUser;
+  const internal = process.env.ORDER_TARGET_EMAIL || smtpUser;
 
-  if (!host || !user || !pass) {
-    console.error("SMTP env vars are missing");
-    return;
+  const to = [options.customerEmail, internal]
+    .filter(Boolean)
+    .join(", ");
+
+  if (!from || !to) {
+    throw new Error(
+      `MAILER CONFIG ERROR: invalid from/to. from=${from}, to=${to}`
+    );
   }
 
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure,
-    auth: { user, pass },
-  });
-
-  const from =
-    process.env.FROM_EMAIL && process.env.FROM_EMAIL.trim().length > 0
-      ? process.env.FROM_EMAIL
-      : user;
-
-  const internalEmail = process.env.ORDER_TARGET_EMAIL;
-
-  const to = [options.customerEmail, internalEmail]
-    .filter(Boolean)
-    .join(",");
-
-  await transporter.sendMail({
+  const info = await transporter.sendMail({
     from,
     to,
     subject: options.subject,
     html: options.html,
+  });
+
+  console.log("MAIL SENT", {
+    messageId: info.messageId,
+    accepted: info.accepted,
+    rejected: info.rejected,
+    envelope: info.envelope,
   });
 }
