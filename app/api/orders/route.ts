@@ -1,8 +1,7 @@
 // app/api/orders/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { sendOrderEmail } from "@/lib/mailer";
-
+import { sendOrderEmail } from "../../lib/mailer";
 export const runtime = "nodejs";
 
 type ServiceItem = {
