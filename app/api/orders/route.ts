@@ -148,13 +148,21 @@ export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as OrderPayload;
 
-    if (!body.customer?.email) {
+    // Логируем входящий payload, чтобы видеть его в Vercel Logs
+    console.log("ORDER BODY:", JSON.stringify(body, null, 2));
+
+    // Достаём email клиента максимально безопасно
+    const customerEmail = body.customer?.email?.trim();
+
+    if (!customerEmail) {
+      console.warn("NO CUSTOMER EMAIL IN PAYLOAD");
       return NextResponse.json(
         { error: "Поле customer.email обязательно" },
         { status: 400 }
       );
     }
 
+    // Считаем итог
     const total =
       body.services?.reduce((acc, s) => {
         const qty = s.quantity ?? 1;
@@ -163,19 +171,35 @@ export async function POST(req: NextRequest) {
 
     const html = buildEmailHtml(body, total);
 
+    // Email менеджера
+    const managerEmail =
+      process.env.ORDER_TARGET_EMAIL || "gorgerichig@gmail.com";
+
     // 1) Письмо менеджеру
-    await sendOrderEmail({
-      to: ORDER_TARGET_EMAIL,
-      subject: "Новый заказ на сайте Tihiydom",
-      html,
-    });
+    try {
+      await sendOrderEmail({
+        to: managerEmail,
+        subject: "Новый заказ на сайте Tihiydom",
+        html,
+      });
+      console.log("MANAGER EMAIL SENT TO:", managerEmail);
+    } catch (err) {
+      console.error("MANAGER EMAIL ERROR:", err);
+    }
 
     // 2) Письмо клиенту
-    await sendOrderEmail({
-      to: body.customer.email,
-      subject: "Ваш заказ на организацию похорон",
-      html,
-    });
+    try {
+      await sendOrderEmail({
+        to: customerEmail,
+        subject: "Ваш заказ на организацию похорон",
+        html,
+      });
+      console.log("CUSTOMER EMAIL SENT TO:", customerEmail);
+    } catch (err) {
+      console.error("CUSTOMER EMAIL ERROR:", err);
+      // пользователю всё равно отвечаем success,
+      // чтобы из-за глюка почты не падал весь API
+    }
 
     const orderId = Date.now();
 
