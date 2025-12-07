@@ -1,7 +1,6 @@
 // app/api/orders/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "../../lib/prisma";
 import { sendOrderEmail } from "../../lib/mailer";
 
 export const runtime = "nodejs";
@@ -152,67 +151,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const email = body.customer.email;
-
-    // 1. Пользователь
-    const user = await prisma.user.upsert({
-      where: { email },
-      update: {
-        name: body.customer.name ?? undefined,
-      },
-      create: {
-        email,
-        name: body.customer.name ?? null,
-      },
-    });
-
-    // 2. Итоговая сумма
     const total =
       body.services?.reduce((acc, s) => {
         const qty = s.quantity ?? 1;
         return acc + s.price * qty;
       }, 0) ?? 0;
 
-    // 3. serviceType строкой
-    const rawType = body.ceremony?.type?.toUpperCase();
-    const serviceType =
-      rawType === "CREMATION" || rawType === "BURIAL"
-        ? rawType
-        : "BURIAL";
-
-    // 4. meta-объект
-    const meta = {
-      customer: body.customer,
-      deceased: body.deceased,
-      ceremony: body.ceremony,
-      services: body.services,
-      notes: body.notes,
-    };
-
-    // 5. Создаём заказ
-    const order = await prisma.order.create({
-      data: {
-        userId: user.id,
-        status: "PENDING",
-        serviceType,
-        totalAmount: total,
-        meta: JSON.stringify(meta), // строка
-      },
-    });
-
-    // 6. Письмо
     const html = buildEmailHtml(body, total);
 
     await sendOrderEmail({
       html,
-      subject: `Договор и детали заказа №${order.id}`,
-      customerEmail: email,
+      subject: "Договор и детали заказа",
+      customerEmail: body.customer.email,
     });
+
+    // orderId можно сгенерировать как timestamp, чтобы что-то вернуть фронту
+    const orderId = Date.now();
 
     return NextResponse.json(
       {
         success: true,
-        orderId: order.id,
+        orderId,
       },
       { status: 201 }
     );
@@ -226,18 +185,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  try {
-    const orders = await prisma.order.findMany({
-      include: { user: true },
-      orderBy: { id: "desc" },
-    });
-
-    return NextResponse.json(orders, { status: 200 });
-  } catch (error) {
-    console.error("ORDER API ERROR (GET):", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json(
+    { message: "Listing orders is not implemented on this endpoint" },
+    { status: 200 }
+  );
 }
