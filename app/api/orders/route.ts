@@ -163,19 +163,19 @@ export async function POST(req: NextRequest) {
 
     const html = buildEmailHtml(body, total);
 
-    // отправляем письмо менеджеру
+    // 1) Письмо менеджеру
     await sendOrderEmail({
       to: ORDER_TARGET_EMAIL,
-      subject: "Новый заказ на сайте tihiydom",
+      subject: "Новый заказ на сайте Tihiydom",
       html,
     });
 
-    // можно дополнительно отправить копию клиенту, если нужно:
-    // await sendOrderEmail({
-    //   to: body.customer.email,
-    //   subject: "Ваш заказ на организацию похорон",
-    //   html,
-    // });
+    // 2) Письмо клиенту
+    await sendOrderEmail({
+      to: body.customer.email,
+      subject: "Ваш заказ на организацию похорон",
+      html,
+    });
 
     const orderId = Date.now();
 
