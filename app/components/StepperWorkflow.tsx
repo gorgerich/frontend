@@ -1342,39 +1342,51 @@ export function StepperWorkflow({
     setShowCemeteryResults(false);
   };
 
-  // Отправка заказа на /api/orders и письма пользователю
   const handleConfirmAndBook = async () => {
-    try {
-      // Отправляем минимум — email пользователя.
-      // Все остальные поля на бэке опциональны.
-      const payload = {
-        customer: {
-          email: formData.userEmail, // это поле у тебя уже есть
-        },
-      };
+  try {
+    // Формируем полный payload, совпадающий с backend-типом OrderPayload
+    const payload = {
+      customer: {
+        email: formData.userEmail,
+        name: formData.customerName || "",
+        phone: formData.customerPhone || "",
+      },
+      deceased: {
+        name: formData.deceasedName || "",
+        age: formData.deceasedAge || null,
+      },
+      ceremony: {
+        date: formData.ceremonyDate || "",
+        time: formData.ceremonyTime || "",
+        place: formData.ceremonyPlace || "",
+        type: formData.ceremonyType || "",
+      },
+      services: formData.services || [],
+      notes: formData.notes || "",
+    };
 
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    console.log("FINAL PAYLOAD:", payload);
 
-      const data = await res.json();
+    const res = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-      if (!res.ok) {
-        console.error("Order API error", data);
-        alert("Ошибка при оформлении бронирования. Попробуйте ещё раз.");
-        return;
-      }
+    const data = await res.json();
 
-      alert(
-        "Бронирование оформлено. Договор и детали заказа отправлены на указанную почту."
-      );
-    } catch (error) {
-      console.error("Network error", error);
-      alert("Произошла сетевая ошибка. Попробуйте ещё раз.");
+    if (!res.ok) {
+      console.error("Order API error:", data);
+      alert("Ошибка при оформлении бронирования. Попробуйте ещё раз.");
+      return;
     }
-  };
+
+    alert("Бронирование оформлено. Договор и детали заказа отправлены на указанную почту.");
+  } catch (error) {
+    console.error("Network error:", error);
+    alert("Произошла сетевая ошибка. Попробуйте ещё раз.");
+  }
+};
 
   const renderStepContent = () => {
     switch (currentStep) {
