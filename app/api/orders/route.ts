@@ -1,7 +1,7 @@
 // app/api/orders/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { sendOrderEmail } from "../../lib/mailer";
+import { sendOrderEmail } from "@/lib/mailer";
 
 export const runtime = "nodejs";
 
@@ -159,11 +159,13 @@ export async function POST(req: NextRequest) {
 
     const html = buildEmailHtml(body, total);
 
-    await sendOrderEmail({
-      html,
-      subject: "Договор и детали заказа",
-      customerEmail: body.customer.email,
-    });
+   await sendOrderEmail({
+  to: process.env.ORDER_TARGET_EMAIL || body.customer.email,
+  subject: "Договор и детали заказа",
+  html,
+});
+
+
 
     // orderId можно сгенерировать как timestamp, чтобы что-то вернуть фронту
     const orderId = Date.now();
