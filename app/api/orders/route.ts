@@ -1,5 +1,4 @@
 // app/api/orders/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { sendOrderEmail } from "../../lib/mailer";
 
@@ -37,87 +36,6 @@ type OrderPayload = {
   notes?: string;
 };
 
-/**
- * Нормализация данных из фронта в единый формат OrderPayload.
- * Поддерживает и вложенный формат (customer.email),
- * и плоский (userEmail, customerName, deceasedName и т.п.).
- */
-function normalizeOrderPayload(raw: any): OrderPayload {
-  const customerEmail =
-    raw?.customer?.email ??
-    raw?.userEmail ??
-    raw?.email ??
-    raw?.customer_email ??
-    "";
-
-  const customerName =
-    raw?.customer?.name ??
-    raw?.customerName ??
-    raw?.fullName ??
-    raw?.name ??
-    undefined;
-
-  const customerPhone =
-    raw?.customer?.phone ??
-    raw?.customerPhone ??
-    raw?.phoneNumber ??
-    raw?.phone ??
-    undefined;
-
-  const hasDeceased =
-    raw?.deceased ||
-    raw?.deceasedName ||
-    typeof raw?.deceasedAge === "number";
-
-  const deceased = hasDeceased
-    ? {
-        name: raw?.deceased?.name ?? raw?.deceasedName,
-        age: raw?.deceased?.age ?? raw?.deceasedAge,
-      }
-    : undefined;
-
-  const ceremonySource = raw?.ceremony ?? raw;
-
-  const hasCeremony =
-    ceremonySource?.ceremonyDate ||
-    ceremonySource?.ceremonyTime ||
-    ceremonySource?.ceremonyPlace ||
-    ceremonySource?.ceremonyType ||
-    ceremonySource?.date ||
-    ceremonySource?.time ||
-    ceremonySource?.place ||
-    ceremonySource?.type;
-
-  const ceremony = hasCeremony
-    ? {
-        date: ceremonySource?.ceremonyDate ?? ceremonySource?.date,
-        time: ceremonySource?.ceremonyTime ?? ceremonySource?.time,
-        place: ceremonySource?.ceremonyPlace ?? ceremonySource?.place,
-        type: ceremonySource?.ceremonyType ?? ceremonySource?.type,
-      }
-    : undefined;
-
-  const services: ServiceItem[] | undefined =
-    (raw?.services ??
-      raw?.selectedServices ??
-      raw?.cartItems) as ServiceItem[] | undefined;
-
-  const notes =
-    raw?.notes ?? raw?.comment ?? raw?.additionalWishes ?? undefined;
-
-  return {
-    customer: {
-      email: customerEmail,
-      name: customerName,
-      phone: customerPhone,
-    },
-    deceased,
-    ceremony,
-    services,
-    notes,
-  };
-}
-
 function buildEmailHtml(order: OrderPayload, total: number) {
   let servicesRows = "";
 
@@ -152,9 +70,9 @@ function buildEmailHtml(order: OrderPayload, total: number) {
   }
 
   const ceremony = order.ceremony ?? {};
-const deceased = order.deceased ?? {};
+  const deceased = order.deceased ?? {};
 
-return `
+  return `
   <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color:#111;">
     <h1 style="font-size:20px; margin-bottom:16px;">Договор-оферта на организацию похорон</h1>
 
@@ -223,20 +141,16 @@ return `
       Фактическое заключение договора может быть оформлено в письменном виде при встрече с представителем ритуальной службы.
     </p>
   </div>
-`;
+  `;
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const rawBody = await req.json();
-
-    // Для отладки — можно посмотреть в Vercel Logs фактический payload
-    console.log("ORDER RAW BODY:", JSON.stringify(rawBody, null, 2));
-
-    const body = normalizeOrderPayload(rawBody);
+    const body = (await req.json()) as OrderPayload;
 
     if (!body.customer?.email) {
       return NextResponse.json(
-        { error: "Поле customer.email (userEmail) обязательно" },
+        { error: "Поле customer.email обязательно" },
         { status: 400 }
       );
     }
@@ -252,17 +166,13 @@ export async function POST(req: NextRequest) {
     const managerEmail =
       process.env.ORDER_TARGET_EMAIL || "gorgerichig@gmail.com";
 
-    // Письмо менеджеру
-    await sendOrderEmail({
-      to: managerEmail,
-      subject: "Новый заказ похорон",
-      html,
-    });
+    const recipients = [managerEmail, body.customer.email].filter(
+      (v): v is string => Boolean(v)
+    );
 
-    // Письмо клиенту
     await sendOrderEmail({
-      to: body.customer.email,
-      subject: "Договор и детали вашего заказа",
+      to: recipients,
+      subject: "Договор и детали заказа",
       html,
     });
 
