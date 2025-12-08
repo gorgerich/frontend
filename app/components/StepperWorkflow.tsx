@@ -3085,6 +3085,13 @@ const handleConfirmAndBook = async () => {
           </section>
         </div>
       );
+      
+       default:
+      return null;
+  }
+};
+
+export default StepperWorkflow;
 
 // ===== основной return компонента =====
   return (
