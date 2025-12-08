@@ -1344,29 +1344,41 @@ export function StepperWorkflow({
 
   // app/components/StepperWorkflow.tsx
 
+// Отправка заказа на /api/orders
 const handleConfirmAndBook = async () => {
   try {
-    const fd: any = formData;
-
-    // Собираем всё, что реально есть в форме
+    // Собираем все нужные данные из formData
     const payload = {
       customer: {
-        email: fd.userEmail,              // почта получателя договора
+        // почта, куда уйдёт письмо
+        email: formData.userEmail,
+        // отдельного поля для имени заказчика у тебя нет — оставляем пусто
+        // name и phone можно добавить позже, если появятся в форме
       },
       deceased: {
-        name: fd.fullName || "",          // ФИО усопшего
-        birthDate: fd.birthDate || "",    // дата рождения
-        deathDate: fd.deathDate || "",    // дата смерти
-        relationship: fd.relationship || "" // кем приходится
+        // ФИО усопшего
+        name: formData.fullName || undefined,
+        // Доп. поля
+        birthDate: formData.birthDate || undefined,
+        deathDate: formData.deathDate || undefined,
+        relationship: formData.relationship || undefined,
+        // deathCertificate сейчас нигде не используем, можно будет
+        // добавить в письмо отдельной строкой по желанию
       },
       ceremony: {
-        type: fd.ceremonyType || "",      // тип церемонии (religious и т.п.)
-        order: fd.ceremonyOrder || "",    // выбранный формат / пакет
+        // Тип церемонии (religious / secular и т.п.)
+        type: formData.ceremonyType || undefined,
+        // Формат / пакет (basic / premium и т.п.)
+        order: formData.ceremonyOrder || undefined,
+        // Даты/время/место у тебя пока нет в formData — поэтому в письме "не указана"
+        // как только заведёшь, сюда же добавишь:
+        // date: formData.ceremonyDate || undefined,
+        // time: formData.ceremonyTime || undefined,
+        // place: formData.ceremonyPlace || undefined,
       },
-      notes: fd.specialRequests || "",    // отдельные пожелания
+      // Особые пожелания
+      notes: formData.specialRequests || undefined,
     };
-
-    console.log("FINAL PAYLOAD:", payload);
 
     const res = await fetch("/api/orders", {
       method: "POST",
@@ -1377,7 +1389,7 @@ const handleConfirmAndBook = async () => {
     const data = await res.json();
 
     if (!res.ok) {
-      console.error("Order API error:", data);
+      console.error("Order API error", data);
       alert("Ошибка при оформлении бронирования. Попробуйте ещё раз.");
       return;
     }
@@ -1386,7 +1398,7 @@ const handleConfirmAndBook = async () => {
       "Бронирование оформлено. Договор и детали заказа отправлены на указанную почту."
     );
   } catch (error) {
-    console.error("Network error:", error);
+    console.error("Network error", error);
     alert("Произошла сетевая ошибка. Попробуйте ещё раз.");
   }
 };
