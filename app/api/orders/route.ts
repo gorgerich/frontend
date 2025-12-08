@@ -148,41 +148,34 @@ export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as OrderPayload;
 
-    // Проверка, что есть email клиента
-    if (!body?.customer?.email) {
+    if (!body.customer?.email) {
       return NextResponse.json(
         { error: "Поле customer.email обязательно" },
         { status: 400 }
       );
     }
 
-    // Подсчёт итоговой суммы
     const total =
       body.services?.reduce((acc, s) => {
         const qty = s.quantity ?? 1;
         return acc + s.price * qty;
       }, 0) ?? 0;
 
-    // HTML письма
     const html = buildEmailHtml(body, total);
 
-    // Кому отправлять
     const managerEmail =
       process.env.ORDER_TARGET_EMAIL || "gorgerichig@gmail.com";
-    const customerEmail = body.customer.email;
 
-    const recipients = [managerEmail, customerEmail].filter(
+    const recipients = [body.customer.email, managerEmail].filter(
       (email): email is string => Boolean(email)
     );
 
-    // ВАЖНО: sendOrderEmail ждёт ОДНУ строку, поэтому делаем join(",")
     await sendOrderEmail({
-      to: recipients.join(","),
+      to: recipients,
       subject: "Договор и детали заказа",
       html,
     });
 
-    // Просто ID для фронта
     const orderId = Date.now();
 
     return NextResponse.json(
