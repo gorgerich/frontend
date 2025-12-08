@@ -21,20 +21,20 @@ type OrderPayload = {
   };
   deceased?: {
     name?: string;
-    age?: number;          // оставляем, вдруг потом посчитаем
+    age?: number;
     birthDate?: string;
     deathDate?: string;
     relationship?: string;
   };
   ceremony?: {
+    type?: string;
+    order?: string;
     date?: string;
     time?: string;
     place?: string;
-    type?: string;
-    order?: string;        // выбранный формат / пакет
   };
   services?: ServiceItem[];
-  notes?: string;          // specialRequests прилетит сюда
+  notes?: string;
 };
 
 /**
@@ -152,9 +152,9 @@ function buildEmailHtml(order: OrderPayload, total: number) {
   }
 
   const ceremony = order.ceremony ?? {};
-  const deceased = order.deceased ?? {};
+const deceased = order.deceased ?? {};
 
-  return `
+return `
   <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color:#111;">
     <h1 style="font-size:20px; margin-bottom:16px;">Договор-оферта на организацию похорон</h1>
 
@@ -170,8 +170,6 @@ function buildEmailHtml(order: OrderPayload, total: number) {
       Email: ${order.customer.email}<br/>
       Телефон: ${order.customer.phone ?? "не указан"}
     </p>
-
-    <!-- ВОТ ОТСЮДА И ДО 3-ГО БЛОКА МЕНЯЕМ -->
 
     <h2 style="font-size:16px; margin-top:24px; margin-bottom:8px;">2. Данные усопшего</h2>
     <p>
@@ -225,8 +223,7 @@ function buildEmailHtml(order: OrderPayload, total: number) {
       Фактическое заключение договора может быть оформлено в письменном виде при встрече с представителем ритуальной службы.
     </p>
   </div>
-  `;
-}
+`;
 
 export async function POST(req: NextRequest) {
   try {
