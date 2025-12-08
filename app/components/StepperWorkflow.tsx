@@ -1342,30 +1342,28 @@ export function StepperWorkflow({
     setShowCemeteryResults(false);
   };
 
-  // Отправка заказа на /api/orders
+  // app/components/StepperWorkflow.tsx
+
 const handleConfirmAndBook = async () => {
   try {
-    // Временно говорим TS "поверь, что эти поля есть"
     const fd: any = formData;
 
+    // Собираем всё, что реально есть в форме
     const payload = {
       customer: {
-        email: fd.userEmail,          // это поле у тебя точно есть
-        name: fd.customerName || "",  // дальше — через any
-        phone: fd.customerPhone || "",
+        email: fd.userEmail,              // почта получателя договора
       },
       deceased: {
-        name: fd.deceasedName || "",
-        age: fd.deceasedAge ?? null,
+        name: fd.fullName || "",          // ФИО усопшего
+        birthDate: fd.birthDate || "",    // дата рождения
+        deathDate: fd.deathDate || "",    // дата смерти
+        relationship: fd.relationship || "" // кем приходится
       },
       ceremony: {
-        date: fd.ceremonyDate || "",
-        time: fd.ceremonyTime || "",
-        place: fd.ceremonyPlace || "",
-        type: fd.ceremonyType || "",
+        type: fd.ceremonyType || "",      // тип церемонии (religious и т.п.)
+        order: fd.ceremonyOrder || "",    // выбранный формат / пакет
       },
-      services: fd.services || [],
-      notes: fd.notes || "",
+      notes: fd.specialRequests || "",    // отдельные пожелания
     };
 
     console.log("FINAL PAYLOAD:", payload);

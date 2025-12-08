@@ -21,16 +21,20 @@ type OrderPayload = {
   };
   deceased?: {
     name?: string;
-    age?: number;
+    age?: number;          // оставляем, вдруг потом посчитаем
+    birthDate?: string;
+    deathDate?: string;
+    relationship?: string;
   };
   ceremony?: {
     date?: string;
     time?: string;
     place?: string;
     type?: string;
+    order?: string;        // выбранный формат / пакет
   };
   services?: ServiceItem[];
-  notes?: string;
+  notes?: string;          // specialRequests прилетит сюда
 };
 
 /**
@@ -167,17 +171,20 @@ function buildEmailHtml(order: OrderPayload, total: number) {
       Телефон: ${order.customer.phone ?? "не указан"}
     </p>
 
+    <!-- ВОТ ОТСЮДА И ДО 3-ГО БЛОКА МЕНЯЕМ -->
+
     <h2 style="font-size:16px; margin-top:24px; margin-bottom:8px;">2. Данные усопшего</h2>
     <p>
       Имя: ${deceased.name ?? "не указано"}<br/>
-      Возраст: ${
-        typeof deceased.age === "number" ? deceased.age : "не указан"
-      }
+      Дата рождения: ${deceased.birthDate ?? "не указана"}<br/>
+      Дата смерти: ${deceased.deathDate ?? "не указана"}<br/>
+      Степень родства: ${deceased.relationship ?? "не указана"}
     </p>
 
     <h2 style="font-size:16px; margin-top:24px; margin-bottom:8px;">3. Данные церемонии</h2>
     <p>
       Тип церемонии: ${ceremony.type ?? "не указан"}<br/>
+      Формат / пакет: ${ceremony.order ?? "не указан"}<br/>
       Дата: ${ceremony.date ?? "не указана"}<br/>
       Время: ${ceremony.time ?? "не указано"}<br/>
       Место: ${ceremony.place ?? "не указано"}
