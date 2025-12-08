@@ -171,10 +171,10 @@ export async function POST(req: NextRequest) {
     );
 
     await sendOrderEmail({
-      to: recipients,
-      subject: "Договор и детали заказа",
-      html,
-    });
+  to: recipients.join(","),        // важно!
+  subject: "Договор и детали заказа",
+  html,
+});
 
     const orderId = Date.now();
 
