@@ -3539,6 +3539,6 @@ const handleConfirmAndBook = async () => {
       />
     </div>
   );
-}; // Конец компонента StepperWorkflow
+} // Конец компонента StepperWorkflow
 
 export default StepperWorkflow;
