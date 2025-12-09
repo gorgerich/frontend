@@ -884,7 +884,6 @@ export function StepperWorkflow({
   ] = useState<"standard" | "comfort" | "premium">("standard");
   const [paymentMethod, setPaymentMethod] =
   useState<"card" | "sbp" | "installment">("card");
-  >("card");
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [cardData, setCardData] = useState({
     number: "",
