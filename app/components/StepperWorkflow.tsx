@@ -2917,12 +2917,6 @@ const handleConfirmAndBook = async () => {
     case 4: {
 const ceremonyType = formData.ceremonyType || "Не указан";
 const ceremonyOrder = formData.ceremonyOrder || "Не указан";
-const hearseIncluded =
-typeof formData.hasHearse === "boolean"
-? formData.hasHearse
-? "Да"
-: "Нет"
-: "Не указано";
 
 const fullName = formData.fullName || "Не указано";
 const birthDate = formData.birthDate || "Не указана";
@@ -2933,8 +2927,6 @@ const userEmail = formData.userEmail || "";
 
 return (
 <div className="space-y-8">
-{/* зелёный блок "Все данные заполнены" — оставляем как есть выше по JSX */}
-
 {/* Блоки с проверкой данных */}
 <div className="space-y-4">
 <h3 className="text-sm font-medium text-white/80">
@@ -2970,7 +2962,7 @@ className="text-xs font-medium text-white/80 underline underline-offset-2 hover:
 </button>
 </div>
 
-{/* Логистика */}
+{/* Логистика (пока без реальных полей) */}
 <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
 <div className="space-y-1">
 <p className="text-xs uppercase tracking-wide text-white/50">
@@ -2979,13 +2971,13 @@ className="text-xs font-medium text-white/80 underline underline-offset-2 hover:
 <p className="text-sm text-white/90">
 Кладбище:{" "}
 <span className="font-medium text-white">
-{cemeteryName}
+Не указано
 </span>
 </p>
 <p className="text-sm text-white/90">
 Катафалк:{" "}
 <span className="font-medium text-white">
-{hearseIncluded}
+Не указано
 </span>
 </p>
 </div>
@@ -3039,7 +3031,7 @@ className="text-xs font-medium text-white/80 underline underline-offset-2 hover:
 </div>
 </div>
 
-{/* Блок оплаты + email, как в референсе */}
+{/* Блок оплаты + email */}
 <div className="bg-gray-950/70 border border-white/10 rounded-3xl px-4 py-5 sm:px-6 sm:py-6 space-y-6">
 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
 <div>
@@ -3050,10 +3042,8 @@ className="text-xs font-medium text-white/80 underline underline-offset-2 hover:
 Проверьте сумму перед подтверждением
 </p>
 </div>
-{/* Сумма выводится в отдельной «пилюле» снизу экрана, поэтому здесь без числа */}
 </div>
 
-{/* Визуальный блок «карты» */}
 <div className="bg-white/5 rounded-2xl p-4 space-y-4">
 <div className="bg-gray-900 rounded-2xl px-4 py-3 flex flex-col gap-2">
 <div className="h-6 w-10 rounded-md bg-yellow-300/80" />
@@ -3103,7 +3093,6 @@ onUpdateFormData("userEmail", e.target.value)
 </div>
 </div>
 
-{/* Выбор способа оплаты (визуальный) */}
 <div className="space-y-3 pt-2">
 <p className="text-xs text-white/60">
 Или выберите другой способ:
@@ -3149,7 +3138,7 @@ className="flex items-center gap-2 rounded-2xl border border-white/15 bg-gray-90
 </div>
 
 <Button
-className="w-full h-14 text-lg bg-white text-gray-900 hover:bg-gray-100 rounded-[999px]"
+className="w-full h-14 text-lg bg_WHITE text-gray-900 hover:bg-gray-100 rounded-[999px]"
 onClick={handleConfirmAndBook}
 >
 Подтвердить и забронировать
