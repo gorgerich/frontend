@@ -3091,8 +3091,6 @@ const handleConfirmAndBook = async () => {
   }
 };
 
-export default StepperWorkflow;
-
 // ===== основной return компонента =====
   return (
     <div
@@ -3179,3 +3177,4 @@ export default StepperWorkflow;
     </div>
   );
 }
+export default StepperWorkflow;
