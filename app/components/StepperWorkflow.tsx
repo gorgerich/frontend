@@ -2914,119 +2914,256 @@ const handleConfirmAndBook = async () => {
           </div>
         );
 
-    case 4:
-      return (
-        <div className="space-y-8">
-          {/* Статус */}
-          <div className="bg-green-50 border border-green-200 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
-            <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-            <div>
-              <h3 className="text-green-900 mb-2">Все данные заполнены</h3>
-              <p className="text-sm text-green-700">
-                Пожалуйста, проверьте информацию перед бронированием
-              </p>
-            </div>
-          </div>
+    case 4: {
+const ceremonyType = formData.ceremonyType || "Не указан";
+const ceremonyOrder = formData.ceremonyOrder || "Не указан";
+const cemeteryName = formData.cemeteryName || "Не указано";
+const hearseIncluded =
+typeof formData.hasHearse === "boolean"
+? formData.hasHearse
+? "Да"
+: "Нет"
+: "Не указано";
 
-          {/* Краткое резюме по шагам */}
-          <div className="grid gap-4 md:grid-cols-2">
-            {/* Формат церемонии */}
-            <div className="bg-white/10 border border-white/20 rounded-3xl p-4 text-white">
-              <h4 className="text-sm text-white/60 mb-1">Формат церемонии</h4>
-              <p className="text-base">
-                {formData.ceremonyType ? formData.ceremonyType : "Не указан"}
-              </p>
-              {formData.ceremonyOrder && (
-                <p className="text-sm text-white/70 mt-1">
-                  Формат / пакет: {formData.ceremonyOrder}
-                </p>
-              )}
-            </div>
+const fullName = formData.fullName || "Не указано";
+const birthDate = formData.birthDate || "Не указана";
+const deathDate = formData.deathDate || "Не указана";
+const relationship = formData.relationship || "Не указана";
 
-            {/* Данные усопшего */}
-            <div className="bg-white/10 border border-white/20 rounded-3xl p-4 text-white">
-              <h4 className="text-sm text-white/60 mb-1">Данные усопшего</h4>
-              <p className="text-base">
-                Имя: {formData.fullName ? formData.fullName : "не указано"}
-              </p>
-              <p className="text-sm text-white/70 mt-1">
-                Дата рождения:{" "}
-                {formData.birthDate ? formData.birthDate : "не указана"}
-              </p>
-              <p className="text-sm text-white/70">
-                Дата смерти:{" "}
-                {formData.deathDate ? formData.deathDate : "не указана"}
-              </p>
-              {formData.relationship && (
-                <p className="text-sm text-white/70">
-                  Степень родства: {formData.relationship}
-                </p>
-              )}
-            </div>
-          </div>
+const userEmail = formData.userEmail || "";
 
-          {/* Итоговая стоимость (без вычисления суммы, только текст) */}
-          <div className="bg-white/10 border border-white/20 rounded-3xl p-4 text-white">
-            <div className="flex items-baseline justify-between">
-              <div>
-                <h4 className="text-sm text-white/60 mb-1">Итоговая стоимость</h4>
-                <p className="text-sm text-white/70">
-                  Точная сумма указана в блоке «Итого» ниже на странице.
-                </p>
-              </div>
-            </div>
-          </div>
+return (
+<div className="space-y-8">
+{/* зелёный блок "Все данные заполнены" — оставляем как есть выше по JSX */}
 
-          {/* Email + кнопка подтверждения */}
-          <div className="bg-gray-900 rounded-3xl px-6 py-6 text-white space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium">Итоговая стоимость</h3>
-              <span className="text-sm text-white/60">
-                Проверьте сумму перед подтверждением
-              </span>
-            </div>
+{/* Блоки с проверкой данных */}
+<div className="space-y-4">
+<h3 className="text-sm font-medium text-white/80">
+Проверьте информацию перед бронированием
+</h3>
 
-            <div className="space-y-2">
-              <label
-                htmlFor="userEmail"
-                className="block text-sm text-white/80"
-              >
-                Email для получения деталей и договора
-              </label>
+{/* Формат церемонии */}
+<div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
+<div className="space-y-1">
+<p className="text-xs uppercase tracking-wide text-white/50">
+Формат церемонии
+</p>
+<p className="text-sm text-white/90">
+Тип:{" "}
+<span className="font-medium text-white">
+{ceremonyType}
+</span>
+</p>
+<p className="text-sm text-white/90">
+Пакет / формат:{" "}
+<span className="font-medium text-white">
+{ceremonyOrder}
+</span>
+</p>
+</div>
 
-              <input
-                id="userEmail"
-                type="email"
-                className="bg-white text-gray-900 placeholder:text-gray-500 w-full rounded-xl px-4 py-3 outline-none"
-                placeholder="example@email.com"
-                value={formData.userEmail ?? ""}
-                onChange={(e) =>
-                  onUpdateFormData("userEmail", e.target.value)
-                }
-              />
+<button
+type="button"
+onClick={() => handleStepClick(0)}
+className="text-xs font-medium text-white/80 underline underline-offset-2 hover:text-white"
+>
+Изменить
+</button>
+</div>
 
-              <p className="text-xs text-white/70">
-                На эту почту придёт подтверждение заказа, договор и подробная
-                расшифровка услуг.
-              </p>
-            </div>
+{/* Логистика */}
+<div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
+<div className="space-y-1">
+<p className="text-xs uppercase tracking-wide text-white/50">
+Логистика
+</p>
+<p className="text-sm text-white/90">
+Кладбище:{" "}
+<span className="font-medium text-white">
+{cemeteryName}
+</span>
+</p>
+<p className="text-sm text-white/90">
+Катафалк:{" "}
+<span className="font-medium text-white">
+{hearseIncluded}
+</span>
+</p>
+</div>
 
-            <div className="pt-2">
-              <Button
-                className="w-full h-14 text-lg bg-white text-gray-900 hover:bg-gray-100 rounded-[30px]"
-                onClick={handleConfirmAndBook}
-              >
-                Подтвердить и забронировать
-              </Button>
-            </div>
-          </div>
-        </div>
-      );
+<button
+type="button"
+onClick={() => handleStepClick(1)}
+className="text-xs font-medium text-white/80 underline underline-offset-2 hover:text-white"
+>
+Изменить
+</button>
+</div>
 
+{/* Документы */}
+<div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
+<div className="space-y-1">
+<p className="text-xs uppercase tracking-wide text-white/50">
+Документы
+</p>
+<p className="text-sm text-white/90">
+ФИО:{" "}
+<span className="font-medium text-white">{fullName}</span>
+</p>
+<p className="text-sm text-white/90">
+Дата рождения:{" "}
+<span className="font-medium text-white">
+{birthDate}
+</span>
+</p>
+<p className="text-sm text-white/90">
+Дата смерти:{" "}
+<span className="font-medium text-white">
+{deathDate}
+</span>
+</p>
+<p className="text-sm text-white/90">
+Степень родства:{" "}
+<span className="font-medium text-white">
+{relationship}
+</span>
+</p>
+</div>
+
+<button
+type="button"
+onClick={() => handleStepClick(3)}
+className="text-xs font-medium text-white/80 underline underline-offset-2 hover:text-white"
+>
+Изменить
+</button>
+</div>
+</div>
+
+{/* Блок оплаты + email, как в референсе */}
+<div className="bg-gray-950/70 border border-white/10 rounded-3xl px-4 py-5 sm:px-6 sm:py-6 space-y-6">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+<div>
+<p className="text-sm font-semibold text-white">
+Итоговая стоимость
+</p>
+<p className="text-xs text-white/60">
+Проверьте сумму перед подтверждением
+</p>
+</div>
+{/* Сумма выводится в отдельной «пилюле» снизу экрана, поэтому здесь без числа */}
+</div>
+
+{/* Визуальный блок «карты» */}
+<div className="bg-white/5 rounded-2xl p-4 space-y-4">
+<div className="bg-gray-900 rounded-2xl px-4 py-3 flex flex-col gap-2">
+<div className="h-6 w-10 rounded-md bg-yellow-300/80" />
+<p className="text-sm tracking-[0.2em] text-white/90">
+0000 0000 0000 0000
+</p>
+<div className="flex items-center justify-between text-xs text-white/70">
+<span>IVAN IVANOV</span>
+<span>MM/ГГ</span>
+</div>
+</div>
+
+<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<div className="sm:col-span-1">
+<label className="block text-xs text-white/70 mb-1">
+CVC/CVV код
+</label>
+<input
+type="password"
+maxLength={3}
+className="w-full rounded-xl bg-gray-900/60 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none"
+placeholder="•••"
+/>
+</div>
+
+<div className="sm:col-span-2">
+<label
+htmlFor="userEmail"
+className="block text-xs text-white/70 mb-1"
+>
+Email для получения информации
+</label>
+<input
+id="userEmail"
+type="email"
+className="w-full rounded-xl bg-gray-900/60 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none"
+placeholder="example@email.com"
+value={userEmail}
+onChange={(e) =>
+onUpdateFormData("userEmail", e.target.value)
+}
+/>
+<p className="mt-1 text-[11px] text-white/50">
+На этот адрес придёт подтверждение заказа, детали церемонии
+и все необходимые документы.
+</p>
+</div>
+</div>
+
+{/* Выбор способа оплаты (визуальный) */}
+<div className="space-y-3 pt-2">
+<p className="text-xs text-white/60">
+Или выберите другой способ:
+</p>
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<button
+type="button"
+className="flex items-center gap-2 rounded-2xl border border-white/15 bg-gray-900/60 px-4 py-3 text-left"
+>
+<span className="h-4 w-4 rounded-full border border-white/40" />
+<div>
+<p className="text-sm text-white">СБП</p>
+<p className="text-[11px] text-white/60">
+Система быстрых платежей
+</p>
+</div>
+</button>
+
+<button
+type="button"
+className="flex items-center gap-2 rounded-2xl border border-white/15 bg-gray-900/60 px-4 py-3 text-left"
+>
+<span className="h-4 w-4 rounded-full border border-white/40" />
+<div>
+<p className="text-sm text-white">Рассрочка</p>
+<p className="text-[11px] text-white/60">
+0% на 6 месяцев
+</p>
+</div>
+</button>
+</div>
+
+<div className="mt-2 rounded-2xl bg-gray-900/80 border border-emerald-500/40 px-4 py-3">
+<p className="text-xs font-medium text-emerald-400">
+Защищённый платёж
+</p>
+<p className="text-[11px] text-white/60 mt-1">
+Данные передаются по защищённому протоколу и не хранятся на
+наших серверах.
+</p>
+</div>
+</div>
+</div>
+
+<Button
+className="w-full h-14 text-lg bg-white text-gray-900 hover:bg-gray-100 rounded-[999px]"
+onClick={handleConfirmAndBook}
+>
+Подтвердить и забронировать
+</Button>
+</div>
+</div>
+);
+}
 default:
       return null;
   }
 };
+
 
 // ===== основной return компонента =====
 return (
