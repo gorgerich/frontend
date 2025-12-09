@@ -2959,9 +2959,21 @@ return (
 <button
 type="button"
 onClick={() => handleStepClick(0)}
-className="shrink-0 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 underline underline-offset-4"
+aria-label="Изменить формат церемонии"
+className="shrink-0 rounded-full border border-gray-300 bg-white p-2 hover:bg-gray-50"
 >
-Изменить
+<svg
+className="h-4 w-4 text-gray-600"
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+strokeWidth="2"
+strokeLinecap="round"
+strokeLinejoin="round"
+>
+<path d="M12 20h9" />
+<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+</svg>
 </button>
 </div>
 
@@ -3000,9 +3012,21 @@ className="shrink-0 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue
 <button
 type="button"
 onClick={() => handleStepClick(2)}
-className="shrink-0 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 underline underline-offset-4"
+aria-label="Изменить данные усопшего"
+className="shrink-0 rounded-full border border-gray-300 bg-white p-2 hover:bg-gray-50"
 >
-Изменить
+<svg
+className="h-4 w-4 text-gray-600"
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+strokeWidth="2"
+strokeLinecap="round"
+strokeLinejoin="round"
+>
+<path d="M12 20h9" />
+<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+</svg>
 </button>
 </div>
 
@@ -3029,39 +3053,189 @@ className="shrink-0 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue
 <button
 type="button"
 onClick={() => handleStepClick(3)}
-className="shrink-0 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 underline underline-offset-4"
+aria-label="Изменить документы и пожелания"
+className="shrink-0 rounded-full border border-gray-300 bg-white p-2 hover:bg-gray-50"
 >
-Изменить
+<svg
+className="h-4 w-4 text-gray-600"
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+strokeWidth="2"
+strokeLinecap="round"
+strokeLinejoin="round"
+>
+<path d="M12 20h9" />
+<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+</svg>
 </button>
+</div>
+
+{/* Логистика */}
+<div className="bg-white rounded-[30px] border border-gray-100 px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
+{(() => {
+const cemeteryName = (formData as any).cemeteryName;
+const hasHearse = (formData as any).hasHearse;
+return (
+<>
+<div className="space-y-1 text-sm text-gray-700">
+<div className="text-xs uppercase tracking-wide text-gray-400">
+Логистика
+</div>
+<div>
+Кладбище:{" "}
+<span className="font-medium">
+{cemeteryName || "Не указано"}
+</span>
+</div>
+<div>
+Катафалк:{" "}
+<span className="font-medium">
+{typeof hasHearse === "boolean"
+? hasHearse
+? "Да"
+: "Нет"
+: "Не указано"}
+</span>
+</div>
+</div>
+
+<button
+type="button"
+onClick={() => handleStepClick(1)}
+aria-label="Изменить логистику"
+className="shrink-0 rounded-full border border-gray-300 bg-white p-2 hover:bg-gray-50"
+>
+<svg
+className="h-4 w-4 text-gray-600"
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+strokeWidth="2"
+strokeLinecap="round"
+strokeLinejoin="round"
+>
+<path d="M12 20h9" />
+<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+</svg>
+</button>
+</>
+);
+})()}
+</div>
+
+{/* Атрибутика */}
+<div className="bg-white rounded-[30px] border border-gray-100 px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
+{(() => {
+const packageName =
+(formData as any).attributesPackage || "Индивидуальный пакет";
+const servicesSummary =
+(formData as any).attributesSummary || "Услуги не выбраны";
+return (
+<>
+<div className="space-y-1 text-sm text-gray-700">
+<div className="text-xs uppercase tracking-wide text-gray-400">
+Атрибутика
+</div>
+<div>
+<span className="font-medium">{packageName}</span>
+</div>
+<div className="text-gray-600 text-sm">
+{servicesSummary}
+</div>
+</div>
+
+<button
+type="button"
+onClick={() => handleStepClick(1)}
+aria-label="Изменить атрибутику"
+className="shrink-0 rounded-full border border-gray-300 bg-white p-2 hover:bg-gray-50"
+>
+<svg
+className="h-4 w-4 text-gray-600"
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+strokeWidth="2"
+strokeLinecap="round"
+strokeLinejoin="round"
+>
+<path d="M12 20h9" />
+<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+</svg>
+</button>
+</>
+);
+})()}
 </div>
 </div>
 
 {/* Платёжный блок */}
 <div className="mt-2 bg-gray-900 text-white rounded-[32px] p-5 sm:p-6 space-y-5">
-{/* Макет банковской карты */}
-<div className="bg-gray-800 rounded-3xl p-4 sm:p-5 mb-1">
-<div className="flex items-center justify-between mb-6">
+{/* Физическая карта с полями ввода */}
+<div className="bg-white text-gray-900 rounded-3xl p-4 sm:p-5 space-y-4">
+<div className="flex items-center justify-between">
 <div className="h-8 w-12 rounded-xl bg-gradient-to-br from-yellow-300 to-amber-500" />
-<div className="h-6 w-10 rounded-full bg-gray-700/80" />
+<div className="h-6 w-10 rounded-full bg-gray-200" />
 </div>
 
-<div className="space-y-4 text-sm tracking-[0.25em] text-gray-100">
-<div>0000 0000 0000 0000</div>
-<div className="flex items-center justify-between tracking-normal text-xs text-gray-300">
+<div className="space-y-3">
 <div>
-<div className="text-[10px] uppercase text-gray-500">
+<label className="block text-xs text-gray-500 mb-1">
+Номер карты
+</label>
+<input
+type="text"
+inputMode="numeric"
+autoComplete="cc-number"
+placeholder="0000 0000 0000 0000"
+className="w-full rounded-2xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
+/>
+</div>
+
+<div className="grid grid-cols-2 gap-3">
+<div>
+<label className="block text-xs text-gray-500 mb-1">
 Держатель карты
+</label>
+<input
+type="text"
+autoComplete="cc-name"
+placeholder="IVAN IVANOV"
+className="w-full rounded-2xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
+/>
 </div>
-<div className="font-medium">IVAN IVANOV</div>
+<div>
+<label className="block text-xs text-gray-500 mb-1">
+Срок действия
+</label>
+<input
+type="text"
+inputMode="numeric"
+autoComplete="cc-exp"
+placeholder="MM/ГГ"
+className="w-full rounded-2xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
+/>
 </div>
-<div className="text-right">
-<div className="text-[10px] uppercase text-gray-500">
-Действительна
-</div>
-<div className="font-medium">MM/ГГ</div>
 </div>
 </div>
 </div>
+
+{/* CVC/CVV */}
+<div className="space-y-1">
+<label className="block text-xs sm:text-sm text-white/90">
+CVC/CVV код
+</label>
+<input
+type="password"
+inputMode="numeric"
+autoComplete="cc-csc"
+maxLength={4}
+className="w-full rounded-2xl bg-white text-gray-900 px-4 py-3 text-sm outline-none border border-white/10 focus:border-gray-300"
+/>
+<p className="text-xs text-white/70">
+3 цифры на оборотной стороне карты.
+</p>
 </div>
 
 {/* Email */}
