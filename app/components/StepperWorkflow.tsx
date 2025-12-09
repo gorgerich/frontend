@@ -2914,118 +2914,153 @@ const handleConfirmAndBook = async () => {
           </div>
         );
 
-    case 4: {
-const fd: any = formData;
-
-const ceremonyTypeLabel = fd.ceremonyType || fd.serviceType || "Не указан";
-const ceremonyOrderLabel = fd.ceremonyOrder || "Не указан";
-
-const deceasedName = fd.fullName || "Не указано";
-const birthDate = fd.birthDate || "Не указана";
-const deathDate = fd.deathDate || "Не указана";
-const relationship = fd.relationship || "Не указана";
-
-const deathCertificate = fd.deathCertificate ? "Есть" : "Не указано";
-const specialRequests = fd.specialRequests || "Не указаны";
-
+    case 4:
 return (
 <div className="space-y-6">
-{/* Блоки проверки данных */}
+{/* Статус: все данные заполнены */}
+<div className="bg-emerald-50 border border-emerald-200 rounded-[30px] px-4 py-3 sm:px-5 sm:py-4 flex items-start gap-3">
+<div className="mt-1">
+<span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 text-sm">
+✓
+</span>
+</div>
+<div className="text-sm">
+<div className="font-medium text-emerald-900 mb-1">
+Все данные заполнены
+</div>
+<p className="text-emerald-800/80">
+Пожалуйста, проверьте информацию перед бронированием.
+</p>
+</div>
+</div>
 
+{/* Блоки-подтверждения */}
+<div className="space-y-4">
 {/* Формат церемонии */}
-<section className="bg-white border border-gray-200 rounded-3xl px-4 py-3 flex items-start justify-between gap-4">
-<div>
-<h3 className="text-sm font-medium text-gray-900 mb-1">
+<div className="bg-white rounded-[30px] border border-gray-100 px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
+<div className="space-y-1 text-sm text-gray-700">
+<div className="text-xs uppercase tracking-wide text-gray-400">
 Формат церемонии
-</h3>
-<p className="text-xs text-gray-500">
+</div>
+<div>
 Тип церемонии:{" "}
-<span className="text-gray-900">{ceremonyTypeLabel}</span>
-</p>
-<p className="text-xs text-gray-500">
+<span className="font-medium">
+{formData.ceremonyType || "Не указан"}
+</span>
+</div>
+<div>
 Формат / порядок:{" "}
-<span className="text-gray-900">{ceremonyOrderLabel}</span>
-</p>
+<span className="font-medium">
+{formData.ceremonyOrder || "Не указан"}
+</span>
+</div>
 </div>
 
 <button
 type="button"
 onClick={() => handleStepClick(0)}
-className="text-xs text-gray-500 hover:text-gray-900 underline underline-offset-2"
+className="shrink-0 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 underline underline-offset-4"
 >
 Изменить
 </button>
-</section>
+</div>
 
 {/* Данные усопшего */}
-<section className="bg-white border border-gray-200 rounded-3xl px-4 py-3 flex items-start justify-between gap-4">
-<div>
-<h3 className="text-sm font-medium text-gray-900 mb-1">
+<div className="bg-white rounded-[30px] border border-gray-100 px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
+<div className="space-y-1 text-sm text-gray-700">
+<div className="text-xs uppercase tracking-wide text-gray-400">
 Данные усопшего
-</h3>
-<p className="text-xs text-gray-500">
-Имя: <span className="text-gray-900">{deceasedName}</span>
-</p>
-<p className="text-xs text-gray-500">
+</div>
+<div>
+Имя:{" "}
+<span className="font-medium">
+{formData.fullName || "Не указано"}
+</span>
+</div>
+<div>
 Дата рождения:{" "}
-<span className="text-gray-900">{birthDate}</span>
-</p>
-<p className="text-xs text-gray-500">
+<span className="font-medium">
+{formData.birthDate || "Не указана"}
+</span>
+</div>
+<div>
 Дата смерти:{" "}
-<span className="text-gray-900">{deathDate}</span>
-</p>
-<p className="text-xs text-gray-500">
+<span className="font-medium">
+{formData.deathDate || "Не указана"}
+</span>
+</div>
+<div>
 Степень родства:{" "}
-<span className="text-gray-900">{relationship}</span>
-</p>
+<span className="font-medium">
+{formData.relationship || "Не указана"}
+</span>
+</div>
 </div>
 
 <button
 type="button"
 onClick={() => handleStepClick(2)}
-className="text-xs text-gray-500 hover:text-gray-900 underline underline-offset-2"
+className="shrink-0 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 underline underline-offset-4"
 >
 Изменить
 </button>
-</section>
+</div>
 
 {/* Документы и пожелания */}
-<section className="bg-white border border-gray-200 rounded-3xl px-4 py-3 flex items-start justify-between gap-4">
-<div>
-<h3 className="text-sm font-medium text-gray-900 mb-1">
+<div className="bg-white rounded-[30px] border border-gray-100 px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
+<div className="space-y-1 text-sm text-gray-700">
+<div className="text-xs uppercase tracking-wide text-gray-400">
 Документы и пожелания
-</h3>
-<p className="text-xs text-gray-500">
+</div>
+<div>
 Свидетельство о смерти:{" "}
-<span className="text-gray-900">{deathCertificate}</span>
-</p>
-<p className="text-xs text-gray-500">
+<span className="font-medium">
+{formData.deathCertificate || "Не указано"}
+</span>
+</div>
+<div>
 Дополнительные пожелания:{" "}
-<span className="text-gray-900">{specialRequests}</span>
-</p>
+<span className="font-medium">
+{formData.specialRequests || "Не указаны"}
+</span>
+</div>
 </div>
 
 <button
 type="button"
 onClick={() => handleStepClick(3)}
-className="text-xs text-gray-500 hover:text-gray-900 underline underline-offset-2"
+className="shrink-0 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 underline underline-offset-4"
 >
 Изменить
 </button>
-</section>
-
-{/* Блок оплаты + email + подтверждение */}
-<section className="bg-slate-900 text-white rounded-3xl px-4 py-4 space-y-4">
-{/* Макет карты */}
-<div className="bg-black/40 rounded-3xl p-4 space-y-4">
-<div className="h-10 w-16 rounded-xl bg-yellow-300/80 mb-2" />
-<div className="space-y-1">
-<div className="h-3 w-40 rounded bg-white/10" />
-<div className="h-3 w-32 rounded bg-white/10" />
 </div>
-<div className="flex justify-between items-center mt-3 text-[10px] tracking-wide text-white/70">
-<span>IVAN IVANOV</span>
-<span>MM/ГГ</span>
+</div>
+
+{/* Платёжный блок */}
+<div className="mt-2 bg-gray-900 text-white rounded-[32px] p-5 sm:p-6 space-y-5">
+{/* Макет банковской карты */}
+<div className="bg-gray-800 rounded-3xl p-4 sm:p-5 mb-1">
+<div className="flex items-center justify-between mb-6">
+<div className="h-8 w-12 rounded-xl bg-gradient-to-br from-yellow-300 to-amber-500" />
+<div className="h-6 w-10 rounded-full bg-gray-700/80" />
+</div>
+
+<div className="space-y-4 text-sm tracking-[0.25em] text-gray-100">
+<div>0000 0000 0000 0000</div>
+<div className="flex items-center justify-between tracking-normal text-xs text-gray-300">
+<div>
+<div className="text-[10px] uppercase text-gray-500">
+Держатель карты
+</div>
+<div className="font-medium">IVAN IVANOV</div>
+</div>
+<div className="text-right">
+<div className="text-[10px] uppercase text-gray-500">
+Действительна
+</div>
+<div className="font-medium">MM/ГГ</div>
+</div>
+</div>
 </div>
 </div>
 
@@ -3033,43 +3068,51 @@ className="text-xs text-gray-500 hover:text-gray-900 underline underline-offset-
 <div className="space-y-2">
 <label
 htmlFor="userEmail"
-className="block text-xs font-medium text-white/80"
+className="block text-xs sm:text-sm text-white/90"
 >
 Email для получения информации
 </label>
+
 <input
 id="userEmail"
 type="email"
-className="w-full rounded-2xl bg-white text-gray-900 placeholder:text-gray-500 px-4 py-3 text-sm outline-none"
+className="w-full rounded-2xl bg-white text-gray-900 placeholder:text-gray-500 px-4 py-3 text-sm outline-none border border-white/10 focus:border-gray-300"
 placeholder="example@email.com"
 value={formData.userEmail ?? ""}
 onChange={(e) => onUpdateFormData("userEmail", e.target.value)}
 />
-<p className="text-[11px] text-white/60">
+
+<p className="text-xs sm:text-sm text-white/70">
 На этот адрес придёт подтверждение заказа, детали церемонии и
 все необходимые документы.
 </p>
 </div>
 
 {/* Защищённый платёж */}
-<div className="rounded-2xl bg-black/40 px-4 py-3 text-xs text-white/70">
-<p className="font-medium mb-1">Защищённый платёж</p>
-<p>
-Данные карты передаются по защищённому протоколу и не хранятся
-на наших серверах.
+<div className="bg-gray-800 rounded-3xl px-4 py-3 text-xs sm:text-sm text-white/80 flex items-start gap-3">
+<div className="mt-0.5 h-5 w-5 rounded-full border border-emerald-400 flex items-center justify-center">
+<span className="text-[10px] text-emerald-400">✓</span>
+</div>
+<div>
+<div className="font-medium mb-0.5">Защищённый платёж</div>
+<p className="text-white/70">
+Данные карты передаются по защищённому протоколу и не
+хранятся на наших серверах.
 </p>
 </div>
+</div>
 
+{/* Кнопка подтверждения */}
 <Button
-className="w-full h-14 text-base bg-white text-gray-900 hover:bg-gray-100 rounded-2xl"
+type="button"
+className="w-full h-12 sm:h-14 text-base sm:text-lg bg-white text-gray-900 hover:bg-gray-100 rounded-[999px] mt-1"
 onClick={handleConfirmAndBook}
 >
 Подтвердить и забронировать
 </Button>
-</section>
+</div>
 </div>
 );
-}
 default:
       return null;
   }
