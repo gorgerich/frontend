@@ -3448,13 +3448,8 @@ const handleConfirmAndBook = async () => {
 
     default:
       return null;
-  } // Конец switch
-  // === ЗДЕСЬ ЗАКРЫВАЕМ SWITCH, чтобы default был внутри ===
-  
-  // Если у вас была функция-обертка renderStepContent, закрывайте её здесь
-  // }; 
-
-  // ===== основной return компонента (вне функции renderStepContent) =====
+  }
+};
   return (
     <div
       ref={containerRef}
@@ -3539,6 +3534,5 @@ const handleConfirmAndBook = async () => {
       />
     </div>
   );
-} // Конец компонента StepperWorkflow
-
+} 
 export default StepperWorkflow;
