@@ -2917,7 +2917,6 @@ const handleConfirmAndBook = async () => {
     case 4: {
 const ceremonyType = formData.ceremonyType || "Не указан";
 const ceremonyOrder = formData.ceremonyOrder || "Не указан";
-const cemeteryName = formData.cemeteryName || "Не указано";
 const hearseIncluded =
 typeof formData.hasHearse === "boolean"
 ? formData.hasHearse
