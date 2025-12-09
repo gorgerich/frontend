@@ -3445,7 +3445,6 @@ alert(
 </Button>
 </div>
 );
-}
 
 default:
 return null;
@@ -3536,5 +3535,5 @@ return (
     />
   </div>
 );
-
+    }
 export default StepperWorkflow;
