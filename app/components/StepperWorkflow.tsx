@@ -2914,379 +2914,302 @@ const handleConfirmAndBook = async () => {
           </div>
         );
 
-    case 4:
+    case 4: {
+const ceremonyType = formData.ceremonyType || "Не указан";
+const ceremonyOrder = formData.ceremonyOrder || "Не указан";
+
+const deceasedName = formData.fullName || "Не указано";
+const deceasedBirthDate = formData.birthDate || "Не указана";
+const deceasedDeathDate = formData.deathDate || "Не указана";
+const deceasedRelation = formData.relationship || "Не указана";
+
+const deathCertificate = formData.deathCertificate || "Не указано";
+const specialRequests = formData.specialRequests || "Не указаны";
+
+const cemeteryName = formData.cemeteryName || "Не указано";
+const hasHearse =
+typeof formData.hasHearse === "boolean"
+? formData.hasHearse
+? "Да"
+: "Нет"
+: "Не указано";
+
+const attributesPackage = formData.attributesPackage || "Не выбран";
+const attributesNote = formData.attributesNote || "Услуги не выбраны";
+
+const totalPrice =
+typeof formData.totalPrice === "number" ? formData.totalPrice : null;
+
 return (
 <div className="space-y-6">
-{/* Статус: все данные заполнены */}
-<div className="bg-emerald-50 border border-emerald-200 rounded-[30px] px-4 py-3 sm:px-5 sm:py-4 flex items-start gap-3">
-<div className="mt-1">
-<span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 text-sm">
-✓
-</span>
+{/* Статус */}
+<div className="bg-emerald-50 border border-emerald-200 rounded-3xl px-4 py-4 sm:px-5 sm:py-4 flex items-start gap-3">
+<div className="mt-1 h-6 w-6 rounded-full bg-emerald-100 flex items-center justify-center">
+<span className="h-3 w-3 rounded-full bg-emerald-500" />
 </div>
-<div className="text-sm">
-<div className="font-medium text-emerald-900 mb-1">
-Все данные заполнены
-</div>
-<p className="text-emerald-800/80">
+<div className="text-sm sm:text-base text-emerald-900">
+<div className="font-medium mb-0.5">Все данные заполнены</div>
+<div className="text-emerald-800/80">
 Пожалуйста, проверьте информацию перед бронированием.
-</p>
+</div>
 </div>
 </div>
 
-{/* Блоки-подтверждения */}
-<div className="space-y-4">
 {/* Формат церемонии */}
-<div className="bg-white rounded-[30px] border border-gray-100 px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
-<div className="space-y-1 text-sm text-gray-700">
-<div className="text-xs uppercase tracking-wide text-gray-400">
+<div className="bg-white rounded-3xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
+<div className="text-sm text-gray-900 space-y-1.5">
+<div className="text-xs uppercase tracking-wide text-gray-500">
 Формат церемонии
 </div>
 <div>
-Тип церемонии:{" "}
-<span className="font-medium">
-{formData.ceremonyType || "Не указан"}
-</span>
+<span className="text-gray-500">Тип церемонии: </span>
+<span className="font-medium">{ceremonyType}</span>
 </div>
 <div>
-Формат / порядок:{" "}
-<span className="font-medium">
-{formData.ceremonyOrder || "Не указан"}
-</span>
+<span className="text-gray-500">Формат / порядок: </span>
+<span className="font-medium">{ceremonyOrder}</span>
 </div>
 </div>
-
 <button
 type="button"
-onClick={() => handleStepClick(0)}
+onClick={() => setCurrentStep(0)}
+className="shrink-0 rounded-full border border-gray-200 p-2 hover:bg-gray-50 transition"
 aria-label="Изменить формат церемонии"
-className="shrink-0 rounded-full border border-gray-300 bg-white p-2 hover:bg-gray-50"
 >
-<svg
-className="h-4 w-4 text-gray-600"
-viewBox="0 0 24 24"
-fill="none"
-stroke="currentColor"
-strokeWidth="2"
-strokeLinecap="round"
-strokeLinejoin="round"
->
-<path d="M12 20h9" />
-<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-</svg>
+<Pencil className="h-4 w-4 text-gray-500" />
 </button>
 </div>
 
 {/* Данные усопшего */}
-<div className="bg-white rounded-[30px] border border-gray-100 px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
-<div className="space-y-1 text-sm text-gray-700">
-<div className="text-xs uppercase tracking-wide text-gray-400">
+<div className="bg-white rounded-3xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
+<div className="text-sm text-gray-900 space-y-1.5">
+<div className="text-xs uppercase tracking-wide text-gray-500">
 Данные усопшего
 </div>
 <div>
-Имя:{" "}
-<span className="font-medium">
-{formData.fullName || "Не указано"}
-</span>
+<span className="text-gray-500">Имя: </span>
+<span className="font-medium">{deceasedName}</span>
 </div>
 <div>
-Дата рождения:{" "}
-<span className="font-medium">
-{formData.birthDate || "Не указана"}
-</span>
+<span className="text-gray-500">Дата рождения: </span>
+<span className="font-medium">{deceasedBirthDate}</span>
 </div>
 <div>
-Дата смерти:{" "}
-<span className="font-medium">
-{formData.deathDate || "Не указана"}
-</span>
+<span className="text-gray-500">Дата смерти: </span>
+<span className="font-medium">{deceasedDeathDate}</span>
 </div>
 <div>
-Степень родства:{" "}
-<span className="font-medium">
-{formData.relationship || "Не указана"}
-</span>
+<span className="text-gray-500">Степень родства: </span>
+<span className="font-medium">{deceasedRelation}</span>
 </div>
 </div>
-
 <button
 type="button"
-onClick={() => handleStepClick(2)}
+onClick={() => setCurrentStep(1)}
+className="shrink-0 rounded-full border border-gray-200 p-2 hover:bg-gray-50 transition"
 aria-label="Изменить данные усопшего"
-className="shrink-0 rounded-full border border-gray-300 bg-white p-2 hover:bg-gray-50"
 >
-<svg
-className="h-4 w-4 text-gray-600"
-viewBox="0 0 24 24"
-fill="none"
-stroke="currentColor"
-strokeWidth="2"
-strokeLinecap="round"
-strokeLinejoin="round"
->
-<path d="M12 20h9" />
-<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-</svg>
-</button>
-</div>
-
-{/* Документы и пожелания */}
-<div className="bg-white rounded-[30px] border border-gray-100 px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
-<div className="space-y-1 text-sm text-gray-700">
-<div className="text-xs uppercase tracking-wide text-gray-400">
-Документы и пожелания
-</div>
-<div>
-Свидетельство о смерти:{" "}
-<span className="font-medium">
-{formData.deathCertificate || "Не указано"}
-</span>
-</div>
-<div>
-Дополнительные пожелания:{" "}
-<span className="font-medium">
-{formData.specialRequests || "Не указаны"}
-</span>
-</div>
-</div>
-
-<button
-type="button"
-onClick={() => handleStepClick(3)}
-aria-label="Изменить документы и пожелания"
-className="shrink-0 rounded-full border border-gray-300 bg-white p-2 hover:bg-gray-50"
->
-<svg
-className="h-4 w-4 text-gray-600"
-viewBox="0 0 24 24"
-fill="none"
-stroke="currentColor"
-strokeWidth="2"
-strokeLinecap="round"
-strokeLinejoin="round"
->
-<path d="M12 20h9" />
-<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-</svg>
+<Pencil className="h-4 w-4 text-gray-500" />
 </button>
 </div>
 
 {/* Логистика */}
-<div className="bg-white rounded-[30px] border border-gray-100 px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
-{(() => {
-const cemeteryName = (formData as any).cemeteryName;
-const hasHearse = (formData as any).hasHearse;
-return (
-<>
-<div className="space-y-1 text-sm text-gray-700">
-<div className="text-xs uppercase tracking-wide text-gray-400">
+<div className="bg-white rounded-3xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
+<div className="text-sm text-gray-900 space-y-1.5">
+<div className="text-xs uppercase tracking-wide text-gray-500">
 Логистика
 </div>
 <div>
-Кладбище:{" "}
-<span className="font-medium">
-{cemeteryName || "Не указано"}
-</span>
+<span className="text-gray-500">Кладбище: </span>
+<span className="font-medium">{cemeteryName}</span>
 </div>
 <div>
-Катафалк:{" "}
-<span className="font-medium">
-{typeof hasHearse === "boolean"
-? hasHearse
-? "Да"
-: "Нет"
-: "Не указано"}
-</span>
+<span className="text-gray-500">Катафалк: </span>
+<span className="font-medium">{hasHearse}</span>
 </div>
 </div>
-
 <button
 type="button"
-onClick={() => handleStepClick(1)}
+onClick={() => setCurrentStep(2)}
+className="shrink-0 rounded-full border border-gray-200 p-2 hover:bg-gray-50 transition"
 aria-label="Изменить логистику"
-className="shrink-0 rounded-full border border-gray-300 bg-white p-2 hover:bg-gray-50"
 >
-<svg
-className="h-4 w-4 text-gray-600"
-viewBox="0 0 24 24"
-fill="none"
-stroke="currentColor"
-strokeWidth="2"
-strokeLinecap="round"
-strokeLinejoin="round"
->
-<path d="M12 20h9" />
-<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-</svg>
+<Pencil className="h-4 w-4 text-gray-500" />
 </button>
-</>
-);
-})()}
 </div>
 
 {/* Атрибутика */}
-<div className="bg-white rounded-[30px] border border-gray-100 px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
-{(() => {
-const packageName =
-(formData as any).attributesPackage || "Индивидуальный пакет";
-const servicesSummary =
-(formData as any).attributesSummary || "Услуги не выбраны";
-return (
-<>
-<div className="space-y-1 text-sm text-gray-700">
-<div className="text-xs uppercase tracking-wide text-gray-400">
+<div className="bg-white rounded-3xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
+<div className="text-sm text-gray-900 space-y-1.5">
+<div className="text-xs uppercase tracking-wide text-gray-500">
 Атрибутика
 </div>
 <div>
-<span className="font-medium">{packageName}</span>
+<span className="text-gray-500">Пакет: </span>
+<span className="font-medium">{attributesPackage}</span>
 </div>
-<div className="text-gray-600 text-sm">
-{servicesSummary}
+<div>
+<span className="text-gray-500">Услуги: </span>
+<span className="font-medium">{attributesNote}</span>
 </div>
 </div>
-
 <button
 type="button"
-onClick={() => handleStepClick(1)}
+onClick={() => setCurrentStep(3)}
+className="shrink-0 rounded-full border border-gray-200 p-2 hover:bg-gray-50 transition"
 aria-label="Изменить атрибутику"
-className="shrink-0 rounded-full border border-gray-300 bg-white p-2 hover:bg-gray-50"
 >
-<svg
-className="h-4 w-4 text-gray-600"
-viewBox="0 0 24 24"
-fill="none"
-stroke="currentColor"
-strokeWidth="2"
-strokeLinecap="round"
-strokeLinejoin="round"
->
-<path d="M12 20h9" />
-<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-</svg>
+<Pencil className="h-4 w-4 text-gray-500" />
 </button>
-</>
-);
-})()}
-</div>
 </div>
 
-{/* Платёжный блок */}
-<div className="mt-2 bg-gray-900 text-white rounded-[32px] p-5 sm:p-6 space-y-5">
-{/* Физическая карта с полями ввода */}
-<div className="bg-white text-gray-900 rounded-3xl p-4 sm:p-5 space-y-4">
+{/* Документы и пожелания */}
+<div className="bg-white rounded-3xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
+<div className="text-sm text-gray-900 space-y-1.5">
+<div className="text-xs uppercase tracking-wide text-gray-500">
+Документы и пожелания
+</div>
+<div>
+<span className="text-gray-500">Свидетельство о смерти: </span>
+<span className="font-medium">{deathCertificate}</span>
+</div>
+<div>
+<span className="text-gray-500">Дополнительные пожелания: </span>
+<span className="font-medium">{specialRequests}</span>
+</div>
+</div>
+<button
+type="button"
+onClick={() => setCurrentStep(3)}
+className="shrink-0 rounded-full border border-gray-200 p-2 hover:bg-gray-50 transition"
+aria-label="Изменить документы и пожелания"
+>
+<Pencil className="h-4 w-4 text-gray-500" />
+</button>
+</div>
+
+{/* Блок оплаты и итоговой суммы */}
+<div className="bg-slate-900 text-white rounded-3xl p-5 sm:p-6 space-y-6 mt-2">
+{/* «Физическая» карта */}
+<div className="bg-gradient-to-br from-slate-800 to-slate-950 rounded-2xl p-4 sm:p-5 shadow-lg space-y-5">
 <div className="flex items-center justify-between">
-<div className="h-8 w-12 rounded-xl bg-gradient-to-br from-yellow-300 to-amber-500" />
-<div className="h-6 w-10 rounded-full bg-gray-200" />
+<div className="w-10 h-10 rounded-lg bg-yellow-400" />
+<div className="text-xs text-slate-300 tracking-[0.2em] uppercase">
+VISA / MASTERCARD
+</div>
 </div>
 
-<div className="space-y-3">
 <div>
-<label className="block text-xs text-gray-500 mb-1">
-Номер карты
-</label>
 <input
 type="text"
 inputMode="numeric"
-autoComplete="cc-number"
+maxLength={19}
 placeholder="0000 0000 0000 0000"
-className="w-full rounded-2xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
+className="w-full bg-transparent border-none outline-none text-xl sm:text-2xl tracking-[0.35em] text-white placeholder:text-slate-500"
 />
 </div>
 
-<div className="grid grid-cols-2 gap-3">
-<div>
-<label className="block text-xs text-gray-500 mb-1">
-Держатель карты
-</label>
+<div className="flex flex-col sm:flex-row gap-4">
+<div className="flex-1">
 <input
 type="text"
-autoComplete="cc-name"
 placeholder="IVAN IVANOV"
-className="w-full rounded-2xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
+className="w-full bg-transparent border border-white/10 rounded-xl px-3 py-2 text-sm tracking-[0.12em] uppercase text-white placeholder:text-slate-400"
 />
 </div>
-<div>
-<label className="block text-xs text-gray-500 mb-1">
-Срок действия
-</label>
+<div className="w-full sm:w-32">
 <input
 type="text"
 inputMode="numeric"
-autoComplete="cc-exp"
+maxLength={5}
 placeholder="MM/ГГ"
-className="w-full rounded-2xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
+className="w-full bg-transparent border border-white/10 rounded-xl px-3 py-2 text-sm tracking-[0.18em] uppercase text-white placeholder:text-slate-400 text-center"
 />
 </div>
 </div>
 </div>
-</div>
 
-{/* CVC/CVV */}
-<div className="space-y-1">
-<label className="block text-xs sm:text-sm text-white/90">
+{/* CVC / CVV */}
+<div className="space-y-2">
+<label className="block text-sm text-white/80">
 CVC/CVV код
 </label>
+<div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
 <input
 type="password"
 inputMode="numeric"
-autoComplete="cc-csc"
-maxLength={4}
-className="w-full rounded-2xl bg-white text-gray-900 px-4 py-3 text-sm outline-none border border-white/10 focus:border-gray-300"
+maxLength={3}
+className="w-full sm:w-40 bg-white rounded-xl px-4 py-2.5 text-gray-900 outline-none placeholder:text-gray-500"
+placeholder="•••"
 />
 <p className="text-xs text-white/70">
 3 цифры на оборотной стороне карты.
 </p>
+</div>
 </div>
 
 {/* Email */}
 <div className="space-y-2">
 <label
 htmlFor="userEmail"
-className="block text-xs sm:text-sm text-white/90"
+className="block text-sm text-white/80"
 >
 Email для получения информации
 </label>
-
 <input
 id="userEmail"
 type="email"
-className="w-full rounded-2xl bg-white text-gray-900 placeholder:text-gray-500 px-4 py-3 text-sm outline-none border border-white/10 focus:border-gray-300"
+className="bg-white text-gray-900 placeholder:text-gray-500 w-full rounded-xl px-4 py-2.5 outline-none"
 placeholder="example@email.com"
 value={formData.userEmail ?? ""}
-onChange={(e) => onUpdateFormData("userEmail", e.target.value)}
+onChange={(e) =>
+onUpdateFormData("userEmail", e.target.value)
+}
 />
-
-<p className="text-xs sm:text-sm text-white/70">
-На этот адрес придёт подтверждение заказа, детали церемонии и
-все необходимые документы.
+<p className="text-xs text-white/70">
+На этот адрес придёт подтверждение заказа, детали церемонии и все
+необходимые документы.
 </p>
 </div>
 
-{/* Защищённый платёж */}
-<div className="bg-gray-800 rounded-3xl px-4 py-3 text-xs sm:text-sm text-white/80 flex items-start gap-3">
-<div className="mt-0.5 h-5 w-5 rounded-full border border-emerald-400 flex items-center justify-center">
-<span className="text-[10px] text-emerald-400">✓</span>
+{/* Зашифрованный платёж */}
+<div className="flex items-start gap-3 bg-slate-900/60 rounded-2xl px-4 py-3 border border-slate-700">
+<div className="mt-1 h-5 w-5 rounded-full border border-emerald-400 flex items-center justify-center">
+<div className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
 </div>
-<div>
-<div className="font-medium mb-0.5">Защищённый платёж</div>
-<p className="text-white/70">
-Данные карты передаются по защищённому протоколу и не
-хранятся на наших серверах.
-</p>
+<div className="text-xs sm:text-sm text-slate-100">
+<div className="font-medium mb-1">Защищённый платёж</div>
+<div className="text-white/80">
+Данные карты передаются по защищённому протоколу и не хранятся на
+наших серверах.
+</div>
 </div>
 </div>
 
 {/* Кнопка подтверждения */}
+<div className="pt-1">
 <Button
-type="button"
-className="w-full h-12 sm:h-14 text-base sm:text-lg bg-white text-gray-900 hover:bg-gray-100 rounded-[999px] mt-1"
+className="w-full h-14 text-base bg-white text-gray-900 hover:bg-gray-100 rounded-2xl"
 onClick={handleConfirmAndBook}
 >
 Подтвердить и забронировать
 </Button>
 </div>
 </div>
+
+{/* Итоговая сумма под блоком */}
+<div className="flex items-center justify-between mt-2 px-1">
+<div className="text-sm text-gray-500">Итого</div>
+<div className="text-xl font-semibold text-gray-900">
+{typeof totalPrice === "number"
+? `${totalPrice.toLocaleString("ru-RU")} ₽`
+: "—"}
+</div>
+</div>
+</div>
 );
+}
+
 default:
       return null;
   }
