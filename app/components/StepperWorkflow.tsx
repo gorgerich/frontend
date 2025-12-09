@@ -3515,6 +3515,4 @@ return (
   </div>
 );
 
-}
-
 export default StepperWorkflow;
