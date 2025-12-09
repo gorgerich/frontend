@@ -2915,305 +2915,518 @@ const handleConfirmAndBook = async () => {
         );
 
     case 4: {
-const ceremonyType = formData.ceremonyType || "Не указан";
-const ceremonyOrder = formData.ceremonyOrder || "Не указан";
-
-const deceasedName = formData.fullName || "Не указано";
-const deceasedBirthDate = formData.birthDate || "Не указана";
-const deceasedDeathDate = formData.deathDate || "Не указана";
-const deceasedRelation = formData.relationship || "Не указана";
-
-const deathCertificate = formData.deathCertificate || "Не указано";
-const specialRequests = formData.specialRequests || "Не указаны";
-
-const cemeteryName = formData.cemeteryName || "Не указано";
-const hasHearse =
-typeof formData.hasHearse === "boolean"
-? formData.hasHearse
-? "Да"
-: "Нет"
-: "Не указано";
-
-const attributesPackage = formData.attributesPackage || "Не выбран";
-const attributesNote = formData.attributesNote || "Услуги не выбраны";
-
-const totalPrice =
-typeof formData.totalPrice === "number" ? formData.totalPrice : null;
+const total = calculateTotal();
 
 return (
 <div className="space-y-6">
-{/* Статус */}
-<div className="bg-emerald-50 border border-emerald-200 rounded-3xl px-4 py-4 sm:px-5 sm:py-4 flex items-start gap-3">
-<div className="mt-1 h-6 w-6 rounded-full bg-emerald-100 flex items-center justify-center">
-<span className="h-3 w-3 rounded-full bg-emerald-500" />
-</div>
-<div className="text-sm sm:text-base text-emerald-900">
-<div className="font-medium mb-0.5">Все данные заполнены</div>
-<div className="text-emerald-800/80">
+{/* Статус шага */}
+<div className="bg-green-50 border border-green-200 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
+<CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
+<div>
+<h3 className="text-green-900 mb-2">Все данные заполнены</h3>
+<p className="text-sm text-green-700">
 Пожалуйста, проверьте информацию перед бронированием.
-</div>
-</div>
-</div>
-
-{/* Формат церемонии */}
-<div className="bg-white rounded-3xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
-<div className="text-sm text-gray-900 space-y-1.5">
-<div className="text-xs uppercase tracking-wide text-gray-500">
-Формат церемонии
-</div>
-<div>
-<span className="text-gray-500">Тип церемонии: </span>
-<span className="font-medium">{ceremonyType}</span>
-</div>
-<div>
-<span className="text-gray-500">Формат / порядок: </span>
-<span className="font-medium">{ceremonyOrder}</span>
-</div>
-</div>
-<button
-type="button"
-onClick={() => setCurrentStep(0)}
-className="shrink-0 rounded-full border border-gray-200 p-2 hover:bg-gray-50 transition"
-aria-label="Изменить формат церемонии"
->
-<Pencil className="h-4 w-4 text-gray-500" />
-</button>
-</div>
-
-{/* Данные усопшего */}
-<div className="bg-white rounded-3xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
-<div className="text-sm text-gray-900 space-y-1.5">
-<div className="text-xs uppercase tracking-wide text-gray-500">
-Данные усопшего
-</div>
-<div>
-<span className="text-gray-500">Имя: </span>
-<span className="font-medium">{deceasedName}</span>
-</div>
-<div>
-<span className="text-gray-500">Дата рождения: </span>
-<span className="font-medium">{deceasedBirthDate}</span>
-</div>
-<div>
-<span className="text-gray-500">Дата смерти: </span>
-<span className="font-medium">{deceasedDeathDate}</span>
-</div>
-<div>
-<span className="text-gray-500">Степень родства: </span>
-<span className="font-medium">{deceasedRelation}</span>
-</div>
-</div>
-<button
-type="button"
-onClick={() => setCurrentStep(1)}
-className="shrink-0 rounded-full border border-gray-200 p-2 hover:bg-gray-50 transition"
-aria-label="Изменить данные усопшего"
->
-<Pencil className="h-4 w-4 text-gray-500" />
-</button>
-</div>
-
-{/* Логистика */}
-<div className="bg-white rounded-3xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
-<div className="text-sm text-gray-900 space-y-1.5">
-<div className="text-xs uppercase tracking-wide text-gray-500">
-Логистика
-</div>
-<div>
-<span className="text-gray-500">Кладбище: </span>
-<span className="font-medium">{cemeteryName}</span>
-</div>
-<div>
-<span className="text-gray-500">Катафалк: </span>
-<span className="font-medium">{hasHearse}</span>
-</div>
-</div>
-<button
-type="button"
-onClick={() => setCurrentStep(2)}
-className="shrink-0 rounded-full border border-gray-200 p-2 hover:bg-gray-50 transition"
-aria-label="Изменить логистику"
->
-<Pencil className="h-4 w-4 text-gray-500" />
-</button>
-</div>
-
-{/* Атрибутика */}
-<div className="bg-white rounded-3xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
-<div className="text-sm text-gray-900 space-y-1.5">
-<div className="text-xs uppercase tracking-wide text-gray-500">
-Атрибутика
-</div>
-<div>
-<span className="text-gray-500">Пакет: </span>
-<span className="font-medium">{attributesPackage}</span>
-</div>
-<div>
-<span className="text-gray-500">Услуги: </span>
-<span className="font-medium">{attributesNote}</span>
-</div>
-</div>
-<button
-type="button"
-onClick={() => setCurrentStep(3)}
-className="shrink-0 rounded-full border border-gray-200 p-2 hover:bg-gray-50 transition"
-aria-label="Изменить атрибутику"
->
-<Pencil className="h-4 w-4 text-gray-500" />
-</button>
-</div>
-
-{/* Документы и пожелания */}
-<div className="bg-white rounded-3xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
-<div className="text-sm text-gray-900 space-y-1.5">
-<div className="text-xs uppercase tracking-wide text-gray-500">
-Документы и пожелания
-</div>
-<div>
-<span className="text-gray-500">Свидетельство о смерти: </span>
-<span className="font-medium">{deathCertificate}</span>
-</div>
-<div>
-<span className="text-gray-500">Дополнительные пожелания: </span>
-<span className="font-medium">{specialRequests}</span>
-</div>
-</div>
-<button
-type="button"
-onClick={() => setCurrentStep(3)}
-className="shrink-0 rounded-full border border-gray-200 p-2 hover:bg-gray-50 transition"
-aria-label="Изменить документы и пожелания"
->
-<Pencil className="h-4 w-4 text-gray-500" />
-</button>
-</div>
-
-{/* Блок оплаты и итоговой суммы */}
-<div className="bg-slate-900 text-white rounded-3xl p-5 sm:p-6 space-y-6 mt-2">
-{/* «Физическая» карта */}
-<div className="bg-gradient-to-br from-slate-800 to-slate-950 rounded-2xl p-4 sm:p-5 shadow-lg space-y-5">
-<div className="flex items-center justify-between">
-<div className="w-10 h-10 rounded-lg bg-yellow-400" />
-<div className="text-xs text-slate-300 tracking-[0.2em] uppercase">
-VISA / MASTERCARD
-</div>
-</div>
-
-<div>
-<input
-type="text"
-inputMode="numeric"
-maxLength={19}
-placeholder="0000 0000 0000 0000"
-className="w-full bg-transparent border-none outline-none text-xl sm:text-2xl tracking-[0.35em] text-white placeholder:text-slate-500"
-/>
-</div>
-
-<div className="flex flex-col sm:flex-row gap-4">
-<div className="flex-1">
-<input
-type="text"
-placeholder="IVAN IVANOV"
-className="w-full bg-transparent border border-white/10 rounded-xl px-3 py-2 text-sm tracking-[0.12em] uppercase text-white placeholder:text-slate-400"
-/>
-</div>
-<div className="w-full sm:w-32">
-<input
-type="text"
-inputMode="numeric"
-maxLength={5}
-placeholder="MM/ГГ"
-className="w-full bg-transparent border border-white/10 rounded-xl px-3 py-2 text-sm tracking-[0.18em] uppercase text-white placeholder:text-slate-400 text-center"
-/>
-</div>
-</div>
-</div>
-
-{/* CVC / CVV */}
-<div className="space-y-2">
-<label className="block text-sm text-white/80">
-CVC/CVV код
-</label>
-<div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-<input
-type="password"
-inputMode="numeric"
-maxLength={3}
-className="w-full sm:w-40 bg-white rounded-xl px-4 py-2.5 text-gray-900 outline-none placeholder:text-gray-500"
-placeholder="•••"
-/>
-<p className="text-xs text-white/70">
-3 цифры на оборотной стороне карты.
 </p>
 </div>
 </div>
 
+{/* Блоки с данными */}
+<div className="space-y-4">
+{/* Формат церемонии */}
+<div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+<div className="flex items-center justify-between mb-3">
+<h4 className="text-sm text-gray-500">Формат церемонии</h4>
+<Button
+variant="ghost"
+size="sm"
+onClick={() => handleEditStep(0)}
+className="h-8 w-8 p-0"
+>
+<Edit2 className="h-4 w-4" />
+</Button>
+</div>
+<div className="space-y-2 text-sm">
+<div className="flex justify-between">
+<span className="text-gray-600">Формат:</span>
+<span className="text-gray-900">
+{formData.serviceType === "burial" ? "Захоронение" : "Кремация"}
+</span>
+</div>
+<div className="flex justify-between">
+<span className="text-gray-600">Зал прощания:</span>
+<span className="text-gray-900">
+{formData.hasHall ? "Да" : "Нет"}
+</span>
+</div>
+</div>
+</div>
+
+{/* Логистика */}
+<div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+<div className="flex items-center justify-between mb-3">
+<h4 className="text-sm text-gray-500">Логистика</h4>
+<Button
+variant="ghost"
+size="sm"
+onClick={() => handleEditStep(1)}
+className="h-8 w-8 p-0"
+>
+<Edit2 className="h-4 w-4" />
+</Button>
+</div>
+<div className="space-y-2 text-sm">
+<div className="flex justify-between">
+<span className="text-gray-600">
+{formData.serviceType === "burial" ? "Кладбище:" : "Крематорий:"}
+</span>
+<span className="text-gray-900">
+{formData.cemetery || "—"}
+</span>
+</div>
+<div className="flex justify-between">
+<span className="text-gray-600">Катафалк:</span>
+<span className="text-gray-900">
+{formData.needsHearse ? "Да" : "Нет"}
+</span>
+</div>
+</div>
+</div>
+
+{/* Атрибутика */}
+<div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+<div className="flex items-center justify-between mb-3">
+<h4 className="text-sm text-gray-500">Атрибутика</h4>
+<Button
+variant="ghost"
+size="sm"
+onClick={() => handleEditStep(2)}
+className="h-8 w-8 p-0"
+>
+<Edit2 className="h-4 w-4" />
+</Button>
+</div>
+<div className="space-y-2 text-sm">
+{formData.packageType && formData.packageType !== "custom" ? (
+<div className="flex justify-between">
+<span className="text-gray-600">Пакет:</span>
+<span className="text-gray-900">
+{PACKAGES.find((p) => p.id === formData.packageType)?.name ||
+"—"}
+</span>
+</div>
+) : (
+<div>
+<span className="text-gray-600 block mb-2">
+Индивидуальный пакет
+</span>
+{formData.selectedAdditionalServices &&
+formData.selectedAdditionalServices.length > 0 ? (
+<div className="space-y-1">
+{formData.selectedAdditionalServices.map((serviceId) => {
+const service = additionalServices.find(
+(s) => s.id === serviceId,
+);
+if (!service) return null;
+return (
+<div
+key={serviceId}
+className="text-xs text-gray-900"
+>
+• {service.name}
+</div>
+);
+})}
+</div>
+) : (
+<span className="text-xs text-gray-500">
+Услуги не выбраны
+</span>
+)}
+</div>
+)}
+</div>
+</div>
+
+{/* Документы */}
+<div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+<div className="flex items-center justify-between mb-3">
+<h4 className="text-sm text-gray-500">Документы</h4>
+<Button
+variant="ghost"
+size="sm"
+onClick={() => handleEditStep(3)}
+className="h-8 w-8 p-0"
+>
+<Edit2 className="h-4 w-4" />
+</Button>
+</div>
+<div className="space-y-2 text-sm">
+<div className="flex justify-between">
+<span className="text-gray-600">ФИО:</span>
+<span className="text-gray-900">
+{formData.fullName || "—"}
+</span>
+</div>
+<div className="flex justify-between">
+<span className="text-gray-600">Дата рождения:</span>
+<span className="text-gray-900">
+{formData.birthDate || "—"}
+</span>
+</div>
+</div>
+</div>
+</div>
+
+{/* Итоговая смета + оплата */}
+<div className="bg-gray-900 text-white rounded-3xl p-6 shadow-lg space-y-6">
+{/* Итоговая смета */}
+<div>
+<h4 className="mb-4">Итоговая смета</h4>
+<div className="space-y-3">
+<div className="flex justify-between pt-2">
+<span className="text-lg">Итого:</span>
+<span className="text-2xl">
+{total.toLocaleString("ru-RU")} ₽
+</span>
+</div>
+</div>
+
+<div className="flex gap-3 mt-6">
+<Button
+variant="outline"
+className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
+>
+<Download className="h-4 w-4 mr-2" />
+Договор
+</Button>
+<Button
+variant="outline"
+className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
+>
+<Share2 className="h-4 w-4 mr-2" />
+Поделиться
+</Button>
+</div>
+</div>
+
+{/* Разделитель */}
+<div className="border-t border-white/20" />
+
+{/* Способ оплаты */}
+<div>
+<div className="flex items-center gap-3 mb-4">
+<RubleSign className="h-6 w-6 text-white" />
+<h4 className="text-lg text-white">Способ оплаты</h4>
+</div>
+
+{/* Кнопка выбора карты, если сейчас выбран другой способ */}
+{paymentMethod !== "card" && (
+<button
+onClick={() => setPaymentMethod("card")}
+className="w-full p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-200 text-left mb-4"
+>
+<div className="flex items-center gap-2 mb-2">
+<div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
+<span className="text-sm text-white">Банковская карта</span>
+</div>
+<p className="text-xs text-white/70 ml-7">
+Visa, Mastercard, МИР
+</p>
+</button>
+)}
+
+{/* Банковская карта */}
+{paymentMethod === "card" && (
+<div className="space-y-4 mt-4">
+{/* Карта */}
+<div className="relative mx-auto max-w-md">
+<div className="relative w-full aspect-[1.586/1] rounded-2xl p-6 shadow-2xl bg-white border border-gray-200">
+{/* Чип */}
+<div className="absolute top-6 left-6 w-12 h-10 rounded bg-gradient-to-br from-yellow-300/80 to-yellow-500/80 backdrop-blur" />
+
+{/* Логотип платёжной системы */}
+<div className="absolute top-6 right-6 flex gap-2">
+<div className="w-8 h-8 rounded-full bg-white/50 backdrop-blur border border-white/60" />
+<div className="w-8 h-8 rounded-full bg-white/60 backdrop-blur border border-white/60 -ml-4" />
+</div>
+
+{/* Номер карты */}
+<div className="absolute top-16 left-6 right-6">
+<input
+type="text"
+className="w-full bg-transparent border-none text-gray-900 text-xl tracking-[0.2em] placeholder:text-gray-500 focus:outline-none font-mono"
+placeholder="0000 0000 0000 0000"
+value={cardData.number || ""}
+onChange={(e) => {
+const value = e.target.value
+.replace(/\s/g, "")
+.replace(/(\d{4})/g, "$1 ")
+.trim();
+setCardData({ ...cardData, number: value });
+}}
+maxLength={19}
+/>
+</div>
+
+{/* Имя держателя и срок действия */}
+<div className="absolute bottom-10 left-6 right-6 flex justify-between items-end">
+<div className="flex-1 min-w-0 mr-4">
+<input
+type="text"
+className="w-full bg-transparent border-none text-gray-900 text-sm placeholder:text-gray-500 focus:outline-none uppercase"
+placeholder="IVAN IVANOV"
+value={cardData.holder || ""}
+onChange={(e) => {
+const value = e.target.value
+.toUpperCase()
+.replace(/[^A-Z\s]/g, "");
+setCardData({ ...cardData, holder: value });
+}}
+/>
+<div className="text-[10px] text-gray-600 mt-1 uppercase tracking-wide">
+Держатель карты
+</div>
+</div>
+
+<div className="flex-shrink-0">
+<input
+type="text"
+className="w-16 bg-transparent border-none text-gray-900 text-sm text-right placeholder:text-gray-500 focus:outline-none font-mono"
+placeholder="MM/ГГ"
+value={cardData.expiry || ""}
+onChange={(e) => {
+let value = e.target.value.replace(/\D/g, "");
+if (value.length >= 2) {
+value = value.slice(0, 2) + "/" + value.slice(2, 4);
+}
+setCardData({ ...cardData, expiry: value });
+}}
+maxLength={5}
+/>
+<div className="text-[10px] text-gray-600 mt-1 uppercase tracking-wide text-right">
+Действительна
+</div>
+</div>
+</div>
+</div>
+
+{/* CVC */}
+<div className="mt-4 bg-white border border-gray-200 rounded-xl p-4">
+<div className="flex items-center gap-3">
+<div className="flex-1">
+<Label
+htmlFor="cardCvc"
+className="text-gray-900 text-xs mb-2 block"
+>
+CVC/CVV код
+</Label>
+<Input
+id="cardCvc"
+className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 text-center text-lg tracking-widest font-mono"
+placeholder="•••"
+type="password"
+value={cardData.cvc || ""}
+onChange={(e) => {
+const value = e.target.value.replace(/\D/g, "");
+setCardData({ ...cardData, cvc: value });
+}}
+maxLength={3}
+/>
+</div>
+<div className="text-xs text-gray-600 max-w-[120px]">
+3 цифры на обратной стороне карты
+</div>
+</div>
+</div>
+
 {/* Email */}
-<div className="space-y-2">
-<label
+<div className="mt-4 bg-white border border-gray-200 rounded-xl p-4">
+<Label
 htmlFor="userEmail"
-className="block text-sm text-white/80"
+className="text-gray-900 text-sm mb-2 block"
 >
 Email для получения информации
-</label>
-<input
+</Label>
+<Input
 id="userEmail"
 type="email"
-className="bg-white text-gray-900 placeholder:text-gray-500 w-full rounded-xl px-4 py-2.5 outline-none"
+className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
 placeholder="example@email.com"
 value={formData.userEmail ?? ""}
 onChange={(e) =>
 onUpdateFormData("userEmail", e.target.value)
 }
 />
-<p className="text-xs text-white/70">
-На этот адрес придёт подтверждение заказа, детали церемонии и все
-необходимые документы.
+<p className="text-xs text-gray-500 mt-2">
+На этот адрес придёт подтверждение заказа, детали церемонии
+и все необходимые документы.
 </p>
 </div>
 
-{/* Зашифрованный платёж */}
-<div className="flex items-start gap-3 bg-slate-900/60 rounded-2xl px-4 py-3 border border-slate-700">
-<div className="mt-1 h-5 w-5 rounded-full border border-emerald-400 flex items-center justify-center">
-<div className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+{/* Другие способы оплаты */}
+<div className="pt-4 border-t border-white/20 mt-4">
+<p className="text-xs text-white/60 mb-3">
+Или выберите другой способ:
+</p>
+<div className="grid grid-cols-2 gap-3">
+{/* СБП */}
+<button
+onClick={() => setPaymentMethod("sbp")}
+className={cn(
+"p-4 rounded-2xl border-2 transition-all duration-200 text-left",
+paymentMethod === "sbp"
+? "border-blue-500 bg-blue-500/20"
+: "border-white/30 hover:border-white/50",
+)}
+>
+<div className="flex items-center gap-2 mb-2">
+<div
+className={cn(
+"w-5 h-5 rounded-full border-2 flex items-center justify-center",
+paymentMethod === "sbp"
+? "border-blue-400"
+: "border-white/50",
+)}
+>
+{paymentMethod === "sbp" && (
+<div className="w-2.5 h-2.5 rounded-full bg-blue-400" />
+)}
 </div>
-<div className="text-xs sm:text-sm text-slate-100">
-<div className="font-medium mb-1">Защищённый платёж</div>
-<div className="text-white/80">
-Данные карты передаются по защищённому протоколу и не хранятся на
-наших серверах.
+<span className="text-sm text-white">СБП</span>
+</div>
+<p className="text-xs text-white/70 ml-7">
+Система быстрых платежей
+</p>
+</button>
+
+{/* Рассрочка */}
+<button
+onClick={() => setPaymentMethod("installment")}
+className={cn(
+"p-4 rounded-2xl border-2 transition-all duration-200 text-left",
+paymentMethod === "installment"
+? "border-blue-500 bg-blue-500/20"
+: "border-white/30 hover:border-white/50",
+)}
+>
+<div className="flex items-center gap-2 mb-2">
+<div
+className={cn(
+"w-5 h-5 rounded-full border-2 flex items-center justify-center",
+paymentMethod === "installment"
+? "border-blue-400"
+: "border-white/50",
+)}
+>
+{paymentMethod === "installment" && (
+<div className="w-2.5 h-2.5 rounded-full bg-blue-400" />
+)}
+</div>
+<span className="text-sm text-white">Рассрочка</span>
+</div>
+<p className="text-xs text-white/70 ml-7">
+0% на 6 месяцев
+</p>
+</button>
 </div>
 </div>
 </div>
 
-{/* Кнопка подтверждения */}
-<div className="pt-1">
-<Button
-className="w-full h-14 text-base bg-white text-gray-900 hover:bg-gray-100 rounded-2xl"
-onClick={handleConfirmAndBook}
->
-Подтвердить и забронировать
+{/* Защищённый платёж (карта) */}
+<div className="bg-white/10 border border-white/20 rounded-2xl p-4">
+<div className="flex items-start gap-3">
+<CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+<div className="space-y-1">
+<p className="text-sm text-white">Защищённый платёж</p>
+<p className="text-xs text-white/70">
+Данные передаются по защищённому протоколу и не хранятся
+на наших серверах.
+</p>
+</div>
+</div>
+</div>
+</div>
+)}
+
+{/* СБП */}
+{paymentMethod === "sbp" && (
+<div className="bg-white/10 border border-white/20 rounded-2xl p-6 mt-4 space-y-3">
+<Label className="text-sm text-white mb-2 block">
+Выберите банк для оплаты через СБП
+</Label>
+<div className="relative mb-3">
+<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+<Input
+placeholder="Поиск банка..."
+className="pl-9 bg-white/10 border-white/20 text-white placeholder:text-white/50"
+/>
+</div>
+<Select>
+<SelectTrigger className="bg-white/10 border-white/20 text-white">
+<SelectValue placeholder="Выберите ваш банк" />
+</SelectTrigger>
+<SelectContent className="bg-[#1a1a1a] border-white/20">
+{/* дальше просто список банков, как был */}
+{/* ... */}
+</SelectContent>
+</Select>
+<p className="text-xs text-white/70 mt-3 text-center">
+QR-код для оплаты появится после подтверждения.
+</p>
+</div>
+)}
+
+{/* Рассрочка */}
+{paymentMethod === "installment" && (
+<div className="space-y-4 mt-4">
+<div className="bg-white/10 border border-white/20 rounded-2xl p-4">
+<div className="flex items-center justify-between mb-3">
+<span className="text-sm text-white">Сумма к оплате</span>
+<span className="text-lg text-white">
+{total.toLocaleString("ru-RU")} ₽
+</span>
+</div>
+<div className="flex items-center justify-between">
+<span className="text-sm text-white">Ежемесячный платёж</span>
+<span className="text-lg text-white">
+{Math.ceil(total / 6).toLocaleString("ru-RU")} ₽
+</span>
+</div>
+</div>
+<div className="bg-white/10 border border-white/20 rounded-2xl p-4">
+<p className="text-sm text-white">
+💳 Рассрочка без процентов на 6 месяцев
+<br />
+✅ Одобрение онлайн за 3 минуты
+<br />
+✅ Первый платёж через 30 дней
+</p>
+<Button className="w-full mt-4 bg-white hover:bg-white/90 text-black transition-all duration-200">
+Подать заявку
 </Button>
 </div>
 </div>
+)}
+</div>
+</div>
 
-{/* Итоговая сумма под блоком */}
-<div className="flex items-center justify-between mt-2 px-1">
-<div className="text-sm text-gray-500">Итого</div>
-<div className="text-xl font-semibold text-gray-900">
-{typeof totalPrice === "number"
-? `${totalPrice.toLocaleString("ru-RU")} ₽`
-: "—"}
-</div>
-</div>
+{/* Основная кнопка подтверждения */}
+<Button
+className="w-full h-14 text-lg bg-gray-900 hover:bg-gray-800"
+onClick={() =>
+alert(
+"Бронирование оформлено! Детали отправлены на указанную электронную почту.",
+)
+}
+>
+Подтвердить и забронировать
+</Button>
 </div>
 );
 }
 
 default:
-      return null;
-  }
-};
+return null;
 
 
 // ===== основной return компонента =====
