@@ -2915,235 +2915,158 @@ const handleConfirmAndBook = async () => {
         );
 
     case 4: {
-const ceremonyType = formData.ceremonyType || "Не указан";
-const ceremonyOrder = formData.ceremonyOrder || "Не указан";
+const fd: any = formData;
 
-const fullName = formData.fullName || "Не указано";
-const birthDate = formData.birthDate || "Не указана";
-const deathDate = formData.deathDate || "Не указана";
-const relationship = formData.relationship || "Не указана";
+const ceremonyTypeLabel = fd.ceremonyType || fd.serviceType || "Не указан";
+const ceremonyOrderLabel = fd.ceremonyOrder || "Не указан";
 
-const userEmail = formData.userEmail || "";
+const deceasedName = fd.fullName || "Не указано";
+const birthDate = fd.birthDate || "Не указана";
+const deathDate = fd.deathDate || "Не указана";
+const relationship = fd.relationship || "Не указана";
+
+const deathCertificate = fd.deathCertificate ? "Есть" : "Не указано";
+const specialRequests = fd.specialRequests || "Не указаны";
 
 return (
-<div className="space-y-8">
-{/* Блоки с проверкой данных */}
-<div className="space-y-4">
-<h3 className="text-sm font-medium text-white/80">
-Проверьте информацию перед бронированием
-</h3>
+<div className="space-y-6">
+{/* Блоки проверки данных */}
 
 {/* Формат церемонии */}
-<div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
-<div className="space-y-1">
-<p className="text-xs uppercase tracking-wide text-white/50">
+<section className="bg-white border border-gray-200 rounded-3xl px-4 py-3 flex items-start justify-between gap-4">
+<div>
+<h3 className="text-sm font-medium text-gray-900 mb-1">
 Формат церемонии
+</h3>
+<p className="text-xs text-gray-500">
+Тип церемонии:{" "}
+<span className="text-gray-900">{ceremonyTypeLabel}</span>
 </p>
-<p className="text-sm text-white/90">
-Тип:{" "}
-<span className="font-medium text-white">
-{ceremonyType}
-</span>
-</p>
-<p className="text-sm text-white/90">
-Пакет / формат:{" "}
-<span className="font-medium text-white">
-{ceremonyOrder}
-</span>
+<p className="text-xs text-gray-500">
+Формат / порядок:{" "}
+<span className="text-gray-900">{ceremonyOrderLabel}</span>
 </p>
 </div>
 
 <button
 type="button"
 onClick={() => handleStepClick(0)}
-className="text-xs font-medium text-white/80 underline underline-offset-2 hover:text-white"
+className="text-xs text-gray-500 hover:text-gray-900 underline underline-offset-2"
 >
 Изменить
 </button>
-</div>
+</section>
 
-{/* Логистика (пока без реальных полей) */}
-<div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
-<div className="space-y-1">
-<p className="text-xs uppercase tracking-wide text-white/50">
-Логистика
+{/* Данные усопшего */}
+<section className="bg-white border border-gray-200 rounded-3xl px-4 py-3 flex items-start justify-between gap-4">
+<div>
+<h3 className="text-sm font-medium text-gray-900 mb-1">
+Данные усопшего
+</h3>
+<p className="text-xs text-gray-500">
+Имя: <span className="text-gray-900">{deceasedName}</span>
 </p>
-<p className="text-sm text-white/90">
-Кладбище:{" "}
-<span className="font-medium text-white">
-Не указано
-</span>
+<p className="text-xs text-gray-500">
+Дата рождения:{" "}
+<span className="text-gray-900">{birthDate}</span>
 </p>
-<p className="text-sm text-white/90">
-Катафалк:{" "}
-<span className="font-medium text-white">
-Не указано
-</span>
+<p className="text-xs text-gray-500">
+Дата смерти:{" "}
+<span className="text-gray-900">{deathDate}</span>
+</p>
+<p className="text-xs text-gray-500">
+Степень родства:{" "}
+<span className="text-gray-900">{relationship}</span>
 </p>
 </div>
 
 <button
 type="button"
-onClick={() => handleStepClick(1)}
-className="text-xs font-medium text-white/80 underline underline-offset-2 hover:text-white"
+onClick={() => handleStepClick(2)}
+className="text-xs text-gray-500 hover:text-gray-900 underline underline-offset-2"
 >
 Изменить
 </button>
-</div>
+</section>
 
-{/* Документы */}
-<div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-4 sm:px-5 sm:py-5 flex items-start justify-between gap-4">
-<div className="space-y-1">
-<p className="text-xs uppercase tracking-wide text-white/50">
-Документы
+{/* Документы и пожелания */}
+<section className="bg-white border border-gray-200 rounded-3xl px-4 py-3 flex items-start justify-between gap-4">
+<div>
+<h3 className="text-sm font-medium text-gray-900 mb-1">
+Документы и пожелания
+</h3>
+<p className="text-xs text-gray-500">
+Свидетельство о смерти:{" "}
+<span className="text-gray-900">{deathCertificate}</span>
 </p>
-<p className="text-sm text-white/90">
-ФИО:{" "}
-<span className="font-medium text-white">{fullName}</span>
-</p>
-<p className="text-sm text-white/90">
-Дата рождения:{" "}
-<span className="font-medium text-white">
-{birthDate}
-</span>
-</p>
-<p className="text-sm text-white/90">
-Дата смерти:{" "}
-<span className="font-medium text-white">
-{deathDate}
-</span>
-</p>
-<p className="text-sm text-white/90">
-Степень родства:{" "}
-<span className="font-medium text-white">
-{relationship}
-</span>
+<p className="text-xs text-gray-500">
+Дополнительные пожелания:{" "}
+<span className="text-gray-900">{specialRequests}</span>
 </p>
 </div>
 
 <button
 type="button"
 onClick={() => handleStepClick(3)}
-className="text-xs font-medium text-white/80 underline underline-offset-2 hover:text-white"
+className="text-xs text-gray-500 hover:text-gray-900 underline underline-offset-2"
 >
 Изменить
 </button>
-</div>
-</div>
+</section>
 
-{/* Блок оплаты + email */}
-<div className="bg-gray-950/70 border border-white/10 rounded-3xl px-4 py-5 sm:px-6 sm:py-6 space-y-6">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-<div>
-<p className="text-sm font-semibold text-white">
-Итоговая стоимость
-</p>
-<p className="text-xs text-white/60">
-Проверьте сумму перед подтверждением
-</p>
+{/* Блок оплаты + email + подтверждение */}
+<section className="bg-slate-900 text-white rounded-3xl px-4 py-4 space-y-4">
+{/* Макет карты */}
+<div className="bg-black/40 rounded-3xl p-4 space-y-4">
+<div className="h-10 w-16 rounded-xl bg-yellow-300/80 mb-2" />
+<div className="space-y-1">
+<div className="h-3 w-40 rounded bg-white/10" />
+<div className="h-3 w-32 rounded bg-white/10" />
 </div>
-</div>
-
-<div className="bg-white/5 rounded-2xl p-4 space-y-4">
-<div className="bg-gray-900 rounded-2xl px-4 py-3 flex flex-col gap-2">
-<div className="h-6 w-10 rounded-md bg-yellow-300/80" />
-<p className="text-sm tracking-[0.2em] text-white/90">
-0000 0000 0000 0000
-</p>
-<div className="flex items-center justify-between text-xs text-white/70">
+<div className="flex justify-between items-center mt-3 text-[10px] tracking-wide text-white/70">
 <span>IVAN IVANOV</span>
 <span>MM/ГГ</span>
 </div>
 </div>
 
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="sm:col-span-1">
-<label className="block text-xs text-white/70 mb-1">
-CVC/CVV код
-</label>
-<input
-type="password"
-maxLength={3}
-className="w-full rounded-xl bg-gray-900/60 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none"
-placeholder="•••"
-/>
-</div>
-
-<div className="sm:col-span-2">
+{/* Email */}
+<div className="space-y-2">
 <label
 htmlFor="userEmail"
-className="block text-xs text-white/70 mb-1"
+className="block text-xs font-medium text-white/80"
 >
 Email для получения информации
 </label>
 <input
 id="userEmail"
 type="email"
-className="w-full rounded-xl bg-gray-900/60 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none"
+className="w-full rounded-2xl bg-white text-gray-900 placeholder:text-gray-500 px-4 py-3 text-sm outline-none"
 placeholder="example@email.com"
-value={userEmail}
-onChange={(e) =>
-onUpdateFormData("userEmail", e.target.value)
-}
+value={formData.userEmail ?? ""}
+onChange={(e) => onUpdateFormData("userEmail", e.target.value)}
 />
-<p className="mt-1 text-[11px] text-white/50">
-На этот адрес придёт подтверждение заказа, детали церемонии
-и все необходимые документы.
-</p>
-</div>
-</div>
-
-<div className="space-y-3 pt-2">
-<p className="text-xs text-white/60">
-Или выберите другой способ:
-</p>
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-<button
-type="button"
-className="flex items-center gap-2 rounded-2xl border border-white/15 bg-gray-900/60 px-4 py-3 text-left"
->
-<span className="h-4 w-4 rounded-full border border-white/40" />
-<div>
-<p className="text-sm text-white">СБП</p>
 <p className="text-[11px] text-white/60">
-Система быстрых платежей
+На этот адрес придёт подтверждение заказа, детали церемонии и
+все необходимые документы.
 </p>
-</div>
-</button>
-
-<button
-type="button"
-className="flex items-center gap-2 rounded-2xl border border-white/15 bg-gray-900/60 px-4 py-3 text-left"
->
-<span className="h-4 w-4 rounded-full border border-white/40" />
-<div>
-<p className="text-sm text-white">Рассрочка</p>
-<p className="text-[11px] text-white/60">
-0% на 6 месяцев
-</p>
-</div>
-</button>
 </div>
 
-<div className="mt-2 rounded-2xl bg-gray-900/80 border border-emerald-500/40 px-4 py-3">
-<p className="text-xs font-medium text-emerald-400">
-Защищённый платёж
+{/* Защищённый платёж */}
+<div className="rounded-2xl bg-black/40 px-4 py-3 text-xs text-white/70">
+<p className="font-medium mb-1">Защищённый платёж</p>
+<p>
+Данные карты передаются по защищённому протоколу и не хранятся
+на наших серверах.
 </p>
-<p className="text-[11px] text-white/60 mt-1">
-Данные передаются по защищённому протоколу и не хранятся на
-наших серверах.
-</p>
-</div>
-</div>
 </div>
 
 <Button
-className="w-full h-14 text-lg bg_WHITE text-gray-900 hover:bg-gray-100 rounded-[999px]"
+className="w-full h-14 text-base bg-white text-gray-900 hover:bg-gray-100 rounded-2xl"
 onClick={handleConfirmAndBook}
 >
 Подтвердить и забронировать
 </Button>
-</div>
+</section>
 </div>
 );
 }
