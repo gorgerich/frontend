@@ -2915,11 +2915,10 @@ const handleConfirmAndBook = async () => {
         );
 
     case 4: {
-const total = calculateTotal();
-
+// Шаг 5: Подтверждение
 return (
 <div className="space-y-6">
-{/* Статус шага */}
+{/* Статус: все данные заполнены */}
 <div className="bg-green-50 border border-green-200 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
 <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
 <div>
@@ -2930,7 +2929,7 @@ return (
 </div>
 </div>
 
-{/* Блоки с данными */}
+{/* Блоки с данными по шагам */}
 <div className="space-y-4">
 {/* Формат церемонии */}
 <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
@@ -2977,7 +2976,9 @@ className="h-8 w-8 p-0"
 <div className="space-y-2 text-sm">
 <div className="flex justify-between">
 <span className="text-gray-600">
-{formData.serviceType === "burial" ? "Кладбище:" : "Крематорий:"}
+{formData.serviceType === "burial"
+? "Кладбище:"
+: "Крематорий:"}
 </span>
 <span className="text-gray-900">
 {formData.cemetery || "—"}
@@ -3077,7 +3078,7 @@ className="h-8 w-8 p-0"
 </div>
 </div>
 
-{/* Итоговая смета + оплата */}
+{/* Итоговая смета + Способ оплаты */}
 <div className="bg-gray-900 text-white rounded-3xl p-6 shadow-lg space-y-6">
 {/* Итоговая смета */}
 <div>
@@ -3086,7 +3087,7 @@ className="h-8 w-8 p-0"
 <div className="flex justify-between pt-2">
 <span className="text-lg">Итого:</span>
 <span className="text-2xl">
-{total.toLocaleString("ru-RU")} ₽
+{calculateTotal().toLocaleString("ru-RU")} ₽
 </span>
 </div>
 </div>
@@ -3119,7 +3120,7 @@ className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
 <h4 className="text-lg text-white">Способ оплаты</h4>
 </div>
 
-{/* Кнопка выбора карты, если сейчас выбран другой способ */}
+{/* Кнопка "Банковская карта" если выбран другой способ */}
 {paymentMethod !== "card" && (
 <button
 onClick={() => setPaymentMethod("card")}
@@ -3135,7 +3136,7 @@ Visa, Mastercard, МИР
 </button>
 )}
 
-{/* Банковская карта */}
+{/* Банковская карта (реалистичная) */}
 {paymentMethod === "card" && (
 <div className="space-y-4 mt-4">
 {/* Карта */}
@@ -3144,7 +3145,7 @@ Visa, Mastercard, МИР
 {/* Чип */}
 <div className="absolute top-6 left-6 w-12 h-10 rounded bg-gradient-to-br from-yellow-300/80 to-yellow-500/80 backdrop-blur" />
 
-{/* Логотип платёжной системы */}
+{/* Лого платёжной системы */}
 <div className="absolute top-6 right-6 flex gap-2">
 <div className="w-8 h-8 rounded-full bg-white/50 backdrop-blur border border-white/60" />
 <div className="w-8 h-8 rounded-full bg-white/60 backdrop-blur border border-white/60 -ml-4" />
@@ -3156,13 +3157,16 @@ Visa, Mastercard, МИР
 type="text"
 className="w-full bg-transparent border-none text-gray-900 text-xl tracking-[0.2em] placeholder:text-gray-500 focus:outline-none font-mono"
 placeholder="0000 0000 0000 0000"
-value={cardData.number || ""}
+value={cardData.number}
 onChange={(e) => {
 const value = e.target.value
 .replace(/\s/g, "")
 .replace(/(\d{4})/g, "$1 ")
 .trim();
-setCardData({ ...cardData, number: value });
+setCardData((prev) => ({
+...prev,
+number: value,
+}));
 }}
 maxLength={19}
 />
@@ -3175,12 +3179,15 @@ maxLength={19}
 type="text"
 className="w-full bg-transparent border-none text-gray-900 text-sm placeholder:text-gray-500 focus:outline-none uppercase"
 placeholder="IVAN IVANOV"
-value={cardData.holder || ""}
+value={cardData.holder}
 onChange={(e) => {
 const value = e.target.value
 .toUpperCase()
 .replace(/[^A-Z\s]/g, "");
-setCardData({ ...cardData, holder: value });
+setCardData((prev) => ({
+...prev,
+holder: value,
+}));
 }}
 />
 <div className="text-[10px] text-gray-600 mt-1 uppercase tracking-wide">
@@ -3193,13 +3200,19 @@ setCardData({ ...cardData, holder: value });
 type="text"
 className="w-16 bg-transparent border-none text-gray-900 text-sm text-right placeholder:text-gray-500 focus:outline-none font-mono"
 placeholder="MM/ГГ"
-value={cardData.expiry || ""}
+value={cardData.expiry}
 onChange={(e) => {
 let value = e.target.value.replace(/\D/g, "");
 if (value.length >= 2) {
-value = value.slice(0, 2) + "/" + value.slice(2, 4);
+value =
+value.slice(0, 2) +
+"/" +
+value.slice(2, 4);
 }
-setCardData({ ...cardData, expiry: value });
+setCardData((prev) => ({
+...prev,
+expiry: value,
+}));
 }}
 maxLength={5}
 />
@@ -3210,7 +3223,7 @@ maxLength={5}
 </div>
 </div>
 
-{/* CVC */}
+{/* CVC под картой */}
 <div className="mt-4 bg-white border border-gray-200 rounded-xl p-4">
 <div className="flex items-center gap-3">
 <div className="flex-1">
@@ -3225,10 +3238,15 @@ id="cardCvc"
 className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 text-center text-lg tracking-widest font-mono"
 placeholder="•••"
 type="password"
-value={cardData.cvc || ""}
+value={cardData.cvc}
 onChange={(e) => {
-const value = e.target.value.replace(/\D/g, "");
-setCardData({ ...cardData, cvc: value });
+const value = e.target.value
+.replace(/\D/g, "")
+.slice(0, 3);
+setCardData((prev) => ({
+...prev,
+cvc: value,
+}));
 }}
 maxLength={3}
 />
@@ -3252,13 +3270,13 @@ id="userEmail"
 type="email"
 className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
 placeholder="example@email.com"
-value={formData.userEmail ?? ""}
+value={formData.userEmail}
 onChange={(e) =>
 onUpdateFormData("userEmail", e.target.value)
 }
 />
 <p className="text-xs text-gray-500 mt-2">
-На этот адрес придёт подтверждение заказа, детали церемонии
+На этот адрес придет подтверждение заказа, детали церемонии
 и все необходимые документы.
 </p>
 </div>
@@ -3332,7 +3350,7 @@ paymentMethod === "installment"
 </div>
 </div>
 
-{/* Защищённый платёж (карта) */}
+{/* Защищённый платёж (для карты) */}
 <div className="bg-white/10 border border-white/20 rounded-2xl p-4">
 <div className="flex items-start gap-3">
 <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
@@ -3348,9 +3366,9 @@ paymentMethod === "installment"
 </div>
 )}
 
-{/* СБП */}
+{/* Информация для СБП */}
 {paymentMethod === "sbp" && (
-<div className="bg-white/10 border border-white/20 rounded-2xl p-6 mt-4 space-y-3">
+<div className="bg-white/10 border border-white/20 rounded-2xl p-6 mt-4">
 <Label className="text-sm text-white mb-2 block">
 Выберите банк для оплаты через СБП
 </Label>
@@ -3366,8 +3384,8 @@ className="pl-9 bg-white/10 border-white/20 text-white placeholder:text-white/50
 <SelectValue placeholder="Выберите ваш банк" />
 </SelectTrigger>
 <SelectContent className="bg-[#1a1a1a] border-white/20">
-{/* дальше просто список банков, как был */}
-{/* ... */}
+{/* список банков оставляю как есть */}
+{/* ... все твои SelectItem для Сбербанк, ВТБ и т.д. ... */}
 </SelectContent>
 </Select>
 <p className="text-xs text-white/70 mt-3 text-center">
@@ -3376,30 +3394,34 @@ QR-код для оплаты появится после подтвержден
 </div>
 )}
 
-{/* Рассрочка */}
+{/* Информация для рассрочки */}
 {paymentMethod === "installment" && (
 <div className="space-y-4 mt-4">
 <div className="bg-white/10 border border-white/20 rounded-2xl p-4">
 <div className="flex items-center justify-between mb-3">
 <span className="text-sm text-white">Сумма к оплате</span>
 <span className="text-lg text-white">
-{total.toLocaleString("ru-RU")} ₽
+{calculateTotal().toLocaleString("ru-RU")} ₽
 </span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-sm text-white">Ежемесячный платёж</span>
+<span className="text-sm text-white">
+Ежемесячный платёж
+</span>
 <span className="text-lg text-white">
-{Math.ceil(total / 6).toLocaleString("ru-RU")} ₽
+{Math.ceil(
+calculateTotal() / 6,
+).toLocaleString("ru-RU")} ₽
 </span>
 </div>
 </div>
 <div className="bg-white/10 border border-white/20 rounded-2xl p-4">
 <p className="text-sm text-white">
-💳 Рассрочка без процентов на 6 месяцев
+Рассрочка без процентов на 6 месяцев.
 <br />
-✅ Одобрение онлайн за 3 минуты
+Одобрение онлайн за 3 минуты.
 <br />
-✅ Первый платёж через 30 дней
+Первый платёж через 30 дней.
 </p>
 <Button className="w-full mt-4 bg-white hover:bg-white/90 text-black transition-all duration-200">
 Подать заявку
@@ -3410,7 +3432,7 @@ QR-код для оплаты появится после подтвержден
 </div>
 </div>
 
-{/* Основная кнопка подтверждения */}
+{/* Кнопка подтверждения */}
 <Button
 className="w-full h-14 text-lg bg-gray-900 hover:bg-gray-800"
 onClick={() =>
