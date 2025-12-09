@@ -882,8 +882,8 @@ export function StepperWorkflow({
     selectedCemeteryCategory,
     setSelectedCemeteryCategory,
   ] = useState<"standard" | "comfort" | "premium">("standard");
-  const [paymentMethod, setPaymentMethod] = useState<
-    "card" | "sbp" | "installment"
+  const [paymentMethod, setPaymentMethod] =
+  useState<"card" | "sbp" | "installment">("card");
   >("card");
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [cardData, setCardData] = useState({
