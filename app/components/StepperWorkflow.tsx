@@ -84,6 +84,8 @@ import {
   AlertDialogTitle,
 } from "./ui/alert-dialog";
 
+type PaymentMethod = "card" | "sbp" | "installment";
+
 const steps = [
   {
     id: "format",
