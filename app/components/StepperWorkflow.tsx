@@ -894,6 +894,41 @@ export function StepperWorkflow({
     holder: "",
   });
 
+  // внутри компонента StepperWorkflow, рядом с другими хэндлерами
+const handleConfirmBooking = async () => {
+  try {
+    const response = await fetch("/api/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        formData,
+        total: calculateTotal(),
+        paymentMethod,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Ошибка при создании заказа", await response.text());
+      alert(
+        "Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой.",
+      );
+      return;
+    }
+
+    // если на бэке сразу отправляется письмо — этого достаточно
+    alert(
+      "Бронирование оформлено! Детали отправлены на указанную электронную почту.",
+    );
+  } catch (error) {
+    console.error("Сетевая ошибка при оформлении бронирования", error);
+    alert(
+      "Произошла ошибка при отправке данных. Проверьте соединение с интернетом и попробуйте ещё раз.",
+    );
+  }
+};
+
   // Состояния для выбора даты и времени
   const [pickupDateTime, setPickupDateTime] = useState<{
     date?: Date;
@@ -3412,14 +3447,11 @@ className="w-full mt-4 bg-white hover:bg_WHITE/90 text-black transition-all dura
 
 {/* Кнопка подтверждения */}
 <Button
-className="w-full h-14 text-lg bg-gray-900 hover:bg-gray-800"
-onClick={() =>
-alert(
-"Бронирование оформлено! Детали отправлены на указанную электронную почту.",
-)
-}
+  type="button"
+  className="w-full h-14 text-lg bg-gray-900 hover:bg-gray-800"
+  onClick={handleConfirmBooking}
 >
-Подтвердить и забронировать
+  Подтвердить и забронировать
 </Button>
 </div>
 );
