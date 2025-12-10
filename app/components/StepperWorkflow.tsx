@@ -3445,11 +3445,62 @@ className="w-full mt-4 bg-white hover:bg_WHITE/90 text-black transition-all dura
 </div>
 </div>
 
-{/* Кнопка подтверждения */}
 <Button
-  type="button"
   className="w-full h-14 text-lg bg-gray-900 hover:bg-gray-800"
-  onClick={handleConfirmBooking}
+  type="button"
+  onClick={async () => {
+    try {
+      // 1. Проверяем, что email заполнен
+      if (!formData.userEmail) {
+        alert("Укажите email для получения договора и деталей заказа.");
+        return;
+      }
+
+      // 2. Собираем payload в формате OrderPayload
+      const payload = {
+        customer: {
+          email: formData.userEmail,
+          name: formData.fullName || undefined,
+        },
+        // Остальные блоки можно дополнять позже, сейчас не обязательны
+        // deceased: { ... },
+        // ceremony: { ... },
+        // services: [ ... ],
+        // notes: ...
+      };
+
+      // 3. Отправляем запрос на /api/orders
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        console.error("Order error:", data);
+        alert(
+          data?.error ||
+            "Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой."
+        );
+        return;
+      }
+
+      const data = await res.json();
+      console.log("Order created:", data);
+
+      alert(
+        "Бронирование оформлено! Детали и договор отправлены на указанную электронную почту."
+      );
+    } catch (e) {
+      console.error("Order request failed:", e);
+      alert(
+        "Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой."
+      );
+    }
+  }}
 >
   Подтвердить и забронировать
 </Button>
