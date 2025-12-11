@@ -50,7 +50,7 @@ export function HeroSection() {
 
               {/* Десктопная версия заголовка */}
               <span
-                className="hidden md:block -mt-15 lg:-mt-20"
+                className="hidden md:block -mt-25 lg:-mt-30"
                 style={{
                   fontFamily: 'var(--font-family-display)',
                   fontWeight: 400,
