@@ -28,7 +28,7 @@ export function HeroSection() {
           {/* Текстовый блок */}
           <div className="relative z-0 flex h-full translate-y-[-15%] flex-col items-center justify-center px-6 text-center">
             <h1
-              className="mx-auto mb-4 max-w-3xl tracking-tight text-white drop-shadow-2xl"
+              className="mx-auto mb-4 max-w-3xl tracking-tight text-white drop-shadow-2xl md:-translate-y-4 lg:-translate-y-8"
               style={{
                 fontFamily: 'var(--font-family-serif)',
                 textShadow:
