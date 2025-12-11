@@ -56,10 +56,10 @@ export function HeroSection() {
                   fontWeight: 400,
                 }}
               >
-                <span className="mb-1 block text-3xl lg:text-4xl xl:text-5xl">
+                <span className="mb-1 block text-3xl lg:text-10xl xl:text-15xl">
                   Цифровой помощник по самостоятельной
                 </span>
-                <span className="block text-3xl lg:text-4xl xl:text-5xl">
+                <span className="block text-3xl lg:text-10xl xl:text-15xl">
                   организации прощания без агентств и давления
                 </span>
               </span>
