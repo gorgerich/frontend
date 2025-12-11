@@ -28,7 +28,7 @@ export function HeroSection() {
           {/* Текстовый блок */}
           <div className="relative z-0 flex h-full translate-y-[-15%] flex-col items-center justify-center px-6 text-center">
             <h1
-              className="mx-auto mb-4 max-w-3xl tracking-tight text-white drop-shadow-2xl md:-translate-y-4 lg:-translate-y-8"
+              className="mx-auto mb-4 max-w-3xl tracking-tight text-white drop-shadow-2xl"
               style={{
                 fontFamily: 'var(--font-family-serif)',
                 textShadow:
@@ -49,20 +49,20 @@ export function HeroSection() {
               </span>
 
               {/* Десктопная версия заголовка */}
-<span
-  className="hidden md:block"
-  style={{
-    fontFamily: 'var(--font-family-display)',
-    fontWeight: 400,
-  }}
->
-  <span className="mb-2 block text-3xl lg:text-5xl xl:text-6xl">
-    Цифровой помощник по самостоятельной
-  </span>
-  <span className="block text-3xl lg:text-4xl xl:text-5xl">
-    организации прощания без агентств и давления
-  </span>
-</span>
+              <span
+                className="hidden md:block"
+                style={{
+                  fontFamily: 'var(--font-family-display)',
+                  fontWeight: 400,
+                }}
+              >
+                <span className="mb-1 block text-3xl lg:text-7xl xl:text-6xl">
+                  Цифровой помощник по самостоятельной
+                </span>
+                <span className="block text-3xl lg:text-4xl xl:text-5xl">
+                  организации прощания без агентств и давления
+                </span>
+              </span>
             </h1>
 
             {/* Здесь потом добавим подзаголовок и кнопки, когда перенесём остальные части */}
