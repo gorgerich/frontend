@@ -26,7 +26,7 @@ export function HeroSection() {
           </div>
 
           {/* Текстовый блок */}
-          <div className="relative z-0 flex h-full flex-col items-center justify-start md:translate-y-[20%] lg:translate-y-[24%]">
+          <div className="relative z-0 flex h-full flex-col items-center justify-start px-6 pt-16 md:pt-20 lg:pt-24 text-center md:translate-y-[3%] lg:translate-y-[1%]">
             <h1
               className="mx-auto mb-4 max-w-3xl tracking-tight text-white drop-shadow-2xl"
               style={{
