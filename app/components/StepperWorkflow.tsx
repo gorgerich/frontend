@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { User } from "lucide-react";
 import { PersonalAccountModal } from "./PersonalAccountModal"; 
+import { SimplifiedStepperWorkflow } from "./SimplifiedStepperWorkflow";
 import CoffinConfigurator3D from "./CoffinConfigurator3D";
 import { Stepper } from "./Stepper";
 import {
@@ -3409,7 +3410,10 @@ return null;
 };
 
   return (
-<div ref={containerRef} className="max-w-5xl mx-auto -translate-y-12 pb-32">
+<div
+ref={containerRef}
+className="max-w-5xl mx-auto -translate-y-12 pb-32"
+>
 <Card className="bg-white/20 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30 relative">
 <CardHeader className="pb-4 pt-8 px-6 sm:px-8">
 {/* Кнопка личного кабинета */}
@@ -3461,7 +3465,9 @@ workflowMode === "packages"
 className="text-2xl sm:text-3xl mb-2 text-white text-[30px] not-italic no-underline font-sans"
 style={{ fontWeight: 40 }}
 >
-{workflowMode === "wizard" ? "Пошаговый мастер" : "Готовые пакеты"}
+{workflowMode === "wizard"
+? "Пошаговый мастер"
+: "Готовые пакеты"}
 </CardTitle>
 <CardDescription className="text-base text-white/90 text-[14px] font-sans">
 {workflowMode === "wizard"
@@ -3519,14 +3525,25 @@ className="gap-2 bg-gray-900 hover:bg-gray-800 rounded-[30px]"
 </Button>
 </div>
 </>
+) : selectedPackageForSimplified ? (
+/* Упрощённый мастер для выбранного пакета */
+<SimplifiedStepperWorkflow
+selectedPackage={selectedPackageForSimplified}
+onBack={() => setSelectedPackageForSimplified(null)}
+formData={formData}
+onUpdateFormData={onUpdateFormData}
+/>
 ) : (
+/* Список пакетов */
 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
 {PACKAGES.map((pkg) => (
 <Card
 key={pkg.id}
 className={cn(
 "cursor-pointer hover:border-gray-400 hover:shadow-lg transition-all duration-300 relative overflow-hidden group border-white/50 bg-white/80 backdrop-blur-sm",
-formData.packageType === pkg.id ? "ring-2 ring-gray-900 border-gray-900" : "",
+formData.packageType === pkg.id
+? "ring-2 ring-gray-900 border-gray-900"
+: "",
 )}
 onClick={() => {
 handleInputChange("packageType", pkg.id);
@@ -3538,23 +3555,38 @@ setSelectedPackageForSimplified(pkg);
 Популярный
 </div>
 )}
+
 <CardHeader>
 <CardTitle className="text-xl">{pkg.name}</CardTitle>
 <CardDescription>{pkg.description}</CardDescription>
 </CardHeader>
+
 <CardContent>
 <div className="text-3xl font-light mb-6">
 {pkg.price.toLocaleString("ru-RU")} ₽
 </div>
 <ul className="space-y-3 mb-6">
 {pkg.features.map((feature, i) => (
-<li key={i} className="flex items-start text-sm">
+<li
+key={i}
+className="flex items-start text-sm"
+>
 <Check className="h-4 w-4 mr-2 text-green-600 mt-0.5 shrink-0" />
-<span className="text-gray-600">{feature}</span>
+<span className="text-gray-600">
+{feature}
+</span>
 </li>
 ))}
 </ul>
-<Button className="w-full rounded-full" variant="outline">
+<Button
+className="w-full rounded-full"
+variant="outline"
+onClick={(e) => {
+e.stopPropagation();
+handleInputChange("packageType", pkg.id);
+setSelectedPackageForSimplified(pkg);
+}}
+>
 Настроить
 </Button>
 </CardContent>
@@ -3566,9 +3598,12 @@ setSelectedPackageForSimplified(pkg);
 </Card>
 
 {/* Модалка личного кабинета */}
-<PersonalAccountModal isOpen={isAccountOpen} onClose={() => setIsAccountOpen(false)} />
+<PersonalAccountModal
+isOpen={isAccountOpen}
+onClose={() => setIsAccountOpen(false)}
+/>
 </div>
 );
-} // <- закрывает функцию StepperWorkflow
+}
 
 export default StepperWorkflow;

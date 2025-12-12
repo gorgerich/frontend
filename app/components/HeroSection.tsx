@@ -26,9 +26,9 @@ export function HeroSection() {
           </div>
           
 {/* Текстовый блок */}
-<div className="relative z-0 flex h-full flex-col items-center justify-start md:translate-y-[32%] lg:translate-y-[38%]">
+<div className="relative z-0 flex h-full flex-col items-center justify-start md:mt-[60px] lg:mt-[80px] xl:mt-[96px]">
   <h1
-    className="mx-auto max-w-3xl tracking-tight text-white drop-shadow-2xl"
+    className="mx-auto mb-4 max-w-3xl tracking-tight text-white drop-shadow-2xl text-center"
     style={{
       fontFamily: "var(--font-family-serif)",
       textShadow:
@@ -50,7 +50,7 @@ export function HeroSection() {
 
     {/* Десктопная версия заголовка */}
     <span
-      className="hidden md:block text-center mt-10 lg:mt-16 xl:mt-20"
+      className="hidden md:block text-center"
       style={{
         fontFamily: "var(--font-family-display)",
         fontWeight: 400,
