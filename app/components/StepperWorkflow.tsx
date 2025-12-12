@@ -894,6 +894,14 @@ export function StepperWorkflow({
     holder: "",
   });
 
+    const [workflowMode, setWorkflowMode] = useState<"wizard" | "packages">(
+    "wizard"
+  );
+
+  const [selectedPackageForSimplified, setSelectedPackageForSimplified] =
+    useState<(typeof PACKAGES)[number] | null>(null);
+
+
   // внутри компонента StepperWorkflow, рядом с другими хэндлерами
 const handleConfirmBooking = async () => {
   try {
@@ -3401,88 +3409,166 @@ return null;
 };
 
   return (
-    <div
-      ref={containerRef}
-      className="max-w-5xl mx-auto -translate-y-12 pb-32"
-    >
-      <Card className="bg-white/20 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30 relative">
-        <CardHeader className="pb-4 pt-8 px-6 sm:px-8">
-          {/* Кнопка личного кабинета */}
-          <div className="absolute -top-5 right-8 z-50">
-            <button
-              onClick={() => setIsAccountOpen(true)}
-              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-200 text-white hover:scale-105 active:scale-95"
-              aria-label="Личный кабинет"
-            >
-              <User className="w-5 h-5" />
-            </button>
-          </div>
+<div ref={containerRef} className="max-w-5xl mx-auto -translate-y-12 pb-32">
+<Card className="bg-white/20 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30 relative">
+<CardHeader className="pb-4 pt-8 px-6 sm:px-8">
+{/* Кнопка личного кабинета */}
+<div className="absolute -top-5 right-8 z-50">
+<button
+onClick={() => setIsAccountOpen(true)}
+className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-200 text-white hover:scale-105 active:scale-95"
+aria-label="Личный кабинет"
+>
+<User className="w-5 h-5" />
+</button>
+</div>
 
-          <div className="text-center mb-2" style={{ fontWeight: 40 }}>
-            <CardTitle
-              className="text-2xl sm:text-3xl mb-2 text-white text-[30px] not-italic no-underline font-sans"
-              style={{ fontWeight: 40 }}
-            >
-              Пошаговый мастер
-            </CardTitle>
-            <CardDescription className="text-base text-white/90 text-[14px] font-sans">
-              Организуйте церемонию прощания за 5 простых шагов
-            </CardDescription>
-          </div>
+<div className="flex justify-center mb-6">
+<div className="bg-white/20 backdrop-blur-md p-1 rounded-full border border-white/20 inline-flex">
+<button
+onClick={() => {
+setWorkflowMode("wizard");
+setSelectedPackageForSimplified(null);
+}}
+className={cn(
+"px-6 py-2 rounded-full text-sm font-medium transition-all duration-200",
+workflowMode === "wizard"
+? "bg-white text-black shadow-lg"
+: "text-white hover:bg-white/10",
+)}
+>
+Пошаговый мастер
+</button>
+<button
+onClick={() => {
+setWorkflowMode("packages");
+setSelectedPackageForSimplified(null);
+}}
+className={cn(
+"px-6 py-2 rounded-full text-sm font-medium transition-all duration-200",
+workflowMode === "packages"
+? "bg-white text-black shadow-lg"
+: "text-white hover:bg-white/10",
+)}
+>
+Готовые решения
+</button>
+</div>
+</div>
 
-          <Stepper
-            steps={steps}
-            currentStep={currentStep}
-            completedSteps={completedSteps}
-            onStepClick={handleStepClick}
-          />
-        </CardHeader>
+<div className="text-center mb-2" style={{ fontWeight: 40 }}>
+<CardTitle
+className="text-2xl sm:text-3xl mb-2 text-white text-[30px] not-italic no-underline font-sans"
+style={{ fontWeight: 40 }}
+>
+{workflowMode === "wizard" ? "Пошаговый мастер" : "Готовые пакеты"}
+</CardTitle>
+<CardDescription className="text-base text-white/90 text-[14px] font-sans">
+{workflowMode === "wizard"
+? "Организуйте церемонию прощания за 5 простых шагов"
+: "Выберите оптимальный пакет услуг под ваши задачи"}
+</CardDescription>
+</div>
 
-        <CardContent className="px-6 sm:px-8 pb-8">
-          <div
-            className={cn(
-              "transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]",
-              isTransitioning
-                ? "opacity-0 translate-y-8 scale-[0.96] blur-sm"
-                : "opacity-100 translate-y-0 scale-100 blur-0"
-            )}
-          >
-            {renderStepContent()}
-          </div>
+{workflowMode === "wizard" && (
+<Stepper
+steps={steps}
+currentStep={currentStep}
+completedSteps={completedSteps}
+onStepClick={handleStepClick}
+/>
+)}
+</CardHeader>
 
-          <div className="flex items-center justify-between mt-8 pt-6 border-t">
-            <Button
-              variant="outline"
-              onClick={handlePrev}
-              disabled={currentStep === 0}
-              className="gap-2 rounded-[30px]"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Назад
-            </Button>
+<CardContent className="px-6 sm:px-8 pb-8">
+{workflowMode === "wizard" ? (
+<>
+<div
+className={cn(
+"transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]",
+isTransitioning
+? "opacity-0 translate-y-8 scale-[0.96] blur-sm"
+: "opacity-100 translate-y-0 scale-100 blur-0",
+)}
+>
+{renderStepContent()}
+</div>
 
-            <div className="text-sm text-gray-500">
-              Шаг {currentStep + 1} из {steps.length}
-            </div>
+<div className="flex items-center justify-between mt-8 pt-6 border-t">
+<Button
+variant="outline"
+onClick={handlePrev}
+disabled={currentStep === 0}
+className="gap-2 rounded-[30px]"
+>
+<ChevronLeft className="h-4 w-4" />
+Назад
+</Button>
 
-            <Button
-              onClick={handleNext}
-              disabled={currentStep === steps.length - 1}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 rounded-[30px]"
-            >
-              Далее
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+<div className="text-sm text-gray-500">
+Шаг {currentStep + 1} из {steps.length}
+</div>
 
-      {/* Модалка личного кабинета */}
-      <PersonalAccountModal
-        isOpen={isAccountOpen}
-        onClose={() => setIsAccountOpen(false)}
-      />
-    </div>
-  );
-} 
+<Button
+onClick={handleNext}
+disabled={currentStep === steps.length - 1}
+className="gap-2 bg-gray-900 hover:bg-gray-800 rounded-[30px]"
+>
+Далее
+<ChevronRight className="h-4 w-4" />
+</Button>
+</div>
+</>
+) : (
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+{PACKAGES.map((pkg) => (
+<Card
+key={pkg.id}
+className={cn(
+"cursor-pointer hover:border-gray-400 hover:shadow-lg transition-all duration-300 relative overflow-hidden group border-white/50 bg-white/80 backdrop-blur-sm",
+formData.packageType === pkg.id ? "ring-2 ring-gray-900 border-gray-900" : "",
+)}
+onClick={() => {
+handleInputChange("packageType", pkg.id);
+setSelectedPackageForSimplified(pkg);
+}}
+>
+{pkg.popular && (
+<div className="absolute top-0 right-0 bg-gray-900 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
+Популярный
+</div>
+)}
+<CardHeader>
+<CardTitle className="text-xl">{pkg.name}</CardTitle>
+<CardDescription>{pkg.description}</CardDescription>
+</CardHeader>
+<CardContent>
+<div className="text-3xl font-light mb-6">
+{pkg.price.toLocaleString("ru-RU")} ₽
+</div>
+<ul className="space-y-3 mb-6">
+{pkg.features.map((feature, i) => (
+<li key={i} className="flex items-start text-sm">
+<Check className="h-4 w-4 mr-2 text-green-600 mt-0.5 shrink-0" />
+<span className="text-gray-600">{feature}</span>
+</li>
+))}
+</ul>
+<Button className="w-full rounded-full" variant="outline">
+Настроить
+</Button>
+</CardContent>
+</Card>
+))}
+</div>
+)}
+</CardContent>
+</Card>
+
+{/* Модалка личного кабинета */}
+<PersonalAccountModal isOpen={isAccountOpen} onClose={() => setIsAccountOpen(false)} />
+</div>
+);
+} // <- закрывает функцию StepperWorkflow
+
 export default StepperWorkflow;
