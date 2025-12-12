@@ -3146,17 +3146,21 @@ className="w-full p-4 rounded-2xl border-2 border-white/30 hover:border-white/50
 {/* Банковская карта (реалистичная) */}
 {paymentMethod === "card" && (
 <div className="mt-4">
-<div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr] items-start">
-{/* LEFT: Карта */}
-<div className="relative mx-auto w-full max-w-md md:max-w-none">
+{/* Две колонки: слева карта, справа CVC + Email */}
+<div className="grid gap-6 md:grid-cols-2 items-start">
+{/* Левая колонка — карта */}
+<div className="relative mx-auto w-full max-w-md">
 <div className="relative w-full aspect-[1.586/1] rounded-2xl p-6 shadow-2xl bg-white border border-gray-200">
+{/* Чип */}
 <div className="absolute top-6 left-6 w-12 h-10 rounded bg-gradient-to-br from-yellow-300/80 to-yellow-500/80 backdrop-blur" />
 
+{/* Логотип платёжной системы */}
 <div className="absolute top-6 right-6 flex gap-2">
 <div className="w-8 h-8 rounded-full bg-white/50 backdrop-blur border border-white/60" />
 <div className="w-8 h-8 rounded-full bg-white/60 backdrop-blur border border-white/60 -ml-4" />
 </div>
 
+{/* Номер карты */}
 <div className="absolute top-16 left-6 right-6">
 <input
 type="text"
@@ -3168,12 +3172,16 @@ const value = e.target.value
 .replace(/\s/g, "")
 .replace(/(\d{4})/g, "$1 ")
 .trim();
-setCardData((prev) => ({ ...prev, number: value }));
+setCardData((prev) => ({
+...prev,
+number: value,
+}));
 }}
 maxLength={19}
 />
 </div>
 
+{/* Имя держателя и срок действия */}
 <div className="absolute bottom-10 left-6 right-6 flex justify-between items-end">
 <div className="flex-1 min-w-0 mr-4">
 <input
@@ -3185,7 +3193,10 @@ onChange={(e) => {
 const value = e.target.value
 .toUpperCase()
 .replace(/[^A-Z\s]/g, "");
-setCardData((prev) => ({ ...prev, holder: value }));
+setCardData((prev) => ({
+...prev,
+holder: value,
+}));
 }}
 />
 <div className="text-[10px] text-gray-600 mt-1 uppercase tracking-wide">
@@ -3204,7 +3215,10 @@ let value = e.target.value.replace(/\D/g, "");
 if (value.length >= 2) {
 value = value.slice(0, 2) + "/" + value.slice(2, 4);
 }
-setCardData((prev) => ({ ...prev, expiry: value }));
+setCardData((prev) => ({
+...prev,
+expiry: value,
+}));
 }}
 maxLength={5}
 />
@@ -3216,12 +3230,16 @@ maxLength={5}
 </div>
 </div>
 
-{/* RIGHT: CVC + Email + другое */}
-<div className="grid gap-4">
+{/* Правая колонка — CVC + Email */}
+<div className="space-y-4">
+{/* CVC */}
 <div className="bg-white border border-gray-200 rounded-xl p-4">
 <div className="flex items-center gap-3">
 <div className="flex-1">
-<Label htmlFor="cardCvc" className="text-gray-900 text-xs mb-2 block">
+<Label
+htmlFor="cardCvc"
+className="text-gray-900 text-xs mb-2 block"
+>
 CVC/CVV код
 </Label>
 <Input
@@ -3232,7 +3250,10 @@ type="password"
 value={cardData.cvc}
 onChange={(e) => {
 const value = e.target.value.replace(/\D/g, "").slice(0, 3);
-setCardData((prev) => ({ ...prev, cvc: value }));
+setCardData((prev) => ({
+...prev,
+cvc: value,
+}));
 }}
 maxLength={3}
 />
@@ -3243,8 +3264,12 @@ maxLength={3}
 </div>
 </div>
 
+{/* Email */}
 <div className="bg-white border border-gray-200 rounded-xl p-4">
-<Label htmlFor="userEmail" className="text-gray-900 text-sm mb-2 block">
+<Label
+htmlFor="userEmail"
+className="text-gray-900 text-sm mb-2 block"
+>
 Email для получения информации
 </Label>
 <Input
@@ -3253,15 +3278,23 @@ type="email"
 className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
 placeholder="example@email.com"
 value={formData.userEmail}
-onChange={(e) => onUpdateFormData("userEmail", e.target.value)}
+onChange={(e) =>
+onUpdateFormData("userEmail", e.target.value)
+}
 />
 <p className="text-xs text-gray-500 mt-2">
-На этот адрес придет подтверждение заказа, детали церемонии и все необходимые документы.
+На этот адрес придет подтверждение заказа, детали церемонии
+и все необходимые документы.
 </p>
 </div>
+</div>
+</div>
 
-<div className="pt-4 border-t border-white/20">
-<p className="text-xs text-white/60 mb-3">Или выберите другой способ:</p>
+{/* Другие способы оплаты — на всю ширину, под двумя колонками */}
+<div className="pt-4 border-t border-white/20 mt-6">
+<p className="text-xs text-white/60 mb-3">
+Или выберите другой способ:
+</p>
 <div className="grid grid-cols-2 gap-3">
 <button
 type="button"
@@ -3272,7 +3305,9 @@ className="p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transi
 <div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
 <span className="text-sm text-white">СБП</span>
 </div>
-<p className="text-xs text-white/70 ml-7">Система быстрых платежей</p>
+<p className="text-xs text-white/70 ml-7">
+Система быстрых платежей
+</p>
 </button>
 
 <button
@@ -3289,21 +3324,22 @@ className="p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transi
 </div>
 </div>
 
-<div className="bg-white/10 border border-white/20 rounded-2xl p-4">
+{/* Защищённый платёж */}
+<div className="bg-white/10 border border-white/20 rounded-2xl p-4 mt-4">
 <div className="flex items-start gap-3">
 <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
 <div className="space-y-1">
 <p className="text-sm text-white">Защищённый платёж</p>
 <p className="text-xs text-white/70">
-Данные передаются по защищённому протоколу и не хранятся на наших серверах.
+Данные передаются по защищённому протоколу и не хранятся на
+наших серверах.
 </p>
 </div>
 </div>
 </div>
 </div>
-</div>
-</div>
 )}
+
 
 <Button
 className="w-full h-14 text-lg bg-gray-900 hover:bg-gray-800 mt-6"
