@@ -3427,6 +3427,7 @@ aria-label="Личный кабинет"
 </button>
 </div>
 
+{/* Переключатель режимов */}
 <div className="flex justify-center mb-6">
 <div className="bg-white/20 backdrop-blur-md p-1 rounded-full border border-white/20 inline-flex">
 <button
@@ -3460,14 +3461,13 @@ workflowMode === "packages"
 </div>
 </div>
 
+{/* Заголовок и подзаголовок */}
 <div className="text-center mb-2" style={{ fontWeight: 40 }}>
 <CardTitle
 className="text-2xl sm:text-3xl mb-2 text-white text-[30px] not-italic no-underline font-sans"
 style={{ fontWeight: 40 }}
 >
-{workflowMode === "wizard"
-? "Пошаговый мастер"
-: "Готовые пакеты"}
+
 </CardTitle>
 <CardDescription className="text-base text-white/90 text-[14px] font-sans">
 {workflowMode === "wizard"
@@ -3476,6 +3476,7 @@ style={{ fontWeight: 40 }}
 </CardDescription>
 </div>
 
+{/* Степпер только для полного мастера */}
 {workflowMode === "wizard" && (
 <Stepper
 steps={steps}
@@ -3526,15 +3527,18 @@ className="gap-2 bg-gray-900 hover:bg-gray-800 rounded-[30px]"
 </div>
 </>
 ) : selectedPackageForSimplified ? (
-/* Упрощённый мастер для выбранного пакета */
+<>
+{/* Упрощённый мастер настройки пакета */}
 <SimplifiedStepperWorkflow
 selectedPackage={selectedPackageForSimplified}
 onBack={() => setSelectedPackageForSimplified(null)}
 formData={formData}
 onUpdateFormData={onUpdateFormData}
 />
+</>
 ) : (
-/* Список пакетов */
+<>
+{/* Список пакетов */}
 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
 {PACKAGES.map((pkg) => (
 <Card
@@ -3567,14 +3571,9 @@ setSelectedPackageForSimplified(pkg);
 </div>
 <ul className="space-y-3 mb-6">
 {pkg.features.map((feature, i) => (
-<li
-key={i}
-className="flex items-start text-sm"
->
+<li key={i} className="flex items-start text-sm">
 <Check className="h-4 w-4 mr-2 text-green-600 mt-0.5 shrink-0" />
-<span className="text-gray-600">
-{feature}
-</span>
+<span className="text-gray-600">{feature}</span>
 </li>
 ))}
 </ul>
@@ -3593,6 +3592,7 @@ setSelectedPackageForSimplified(pkg);
 </Card>
 ))}
 </div>
+</>
 )}
 </CardContent>
 </Card>
