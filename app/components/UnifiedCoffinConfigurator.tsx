@@ -264,7 +264,12 @@ return (
 <div className="bg-gradient-to-br from-gray-50 via-white to-gray-50 rounded-2xl overflow-hidden">
 {/* ✅ УБРАН верхний header и текст “Настройте комплектацию…” по твоей просьбе */}
 
-<Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'coffin' | 'wreath')} className="w-full">
+<Tabs
+  value={activeTab}
+  defaultValue="coffin"
+  onValueChange={(v) => setActiveTab(v as 'coffin' | 'wreath')}
+  className="w-full"
+>
 <div className="bg-white border-b border-gray-200">
 <TabsList className="w-full h-auto p-1 bg-transparent rounded-none justify-start gap-1">
 <TabsTrigger

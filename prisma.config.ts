@@ -1,10 +1,5 @@
-// prisma/prisma.config.ts
-import { defineConfig } from "@prisma/config";
+// prisma.config.ts
 
-export default defineConfig({
+export default {
   schema: "./prisma/schema.prisma",
-  datasource: {
-    // путь к sqlite-базе относительно корня проекта
-    url: "file:./dev.db",
-  },
-});
+};
