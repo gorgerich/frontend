@@ -1408,129 +1408,210 @@ export function SimplifiedStepperWorkflow({
         );
 
       case 4: {
-        // Шаг 5: Подтверждение и оплата
-        const selectedLining = liningOptions.find(
-          (option) => option.id === (formData.liningColor || "satin-white")
-        );
+// Шаг 5: Подтверждение и оплата
+const selectedLining = liningOptions.find(
+(option) => option.id === (formData.liningColor || "satin-white")
+);
 
-        return (
-          <div className="space-y-6">
-            <div className="bg-green-50 border border-green-200 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
-              <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-              <div>
-                <h3 className="text-green-900 mb-2">
-                  Все данные заполнены
-                </h3>
-                <p className="text-sm text-green-700">
-                  Пожалуйста, проверьте информацию перед бронированием
-                </p>
-              </div>
-            </div>
+return (
+<div className="space-y-6">
+{/* Статус «всё заполнено» */}
+<div className="bg-green-50 border border-green-200 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
+<CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
+<div>
+<h3 className="text-green-900 mb-2">Все данные заполнены</h3>
+<p className="text-sm text-green-700">
+Пожалуйста, проверьте информацию перед бронированием.
+</p>
+</div>
+</div>
 
-            {/* Блок пакета */}
-            <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-              <h4 className="text-sm text-gray-500 mb-3">Выбранный пакет</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <p className="font-medium">{selectedPackage.name}</p>
-                    <p className="text-xs text-gray-600 mt-1">{selectedPackage.description}</p>
-                  </div>
-                  <span className="text-gray-900 ml-4 shrink-0">
-                    {selectedPackage.price.toLocaleString("ru-RU")} ₽
-                  </span>
-                </div>
-              </div>
-            </div>
+{/* Блок пакета */}
+<div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+<h4 className="text-sm text-gray-500 mb-3">Выбранный пакет</h4>
+<div className="space-y-2 text-sm">
+<div className="flex justify-between items-start gap-4">
+<div className="flex-1">
+<p className="font-medium">{selectedPackage.name}</p>
+<p className="text-xs text-gray-600 mt-1">
+{selectedPackage.description}
+</p>
+</div>
+<span className="text-gray-900 shrink-0">
+{selectedPackage.price.toLocaleString("ru-RU")} ₽
+</span>
+</div>
+</div>
+</div>
 
-            {/* Блок персонализации */}
-            <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-              <h4 className="text-sm text-gray-500 mb-3">Персонализация</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Цвет отделки:</span>
-                  <span className="text-gray-900">{selectedLining?.name}</span>
-                </div>
-              </div>
-            </div>
+{/* Персонализация */}
+<div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+<h4 className="text-sm text-gray-500 mb-3">Персонализация</h4>
+<div className="space-y-2 text-sm">
+<div className="flex justify-between gap-4">
+<span className="text-gray-600">Цвет отделки:</span>
+<span className="text-gray-900">
+{selectedLining?.name || "—"}
+</span>
+</div>
+{formData.specialRequests && (
+<div className="flex justify-between gap-4">
+<span className="text-gray-600">Особые пожелания:</span>
+<span className="text-gray-900 text-right">
+{formData.specialRequests}
+</span>
+</div>
+)}
+</div>
+</div>
 
-            {/* Блок информации */}
-            <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-              <h4 className="text-sm text-gray-500 mb-3">Усопший</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">ФИО:</span>
-                  <span className="text-gray-900">{formData.fullName || "—"}</span>
-                </div>
-              </div>
-            </div>
+{/* Информация об усопшем */}
+<div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+<h4 className="text-sm text-gray-500 mb-3">Усопший</h4>
+<div className="space-y-2 text-sm">
+<div className="flex justify-between gap-4">
+<span className="text-gray-600">ФИО:</span>
+<span className="text-gray-900">
+{formData.fullName || "—"}
+</span>
+</div>
+<div className="flex justify-between gap-4">
+<span className="text-gray-600">Дата рождения:</span>
+<span className="text-gray-900">
+{formData.birthDate || "—"}
+</span>
+</div>
+<div className="flex justify-between gap-4">
+<span className="text-gray-600">Дата смерти:</span>
+<span className="text-gray-900">
+{formData.deathDate || "—"}
+</span>
+</div>
+<div className="flex justify-between gap-4">
+<span className="text-gray-600">
+№ свидетельства о смерти:
+</span>
+<span className="text-gray-900">
+{formData.deathCertificate || "—"}
+</span>
+</div>
+</div>
+</div>
 
-            {/* Итоговая смета + Оплата (тот самый блок, который вы взяли из StepperWorkflow) */}
-            <div className="bg-gray-900 text-white rounded-3xl p-6 shadow-lg space-y-6">
-              <div>
-                <h4 className="mb-4">Итоговая смета</h4>
-                <div className="flex justify-between pt-2">
-                  <span className="text-lg">Итого:</span>
-                  <span className="text-2xl">
-                    {calculateTotal().toLocaleString("ru-RU")} ₽
-                  </span>
-                </div>
-              </div>
+{/* Итоговая смета + Оплата */}
+<div className="bg-gray-900 text-white rounded-3xl p-6 sm:p-7 shadow-xl space-y-6">
+{/* Итог */}
+<div className="flex items-start justify-between gap-4">
+<div>
+<p className="text-sm text-white/80">Итоговая смета</p>
+<p className="text-xs text-white/60 mt-1">
+Стоимость пакета и выбранных опций
+</p>
+</div>
+<div className="text-right">
+<p className="text-xs text-white/60 uppercase tracking-wide">
+Итого
+</p>
+<p className="text-2xl sm:text-3xl font-semibold">
+{calculateTotal().toLocaleString("ru-RU")} ₽
+</p>
+</div>
+</div>
 
-              <div className="border-t border-white/20"></div>
+<Separator className="bg-white/20" />
 
-              {/* Способ оплаты */}
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <RubleSign className="h-6 w-6 text-white" />
-                  <h4 className="text-lg text-white">Способ оплаты</h4>
-                </div>
-                
-                {/* Логика отображения кнопок оплаты */}
-                {paymentMethod !== "card" && (
-                  <button
-                    onClick={() => setPaymentMethod("card")}
-                    className="w-full p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all text-left mb-4"
-                  >
-                    <span className="text-sm text-white">Банковская карта</span>
-                  </button>
-                )}
-                
-                {/* Если выбрана карта */}
-                {paymentMethod === "card" && (
-                   <div className="p-4 bg-white rounded-2xl text-gray-900">
-                      <p className="text-sm">Здесь будет форма карты</p>
-                      {/* Ваша форма карты здесь */}
-                   </div>
-                )}
-                
-                {/* Кнопки выбора других методов */}
-                <div className="grid grid-cols-2 gap-3 mt-4">
-                    <button
-                        onClick={() => setPaymentMethod("sbp")}
-                        className={`p-4 rounded-2xl border-2 text-left ${paymentMethod === "sbp" ? "border-blue-500 bg-blue-500/20" : "border-white/30"}`}
-                    >
-                        <span className="text-sm text-white">СБП</span>
-                    </button>
-                    <button
-                        onClick={() => setPaymentMethod("installment")}
-                        className={`p-4 rounded-2xl border-2 text-left ${paymentMethod === "installment" ? "border-blue-500 bg-blue-500/20" : "border-white/30"}`}
-                    >
-                        <span className="text-sm text-white">Рассрочка</span>
-                    </button>
-                </div>
-              </div>
-            </div>
+{/* Способ оплаты */}
+<div className="space-y-4">
+<div className="flex items-center gap-3">
+<RubleSign className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+<div>
+<p className="text-sm font-medium">Способ оплаты</p>
+<p className="text-xs text-white/60 mt-1">
+Банковская карта по умолчанию, доступны СБП и рассрочка.
+</p>
+</div>
+</div>
 
-            <Button
-              className="w-full h-14 text-lg bg-gray-900 hover:bg-gray-800"
-              onClick={() => alert("Бронирование оформлено!")}
-            >
-              Подтвердить и забронировать
-            </Button>
-          </div>
-        );
-      }
+{/* Карта */}
+<button
+type="button"
+onClick={() => setPaymentMethod("card")}
+className={cn(
+"w-full text-left rounded-2xl border-2 px-4 py-3 sm:px-5 sm:py-4 transition-all",
+paymentMethod === "card"
+? "border-white bg-white text-gray-900 shadow-lg"
+: "border-white/25 bg-white/5 hover:border-white/60"
+)}
+>
+<p
+className={cn(
+"text-xs mb-1",
+paymentMethod === "card"
+? "text-gray-500"
+: "text-white/70"
+)}
+>
+Банковская карта
+</p>
+{paymentMethod === "card" ? (
+<p className="text-sm text-gray-900">
+Здесь будет форма карты (номер, срок, CVC, держатель).
+</p>
+) : (
+<p className="text-sm text-white/80">
+Оплата картой Visa, Mastercard, Мир.
+</p>
+)}
+</button>
+
+{/* СБП и рассрочка */}
+<div className="grid grid-cols-2 gap-3">
+<button
+type="button"
+onClick={() => setPaymentMethod("sbp")}
+className={cn(
+"rounded-2xl border-2 px-4 py-3 text-left text-sm transition-all",
+paymentMethod === "sbp"
+? "border-white bg-white/10"
+: "border-white/25 hover:border-white/60"
+)}
+>
+<span className="block">СБП</span>
+<span className="mt-1 block text-xs text-white/70">
+Быстрая оплата по QR-коду.
+</span>
+</button>
+
+<button
+type="button"
+onClick={() => setPaymentMethod("installment")}
+className={cn(
+"rounded-2xl border-2 px-4 py-3 text-left text-sm transition-all",
+paymentMethod === "installment"
+? "border-white bg-white/10"
+: "border-white/25 hover:border-white/60"
+)}
+>
+<span className="block">Рассрочка</span>
+<span className="mt-1 block text-xs text-white/70">
+Подробные условия — на странице оплаты.
+</span>
+</button>
+</div>
+</div>
+</div>
+
+{/* Кнопка подтверждения */}
+<Button
+className="w-full h-14 text-lg bg-gray-900 hover:bg-gray-800 rounded-[30px]"
+onClick={() => alert("Бронирование оформлено!")}
+>
+Подтвердить и забронировать
+</Button>
+</div>
+);
+}
+
 
             default:
         return null;
