@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { User } from "lucide-react";
 import { PersonalAccountModal } from "./PersonalAccountModal"; 
 import { SimplifiedStepperWorkflow } from "./SimplifiedStepperWorkflow";
-import { PaymentStep } from "./PaymentStep";
+import PaymentStep  from "./PaymentStep";
 
 import CoffinConfigurator3D from "./CoffinConfigurator3D";
 import { Stepper } from "./Stepper";
@@ -868,6 +868,7 @@ export function StepperWorkflow({
   onCemeteryCategoryChange,
 }: StepperWorkflowProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const SimplifiedAny = SimplifiedStepperWorkflow as any;
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<
     number[]
@@ -890,6 +891,7 @@ export function StepperWorkflow({
   const [paymentMethod, setPaymentMethod] =
   useState<PaymentMethod>("card");
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  
   const [cardData, setCardData] = useState({
     number: "",
     expiry: "",
@@ -897,46 +899,59 @@ export function StepperWorkflow({
     holder: "",
   });
 
+  const [screen, setScreen] = useState<"ready-packages" | "wizard">("ready-packages");
+const [selectedPackage, setSelectedPackage] = useState<any>(null);
     const [workflowMode, setWorkflowMode] = useState<"wizard" | "packages">(
     "wizard"
   );
 
   const [selectedPackageForSimplified, setSelectedPackageForSimplified] =
     useState<(typeof PACKAGES)[number] | null>(null);
+    const openPackagesMode = () => {
+  setWorkflowMode("packages");
+
+  if (!selectedPackageForSimplified) {
+    const defaultPkg = PACKAGES.find((p) => p.popular) ?? PACKAGES[0];
+    setSelectedPackageForSimplified(defaultPkg);
+  }
+};
 
 
   // внутри компонента StepperWorkflow, рядом с другими хэндлерами
 const handleConfirmBooking = async () => {
   try {
-    const response = await fetch("/api/orders", {
+    const orderEmail = (formData.userEmail || "").trim();
+
+    if (!orderEmail) {
+      alert("Укажите email для получения подтверждения.");
+      return;
+    }
+
+    const res = await fetch("/api/orders", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        userEmail: orderEmail,
+        userName: formData.clientName || undefined,
         formData,
         total: calculateTotal(),
+        breakdown: calculateBreakdown(),
         paymentMethod,
       }),
     });
 
-    if (!response.ok) {
-      console.error("Ошибка при создании заказа", await response.text());
-      alert(
-        "Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой.",
-      );
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data?.ok === false) {
+      console.error("Ошибка при создании заказа", data);
+      alert("Не удалось оформить бронирование. Попробуйте ещё раз.");
       return;
     }
 
-    // если на бэке сразу отправляется письмо — этого достаточно
-    alert(
-      "Бронирование оформлено! Детали отправлены на указанную электронную почту.",
-    );
+    alert("Бронирование оформлено! Детали отправлены на указанную почту.");
   } catch (error) {
     console.error("Сетевая ошибка при оформлении бронирования", error);
-    alert(
-      "Произошла ошибка при отправке данных. Проверьте соединение с интернетом и попробуйте ещё раз.",
-    );
+    alert("Сетевая ошибка. Проверьте интернет и попробуйте ещё раз.");
   }
 };
 
@@ -2768,365 +2783,424 @@ const handleConfirmAndBook = async () => {
         );
 
             case 3:
-        // Шаг 4: Документы
-        return (
-          <div className="space-y-6">
-            <div>
-              <Label htmlFor="fullName">ФИО усопшего *</Label>
-              <Input
-                id="fullName"
-                value={formData.fullName}
-                onChange={(e) => handleInputChange("fullName", e.target.value)}
-                placeholder="Иванов Иван Иванович"
-                className="mt-2"
-              />
-            </div>
+  // Шаг 4: Документы
+  return (
+    <div className="space-y-6">
+      <div>
+        <Label htmlFor="fullName">ФИО усопшего *</Label>
+        <Input
+          id="fullName"
+          value={formData.fullName}
+          onChange={(e) => handleInputChange("fullName", e.target.value)}
+          placeholder="Иванов Иван Иванович"
+          className="mt-2"
+        />
+      </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="birthDate">Дата рождения</Label>
-                <div className="flex gap-2 mt-2">
-                  <Input
-                    id="birthDate"
-                    type={formData.birthDate === "—" ? "text" : "date"}
-                    value={formData.birthDate}
-                    onChange={(e) => handleInputChange("birthDate", e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    type="button"
-                    onClick={() => handleSkipField("birthDate")}
-                    className="whitespace-nowrap rounded-[30px]"
-                  >
-                    Не знаю
-                  </Button>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="deathDate">Дата смерти</Label>
-                <div className="flex gap-2 mt-2">
-                  <Input
-                    id="deathDate"
-                    type={formData.deathDate === "—" ? "text" : "date"}
-                    value={formData.deathDate}
-                    onChange={(e) => handleInputChange("deathDate", e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    type="button"
-                    onClick={() => handleSkipField("deathDate")}
-                    className="whitespace-nowrap rounded-[30px]"
-                  >
-                    Не знаю
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="deathCertificate">№ свидетельства о смерти</Label>
-              <div className="flex gap-2 mt-2">
-                <Input
-                  id="deathCertificate"
-                  value={formData.deathCertificate}
-                  onChange={(e) => handleInputChange("deathCertificate", e.target.value)}
-                  placeholder="AA-000 № 000000"
-                  className="flex-1"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  type="button"
-                  onClick={() => handleSkipField("deathCertificate")}
-                  className="whitespace-nowrap"
-                >
-                  Позже
-                </Button>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                Можно ввести позже — бронирование не задержит
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="relationship">Степень родства *</Label>
-              <Select
-                value={formData.relationship}
-                onValueChange={(value) => handleInputChange("relationship", value)}
-              >
-                <SelectTrigger className="mt-2">
-                  <SelectValue placeholder="Выберите степень родства" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="spouse">Супруг(а)</SelectItem>
-                  <SelectItem value="parent">Родитель</SelectItem>
-                  <SelectItem value="child">Сын/дочь</SelectItem>
-                  <SelectItem value="relative">Дальний родственник</SelectItem>
-                  <SelectItem value="representative">Доверенное лицо</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div
-              id="data-consent"
-              className={cn(
-                "flex items-start gap-2 md:gap-3 p-2 md:p-4 rounded-2xl md:rounded-full transition-all",
-                showConsentError ? "bg-gray-50 border-2 border-gray-300" : "bg-gray-50 border border-gray-200"
-              )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="birthDate">Дата рождения</Label>
+          <div className="flex gap-2 mt-2">
+            <Input
+              id="birthDate"
+              type={formData.birthDate === "—" ? "text" : "date"}
+              value={formData.birthDate}
+              onChange={(e) => handleInputChange("birthDate", e.target.value)}
+              className="flex-1"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSkipField("birthDate")}
+              className="whitespace-nowrap rounded-[30px]"
+              type="button"
             >
-              <Checkbox
-                id="privacy"
-                checked={formData.dataConsent}
-                onCheckedChange={(checked) => {
-                  handleInputChange("dataConsent", checked === true);
-                  setShowConsentError(false);
-                }}
-                className="mt-0.5 md:mt-1 flex-shrink-0"
-              />
-              <Label htmlFor="privacy" className="text-xs md:text-sm cursor-pointer leading-snug">
-                Я согласен на обработку персональных данных и подтверждаю, что ознакомлен с{" "}
-                <a href="#" className="underline text-blue-600">
-                  политикой конфиденциальности
-                </a>
-              </Label>
-            </div>
+              Не знаю
+            </Button>
+          </div>
+        </div>
 
-            {showConsentError && (
-              <div className="bg-gray-50 border border-gray-300 rounded-full p-4">
-                <p className="text-sm text-gray-600">
-                  ⚠️ Для продолжения необходимо дать согласие на обработку персональных данных
-                </p>
+        <div>
+          <Label htmlFor="deathDate">Дата смерти</Label>
+          <div className="flex gap-2 mt-2">
+            <Input
+              id="deathDate"
+              type={formData.deathDate === "—" ? "text" : "date"}
+              value={formData.deathDate}
+              onChange={(e) => handleInputChange("deathDate", e.target.value)}
+              className="flex-1"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSkipField("deathDate")}
+              className="whitespace-nowrap rounded-[30px]"
+              type="button"
+            >
+              Не знаю
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="deathCertificate">№ свидетельства о смерти</Label>
+        <div className="flex gap-2 mt-2">
+          <Input
+            id="deathCertificate"
+            value={formData.deathCertificate}
+            onChange={(e) => handleInputChange("deathCertificate", e.target.value)}
+            placeholder="AA-000 № 000000"
+            className="flex-1"
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleSkipField("deathCertificate")}
+            className="whitespace-nowrap"
+            type="button"
+          >
+            Позже
+          </Button>
+        </div>
+        <p className="text-xs text-gray-500 mt-2">
+          Можно ввести позже — бронирование не задержит
+        </p>
+      </div>
+
+      <div>
+        <Label htmlFor="relationship">Степень родства *</Label>
+        <Select
+          value={formData.relationship}
+          onValueChange={(value) => handleInputChange("relationship", value)}
+        >
+          <SelectTrigger className="mt-2">
+            <SelectValue placeholder="Выберите степень родства" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="spouse">Супруг(а)</SelectItem>
+            <SelectItem value="parent">Родитель</SelectItem>
+            <SelectItem value="child">Сын/дочь</SelectItem>
+            <SelectItem value="relative">Дальний родственник</SelectItem>
+            <SelectItem value="representative">Доверенное лицо</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div
+        id="data-consent"
+        className={cn(
+          "flex items-start gap-2 md:gap-3 p-2 md:p-4 rounded-2xl md:rounded-full transition-all",
+          showConsentError
+            ? "bg-gray-50 border-2 border-gray-300"
+            : "bg-gray-50 border border-gray-200",
+        )}
+      >
+        <Checkbox
+          id="privacy"
+          checked={formData.dataConsent}
+          onCheckedChange={(checked) => {
+            handleInputChange("dataConsent", checked === true);
+            setShowConsentError(false);
+          }}
+          className="mt-0.5 md:mt-1 flex-shrink-0"
+        />
+        <Label
+          htmlFor="privacy"
+          className="text-xs md:text-sm cursor-pointer leading-snug"
+        >
+          Я согласен на обработку персональных данных и подтверждаю, что ознакомлен с{" "}
+          <a href="#" className="underline text-blue-600">
+            политикой конфиденциальности
+          </a>
+        </Label>
+      </div>
+
+      {showConsentError && (
+        <div className="bg-gray-50 border border-gray-300 rounded-full p-4">
+          <p className="text-sm text-gray-600">
+            Для продолжения необходимо дать согласие на обработку персональных данных
+          </p>
+        </div>
+      )}
+    </div>
+  );
+
+case 4:
+  // Шаг 5: Подтверждение
+  return (
+    <div className="space-y-6">
+      <div className="bg-green-50 border border-green-200 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
+        <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
+        <div>
+          <h3 className="text-green-900 mb-2">Все данные заполнены</h3>
+          <p className="text-sm text-green-700">
+            Пожалуйста, проверьте информацию перед бронированием.
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm text-gray-500">Формат церемонии</h4>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleEditStep(0)}
+              className="h-8 w-8 p-0"
+              type="button"
+            >
+              <Edit2 className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Формат:</span>
+              <span className="text-gray-900">
+                {formData.serviceType === "burial" ? "Захоронение" : "Кремация"}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Зал прощания:</span>
+              <span className="text-gray-900">{formData.hasHall ? "Да" : "Нет"}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm text-gray-500">Логистика</h4>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleEditStep(1)}
+              className="h-8 w-8 p-0"
+              type="button"
+            >
+              <Edit2 className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">
+                {formData.serviceType === "burial" ? "Кладбище:" : "Крематорий:"}
+              </span>
+              <span className="text-gray-900">{formData.cemetery || "—"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Катафалк:</span>
+              <span className="text-gray-900">{formData.needsHearse ? "Да" : "Нет"}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm text-gray-500">Атрибутика</h4>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleEditStep(2)}
+              className="h-8 w-8 p-0"
+              type="button"
+            >
+              <Edit2 className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="space-y-2 text-sm">
+            {formData.packageType && formData.packageType !== "custom" ? (
+              <div className="flex justify-between">
+                <span className="text-gray-600">Пакет:</span>
+                <span className="text-gray-900">
+                  {PACKAGES.find((p) => p.id === formData.packageType)?.name || "—"}
+                </span>
+              </div>
+            ) : (
+              <div>
+                <span className="text-gray-600 block mb-2">Индивидуальный пакет</span>
+                {formData.selectedAdditionalServices?.length ? (
+                  <div className="space-y-1">
+                    {formData.selectedAdditionalServices.map((serviceId: string) => {
+                      const service = additionalServices.find((s) => s.id === serviceId);
+                      if (!service) return null;
+                      return (
+                        <div key={serviceId} className="text-xs text-gray-900">
+                          • {service.name}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <span className="text-xs text-gray-500">Услуги не выбраны</span>
+                )}
               </div>
             )}
           </div>
-        );
+        </div>
 
-      case 4:
-        // Шаг 5: Подтверждение + оплата
-        return (
-          <div className="space-y-6">
-            <div className="bg-green-50 border border-green-200 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
-              <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-              <div>
-                <h3 className="text-green-900 mb-2">Все данные заполнены</h3>
-                <p className="text-sm text-green-700">
-                  Пожалуйста, проверьте информацию перед бронированием.
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm text-gray-500">Формат церемонии</h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    type="button"
-                    onClick={() => handleEditStep(0)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Формат:</span>
-                    <span className="text-gray-900">
-                      {formData.serviceType === "burial" ? "Захоронение" : "Кремация"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Зал прощания:</span>
-                    <span className="text-gray-900">{formData.hasHall ? "Да" : "Нет"}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm text-gray-500">Логистика</h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    type="button"
-                    onClick={() => handleEditStep(1)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">
-                      {formData.serviceType === "burial" ? "Кладбище:" : "Крематорий:"}
-                    </span>
-                    <span className="text-gray-900">{formData.cemetery || "—"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Катафалк:</span>
-                    <span className="text-gray-900">{formData.needsHearse ? "Да" : "Нет"}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm text-gray-500">Атрибутика</h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    type="button"
-                    onClick={() => handleEditStep(2)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="space-y-2 text-sm">
-                  {formData.packageType && formData.packageType !== "custom" ? (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Пакет:</span>
-                      <span className="text-gray-900">
-                        {PACKAGES.find((p) => p.id === formData.packageType)?.name || "—"}
-                      </span>
-                    </div>
-                  ) : (
-                    <div>
-                      <span className="text-gray-600 block mb-2">Индивидуальный пакет</span>
-                      {formData.selectedAdditionalServices?.length ? (
-                        <div className="space-y-1">
-                          {formData.selectedAdditionalServices.map((serviceId) => {
-                            const service = additionalServices.find((s) => s.id === serviceId);
-                            if (!service) return null;
-                            return (
-                              <div key={serviceId} className="text-xs text-gray-900">
-                                • {service.name}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <span className="text-xs text-gray-500">Услуги не выбраны</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm text-gray-500">Документы</h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    type="button"
-                    onClick={() => handleEditStep(3)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">ФИО:</span>
-                    <span className="text-gray-900">{formData.fullName || "—"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Дата рождения:</span>
-                    <span className="text-gray-900">{formData.birthDate || "—"}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Оплата — ТОЛЬКО через отдельный компонент */}
-            <PaymentStep
-              total={calculateTotal()}
-              paymentMethod={paymentMethod}
-              setPaymentMethod={setPaymentMethod}
-              cardData={cardData}
-              setCardData={setCardData}
-              email={formData.userEmail}
-              setEmail={(v: string) => handleInputChange("userEmail", v)}
-              customerName={formData.clientName || ""}
-              // если в PaymentStep есть onConfirm — оставь, если нет — удали строку ниже
-              onConfirm={handleConfirmBooking}
-            />
+        <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm text-gray-500">Документы</h4>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleEditStep(3)}
+              className="h-8 w-8 p-0"
+              type="button"
+            >
+              <Edit2 className="h-4 w-4" />
+            </Button>
           </div>
-        );
 
-      default:
-        return null;
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">ФИО:</span>
+              <span className="text-gray-900">{formData.fullName || "—"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Дата рождения:</span>
+              <span className="text-gray-900">{formData.birthDate || "—"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Дата смерти:</span>
+              <span className="text-gray-900">{formData.deathDate || "—"}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <PaymentStep
+  total={calculateTotal()}
+  paymentMethod={paymentMethod}
+  setPaymentMethod={setPaymentMethod}
+  cardData={cardData}
+  setCardData={setCardData}
+  email={formData.userEmail || ""}
+  setEmail={(v) => handleInputChange("userEmail", v)}
+  onConfirm={handleConfirmBooking}
+/>
+    </div>
+  );
+
+default:
+  return null;
+
     }
   };
 
-  // РЕНДЕР StepperWorkflow (и только он)
   return (
-    <div ref={containerRef} className="max-w-5xl mx-auto -translate-y-12 pb-32">
-      <Card className="bg-white/20 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30 relative">
-        <CardHeader className="pb-4 pt-8 px-6 sm:px-8">
-          {/* Кнопка личного кабинета */}
-          <div className="absolute -top-5 right-8 z-50">
+  <div ref={containerRef} className="max-w-5xl mx-auto -translate-y-12 pb-32">
+    <Card className="bg-white/20 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30 relative">
+      <CardHeader className="pb-4 pt-8 px-6 sm:px-8">
+        <div className="absolute -top-5 right-8 z-50">
+          <button
+            onClick={() => setIsAccountOpen(true)}
+            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-200 text-white hover:scale-[1.02]"
+            type="button"
+          >
+            <User className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          <CardTitle className="text-white text-2xl">Оформление церемонии</CardTitle>
+          <CardDescription className="text-white/70">
+            Заполните шаги — и мы подготовим договор и подтверждение
+          </CardDescription>
+        </div>
+      </CardHeader>
+
+      <CardContent className="px-6 sm:px-8 pb-8">
+        {/* Переключатель режимов */}
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex rounded-full bg-white/20 border border-white/20 p-1 backdrop-blur-md">
             <button
-              onClick={() => setIsAccountOpen(true)}
-              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-200 text-white hover:scale-[1.02]"
               type="button"
+              onClick={() => setWorkflowMode("wizard")}
+              className={cn(
+                "px-5 py-2 rounded-full text-sm transition-all",
+                workflowMode === "wizard"
+                  ? "bg-white text-gray-900"
+                  : "text-white/80 hover:text-white",
+              )}
             >
-              <User className="w-5 h-5" />
+              Пошаговый мастер
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setWorkflowMode("packages")}
+              className={cn(
+                "px-5 py-2 rounded-full text-sm transition-all",
+                workflowMode === "packages"
+                  ? "bg-white text-gray-900"
+                  : "text-white/80 hover:text-white",
+              )}
+            >
+              Готовые решения
             </button>
           </div>
+        </div>
 
-          <div className="space-y-2">
-            <CardTitle className="text-white text-2xl">Оформление церемонии</CardTitle>
-            <CardDescription className="text-white/70">
-              Заполните шаги — и мы подготовим договор и подтверждение
-            </CardDescription>
-          </div>
-        </CardHeader>
+        {workflowMode === "wizard" ? (
+          <>
+            <Stepper
+              steps={steps}
+              currentStep={currentStep}
+              completedSteps={completedSteps}
+              onStepClick={handleStepClick}
+            />
 
-        <CardContent className="px-6 sm:px-8 pb-8">
-          <Stepper
-            steps={steps}
-            currentStep={currentStep}
-            completedSteps={completedSteps}
-            onStepClick={handleStepClick}
-          />
+            <div className="mt-8">{renderStepContent()}</div>
 
-          <div className="mt-8">{renderStepContent()}</div>
-
-          <div className="mt-8 flex items-center justify-between gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handlePrev}
-              disabled={currentStep === 0}
-              className="rounded-full"
-            >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              Назад
-            </Button>
-
-            {currentStep < steps.length - 1 && (
+            <div className="mt-8 flex items-center justify-between gap-3">
               <Button
                 type="button"
-                onClick={handleNext}
-                className="rounded-full bg-gray-900 hover:bg-gray-800"
+                variant="outline"
+                onClick={handlePrev}
+                disabled={currentStep === 0}
+                className="rounded-full"
               >
-                Далее
-                <ChevronRight className="h-4 w-4 ml-2" />
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Назад
               </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
 
-      <PersonalAccountModal open={isAccountOpen} onOpenChange={setIsAccountOpen} />
-    </div>
-  );
+              {currentStep < steps.length - 1 && (
+                <Button
+                  type="button"
+                  onClick={handleNext}
+                  className="rounded-full bg-gray-900 hover:bg-gray-800"
+                >
+                  Далее
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="text-center text-white/70 text-sm mb-6">
+              Выберите оптимальный пакет услуг под ваши задачи
+            </div>
+
+            <SimplifiedAny
+              packages={PACKAGES}
+              onSelectPackage={(pkg: any) => {
+                setSelectedPackageForSimplified(pkg);
+                if (pkg?.id) handleInputChange("packageType", pkg.id);
+                setWorkflowMode("wizard");
+              }}
+            />
+          </>
+        )}
+      </CardContent>
+    </Card>
+
+    <PersonalAccountModal open={isAccountOpen} onOpenChange={setIsAccountOpen} />
+  </div>
+);
 }
