@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { User } from "lucide-react";
 import { PersonalAccountModal } from "./PersonalAccountModal"; 
 import { SimplifiedStepperWorkflow } from "./SimplifiedStepperWorkflow";
+import { PaymentStep } from "./PaymentStep";
+
 import CoffinConfigurator3D from "./CoffinConfigurator3D";
 import { Stepper } from "./Stepper";
 import {
@@ -2953,657 +2955,320 @@ const handleConfirmAndBook = async () => {
           </div>
         );
 
-    case 4:
-// Шаг 5: Подтверждение
-return (
-<div className="space-y-6">
-{/* Статус: все данные заполнены */}
-<div className="bg-green-50 border border-green-200 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
-<CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-<div>
-<h3 className="text-green-900 mb-2">Все данные заполнены</h3>
-<p className="text-sm text-green-700">
-Пожалуйста, проверьте информацию перед бронированием.
-</p>
-</div>
-</div>
+    "use client";
 
-{/* Блоки с данными по шагам */}
-<div className="space-y-4">
-{/* Формат церемонии */}
-<div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-<div className="flex items-center justify-between mb-3">
-<h4 className="text-sm text-gray-500">Формат церемонии</h4>
-<Button
-variant="ghost"
-size="sm"
-onClick={() => handleEditStep(0)}
-className="h-8 w-8 p-0"
->
-<Edit2 className="h-4 w-4" />
-</Button>
-</div>
-<div className="space-y-2 text-sm">
-<div className="flex justify-between">
-<span className="text-gray-600">Формат:</span>
-<span className="text-gray-900">
-{formData.serviceType === "burial" ? "Захоронение" : "Кремация"}
-</span>
-</div>
-<div className="flex justify-between">
-<span className="text-gray-600">Зал прощания:</span>
-<span className="text-gray-900">{formData.hasHall ? "Да" : "Нет"}</span>
-</div>
-</div>
-</div>
+import * as React from "react";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { CheckCircle2 } from "lucide-react";
+import { RubleSign, Download, Share2 } from "./Icons";
 
-{/* Логистика */}
-<div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-<div className="flex items-center justify-between mb-3">
-<h4 className="text-sm text-gray-500">Логистика</h4>
-<Button
-variant="ghost"
-size="sm"
-onClick={() => handleEditStep(1)}
-className="h-8 w-8 p-0"
->
-<Edit2 className="h-4 w-4" />
-</Button>
-</div>
-<div className="space-y-2 text-sm">
-<div className="flex justify-between">
-<span className="text-gray-600">
-{formData.serviceType === "burial" ? "Кладбище:" : "Крематорий:"}
-</span>
-<span className="text-gray-900">{formData.cemetery || "—"}</span>
-</div>
-<div className="flex justify-between">
-<span className="text-gray-600">Катафалк:</span>
-<span className="text-gray-900">{formData.needsHearse ? "Да" : "Нет"}</span>
-</div>
-</div>
-</div>
-
-{/* Атрибутика */}
-<div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-<div className="flex items-center justify-between mb-3">
-<h4 className="text-sm text-gray-500">Атрибутика</h4>
-<Button
-variant="ghost"
-size="sm"
-onClick={() => handleEditStep(2)}
-className="h-8 w-8 p-0"
->
-<Edit2 className="h-4 w-4" />
-</Button>
-</div>
-<div className="space-y-2 text-sm">
-{formData.packageType && formData.packageType !== "custom" ? (
-<div className="flex justify-between">
-<span className="text-gray-600">Пакет:</span>
-<span className="text-gray-900">
-{PACKAGES.find((p) => p.id === formData.packageType)?.name || "—"}
-</span>
-</div>
-) : (
-<div>
-<span className="text-gray-600 block mb-2">Индивидуальный пакет</span>
-{formData.selectedAdditionalServices &&
-formData.selectedAdditionalServices.length > 0 ? (
-<div className="space-y-1">
-{formData.selectedAdditionalServices.map((serviceId) => {
-const service = additionalServices.find((s) => s.id === serviceId);
-if (!service) return null;
-return (
-<div key={serviceId} className="text-xs text-gray-900">
-• {service.name}
-</div>
-);
-})}
-</div>
-) : (
-<span className="text-xs text-gray-500">Услуги не выбраны</span>
-)}
-</div>
-)}
-</div>
-</div>
-
-{/* Документы */}
-<div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-<div className="flex items-center justify-between mb-3">
-<h4 className="text-sm text-gray-500">Документы</h4>
-<Button
-variant="ghost"
-size="sm"
-onClick={() => handleEditStep(3)}
-className="h-8 w-8 p-0"
->
-<Edit2 className="h-4 w-4" />
-</Button>
-</div>
-<div className="space-y-2 text-sm">
-<div className="flex justify-between">
-<span className="text-gray-600">ФИО:</span>
-<span className="text-gray-900">{formData.fullName || "—"}</span>
-</div>
-<div className="flex justify-between">
-<span className="text-gray-600">Дата рождения:</span>
-<span className="text-gray-900">{formData.birthDate || "—"}</span>
-</div>
-</div>
-</div>
-</div>
-
-{/* Итоговая смета + Способ оплаты */}
-<div className="bg-gray-900 text-white rounded-3xl p-6 shadow-lg space-y-6">
-{/* Итоговая смета */}
-<div>
-<h4 className="mb-4">Итоговая смета</h4>
-<div className="space-y-3">
-<div className="flex justify-between pt-2">
-<span className="text-lg">Итого:</span>
-<span className="text-2xl">
-{calculateTotal().toLocaleString("ru-RU")} ₽
-</span>
-</div>
-</div>
-
-<div className="flex gap-3 mt-6">
-<Button
-variant="outline"
-className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
->
-<Download className="h-4 w-4 mr-2" />
-Договор
-</Button>
-<Button
-variant="outline"
-className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
->
-<Share2 className="h-4 w-4 mr-2" />
-Поделиться
-</Button>
-</div>
-</div>
-
-{/* Разделитель */}
-<div className="border-t border-white/20" />
-
-{/* Способ оплаты */}
-<div>
-<div className="flex items-center gap-3 mb-4">
-<RubleSign className="h-6 w-6 text-white" />
-<h4 className="text-lg text-white">Способ оплаты</h4>
-</div>
-
-{/* Кнопка "Банковская карта", если выбран другой способ */}
-{paymentMethod !== "card" && (
-<button
-type="button"
-onClick={() => setPaymentMethod("card")}
-className="w-full p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-200 text-left mb-4"
->
-<div className="flex items-center gap-2 mb-2">
-<div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
-<span className="text-sm text-white">Банковская карта</span>
-</div>
-<p className="text-xs text-white/70 ml-7">Visa, Mastercard, МИР</p>
-</button>
-)}
-
-{/* Банковская карта (реалистичная) */}
-{paymentMethod === "card" && (
-<div className="mt-4">
-{/* Две колонки: слева карта, справа CVC + Email */}
-<div className="grid gap-6 md:grid-cols-2 items-start">
-{/* Левая колонка — карта */}
-<div className="relative mx-auto w-full max-w-md">
-<div className="relative w-full aspect-[1.586/1] rounded-2xl p-6 shadow-2xl bg-white border border-gray-200">
-{/* Чип */}
-<div className="absolute top-6 left-6 w-12 h-10 rounded bg-gradient-to-br from-yellow-300/80 to-yellow-500/80 backdrop-blur" />
-
-{/* Логотип платёжной системы */}
-<div className="absolute top-6 right-6 flex gap-2">
-<div className="w-8 h-8 rounded-full bg-white/50 backdrop-blur border border-white/60" />
-<div className="w-8 h-8 rounded-full bg-white/60 backdrop-blur border border-white/60 -ml-4" />
-</div>
-
-{/* Номер карты */}
-<div className="absolute top-16 left-6 right-6">
-<input
-type="text"
-className="w-full bg-transparent border-none text-gray-900 text-xl tracking-[0.2em] placeholder:text-gray-500 focus:outline-none font-mono"
-placeholder="0000 0000 0000 0000"
-value={cardData.number}
-onChange={(e) => {
-const value = e.target.value
-.replace(/\s/g, "")
-.replace(/(\d{4})/g, "$1 ")
-.trim();
-setCardData((prev) => ({
-...prev,
-number: value,
-}));
-}}
-maxLength={19}
-/>
-</div>
-
-{/* Имя держателя и срок действия */}
-<div className="absolute bottom-10 left-6 right-6 flex justify-between items-end">
-<div className="flex-1 min-w-0 mr-4">
-<input
-type="text"
-className="w-full bg-transparent border-none text-gray-900 text-sm placeholder:text-gray-500 focus:outline-none uppercase"
-placeholder="IVAN IVANOV"
-value={cardData.holder}
-onChange={(e) => {
-const value = e.target.value
-.toUpperCase()
-.replace(/[^A-Z\s]/g, "");
-setCardData((prev) => ({
-...prev,
-holder: value,
-}));
-}}
-/>
-<div className="text-[10px] text-gray-600 mt-1 uppercase tracking-wide">
-Держатель карты
-</div>
-</div>
-
-<div className="flex-shrink-0">
-<input
-type="text"
-className="w-16 bg-transparent border-none text-gray-900 text-sm text-right placeholder:text-gray-500 focus:outline-none font-mono"
-placeholder="MM/ГГ"
-value={cardData.expiry}
-onChange={(e) => {
-let value = e.target.value.replace(/\D/g, "");
-if (value.length >= 2) {
-value = value.slice(0, 2) + "/" + value.slice(2, 4);
-}
-setCardData((prev) => ({
-...prev,
-expiry: value,
-}));
-}}
-maxLength={5}
-/>
-<div className="text-[10px] text-gray-600 mt-1 uppercase tracking-wide text-right">
-Действительна
-</div>
-</div>
-</div>
-</div>
-</div>
-
-{/* Правая колонка — CVC + Email */}
-<div className="space-y-4">
-{/* CVC */}
-<div className="bg-white border border-gray-200 rounded-xl p-4">
-<div className="flex items-center gap-3">
-<div className="flex-1">
-<Label
-htmlFor="cardCvc"
-className="text-gray-900 text-xs mb-2 block"
->
-CVC/CVV код
-</Label>
-<Input
-id="cardCvc"
-className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 text-center text-lg tracking-widest font-mono"
-placeholder="•••"
-type="password"
-value={cardData.cvc}
-onChange={(e) => {
-const value = e.target.value.replace(/\D/g, "").slice(0, 3);
-setCardData((prev) => ({
-...prev,
-cvc: value,
-}));
-}}
-maxLength={3}
-/>
-</div>
-<div className="text-xs text-gray-600 max-w-[120px]">
-3 цифры на обратной стороне карты
-</div>
-</div>
-</div>
-
-{/* Email */}
-<div className="bg-white border border-gray-200 rounded-xl p-4">
-<Label
-htmlFor="userEmail"
-className="text-gray-900 text-sm mb-2 block"
->
-Email для получения информации
-</Label>
-<Input
-id="userEmail"
-type="email"
-className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-placeholder="example@email.com"
-value={formData.userEmail}
-onChange={(e) =>
-onUpdateFormData("userEmail", e.target.value)
-}
-/>
-<p className="text-xs text-gray-500 mt-2">
-На этот адрес придет подтверждение заказа, детали церемонии
-и все необходимые документы.
-</p>
-</div>
-</div>
-</div>
-
-{/* Другие способы оплаты — на всю ширину, под двумя колонками */}
-<div className="pt-4 border-t border-white/20 mt-6">
-<p className="text-xs text-white/60 mb-3">
-Или выберите другой способ:
-</p>
-<div className="grid grid-cols-2 gap-3">
-<button
-type="button"
-onClick={() => setPaymentMethod("sbp")}
-className="p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-200 text-left"
->
-<div className="flex items-center gap-2 mb-2">
-<div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
-<span className="text-sm text-white">СБП</span>
-</div>
-<p className="text-xs text-white/70 ml-7">
-Система быстрых платежей
-</p>
-</button>
-
-<button
-type="button"
-onClick={() => setPaymentMethod("installment")}
-className="p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-200 text-left"
->
-<div className="flex items-center gap-2 mb-2">
-<div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
-<span className="text-sm text-white">Рассрочка</span>
-</div>
-<p className="text-xs text-white/70 ml-7">0% на 6 месяцев</p>
-</button>
-</div>
-</div>
-
-{/* Защищённый платёж */}
-<div className="bg-white/10 border border-white/20 rounded-2xl p-4 mt-4">
-<div className="flex items-start gap-3">
-<CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-<div className="space-y-1">
-<p className="text-sm text-white">Защищённый платёж</p>
-<p className="text-xs text-white/70">
-Данные передаются по защищённому протоколу и не хранятся на
-наших серверах.
-</p>
-</div>
-</div>
-</div>
-</div>
-)}
-
-
-<Button
-className="w-full h-14 text-lg bg-gray-900 hover:bg-gray-800 mt-6"
-type="button"
-onClick={async () => {
-try {
-if (!formData.userEmail) {
-alert("Укажите email для получения договора и деталей заказа.");
-return;
-}
-
-const payload = {
-customer: {
-email: formData.userEmail,
-name: formData.fullName || undefined,
-},
+type CardData = {
+  number: string;
+  expiry: string;
+  cvc: string;
+  holder: string;
 };
 
-const res = await fetch("/api/orders", {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify(payload),
-});
+type PaymentStepProps = {
+  total: number;
 
-if (!res.ok) {
-const data = await res.json().catch(() => ({}));
-console.error("Order error:", data);
-alert(
-data?.error ||
-"Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой."
-);
-return;
-}
+  paymentMethod: string;
+  setPaymentMethod: (v: string) => void;
 
-const data = await res.json();
-console.log("Order created:", data);
+  cardData: CardData;
+  setCardData: React.Dispatch<React.SetStateAction<CardData>>;
 
-alert(
-"Бронирование оформлено! Детали и договор отправлены на указанную электронную почту."
-);
-} catch (e) {
-console.error("Order request failed:", e);
-alert(
-"Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой."
-);
-}
-}}
->
-Подтвердить и забронировать
-</Button>
-</div>
-</div>
-</div>
-);
+  email: string;
+  setEmail: (v: string) => void;
 
-default:
-return null;
-}
+  customerName?: string;
 };
+
+export default function PaymentStep({
+  total,
+  paymentMethod,
+  setPaymentMethod,
+  cardData,
+  setCardData,
+  email,
+  setEmail,
+  customerName,
+}: PaymentStepProps) {
+  const submitOrder = async () => {
+    if (!email) {
+      alert("Укажите email для получения договора и деталей заказа.");
+      return;
+    }
+
+    const payload = {
+      customer: {
+        email,
+        name: customerName || undefined,
+      },
+    };
+
+    const res = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      console.error("Order error:", data);
+      alert(
+        data?.error ||
+          "Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой."
+      );
+      return;
+    }
+
+    await res.json().catch(() => ({}));
+
+    alert(
+      "Бронирование оформлено! Детали и договор отправлены на указанную электронную почту."
+    );
+  };
 
   return (
-<div
-ref={containerRef}
-className="max-w-5xl mx-auto -translate-y-12 pb-32"
->
-<Card className="bg-white/20 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30 relative">
-<CardHeader className="pb-4 pt-8 px-6 sm:px-8">
-{/* Кнопка личного кабинета */}
-<div className="absolute -top-5 right-8 z-50">
-<button
-onClick={() => setIsAccountOpen(true)}
-className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-200 text-white hover:scale-105 active:scale-95"
-aria-label="Личный кабинет"
->
-<User className="w-5 h-5" />
-</button>
-</div>
+    <div className="space-y-6">
+      {/* Итоговая смета + Способ оплаты */}
+      <div className="bg-gray-900 text-white rounded-3xl p-6 shadow-lg space-y-6">
+        {/* Итоговая смета */}
+        <div>
+          <h4 className="mb-4">Итоговая смета</h4>
 
-{/* Переключатель режимов */}
-<div className="flex justify-center mb-6">
-<div className="bg-white/20 backdrop-blur-md p-1 rounded-full border border-white/20 inline-flex">
-<button
-onClick={() => {
-setWorkflowMode("wizard");
-setSelectedPackageForSimplified(null);
-}}
-className={cn(
-"px-6 py-2 rounded-full text-sm font-medium transition-all duration-200",
-workflowMode === "wizard"
-? "bg-white text-black shadow-lg"
-: "text-white hover:bg-white/10",
-)}
->
-Пошаговый мастер
-</button>
-<button
-onClick={() => {
-setWorkflowMode("packages");
-setSelectedPackageForSimplified(null);
-}}
-className={cn(
-"px-6 py-2 rounded-full text-sm font-medium transition-all duration-200",
-workflowMode === "packages"
-? "bg-white text-black shadow-lg"
-: "text-white hover:bg-white/10",
-)}
->
-Готовые решения
-</button>
-</div>
-</div>
+          <div className="flex justify-between pt-2">
+            <span className="text-lg">Итого:</span>
+            <span className="text-2xl">{total.toLocaleString("ru-RU")} ₽</span>
+          </div>
 
-{/* Заголовок и подзаголовок */}
-<div className="text-center mb-2" style={{ fontWeight: 40 }}>
-<CardTitle
-className="text-2xl sm:text-3xl mb-2 text-white text-[30px] not-italic no-underline font-sans"
-style={{ fontWeight: 40 }}
->
+          <div className="flex gap-3 mt-6">
+            <Button
+              variant="outline"
+              className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
+              type="button"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Договор
+            </Button>
 
-</CardTitle>
-<CardDescription className="text-base text-white/90 text-[14px] font-sans">
-{workflowMode === "wizard"
-? "Организуйте церемонию прощания за 5 простых шагов"
-: "Выберите оптимальный пакет услуг под ваши задачи"}
-</CardDescription>
-</div>
+            <Button
+              variant="outline"
+              className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
+              type="button"
+            >
+              <Share2 className="h-4 w-4 mr-2" />
+              Поделиться
+            </Button>
+          </div>
+        </div>
 
-{/* Степпер только для полного мастера */}
-{workflowMode === "wizard" && (
-<Stepper
-steps={steps}
-currentStep={currentStep}
-completedSteps={completedSteps}
-onStepClick={handleStepClick}
-/>
-)}
-</CardHeader>
+        {/* Разделитель */}
+        <div className="border-t border-white/20" />
 
-<CardContent className="px-6 sm:px-8 pb-8">
-{workflowMode === "wizard" ? (
-<>
-<div
-className={cn(
-"transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]",
-isTransitioning
-? "opacity-0 translate-y-8 scale-[0.96] blur-sm"
-: "opacity-100 translate-y-0 scale-100 blur-0",
-)}
->
-{renderStepContent()}
-</div>
+        {/* Способ оплаты */}
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <RubleSign className="h-6 w-6 text-white" />
+            <h4 className="text-lg text-white">Способ оплаты</h4>
+          </div>
 
-<div className="flex items-center justify-between mt-8 pt-6 border-t">
-<Button
-variant="outline"
-onClick={handlePrev}
-disabled={currentStep === 0}
-className="gap-2 rounded-[30px]"
->
-<ChevronLeft className="h-4 w-4" />
-Назад
-</Button>
+          {/* Кнопка "Банковская карта", если выбран другой способ */}
+          {paymentMethod !== "card" && (
+            <button
+              type="button"
+              onClick={() => setPaymentMethod("card")}
+              className="w-full p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-200 text-left mb-4"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
+                <span className="text-sm text-white">Банковская карта</span>
+              </div>
+              <p className="text-xs text-white/70 ml-7">Visa, Mastercard, МИР</p>
+            </button>
+          )}
 
-<div className="text-sm text-gray-500">
-Шаг {currentStep + 1} из {steps.length}
-</div>
+          {/* Банковская карта */}
+          {paymentMethod === "card" && (
+            <div className="mt-4">
+              <div className="grid gap-6 md:grid-cols-2 items-start">
+                {/* Левая колонка — карта */}
+                <div className="relative mx-auto w-full max-w-md">
+                  <div className="relative w-full aspect-[1.586/1] rounded-2xl p-6 shadow-2xl bg-white border border-gray-200">
+                    {/* Чип */}
+                    <div className="absolute top-6 left-6 w-12 h-10 rounded bg-gradient-to-br from-yellow-300/80 to-yellow-500/80 backdrop-blur" />
 
-<Button
-onClick={handleNext}
-disabled={currentStep === steps.length - 1}
-className="gap-2 bg-gray-900 hover:bg-gray-800 rounded-[30px]"
->
-Далее
-<ChevronRight className="h-4 w-4" />
-</Button>
-</div>
-</>
-) : selectedPackageForSimplified ? (
-<>
-{/* Упрощённый мастер настройки пакета */}
-<SimplifiedStepperWorkflow
-selectedPackage={selectedPackageForSimplified}
-onBack={() => setSelectedPackageForSimplified(null)}
-formData={formData}
-onUpdateFormData={onUpdateFormData}
-/>
-</>
-) : (
-<>
-{/* Список пакетов */}
-<div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-{PACKAGES.map((pkg) => (
-<Card
-key={pkg.id}
-className={cn(
-"cursor-pointer hover:border-gray-400 hover:shadow-lg transition-all duration-300 relative overflow-hidden group border-white/50 bg-white/80 backdrop-blur-sm",
-formData.packageType === pkg.id
-? "ring-2 ring-gray-900 border-gray-900"
-: "",
-)}
-onClick={() => {
-handleInputChange("packageType", pkg.id);
-setSelectedPackageForSimplified(pkg);
-}}
->
-{pkg.popular && (
-<div className="absolute top-0 right-0 bg-gray-900 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-Популярный
-</div>
-)}
+                    {/* Логотип */}
+                    <div className="absolute top-6 right-6 flex gap-2">
+                      <div className="w-8 h-8 rounded-full bg-white/50 backdrop-blur border border-white/60" />
+                      <div className="w-8 h-8 rounded-full bg-white/60 backdrop-blur border border-white/60 -ml-4" />
+                    </div>
 
-<CardHeader>
-<CardTitle className="text-xl">{pkg.name}</CardTitle>
-<CardDescription>{pkg.description}</CardDescription>
-</CardHeader>
+                    {/* Номер карты */}
+                    <div className="absolute top-16 left-6 right-6">
+                      <input
+                        type="text"
+                        className="w-full bg-transparent border-none text-gray-900 text-xl tracking-[0.2em] placeholder:text-gray-500 focus:outline-none font-mono"
+                        placeholder="0000 0000 0000 0000"
+                        value={cardData.number}
+                        onChange={(e) => {
+                          const value = e.target.value
+                            .replace(/\s/g, "")
+                            .replace(/(\d{4})/g, "$1 ")
+                            .trim();
+                          setCardData((prev) => ({ ...prev, number: value }));
+                        }}
+                        maxLength={19}
+                      />
+                    </div>
 
-<CardContent>
-<div className="text-3xl font-light mb-6">
-{pkg.price.toLocaleString("ru-RU")} ₽
-</div>
-<ul className="space-y-3 mb-6">
-{pkg.features.map((feature, i) => (
-<li key={i} className="flex items-start text-sm">
-<Check className="h-4 w-4 mr-2 text-green-600 mt-0.5 shrink-0" />
-<span className="text-gray-600">{feature}</span>
-</li>
-))}
-</ul>
-<Button
-className="w-full rounded-full"
-variant="outline"
-onClick={(e) => {
-e.stopPropagation();
-handleInputChange("packageType", pkg.id);
-setSelectedPackageForSimplified(pkg);
-}}
->
-Настроить
-</Button>
-</CardContent>
-</Card>
-))}
-</div>
-</>
-)}
-</CardContent>
-</Card>
+                    {/* Имя держателя и срок */}
+                    <div className="absolute bottom-10 left-6 right-6 flex justify-between items-end">
+                      <div className="flex-1 min-w-0 mr-4">
+                        <input
+                          type="text"
+                          className="w-full bg-transparent border-none text-gray-900 text-sm placeholder:text-gray-500 focus:outline-none uppercase"
+                          placeholder="IVAN IVANOV"
+                          value={cardData.holder}
+                          onChange={(e) => {
+                            const value = e.target.value
+                              .toUpperCase()
+                              .replace(/[^A-Z\s]/g, "");
+                            setCardData((prev) => ({ ...prev, holder: value }));
+                          }}
+                        />
+                        <div className="text-[10px] text-gray-600 mt-1 uppercase tracking-wide">
+                          Держатель карты
+                        </div>
+                      </div>
 
-{/* Модалка личного кабинета */}
-<PersonalAccountModal
-isOpen={isAccountOpen}
-onClose={() => setIsAccountOpen(false)}
-/>
-</div>
-);
+                      <div className="flex-shrink-0">
+                        <input
+                          type="text"
+                          className="w-16 bg-transparent border-none text-gray-900 text-sm text-right placeholder:text-gray-500 focus:outline-none font-mono"
+                          placeholder="MM/ГГ"
+                          value={cardData.expiry}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/\D/g, "");
+                            if (value.length >= 2) {
+                              value = value.slice(0, 2) + "/" + value.slice(2, 4);
+                            }
+                            setCardData((prev) => ({ ...prev, expiry: value }));
+                          }}
+                          maxLength={5}
+                        />
+                        <div className="text-[10px] text-gray-600 mt-1 uppercase tracking-wide text-right">
+                          Действительна
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Правая колонка — CVC + Email */}
+                <div className="space-y-4">
+                  <div className="bg-white border border-gray-200 rounded-xl p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <Label htmlFor="cardCvc" className="text-gray-900 text-xs mb-2 block">
+                          CVC/CVV код
+                        </Label>
+                        <Input
+                          id="cardCvc"
+                          className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 text-center text-lg tracking-widest font-mono"
+                          placeholder="•••"
+                          type="password"
+                          value={cardData.cvc}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, "").slice(0, 3);
+                            setCardData((prev) => ({ ...prev, cvc: value }));
+                          }}
+                          maxLength={3}
+                        />
+                      </div>
+                      <div className="text-xs text-gray-600 max-w-[120px]">
+                        3 цифры на обратной стороне карты
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border border-gray-200 rounded-xl p-4">
+                    <Label htmlFor="userEmail" className="text-gray-900 text-sm mb-2 block">
+                      Email для получения информации
+                    </Label>
+                    <Input
+                      id="userEmail"
+                      type="email"
+                      className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                      placeholder="example@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                    <p className="text-xs text-gray-500 mt-2">
+                      На этот адрес придет подтверждение заказа, детали церемонии и все необходимые документы.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Другие способы оплаты */}
+              <div className="pt-4 border-t border-white/20 mt-6">
+                <p className="text-xs text-white/60 mb-3">Или выберите другой способ:</p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("sbp")}
+                    className="p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-200 text-left"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
+                      <span className="text-sm text-white">СБП</span>
+                    </div>
+                    <p className="text-xs text-white/70 ml-7">Система быстрых платежей</p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("installment")}
+                    className="p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-200 text-left"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
+                      <span className="text-sm text-white">Рассрочка</span>
+                    </div>
+                    <p className="text-xs text-white/70 ml-7">0% на 6 месяцев</p>
+                  </button>
+                </div>
+              </div>
+
+              {/* Защищённый платёж */}
+              <div className="bg-white/10 border border-white/20 rounded-2xl p-4 mt-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="text-sm text-white">Защищённый платёж</p>
+                    <p className="text-xs text-white/70">
+                      Данные передаются по защищённому протоколу и не хранятся на наших серверах.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Button
+        className="w-full h-14 text-lg bg-gray-900 hover:bg-gray-800"
+        type="button"
+        onClick={() => void submitOrder()}
+      >
+        Подтвердить и забронировать
+      </Button>
+    </div>
+  );
 }
-
-export default StepperWorkflow;
