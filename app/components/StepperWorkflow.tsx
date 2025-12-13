@@ -2767,7 +2767,7 @@ const handleConfirmAndBook = async () => {
           </div>
         );
 
-      case 3:
+            case 3:
         // Шаг 4: Документы
         return (
           <div className="space-y-6">
@@ -2776,9 +2776,7 @@ const handleConfirmAndBook = async () => {
               <Input
                 id="fullName"
                 value={formData.fullName}
-                onChange={(e) =>
-                  handleInputChange("fullName", e.target.value)
-                }
+                onChange={(e) => handleInputChange("fullName", e.target.value)}
                 placeholder="Иванов Иван Иванович"
                 className="mt-2"
               />
@@ -2790,23 +2788,15 @@ const handleConfirmAndBook = async () => {
                 <div className="flex gap-2 mt-2">
                   <Input
                     id="birthDate"
-                    type={
-                      formData.birthDate === "—"
-                        ? "text"
-                        : "date"
-                    }
+                    type={formData.birthDate === "—" ? "text" : "date"}
                     value={formData.birthDate}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "birthDate",
-                        e.target.value,
-                      )
-                    }
+                    onChange={(e) => handleInputChange("birthDate", e.target.value)}
                     className="flex-1"
                   />
                   <Button
                     variant="outline"
                     size="sm"
+                    type="button"
                     onClick={() => handleSkipField("birthDate")}
                     className="whitespace-nowrap rounded-[30px]"
                   >
@@ -2814,28 +2804,21 @@ const handleConfirmAndBook = async () => {
                   </Button>
                 </div>
               </div>
+
               <div>
                 <Label htmlFor="deathDate">Дата смерти</Label>
                 <div className="flex gap-2 mt-2">
                   <Input
                     id="deathDate"
-                    type={
-                      formData.deathDate === "—"
-                        ? "text"
-                        : "date"
-                    }
+                    type={formData.deathDate === "—" ? "text" : "date"}
                     value={formData.deathDate}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "deathDate",
-                        e.target.value,
-                      )
-                    }
+                    onChange={(e) => handleInputChange("deathDate", e.target.value)}
                     className="flex-1"
                   />
                   <Button
                     variant="outline"
                     size="sm"
+                    type="button"
                     onClick={() => handleSkipField("deathDate")}
                     className="whitespace-nowrap rounded-[30px]"
                   >
@@ -2846,28 +2829,20 @@ const handleConfirmAndBook = async () => {
             </div>
 
             <div>
-              <Label htmlFor="deathCertificate">
-                № свидетельства о смерти
-              </Label>
+              <Label htmlFor="deathCertificate">№ свидетельства о смерти</Label>
               <div className="flex gap-2 mt-2">
                 <Input
                   id="deathCertificate"
                   value={formData.deathCertificate}
-                  onChange={(e) =>
-                    handleInputChange(
-                      "deathCertificate",
-                      e.target.value,
-                    )
-                  }
+                  onChange={(e) => handleInputChange("deathCertificate", e.target.value)}
                   placeholder="AA-000 № 000000"
                   className="flex-1"
                 />
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    handleSkipField("deathCertificate")
-                  }
+                  type="button"
+                  onClick={() => handleSkipField("deathCertificate")}
                   className="whitespace-nowrap"
                 >
                   Позже
@@ -2879,34 +2854,20 @@ const handleConfirmAndBook = async () => {
             </div>
 
             <div>
-              <Label htmlFor="relationship">
-                Степень родства *
-              </Label>
+              <Label htmlFor="relationship">Степень родства *</Label>
               <Select
                 value={formData.relationship}
-                onValueChange={(value) =>
-                  handleInputChange("relationship", value)
-                }
+                onValueChange={(value) => handleInputChange("relationship", value)}
               >
                 <SelectTrigger className="mt-2">
                   <SelectValue placeholder="Выберите степень родства" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="spouse">
-                    Супруг(а)
-                  </SelectItem>
-                  <SelectItem value="parent">
-                    Родитель
-                  </SelectItem>
-                  <SelectItem value="child">
-                    Сын/дочь
-                  </SelectItem>
-                  <SelectItem value="relative">
-                    Дальний родственник
-                  </SelectItem>
-                  <SelectItem value="representative">
-                    Доверенное лицо
-                  </SelectItem>
+                  <SelectItem value="spouse">Супруг(а)</SelectItem>
+                  <SelectItem value="parent">Родитель</SelectItem>
+                  <SelectItem value="child">Сын/дочь</SelectItem>
+                  <SelectItem value="relative">Дальний родственник</SelectItem>
+                  <SelectItem value="representative">Доверенное лицо</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -2915,29 +2876,20 @@ const handleConfirmAndBook = async () => {
               id="data-consent"
               className={cn(
                 "flex items-start gap-2 md:gap-3 p-2 md:p-4 rounded-2xl md:rounded-full transition-all",
-                showConsentError
-                  ? "bg-gray-50 border-2 border-gray-300"
-                  : "bg-gray-50 border border-gray-200",
+                showConsentError ? "bg-gray-50 border-2 border-gray-300" : "bg-gray-50 border border-gray-200"
               )}
             >
               <Checkbox
                 id="privacy"
                 checked={formData.dataConsent}
                 onCheckedChange={(checked) => {
-                  handleInputChange(
-                    "dataConsent",
-                    checked === true,
-                  );
+                  handleInputChange("dataConsent", checked === true);
                   setShowConsentError(false);
                 }}
                 className="mt-0.5 md:mt-1 flex-shrink-0"
               />
-              <Label
-                htmlFor="privacy"
-                className="text-xs md:text-sm cursor-pointer leading-snug"
-              >
-                Я согласен на обработку персональных данных и
-                подтверждаю, что ознакомлен с{" "}
+              <Label htmlFor="privacy" className="text-xs md:text-sm cursor-pointer leading-snug">
+                Я согласен на обработку персональных данных и подтверждаю, что ознакомлен с{" "}
                 <a href="#" className="underline text-blue-600">
                   политикой конфиденциальности
                 </a>
@@ -2947,328 +2899,234 @@ const handleConfirmAndBook = async () => {
             {showConsentError && (
               <div className="bg-gray-50 border border-gray-300 rounded-full p-4">
                 <p className="text-sm text-gray-600">
-                  ⚠️ Для продолжения необходимо дать согласие на
-                  обработку персональных данных
+                  ⚠️ Для продолжения необходимо дать согласие на обработку персональных данных
                 </p>
               </div>
             )}
           </div>
         );
 
-    "use client";
-
-import * as React from "react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { CheckCircle2 } from "lucide-react";
-import { RubleSign, Download, Share2 } from "./Icons";
-
-type CardData = {
-  number: string;
-  expiry: string;
-  cvc: string;
-  holder: string;
-};
-
-type PaymentStepProps = {
-  total: number;
-
-  paymentMethod: string;
-  setPaymentMethod: (v: string) => void;
-
-  cardData: CardData;
-  setCardData: React.Dispatch<React.SetStateAction<CardData>>;
-
-  email: string;
-  setEmail: (v: string) => void;
-
-  customerName?: string;
-};
-
-export default function PaymentStep({
-  total,
-  paymentMethod,
-  setPaymentMethod,
-  cardData,
-  setCardData,
-  email,
-  setEmail,
-  customerName,
-}: PaymentStepProps) {
-  const submitOrder = async () => {
-    if (!email) {
-      alert("Укажите email для получения договора и деталей заказа.");
-      return;
-    }
-
-    const payload = {
-      customer: {
-        email,
-        name: customerName || undefined,
-      },
-    };
-
-    const res = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      console.error("Order error:", data);
-      alert(
-        data?.error ||
-          "Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой."
-      );
-      return;
-    }
-
-    await res.json().catch(() => ({}));
-
-    alert(
-      "Бронирование оформлено! Детали и договор отправлены на указанную электронную почту."
-    );
-  };
-
-  return (
-    <div className="space-y-6">
-      {/* Итоговая смета + Способ оплаты */}
-      <div className="bg-gray-900 text-white rounded-3xl p-6 shadow-lg space-y-6">
-        {/* Итоговая смета */}
-        <div>
-          <h4 className="mb-4">Итоговая смета</h4>
-
-          <div className="flex justify-between pt-2">
-            <span className="text-lg">Итого:</span>
-            <span className="text-2xl">{total.toLocaleString("ru-RU")} ₽</span>
-          </div>
-
-          <div className="flex gap-3 mt-6">
-            <Button
-              variant="outline"
-              className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
-              type="button"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Договор
-            </Button>
-
-            <Button
-              variant="outline"
-              className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
-              type="button"
-            >
-              <Share2 className="h-4 w-4 mr-2" />
-              Поделиться
-            </Button>
-          </div>
-        </div>
-
-        {/* Разделитель */}
-        <div className="border-t border-white/20" />
-
-        {/* Способ оплаты */}
-        <div>
-          <div className="flex items-center gap-3 mb-4">
-            <RubleSign className="h-6 w-6 text-white" />
-            <h4 className="text-lg text-white">Способ оплаты</h4>
-          </div>
-
-          {/* Кнопка "Банковская карта", если выбран другой способ */}
-          {paymentMethod !== "card" && (
-            <button
-              type="button"
-              onClick={() => setPaymentMethod("card")}
-              className="w-full p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-200 text-left mb-4"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
-                <span className="text-sm text-white">Банковская карта</span>
+      case 4:
+        // Шаг 5: Подтверждение + оплата
+        return (
+          <div className="space-y-6">
+            <div className="bg-green-50 border border-green-200 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
+              <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="text-green-900 mb-2">Все данные заполнены</h3>
+                <p className="text-sm text-green-700">
+                  Пожалуйста, проверьте информацию перед бронированием.
+                </p>
               </div>
-              <p className="text-xs text-white/70 ml-7">Visa, Mastercard, МИР</p>
-            </button>
-          )}
+            </div>
 
-          {/* Банковская карта */}
-          {paymentMethod === "card" && (
-            <div className="mt-4">
-              <div className="grid gap-6 md:grid-cols-2 items-start">
-                {/* Левая колонка — карта */}
-                <div className="relative mx-auto w-full max-w-md">
-                  <div className="relative w-full aspect-[1.586/1] rounded-2xl p-6 shadow-2xl bg-white border border-gray-200">
-                    {/* Чип */}
-                    <div className="absolute top-6 left-6 w-12 h-10 rounded bg-gradient-to-br from-yellow-300/80 to-yellow-500/80 backdrop-blur" />
-
-                    {/* Логотип */}
-                    <div className="absolute top-6 right-6 flex gap-2">
-                      <div className="w-8 h-8 rounded-full bg-white/50 backdrop-blur border border-white/60" />
-                      <div className="w-8 h-8 rounded-full bg-white/60 backdrop-blur border border-white/60 -ml-4" />
-                    </div>
-
-                    {/* Номер карты */}
-                    <div className="absolute top-16 left-6 right-6">
-                      <input
-                        type="text"
-                        className="w-full bg-transparent border-none text-gray-900 text-xl tracking-[0.2em] placeholder:text-gray-500 focus:outline-none font-mono"
-                        placeholder="0000 0000 0000 0000"
-                        value={cardData.number}
-                        onChange={(e) => {
-                          const value = e.target.value
-                            .replace(/\s/g, "")
-                            .replace(/(\d{4})/g, "$1 ")
-                            .trim();
-                          setCardData((prev) => ({ ...prev, number: value }));
-                        }}
-                        maxLength={19}
-                      />
-                    </div>
-
-                    {/* Имя держателя и срок */}
-                    <div className="absolute bottom-10 left-6 right-6 flex justify-between items-end">
-                      <div className="flex-1 min-w-0 mr-4">
-                        <input
-                          type="text"
-                          className="w-full bg-transparent border-none text-gray-900 text-sm placeholder:text-gray-500 focus:outline-none uppercase"
-                          placeholder="IVAN IVANOV"
-                          value={cardData.holder}
-                          onChange={(e) => {
-                            const value = e.target.value
-                              .toUpperCase()
-                              .replace(/[^A-Z\s]/g, "");
-                            setCardData((prev) => ({ ...prev, holder: value }));
-                          }}
-                        />
-                        <div className="text-[10px] text-gray-600 mt-1 uppercase tracking-wide">
-                          Держатель карты
-                        </div>
-                      </div>
-
-                      <div className="flex-shrink-0">
-                        <input
-                          type="text"
-                          className="w-16 bg-transparent border-none text-gray-900 text-sm text-right placeholder:text-gray-500 focus:outline-none font-mono"
-                          placeholder="MM/ГГ"
-                          value={cardData.expiry}
-                          onChange={(e) => {
-                            let value = e.target.value.replace(/\D/g, "");
-                            if (value.length >= 2) {
-                              value = value.slice(0, 2) + "/" + value.slice(2, 4);
-                            }
-                            setCardData((prev) => ({ ...prev, expiry: value }));
-                          }}
-                          maxLength={5}
-                        />
-                        <div className="text-[10px] text-gray-600 mt-1 uppercase tracking-wide text-right">
-                          Действительна
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Правая колонка — CVC + Email */}
-                <div className="space-y-4">
-                  <div className="bg-white border border-gray-200 rounded-xl p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1">
-                        <Label htmlFor="cardCvc" className="text-gray-900 text-xs mb-2 block">
-                          CVC/CVV код
-                        </Label>
-                        <Input
-                          id="cardCvc"
-                          className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 text-center text-lg tracking-widest font-mono"
-                          placeholder="•••"
-                          type="password"
-                          value={cardData.cvc}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, "").slice(0, 3);
-                            setCardData((prev) => ({ ...prev, cvc: value }));
-                          }}
-                          maxLength={3}
-                        />
-                      </div>
-                      <div className="text-xs text-gray-600 max-w-[120px]">
-                        3 цифры на обратной стороне карты
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white border border-gray-200 rounded-xl p-4">
-                    <Label htmlFor="userEmail" className="text-gray-900 text-sm mb-2 block">
-                      Email для получения информации
-                    </Label>
-                    <Input
-                      id="userEmail"
-                      type="email"
-                      className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-                      placeholder="example@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <p className="text-xs text-gray-500 mt-2">
-                      На этот адрес придет подтверждение заказа, детали церемонии и все необходимые документы.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Другие способы оплаты */}
-              <div className="pt-4 border-t border-white/20 mt-6">
-                <p className="text-xs text-white/60 mb-3">Или выберите другой способ:</p>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <button
+            <div className="space-y-4">
+              <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm text-gray-500">Формат церемонии</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     type="button"
-                    onClick={() => setPaymentMethod("sbp")}
-                    className="p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-200 text-left"
+                    onClick={() => handleEditStep(0)}
+                    className="h-8 w-8 p-0"
                   >
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
-                      <span className="text-sm text-white">СБП</span>
-                    </div>
-                    <p className="text-xs text-white/70 ml-7">Система быстрых платежей</p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("installment")}
-                    className="p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-200 text-left"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
-                      <span className="text-sm text-white">Рассрочка</span>
-                    </div>
-                    <p className="text-xs text-white/70 ml-7">0% на 6 месяцев</p>
-                  </button>
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Формат:</span>
+                    <span className="text-gray-900">
+                      {formData.serviceType === "burial" ? "Захоронение" : "Кремация"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Зал прощания:</span>
+                    <span className="text-gray-900">{formData.hasHall ? "Да" : "Нет"}</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Защищённый платёж */}
-              <div className="bg-white/10 border border-white/20 rounded-2xl p-4 mt-4">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <p className="text-sm text-white">Защищённый платёж</p>
-                    <p className="text-xs text-white/70">
-                      Данные передаются по защищённому протоколу и не хранятся на наших серверах.
-                    </p>
+              <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm text-gray-500">Логистика</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    type="button"
+                    onClick={() => handleEditStep(1)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">
+                      {formData.serviceType === "burial" ? "Кладбище:" : "Крематорий:"}
+                    </span>
+                    <span className="text-gray-900">{formData.cemetery || "—"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Катафалк:</span>
+                    <span className="text-gray-900">{formData.needsHearse ? "Да" : "Нет"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm text-gray-500">Атрибутика</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    type="button"
+                    onClick={() => handleEditStep(2)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="space-y-2 text-sm">
+                  {formData.packageType && formData.packageType !== "custom" ? (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Пакет:</span>
+                      <span className="text-gray-900">
+                        {PACKAGES.find((p) => p.id === formData.packageType)?.name || "—"}
+                      </span>
+                    </div>
+                  ) : (
+                    <div>
+                      <span className="text-gray-600 block mb-2">Индивидуальный пакет</span>
+                      {formData.selectedAdditionalServices?.length ? (
+                        <div className="space-y-1">
+                          {formData.selectedAdditionalServices.map((serviceId) => {
+                            const service = additionalServices.find((s) => s.id === serviceId);
+                            if (!service) return null;
+                            return (
+                              <div key={serviceId} className="text-xs text-gray-900">
+                                • {service.name}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-500">Услуги не выбраны</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm text-gray-500">Документы</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    type="button"
+                    onClick={() => handleEditStep(3)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">ФИО:</span>
+                    <span className="text-gray-900">{formData.fullName || "—"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Дата рождения:</span>
+                    <span className="text-gray-900">{formData.birthDate || "—"}</span>
                   </div>
                 </div>
               </div>
             </div>
-          )}
-        </div>
-      </div>
 
-      <Button
-        className="w-full h-14 text-lg bg-gray-900 hover:bg-gray-800"
-        type="button"
-        onClick={() => void submitOrder()}
-      >
-        Подтвердить и забронировать
-      </Button>
+            {/* Оплата — ТОЛЬКО через отдельный компонент */}
+            <PaymentStep
+              total={calculateTotal()}
+              paymentMethod={paymentMethod}
+              setPaymentMethod={setPaymentMethod}
+              cardData={cardData}
+              setCardData={setCardData}
+              email={formData.userEmail}
+              setEmail={(v: string) => handleInputChange("userEmail", v)}
+              customerName={formData.clientName || ""}
+              // если в PaymentStep есть onConfirm — оставь, если нет — удали строку ниже
+              onConfirm={handleConfirmBooking}
+            />
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  // РЕНДЕР StepperWorkflow (и только он)
+  return (
+    <div ref={containerRef} className="max-w-5xl mx-auto -translate-y-12 pb-32">
+      <Card className="bg-white/20 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30 relative">
+        <CardHeader className="pb-4 pt-8 px-6 sm:px-8">
+          {/* Кнопка личного кабинета */}
+          <div className="absolute -top-5 right-8 z-50">
+            <button
+              onClick={() => setIsAccountOpen(true)}
+              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-200 text-white hover:scale-[1.02]"
+              type="button"
+            >
+              <User className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            <CardTitle className="text-white text-2xl">Оформление церемонии</CardTitle>
+            <CardDescription className="text-white/70">
+              Заполните шаги — и мы подготовим договор и подтверждение
+            </CardDescription>
+          </div>
+        </CardHeader>
+
+        <CardContent className="px-6 sm:px-8 pb-8">
+          <Stepper
+            steps={steps}
+            currentStep={currentStep}
+            completedSteps={completedSteps}
+            onStepClick={handleStepClick}
+          />
+
+          <div className="mt-8">{renderStepContent()}</div>
+
+          <div className="mt-8 flex items-center justify-between gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handlePrev}
+              disabled={currentStep === 0}
+              className="rounded-full"
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Назад
+            </Button>
+
+            {currentStep < steps.length - 1 && (
+              <Button
+                type="button"
+                onClick={handleNext}
+                className="rounded-full bg-gray-900 hover:bg-gray-800"
+              >
+                Далее
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <PersonalAccountModal open={isAccountOpen} onOpenChange={setIsAccountOpen} />
     </div>
   );
 }
