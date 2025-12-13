@@ -192,11 +192,15 @@ export function Stepper({
                       damping: 15,
                     }}
                   >
-                    <span className="text-sm transition-all duration-300 whitespace-nowrap text-gray-700 font-medium">
+                    <span
+                      className={cn(
+                        "text-sm transition-all duration-300 whitespace-nowrap text-white font-medium"
+                      )}
+                    >
                       {step.label}
                     </span>
                     {step.description && isCurrent && (
-                      <span className="text-xs text-gray-600 mt-0.5 whitespace-nowrap">
+                      <span className="text-xs text-white mt-0.5 whitespace-nowrap">
                         {step.description}
                       </span>
                     )}

@@ -889,16 +889,18 @@ export function StepperWorkflow({
     selectedCemeteryCategory,
     setSelectedCemeteryCategory,
   ] = useState<"standard" | "comfort" | "premium">("standard");
-  const [paymentMethod, setPaymentMethod] =
-  useState<PaymentMethod>("card");
+  const [paymentMethod, setPaymentMethod] = useState<
+  "card" | "sbp" | "installment"
+>("card");
+
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   
   const [cardData, setCardData] = useState({
-    number: "",
-    expiry: "",
-    cvc: "",
-    holder: "",
-  });
+  number: "",
+  holder: "",
+  expiry: "",
+  cvc: "",
+});
 
 const [workflowMode, setWorkflowMode] = useState<
   "wizard" | "packages" | "simplified"
@@ -3166,9 +3168,7 @@ default:
               className="text-2xl sm:text-3xl mb-2 text-white text-[30px] not-italic no-underline font-sans"
               style={{ fontWeight: 40 }}
             >
-              {workflowMode === "wizard"
-                ? "Пошаговый мастер"
-                : "Готовые пакеты"}
+              
             </CardTitle>
             <CardDescription className="text-base text-white/90 text-[14px] font-sans">
               {workflowMode === "wizard"

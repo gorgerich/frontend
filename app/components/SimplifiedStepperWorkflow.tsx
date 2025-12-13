@@ -1148,13 +1148,13 @@ className="whitespace-nowrap rounded-[30px]"
 <SelectValue placeholder="Выберите из списка" />
 </SelectTrigger>
 <SelectContent>
-<SelectItem value="spouse">Супру(а)</SelectItem>
+<SelectItem value="spouse">Супруг(а)</SelectItem>
 <SelectItem value="child">Сын / Дочь</SelectItem>
 <SelectItem value="parent">Родитель</SelectItem>
 <SelectItem value="sibling">Брат / Сестра</SelectItem>
-<SelectItem value="relative">Другой родственник</SelectItem>
+<SelectItem value="relative">Дальний родственник</SelectItem>
 <SelectItem value="friend">Друг</SelectItem>
-<SelectItem value="other">Другое</SelectItem>
+<SelectItem value="other">Доверенное лицо</SelectItem>
 </SelectContent>
 </Select>
 </div>
