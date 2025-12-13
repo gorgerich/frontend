@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { PaymentStep } from "./PaymentStep";
+
 import { Stepper } from "./Stepper";
 import {
   Card,
@@ -1407,10 +1409,10 @@ export function SimplifiedStepperWorkflow({
           </div>
         );
 
-            case 4: {
-        // Шаг 5: Подтверждение и оплата
+                  case 4: {
+        // Шаг 5: Подтверждение и оплата (копия по стилю из StepperWorkflow)
         const selectedLining = liningOptions.find(
-          (option) => option.id === (formData.liningColor || "satin-white"),
+          (option) => option.id === (formData.liningColor || "satin-white")
         );
 
         const formatDateTime = (dt: { date?: Date; time?: string }) =>
@@ -1419,11 +1421,13 @@ export function SimplifiedStepperWorkflow({
             : "—";
 
         const routeParts: string[] = [];
-        if (formData.hearseRoute.morgue) routeParts.push("Морг");
-        if (formData.hearseRoute.hall) routeParts.push("Зал прощания");
-        if (formData.hearseRoute.church) routeParts.push("Церковь");
-        if (formData.hearseRoute.cemetery) {
-          routeParts.push(formData.serviceType === "burial" ? "Кладбище" : "Крематорий");
+        if (formData.hearseRoute?.morgue) routeParts.push("Морг");
+        if (formData.hearseRoute?.hall) routeParts.push("Зал прощания");
+        if (formData.hearseRoute?.church) routeParts.push("Церковь");
+        if (formData.hearseRoute?.cemetery) {
+          routeParts.push(
+            formData.serviceType === "burial" ? "Кладбище" : "Крематорий"
+          );
         }
         const routeText = routeParts.length ? routeParts.join(" → ") : "Не выбран";
 
@@ -1458,7 +1462,7 @@ export function SimplifiedStepperWorkflow({
               </div>
             </div>
 
-            {/* Формат церемонии */}
+            {/* Формат */}
             <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
               <h4 className="text-sm text-gray-500 mb-3">Формат церемонии</h4>
               <div className="space-y-2 text-sm">
@@ -1501,23 +1505,17 @@ export function SimplifiedStepperWorkflow({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Забор тела:</span>
-                  <span className="text-gray-900">
-                    {formatDateTime(pickupDateTime)}
-                  </span>
+                  <span className="text-gray-900">{formatDateTime(pickupDateTime)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Прощание:</span>
-                  <span className="text-gray-900">
-                    {formatDateTime(farewellDateTime)}
-                  </span>
+                  <span className="text-gray-900">{formatDateTime(farewellDateTime)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">
                     {formData.serviceType === "burial" ? "Захоронение:" : "Кремация:"}
                   </span>
-                  <span className="text-gray-900">
-                    {formatDateTime(burialDateTime)}
-                  </span>
+                  <span className="text-gray-900">{formatDateTime(burialDateTime)}</span>
                 </div>
               </div>
             </div>
@@ -1528,7 +1526,7 @@ export function SimplifiedStepperWorkflow({
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Цвет отделки:</span>
-                  <span className="text-gray-900">{selectedLining?.name}</span>
+                  <span className="text-gray-900">{selectedLining?.name || "—"}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-gray-600 mb-1">Особые пожелания:</span>
@@ -1545,35 +1543,51 @@ export function SimplifiedStepperWorkflow({
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">ФИО:</span>
-                  <span className="text-gray-900">
-                    {formData.fullName || "—"}
-                  </span>
+                  <span className="text-gray-900">{formData.fullName || "—"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Дата рождения:</span>
-                  <span className="text-gray-900">
-                    {formData.birthDate || "—"}
-                  </span>
+                  <span className="text-gray-900">{formData.birthDate || "—"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Дата смерти:</span>
-                  <span className="text-gray-900">
-                    {formData.deathDate || "—"}
-                  </span>
+                  <span className="text-gray-900">{formData.deathDate || "—"}</span>
                 </div>
               </div>
             </div>
 
-            {/* Итоговая смета + Оплата */}
+            {/* Итоговая смета + Способ оплаты */}
             <div className="bg-gray-900 text-white rounded-3xl p-6 shadow-lg space-y-6">
               {/* Итоговая смета */}
               <div>
                 <h4 className="mb-4">Итоговая смета</h4>
-                <div className="flex justify-between pt-2">
-                  <span className="text-lg">Итого:</span>
-                  <span className="text-2xl">
-                    {calculateTotal().toLocaleString("ru-RU")} ₽
-                  </span>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between pt-2">
+                    <span className="text-lg">Итого:</span>
+                    <span className="text-2xl">
+                      {calculateTotal().toLocaleString("ru-RU")} ₽
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <Button
+                    variant="outline"
+                    className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
+                    type="button"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Договор
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
+                    type="button"
+                  >
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Поделиться
+                  </Button>
                 </div>
               </div>
 
@@ -1592,56 +1606,193 @@ export function SimplifiedStepperWorkflow({
                     onClick={() => setPaymentMethod("card")}
                     className="w-full p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-200 text-left mb-4"
                   >
-                    <span className="text-sm text-white">Банковская карта</span>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
+                      <span className="text-sm text-white">Банковская карта</span>
+                    </div>
+                    <p className="text-xs text-white/70 ml-7">Visa, Mastercard, МИР</p>
                   </button>
                 )}
 
                 {paymentMethod === "card" && (
-                  <div className="p-4 bg-white rounded-2xl text-gray-900">
-                    {/* здесь остаётся твоя форма карты: number / holder / expiry / cvc / email */}
-                    {/* ... можешь оставить тот же код, который у тебя уже был в simplified мастере */}
-                    <p className="text-sm">
-                      Здесь будет форма карты (номер, срок действия, CVC, email).
-                    </p>
+                  <div className="mt-4">
+                    {/* Две колонки: слева карта, справа CVC + Email */}
+                    <div className="grid gap-6 md:grid-cols-2 items-start">
+                      {/* Левая колонка — карта */}
+                      <div className="relative mx-auto w-full max-w-md">
+                        <div className="relative w-full aspect-[1.586/1] rounded-2xl p-6 shadow-2xl bg-white border border-gray-200">
+                          {/* Чип */}
+                          <div className="absolute top-6 left-6 w-12 h-10 rounded bg-gradient-to-br from-yellow-300/80 to-yellow-500/80 backdrop-blur" />
+
+                          {/* Логотип платёжной системы */}
+                          <div className="absolute top-6 right-6 flex gap-2">
+                            <div className="w-8 h-8 rounded-full bg-white/50 backdrop-blur border border-white/60" />
+                            <div className="w-8 h-8 rounded-full bg-white/60 backdrop-blur border border-white/60 -ml-4" />
+                          </div>
+
+                          {/* Номер карты */}
+                          <div className="absolute top-16 left-6 right-6">
+                            <input
+                              type="text"
+                              className="w-full bg-transparent border-none text-gray-900 text-xl tracking-[0.2em] placeholder:text-gray-500 focus:outline-none font-mono"
+                              placeholder="0000 0000 0000 0000"
+                              value={cardData.number}
+                              onChange={(e) => {
+                                const value = e.target.value
+                                  .replace(/\s/g, "")
+                                  .replace(/(\d{4})/g, "$1 ")
+                                  .trim();
+                                setCardData((prev) => ({ ...prev, number: value }));
+                              }}
+                              maxLength={19}
+                            />
+                          </div>
+
+                          {/* Имя держателя и срок действия */}
+                          <div className="absolute bottom-10 left-6 right-6 flex justify-between items-end">
+                            <div className="flex-1 min-w-0 mr-4">
+                              <input
+                                type="text"
+                                className="w-full bg-transparent border-none text-gray-900 text-sm placeholder:text-gray-500 focus:outline-none uppercase"
+                                placeholder="IVAN IVANOV"
+                                value={cardData.holder}
+                                onChange={(e) => {
+                                  const value = e.target.value
+                                    .toUpperCase()
+                                    .replace(/[^A-Z\s]/g, "");
+                                  setCardData((prev) => ({ ...prev, holder: value }));
+                                }}
+                              />
+                              <div className="text-[10px] text-gray-600 mt-1 uppercase tracking-wide">
+                                Держатель карты
+                              </div>
+                            </div>
+
+                            <div className="flex-shrink-0">
+                              <input
+                                type="text"
+                                className="w-16 bg-transparent border-none text-gray-900 text-sm text-right placeholder:text-gray-500 focus:outline-none font-mono"
+                                placeholder="MM/ГГ"
+                                value={cardData.expiry}
+                                onChange={(e) => {
+                                  let value = e.target.value.replace(/\D/g, "");
+                                  if (value.length >= 2) {
+                                    value = value.slice(0, 2) + "/" + value.slice(2, 4);
+                                  }
+                                  setCardData((prev) => ({ ...prev, expiry: value }));
+                                }}
+                                maxLength={5}
+                              />
+                              <div className="text-[10px] text-gray-600 mt-1 uppercase tracking-wide text-right">
+                                Действительна
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Правая колонка — CVC + Email */}
+                      <div className="space-y-4">
+                        {/* CVC */}
+                        <div className="bg-white border border-gray-200 rounded-xl p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1">
+                              <Label htmlFor="cardCvc" className="text-gray-900 text-xs mb-2 block">
+                                CVC/CVV код
+                              </Label>
+                              <Input
+                                id="cardCvc"
+                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 text-center text-lg tracking-widest font-mono"
+                                placeholder="•••"
+                                type="password"
+                                value={cardData.cvc}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/\D/g, "").slice(0, 3);
+                                  setCardData((prev) => ({ ...prev, cvc: value }));
+                                }}
+                                maxLength={3}
+                              />
+                            </div>
+                            <div className="text-xs text-gray-600 max-w-[120px]">
+                              3 цифры на обратной стороне карты
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Email */}
+                        <div className="bg-white border border-gray-200 rounded-xl p-4">
+                          <Label htmlFor="userEmail" className="text-gray-900 text-sm mb-2 block">
+                            Email для получения информации
+                          </Label>
+                          <Input
+                            id="userEmail"
+                            type="email"
+                            className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                            placeholder="example@email.com"
+                            value={formData.userEmail}
+                            onChange={(e) => onUpdateFormData("userEmail", e.target.value)}
+                          />
+                          <p className="text-xs text-gray-500 mt-2">
+                            На этот адрес придёт подтверждение заказа, детали церемонии и все необходимые документы.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Другие способы оплаты */}
+                    <div className="pt-4 border-t border-white/20 mt-6">
+                      <p className="text-xs text-white/60 mb-3">Или выберите другой способ:</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod("sbp")}
+                          className="p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-200 text-left"
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
+                            <span className="text-sm text-white">СБП</span>
+                          </div>
+                          <p className="text-xs text-white/70 ml-7">Система быстрых платежей</p>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod("installment")}
+                          className="p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-200 text-left"
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
+                            <span className="text-sm text-white">Рассрочка</span>
+                          </div>
+                          <p className="text-xs text-white/70 ml-7">0% на 6 месяцев</p>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Защищённый платёж */}
+                    <div className="bg-white/10 border border-white/20 rounded-2xl p-4 mt-4">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                        <div className="space-y-1">
+                          <p className="text-sm text-white">Защищённый платёж</p>
+                          <p className="text-xs text-white/70">
+                            Данные передаются по защищённому протоколу и не хранятся на наших серверах.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
-
-                <div className="grid grid-cols-2 gap-3 mt-4">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("sbp")}
-                    className={`p-4 rounded-2xl border-2 text-left ${
-                      paymentMethod === "sbp"
-                        ? "border-blue-500 bg-blue-500/20"
-                        : "border-white/30"
-                    }`}
-                  >
-                    <span className="text-sm text-white">СБП</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("installment")}
-                    className={`p-4 rounded-2xl border-2 text-left ${
-                      paymentMethod === "installment"
-                        ? "border-blue-500 bg-blue-500/20"
-                        : "border-white/30"
-                    }`}
-                  >
-                    <span className="text-sm text-white">Рассрочка</span>
-                  </button>
-                </div>
               </div>
             </div>
 
             <Button
-              className="w-full h-14 text-lg bg-gray-900 hover:bg-gray-800"
+              className="w-full h-14 text-lg bg-gray-900 hover:bg-gray-800 mt-6"
               type="button"
               onClick={async () => {
                 try {
                   if (!formData.userEmail) {
-                    alert(
-                      "Укажите email для получения договора и деталей заказа.",
-                    );
+                    alert("Укажите email для получения договора и деталей заказа.");
                     return;
                   }
 
@@ -1663,7 +1814,7 @@ export function SimplifiedStepperWorkflow({
                     console.error("Order error:", data);
                     alert(
                       data?.error ||
-                        "Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой.",
+                        "Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой."
                     );
                     return;
                   }
@@ -1671,14 +1822,10 @@ export function SimplifiedStepperWorkflow({
                   const data = await res.json();
                   console.log("Order created:", data);
 
-                  alert(
-                    "Бронирование оформлено! Детали и договор отправлены на указанную электронную почту.",
-                  );
+                  alert("Бронирование оформлено! Детали и договор отправлены на указанную электронную почту.");
                 } catch (e) {
                   console.error("Order request failed:", e);
-                  alert(
-                    "Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой.",
-                  );
+                  alert("Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой.");
                 }
               }}
             >
@@ -1687,8 +1834,6 @@ export function SimplifiedStepperWorkflow({
           </div>
         );
       }
-
-
 
             default:
         return null;
