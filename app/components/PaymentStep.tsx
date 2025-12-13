@@ -31,7 +31,7 @@ export type PaymentStepProps = {
   setCardData: React.Dispatch<React.SetStateAction<CardData>>;
   email: string;
   setEmail: React.Dispatch<React.SetStateAction<string>>;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void>;
 };
 
 export default function PaymentStep({
@@ -45,11 +45,11 @@ export default function PaymentStep({
   onConfirm,
 }: PaymentStepProps) {
   const [offerAccepted, setOfferAccepted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const monthly = useMemo(() => Math.ceil(total / 6), [total]);
 
-  const openOffer = () => {
-    window.open("/docs/offer.pdf", "_blank");
-  };
+  const openOffer = () => window.open("/docs/offer.pdf", "_blank");
 
   const shareOffer = async () => {
     const url = `${window.location.origin}/docs/offer.pdf`;
@@ -67,7 +67,20 @@ export default function PaymentStep({
     }
   };
 
-  const canConfirm = offerAccepted && email.trim().length > 3;
+  const emailOk =
+    email.trim().length > 3 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+  const canConfirm = offerAccepted && emailOk && !isSubmitting;
+
+  const handleConfirmClick = async () => {
+    if (!canConfirm) return;
+    try {
+      setIsSubmitting(true);
+      await onConfirm();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const MethodButton = ({
     value,
@@ -81,11 +94,13 @@ export default function PaymentStep({
     <button
       type="button"
       onClick={() => setPaymentMethod(value)}
+      disabled={isSubmitting}
       className={cn(
         "p-4 rounded-2xl border-2 transition-all duration-200 text-left bg-gray-800/50",
         paymentMethod === value
           ? "border-blue-500 bg-blue-500/20"
           : "border-white/30 hover:border-white/50",
+        isSubmitting && "opacity-60 pointer-events-none",
       )}
     >
       <div className="flex items-center gap-2 mb-2">
@@ -107,7 +122,6 @@ export default function PaymentStep({
 
   return (
     <div className="space-y-6">
-      {/* Объединённый блок: Итоговая смета + Способ оплаты */}
       <div className="bg-gray-900 text-white rounded-3xl p-6 shadow-lg space-y-6">
         {/* Итоговая смета */}
         <div>
@@ -125,6 +139,7 @@ export default function PaymentStep({
               type="button"
               variant="outline"
               onClick={openOffer}
+              disabled={isSubmitting}
               className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
             >
               <Download className="h-4 w-4 mr-2" />
@@ -135,6 +150,7 @@ export default function PaymentStep({
               type="button"
               variant="outline"
               onClick={shareOffer}
+              disabled={isSubmitting}
               className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
             >
               <Share2 className="h-4 w-4 mr-2" />
@@ -143,7 +159,6 @@ export default function PaymentStep({
           </div>
         </div>
 
-        {/* Разделитель */}
         <div className="border-t border-white/20" />
 
         {/* Способ оплаты */}
@@ -153,13 +168,11 @@ export default function PaymentStep({
             <h4 className="text-lg text-white">Способ оплаты</h4>
           </div>
 
-          {/* ======= CARD LAYOUT (как на твоем фото) ======= */}
           {paymentMethod === "card" ? (
             <>
-              {/* 2 колонки: карта слева, справа CVC+Email */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                {/* СЛЕВА: карта (2/3 ширины) */}
-                <div className="lg:col-span-2">
+                {/* СЛЕВА: карта */}
+                <div className="lg:col-span-2 min-w-0">
                   <div className="relative w-full aspect-[1.586/1] rounded-2xl p-6 shadow-2xl bg-white border border-gray-200 overflow-hidden">
                     <div className="absolute top-6 left-6 w-12 h-10 rounded bg-gradient-to-br from-yellow-300/80 to-yellow-500/80 backdrop-blur" />
                     <div className="absolute top-6 right-6 flex gap-2">
@@ -212,7 +225,8 @@ export default function PaymentStep({
                           onChange={(e) => {
                             let value = e.target.value.replace(/\D/g, "");
                             if (value.length >= 2) {
-                              value = value.slice(0, 2) + "/" + value.slice(2, 4);
+                              value =
+                                value.slice(0, 2) + "/" + value.slice(2, 4);
                             }
                             setCardData({ ...cardData, expiry: value });
                           }}
@@ -227,12 +241,17 @@ export default function PaymentStep({
                 </div>
 
                 {/* СПРАВА: CVC + Email */}
-                <div className="lg:col-span-1 space-y-4">
+                <div className="lg:col-span-1 space-y-4 min-w-0">
                   <div className="bg-white border border-gray-200 rounded-xl p-4">
-                    <Label htmlFor="cardCvc" className="text-gray-900 text-sm mb-2 block">
+                    <Label
+                      htmlFor="cardCvc"
+                      className="text-gray-900 text-sm mb-2 block"
+                    >
                       CVC/CVV код
                     </Label>
-                    <div className="flex gap-4 items-start">
+
+                    {/* было: фиксированная ширина w-40 -> ломает сетку */}
+                    <div className="flex gap-3 items-start min-w-0">
                       <Input
                         id="cardCvc"
                         className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 text-center text-lg tracking-widest font-mono"
@@ -245,14 +264,17 @@ export default function PaymentStep({
                         }}
                         maxLength={3}
                       />
-                      <p className="text-xs text-gray-500 w-40 pt-1">
+                      <p className="text-xs text-gray-500 pt-1 flex-1 min-w-0">
                         3 цифры на обратной стороне карты
                       </p>
                     </div>
                   </div>
 
                   <div className="bg-white border border-gray-200 rounded-xl p-4">
-                    <Label htmlFor="userEmail" className="text-gray-900 text-sm mb-2 block">
+                    <Label
+                      htmlFor="userEmail"
+                      className="text-gray-900 text-sm mb-2 block"
+                    >
                       Email для получения информации
                     </Label>
                     <Input
@@ -264,33 +286,39 @@ export default function PaymentStep({
                       onChange={(e) => setEmail(e.target.value)}
                     />
                     <p className="text-xs text-gray-500 mt-2">
-                      На этот адрес придёт подтверждение заказа, детали церемонии и все необходимые документы.
+                      На этот адрес придёт подтверждение заказа, детали церемонии и
+                      все необходимые документы.
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Ниже: “Или выберите другой способ” (2 карточки) */}
               <div className="mt-6 border-t border-white/20 pt-4">
-                <p className="text-xs text-white/60 mb-3">Или выберите другой способ:</p>
+                <p className="text-xs text-white/60 mb-3">
+                  Или выберите другой способ:
+                </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("sbp")}
-                    className="p-4 rounded-2xl border-2 transition-all duration-200 text-left bg-gray-800/50 border-white/30 hover:border-white/50"
+                    disabled={isSubmitting}
+                    className="p-4 rounded-2xl border-2 transition-all duration-200 text-left bg-gray-800/50 border-white/30 hover:border-white/50 disabled:opacity-60"
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center border-white/50" />
                       <span className="text-sm text-white">СБП</span>
                     </div>
-                    <p className="text-xs text-white/70 ml-7">Система быстрых платежей</p>
+                    <p className="text-xs text-white/70 ml-7">
+                      Система быстрых платежей
+                    </p>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("installment")}
-                    className="p-4 rounded-2xl border-2 transition-all duration-200 text-left bg-gray-800/50 border-white/30 hover:border-white/50"
+                    disabled={isSubmitting}
+                    className="p-4 rounded-2xl border-2 transition-all duration-200 text-left bg-gray-800/50 border-white/30 hover:border-white/50 disabled:opacity-60"
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center border-white/50" />
@@ -303,16 +331,29 @@ export default function PaymentStep({
             </>
           ) : (
             <>
-              {/* ======= НЕ CARD: 3 кнопки всегда видны ======= */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <MethodButton title="Банковская карта" subtitle="Visa, Mastercard, МИР" value="card" />
-                <MethodButton title="СБП" subtitle="Система быстрых платежей" value="sbp" />
-                <MethodButton title="Рассрочка" subtitle="0% на 6 месяцев" value="installment" />
+                <MethodButton
+                  title="Банковская карта"
+                  subtitle="Visa, Mastercard, МИР"
+                  value="card"
+                />
+                <MethodButton
+                  title="СБП"
+                  subtitle="Система быстрых платежей"
+                  value="sbp"
+                />
+                <MethodButton
+                  title="Рассрочка"
+                  subtitle="0% на 6 месяцев"
+                  value="installment"
+                />
               </div>
 
-              {/* Email — здесь отдельным блоком */}
               <div className="bg-white border border-gray-200 rounded-xl p-4 mt-4">
-                <Label htmlFor="userEmail" className="text-gray-900 text-sm mb-2 block">
+                <Label
+                  htmlFor="userEmail"
+                  className="text-gray-900 text-sm mb-2 block"
+                >
                   Email для получения информации
                 </Label>
                 <Input
@@ -324,11 +365,11 @@ export default function PaymentStep({
                   onChange={(e) => setEmail(e.target.value)}
                 />
                 <p className="text-xs text-gray-500 mt-2">
-                  На этот адрес придёт подтверждение заказа, детали церемонии и документы.
+                  На этот адрес придёт подтверждение заказа, детали церемонии и
+                  документы.
                 </p>
               </div>
 
-              {/* Контент по выбранному методу */}
               {paymentMethod === "sbp" && (
                 <div className="bg-white/10 border border-white/20 rounded-2xl p-6 mt-4">
                   <Label className="text-sm text-white mb-2 block">
@@ -371,11 +412,15 @@ export default function PaymentStep({
                   <div className="bg-white/10 border border-white/20 rounded-2xl p-4">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-sm text-white">Сумма к оплате</span>
-                      <span className="text-lg text-white">{total.toLocaleString("ru-RU")} ₽</span>
+                      <span className="text-lg text-white">
+                        {total.toLocaleString("ru-RU")} ₽
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-white">Ежемесячный платёж</span>
-                      <span className="text-lg text-white">{monthly.toLocaleString("ru-RU")} ₽</span>
+                      <span className="text-lg text-white">
+                        {monthly.toLocaleString("ru-RU")} ₽
+                      </span>
                     </div>
                   </div>
 
@@ -387,7 +432,11 @@ export default function PaymentStep({
                       <br />
                       Первый платёж через 30 дней
                     </p>
-                    <Button type="button" className="w-full mt-4 bg-white hover:bg-white/90 text-black">
+                    <Button
+                      type="button"
+                      disabled={isSubmitting}
+                      className="w-full mt-4 bg-white hover:bg-white/90 text-black"
+                    >
                       Подать заявку
                     </Button>
                   </div>
@@ -396,49 +445,58 @@ export default function PaymentStep({
             </>
           )}
 
-          {/* Защищённый платёж — всегда */}
           <div className="p-4 rounded-2xl border-2 border-green-500/30 bg-green-500/10 mt-6">
             <div className="flex items-start gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
               <div>
                 <div className="text-sm text-white">Защищённый платёж</div>
                 <div className="text-xs text-white/70">
-                  Данные передаются по защищённому протоколу и не хранятся на серверах.
+                  Данные передаются по защищённому протоколу и не хранятся на
+                  серверах.
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Галка оферты */}
           <div className="flex items-start gap-3 bg-gray-900 text-white rounded-2xl p-4 border border-white/20 mt-4">
             <input
               type="checkbox"
               className="mt-1 h-4 w-4"
               checked={offerAccepted}
               onChange={(e) => setOfferAccepted(e.target.checked)}
+              disabled={isSubmitting}
             />
             <div className="text-sm text-white/80">
               Я ознакомился и принимаю условия{" "}
-              <button type="button" onClick={openOffer} className="underline text-white">
+              <button
+                type="button"
+                onClick={openOffer}
+                className="underline text-white"
+                disabled={isSubmitting}
+              >
                 договора-оферты
               </button>
               .
             </div>
           </div>
 
-          {/* Кнопка подтверждения */}
           <Button
             type="button"
             className="w-full h-14 text-lg bg-gray-900 hover:bg-gray-800 disabled:opacity-50 mt-6"
             disabled={!canConfirm}
-            onClick={onConfirm}
+            onClick={handleConfirmClick}
           >
-            Подтвердить и забронировать
+            {isSubmitting ? "Оформляем…" : "Подтвердить и забронировать"}
           </Button>
 
           {!email.trim() && (
             <p className="text-xs text-gray-300 text-center">
               Укажите email — туда отправим подтверждение и документы.
+            </p>
+          )}
+          {!!email.trim() && !emailOk && (
+            <p className="text-xs text-gray-300 text-center">
+              Проверьте корректность email.
             </p>
           )}
         </div>

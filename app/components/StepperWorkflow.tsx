@@ -918,7 +918,7 @@ const [workflowMode, setWorkflowMode] = useState<
 };
 
 
-  // внутри компонента StepperWorkflow, рядом с другими хэндлерами
+  // ✅ ЕДИНЫЙ confirm для wizard (и он же совместим с тем, что часто ждёт backend)
 const handleConfirmBooking = async () => {
   try {
     const orderEmail = (formData.userEmail || "").trim();
@@ -928,17 +928,45 @@ const handleConfirmBooking = async () => {
       return;
     }
 
+    const total = calculateTotal();
+    const breakdown = calculateBreakdown();
+
+    // ⚠️ Шлём сразу оба формата:
+    // - плоский (userEmail/formData/total...)
+    // - структурный (customer/deceased/ceremony...)
+    // чтобы /api/orders сработал при любом из вариантов, который у тебя сейчас в бэке.
+    const payload = {
+      // плоский формат
+      userEmail: orderEmail,
+      userName: (formData.clientName || formData.fullName || "").trim() || undefined,
+      formData,
+      total,
+      breakdown,
+      paymentMethod,
+
+      // структурный формат (как часто делают в “готовых решениях”)
+      customer: {
+        email: orderEmail,
+      },
+      deceased: {
+        name: formData.fullName || undefined,
+        birthDate: formData.birthDate || undefined,
+        deathDate: formData.deathDate || undefined,
+        relationship: (formData as any).relationship || undefined,
+      },
+      ceremony: {
+        type: formData.ceremonyType || undefined,
+        order: (formData as any).ceremonyOrder || undefined,
+        serviceType: formData.serviceType || undefined,
+        cemetery: formData.cemetery || undefined,
+      },
+      notes: (formData as any).specialRequests || undefined,
+    };
+
     const res = await fetch("/api/orders", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userEmail: orderEmail,
-        userName: formData.clientName || undefined,
-        formData,
-        total: calculateTotal(),
-        breakdown: calculateBreakdown(),
-        paymentMethod,
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json().catch(() => ({}));
