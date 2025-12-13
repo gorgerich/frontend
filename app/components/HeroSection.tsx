@@ -1,3 +1,4 @@
+// app/components/HeroSection.tsx
 import { TopButtons } from "./TopButtons";
 
 const heroImage = "/hero-forest.jpg";
@@ -18,57 +19,37 @@ export function HeroSection() {
           {/* Градиент поверх изображения */}
           <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/70 via-black/60 to-black/75 md:rounded-[40px]" />
 
-          {/* Верхние кнопки */}
+          {/* Верхние кнопки – оставляем как были */}
           <div className="pointer-events-none absolute -top-10 left-0 right-0 z-20 flex justify-center md:-top-14">
             <div className="pointer-events-auto">
               <TopButtons />
             </div>
           </div>
 
-          {/* Текстовый блок */}
-          <div className="relative z-0 flex h-full flex-col items-center justify-start px-6 pt-16 md:pt-20 lg:pt-24 text-center md:translate-y-[3%] lg:translate-y-[1%]">
-            <h1
-              className="mx-auto mb-4 max-w-3xl tracking-tight text-white drop-shadow-2xl"
-              style={{
-                fontFamily: "var(--font-family-serif)",
-                textShadow:
-                  "0 4px 20px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.6)",
-              }}
-            >
-              {/* Мобильная версия заголовка */}
-              <span
-                className="block text-2xl md:hidden"
-                style={{
-                  maxWidth: "340px",
-                  fontWeight: 400,
-                  margin: "0 auto",
-                }}
-              >
-                Цифровой помощник по самостоятельной организации прощания без
-                агентств и давления
+          {/* Text Content */}
+          <div className="relative h-full flex flex-col items-center justify-center px-6 text-center -translate-y-[15%] z-0">
+            {/* Main Heading */}
+            <h1 className="text-white mb-4 max-w-3xl tracking-tight drop-shadow-2xl mx-auto" style={{ fontFamily: 'var(--font-family-serif)', textShadow: '0 4px 20px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.6)' }}>
+              {/* Mobile version */}
+              <span className="md:hidden block text-2xl mx-auto" style={{ maxWidth: '340px', fontWeight: 40, transform: 'translateY(20%)' }}>
+                Цифровой помощник по самостоятельной организации прощания без агентств и давления
               </span>
-
-              {/* Десктопная версия заголовка */}
+              {/* Desktop version */}
 <span
-  className="hidden md:block text-center"
-  style={{
-    fontFamily: 'var(--font-family-display)',
-    fontWeight: 400,
-  }}
+  className="hidden md:block md:-translate-y-6 lg:-translate-y-8"
+  style={{ fontFamily: 'var(--font-family-display)', fontWeight: 40 }}
 >
-  {/* первая строка */}
-  <span className="block text-3xl lg:text-[40px] xl:text-[44px] leading-tight">
+  <span className="block text-3xl lg:text-4xl xl:text-4xl mb-1">
     Цифровой помощник по самостоятельной
   </span>
-
-  {/* вторая строка */}
-  <span className="mt-2 block text-2xl lg:text-[34px] xl:text-[38px] leading-tight">
-    организации прощания без агентств&nbsp;и&nbsp;давления
+  <span className="block text-3xl lg:text-4xl xl:text-5xl">
+    организации прощания без агентств и давления
   </span>
 </span>
             </h1>
+            
+            {/* Subtitle */}
 
-            {/* сюда потом подзаголовок/кнопки */}
           </div>
         </div>
       </div>
