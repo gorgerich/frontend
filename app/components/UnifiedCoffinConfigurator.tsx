@@ -60,21 +60,21 @@ const woodOptions = [
 {
 id: 'pine',
 name: 'Сосна',
-texture: 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=800',
+texture: '/images/coffin/wood/pine.jpg',
 price: 0,
 description: 'Классический натуральный материал',
 },
 {
 id: 'oak',
 name: 'Дуб',
-texture: 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=800',
+texture: '/images/coffin/wood/oak.jpg',
 price: 20000,
 description: 'Прочное долговечное дерево',
 },
 {
 id: 'elite',
 name: 'Элитное дерево',
-texture: 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=800',
+texture: '/images/coffin/wood/elite.jpg',
 price: 50000,
 description: 'Премиальная порода',
 },
@@ -84,21 +84,21 @@ const liningOptions = [
 {
 id: 'satin-white',
 name: 'Атлас белый',
-texture: 'https://images.unsplash.com/photo-1666112512232-f763ceeb5ec8?w=800',
+texture: '/images/coffin/fabric/atlas-white.jpg',
 price: 0,
 description: 'Классическая белая отделка',
 },
 {
 id: 'silk-cream',
 name: 'Шелк кремовый',
-texture: 'https://images.unsplash.com/photo-1619043519379-99df2736108d?w=800',
+texture: '/images/coffin/fabric/silk-cream.jpg',
 price: 5000,
 description: 'Премиальная шелковая ткань',
 },
 {
 id: 'velvet-burgundy',
 name: 'Бархат бордовый',
-texture: 'https://images.unsplash.com/photo-1619043519379-99df2736108d?w=800',
+texture: '/images/coffin/fabric/velvet-bordo.jpg',
 price: 7500,
 description: 'Роскошный бархат',
 },
@@ -131,43 +131,42 @@ description: 'Премиальная фурнитура',
 },
 ];
 
-// Фотографии различных комбинаций гробов
+/**
+* ВАЖНО:
+* 1) ключи формата:
+* - "wood-lining-hardware" (самый приоритетный)
+* - "wood-lining" (фолбэк, если не хочешь размножать фото на 3 фурнитуры)
+*
+* 2) Здесь ставим ТВОИ картинки из /public (путь начинается с "/").
+*/
 const coffinPhotos: Record<string, string> = {
-'pine-satin-white-brass': 'https://images.unsplash.com/photo-1706048111522-e4865f909940?w=1200',
-'pine-satin-white-silver': 'https://images.unsplash.com/photo-1706048111522-e4865f909940?w=1200',
-'pine-satin-white-gold': 'https://images.unsplash.com/photo-1706048111522-e4865f909940?w=1200',
-'pine-silk-cream-brass': 'https://images.unsplash.com/photo-1706048111522-e4865f909940?w=1200',
-'pine-silk-cream-silver': 'https://images.unsplash.com/photo-1706048111522-e4865f909940?w=1200',
-'pine-silk-cream-gold': 'https://images.unsplash.com/photo-1706048111522-e4865f909940?w=1200',
-'pine-velvet-burgundy-brass': 'https://images.unsplash.com/photo-1706048111522-e4865f909940?w=1200',
-'pine-velvet-burgundy-silver': 'https://images.unsplash.com/photo-1706048111522-e4865f909940?w=1200',
-'pine-velvet-burgundy-gold': 'https://images.unsplash.com/photo-1706048111522-e4865f909940?w=1200',
+// ✅ ТВОЙ ЗАПРОС: "сосна + атлас" -> верхнее фото
+// (независимо от фурнитуры, будет работать через фолбэк "wood-lining")
+'pine-satin-white': '/images/coffin/previews/pine-atlas.jpg',
+'oak-silk-cream': '/images/coffin/previews/oak-silk-cream.jpg',
+'elite-velvet-burgundy': '/images/coffin/previews/elite-velvet-burgundy.jpg',
 
-'oak-satin-white-brass': 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=1200',
-'oak-satin-white-silver': 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=1200',
-'oak-satin-white-gold': 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=1200',
-'oak-silk-cream-brass': 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=1200',
-'oak-silk-cream-silver': 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=1200',
-'oak-silk-cream-gold': 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=1200',
-'oak-velvet-burgundy-brass': 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=1200',
-'oak-velvet-burgundy-silver': 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=1200',
-'oak-velvet-burgundy-gold': 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=1200',
-
-'elite-satin-white-brass': 'https://images.unsplash.com/photo-1697120696035-1dae0c13be34?w=1200',
-'elite-satin-white-silver': 'https://images.unsplash.com/photo-1697120696035-1dae0c13be34?w=1200',
-'elite-satin-white-gold': 'https://images.unsplash.com/photo-1697120696035-1dae0c13be34?w=1200',
-'elite-silk-cream-brass': 'https://images.unsplash.com/photo-1697120696035-1dae0c13be34?w=1200',
-'elite-silk-cream-silver': 'https://images.unsplash.com/photo-1697120696035-1dae0c13be34?w=1200',
-'elite-silk-cream-gold': 'https://images.unsplash.com/photo-1697120696035-1dae0c13be34?w=1200',
-'elite-velvet-burgundy-brass': 'https://images.unsplash.com/photo-1697120696035-1dae0c13be34?w=1200',
-'elite-velvet-burgundy-silver': 'https://images.unsplash.com/photo-1697120696035-1dae0c13be34?w=1200',
-'elite-velvet-burgundy-gold': 'https://images.unsplash.com/photo-1697120696035-1dae0c13be34?w=1200',
+// Если захочешь точечно под разные фурнитуры — добавляй так:
+// 'pine-satin-white-brass': '/images/coffin/previews/pine-atlas-brass.jpg',
+// 'pine-satin-white-silver': '/images/coffin/previews/pine-atlas-silver.jpg',
+// 'pine-satin-white-gold': '/images/coffin/previews/pine-atlas-gold.jpg',
 };
 
-// ✅ РАНЬШЕ У ТЕБЯ ЭТОГО НЕ БЫЛО / БЫЛО ДРУГОЕ ИМЯ — из-за этого падало
+/**
+* Логика выбора фото:
+* 1) ищем точное совпадение wood+lining+hardware
+* 2) если нет — ищем wood+lining
+* 3) если нет — дефолт
+*/
 const getCurrentCoffinPhoto = () => {
-const key = `${selectedWood}-${selectedLining}-${selectedHardware}`;
-return coffinPhotos[key] || 'https://images.unsplash.com/photo-1706048111522-e4865f909940?w=1200';
+const fullKey = `${selectedWood}-${selectedLining}-${selectedHardware}`;
+const shortKey = `${selectedWood}-${selectedLining}`;
+
+return (
+coffinPhotos[fullKey] ||
+coffinPhotos[shortKey] ||
+'/images/coffin/previews/default.jpg' // положи при желании дефолт в public
+);
 };
 
 // Опции для (возможного) визуализатора, оставляю как у тебя
@@ -187,13 +186,9 @@ const liningOptionsConfig: ConfiguratorOption[] = [
 { id: 'silk-cream', name: 'Шелк кремовый', image: 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=400' },
 ];
 
-const plaqueOptions: ConfiguratorOption[] = [
-{ id: 'metal', name: 'Металлическая', image: 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=400' },
-];
+const plaqueOptions: ConfiguratorOption[] = [{ id: 'metal', name: 'Металлическая', image: 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=400' }];
 
-const monumentOptions: ConfiguratorOption[] = [
-{ id: 'granite', name: 'Гранит', image: 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=400' },
-];
+const monumentOptions: ConfiguratorOption[] = [{ id: 'granite', name: 'Гранит', image: 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=400' }];
 
 // Цветовые палитры — оставляю как у тебя (если дальше будешь использовать)
 const coffinColors = [
@@ -262,13 +257,11 @@ const currentPhoto = useMemo(() => getCurrentCoffinPhoto(), [selectedWood, selec
 
 return (
 <div className="bg-gradient-to-br from-gray-50 via-white to-gray-50 rounded-2xl overflow-hidden">
-{/* ✅ УБРАН верхний header и текст “Настройте комплектацию…” по твоей просьбе */}
-
 <Tabs
-  value={activeTab}
-  defaultValue="coffin"
-  onValueChange={(v) => setActiveTab(v as 'coffin' | 'wreath')}
-  className="w-full"
+value={activeTab}
+defaultValue="coffin"
+onValueChange={(v) => setActiveTab(v as 'coffin' | 'wreath')}
+className="w-full"
 >
 <div className="bg-white border-b border-gray-200">
 <TabsList className="w-full h-auto p-1 bg-transparent rounded-none justify-start gap-1">
@@ -304,7 +297,7 @@ className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-
 {activeTab === 'coffin' && (
 <SafeImg
 src={currentPhoto}
-fallbackSrc="https://images.unsplash.com/photo-1706048111522-e4865f909940?w=1200"
+fallbackSrc="/images/coffin/previews/default.jpg"
 alt="Гроб"
 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
 />
@@ -333,7 +326,7 @@ selectedWood === wood.id
 >
 <div className="aspect-[16/9] sm:aspect-[4/3] w-full relative">
 <SafeImg
-src={wood.texture}
+src={(wood as any).texture}
 fallbackSrc="https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=800"
 alt={wood.name}
 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
@@ -349,7 +342,7 @@ className="w-full h-full object-cover transition-transform duration-700 group-ho
 <div className="absolute bottom-3 left-3 right-3">
 <div className="text-white font-medium text-sm truncate">{wood.name}</div>
 <div className="text-white/80 text-xs font-light">
-{wood.price === 0 ? 'Включено' : `+${wood.price.toLocaleString('ru-RU')} ₽`}
+{(wood as any).price === 0 ? 'Включено' : `+${(wood as any).price.toLocaleString('ru-RU')} ₽`}
 </div>
 </div>
 </div>
@@ -379,7 +372,7 @@ selectedLining === lining.id
 >
 <div className="aspect-[16/9] sm:aspect-[4/3] w-full relative">
 <SafeImg
-src={lining.texture}
+src={(lining as any).texture}
 fallbackSrc="https://images.unsplash.com/photo-1619043519379-99df2736108d?w=800"
 alt={lining.name}
 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
@@ -395,7 +388,7 @@ className="w-full h-full object-cover transition-transform duration-700 group-ho
 <div className="absolute bottom-0 inset-x-0 p-3 bg-white/90 backdrop-blur-sm border-t border-white/50">
 <div className="text-gray-900 font-medium text-sm truncate">{lining.name}</div>
 <div className="text-gray-500 text-xs">
-{lining.price === 0 ? 'Включено' : `+${lining.price.toLocaleString('ru-RU')} ₽`}
+{(lining as any).price === 0 ? 'Включено' : `+${(lining as any).price.toLocaleString('ru-RU')} ₽`}
 </div>
 </div>
 </div>
@@ -530,9 +523,6 @@ className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500
 {/* Wreath Tab */}
 <TabsContent value="wreath" className="mt-0">
 <div className="p-6 space-y-6">
-{/* ❗️ Тут раньше у тебя был CoffinMockup, который не находится.
-Я НЕ “урезал”, я удалил зависимость, которой у тебя нет.
-Оставляю легкую визуализацию венка через картинку выбранного типа. */}
 <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-4 shadow-inner">
 <div className="aspect-[4/3] flex items-center justify-center overflow-hidden rounded-xl bg-black/20">
 <SafeImg
@@ -544,7 +534,6 @@ className="w-full h-full object-cover opacity-90"
 </div>
 </div>
 
-{/* Тип венка */}
 <div className="space-y-3">
 <Label className="text-gray-900">Тип венка</Label>
 
@@ -582,7 +571,6 @@ className="w-full h-24 object-cover rounded-lg"
 </RadioGroup>
 </div>
 
-{/* Размер */}
 <div className="space-y-3">
 <Label className="text-gray-900">Размер</Label>
 
@@ -593,7 +581,9 @@ key={size.id}
 type="button"
 onClick={() => setWreathSize(size.id)}
 className={`py-3 px-4 rounded-xl border-2 transition-all ${
-wreathSize === size.id ? 'border-green-500 bg-green-50 shadow-md' : 'border-gray-200 bg-white hover:border-green-300 hover:shadow-sm'
+wreathSize === size.id
+? 'border-green-500 bg-green-50 shadow-md'
+: 'border-gray-200 bg-white hover:border-green-300 hover:shadow-sm'
 }`}
 >
 <div className="text-lg text-gray-900">{size.id}</div>
@@ -604,7 +594,6 @@ wreathSize === size.id ? 'border-green-500 bg-green-50 shadow-md' : 'border-gray
 </div>
 </div>
 
-{/* Текст на ленте */}
 <div className="space-y-3">
 <Label htmlFor="wreath-text" className="text-gray-900">
 Текст на ленте (опционально)
@@ -621,7 +610,6 @@ maxLength={50}
 <p className="text-xs text-gray-500">{wreathText.length}/50 символов</p>
 </div>
 
-{/* Количество */}
 <div className="space-y-3">
 <Label className="text-gray-900">Количество</Label>
 <div className="flex items-center gap-3">
@@ -652,7 +640,6 @@ className="h-10 w-10 rounded-xl"
 </div>
 </div>
 
-{/* Цена венка */}
 <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-2xl p-4 border border-green-200">
 <div className="flex items-center justify-between">
 <div>
@@ -667,7 +654,6 @@ className="h-10 w-10 rounded-xl"
 </div>
 </div>
 
-{/* Общая стоимость (опционально) */}
 <div className="bg-white rounded-2xl p-4 border border-gray-200">
 <div className="flex items-center justify-between">
 <div>
