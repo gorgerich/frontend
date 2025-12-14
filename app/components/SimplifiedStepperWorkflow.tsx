@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Stepper } from "./Stepper";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import ContractButton from "./ContractButton";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -1610,7 +1611,7 @@ return (
 <Button
 variant="ghost"
 onClick={onBack}
-className="self-start text-gray-900 hover:bg-gray-100 gap-2 rounded-full -ml-2"
+className="self-start text-white-900 hover:bg-gray-100 gap-2 rounded-full -ml-2"
 type="button"
 >
 <ArrowLeft className="h-4 w-4" />

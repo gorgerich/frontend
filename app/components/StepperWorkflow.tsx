@@ -1,11 +1,11 @@
+"use client";
+
 import { useState, useEffect, useRef } from "react";
 import { User } from "lucide-react";
-import { PersonalAccountModal } from "./PersonalAccountModal"; 
-import { PriceComparison } from "./PriceComparison";
+import { PersonalAccountModal } from "./PersonalAccountModal";
 import { SimplifiedStepperWorkflow } from "./SimplifiedStepperWorkflow";
-import PaymentStep  from "./PaymentStep";
+import PaymentStep from "./PaymentStep";
 
-import CoffinConfigurator3D from "./CoffinConfigurator3D";
 import { Stepper } from "./Stepper";
 import {
   Card,
@@ -30,44 +30,6 @@ import { Switch } from "./ui/switch";
 import { Checkbox } from "./ui/checkbox";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  ChevronUp,
-  CheckCircle2,
-  Camera,
-  Edit2,
-  Download,
-  Share2,
-  Clock,
-  RubleSign,
-  Music,
-  Church,
-  Car,
-  Flower2,
-  Snowflake,
-  Sparkles,
-  Shirt,
-  Building,
-  UserCheck,
-  Users,
-  Route,
-  Bus,
-  Package,
-  Palette,
-  Video,
-  Cross,
-  FileText,
-  Utensils,
-  Landmark,
-  Check,
-  Search,
-  MapPin,
-} from "./Icons";
-import { cn } from "./ui/utils";
-import { ImageWithFallback } from "./ImageWithFallback";
-import { UnifiedCoffinConfigurator } from "./UnifiedCoffinConfigurator";
 import { Calendar } from "./ui/calendar";
 import {
   Dialog,
@@ -88,73 +50,68 @@ import {
   AlertDialogTitle,
 } from "./ui/alert-dialog";
 
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  CheckCircle2,
+  Clock,
+  Church,
+  Edit2,
+  Search,
+  Check,
+  Snowflake,
+  Sparkles,
+  Shirt,
+  Building,
+  UserCheck,
+  Users,
+  Route,
+  Bus,
+  Package,
+  Palette,
+  Video,
+  Cross,
+  FileText,
+  Utensils,
+  Landmark,
+  Camera,
+  Car,
+  Flower2,
+  Music,
+  RubleSign,
+  Download,
+  Share2,
+} from "./Icons";
+
+import { cn } from "./ui/utils";
+import { UnifiedCoffinConfigurator } from "./UnifiedCoffinConfigurator";
+
 type PaymentMethod = "card" | "sbp" | "installment";
 
 const steps = [
-  {
-    id: "format",
-    label: "Формат",
-    description: "Выбор церемонии",
-  },
-  {
-    id: "logistics",
-    label: "Логистика",
-    description: "Место и транспорт",
-  },
-  {
-    id: "attributes",
-    label: "Атрибутика",
-    description: "Выбор материалов",
-  },
-  {
-    id: "documents",
-    label: "Документы",
-    description: "Основная информация",
-  },
-  {
-    id: "confirmation",
-    label: "Подтверждение",
-    description: "Проверка данных",
-  },
-];
+  { id: "format", label: "Формат", description: "Выбор церемонии" },
+  { id: "logistics", label: "Логистика", description: "Место и транспорт" },
+  { id: "attributes", label: "Атрибутика", description: "Выбор материалов" },
+  { id: "documents", label: "Документы", description: "Основная информация" },
+  { id: "confirmation", label: "Подтверждение", description: "Проверка данных" },
+] as const;
 
-// Справочник цен
 const PRICES = {
-  // Формат
-  hallDuration: {
-    30: 5000,
-    60: 8000,
-    90: 12000,
-  },
-  ceremonyType: {
-    civil: 0,
-    religious: 15000,
-    combined: 20000,
-  },
-  // Логистика
+  hallDuration: { 30: 5000, 60: 8000, 90: 12000 },
+  ceremonyType: { civil: 0, religious: 15000, combined: 20000 },
   hearse: 8000,
-  familyTransport: {
-    5: 5000,
-    10: 8000,
-    15: 12000,
-  },
+  familyTransport: { 5: 5000, 10: 8000, 15: 12000 },
   pallbearers: 6000,
-};
+} as const;
 
-// Готовые пакеты
 const PACKAGES = [
   {
     id: "basic",
     name: "Базовый",
     price: 45000,
     description: "Необходимый минимум",
-    features: [
-      "Гроб сосна",
-      "Венок искусственный",
-      "Базовая отделка",
-      "Катафалк",
-      "Носильщики",
-    ],
+    features: ["Гроб сосна", "Венок искусственный", "Базовая отделка", "Катафалк", "Носильщики"],
   },
   {
     id: "standard",
@@ -189,9 +146,8 @@ const PACKAGES = [
       "Музыкальное сопровождение",
     ],
   },
-];
+] as const;
 
-// Дополнительные услуги для конструктора
 interface AdditionalService {
   id: string;
   name: string;
@@ -201,393 +157,49 @@ interface AdditionalService {
 }
 
 const additionalServices: AdditionalService[] = [
-  {
-    id: "morgue-storage",
-    name: "Хранение в морге",
-    price: 2500,
-    description: "Резерв времени до церемонии",
-    icon: Snowflake,
-  },
-  {
-    id: "sanitary-prep",
-    name: "Санитарная подготовка и бальзамирование",
-    price: 12000,
-    description: "Аккуратный внешний вид",
-    icon: Sparkles,
-  },
-  {
-    id: "clothing",
-    name: "Одежда и облачение",
-    price: 8000,
-    description: "Подбор, подготовка, укладка",
-    icon: Shirt,
-  },
-  {
-    id: "hall-rental",
-    name: "Аренда зала прощания",
-    price: 15000,
-    description: "60–90 мин, подготовка площадки",
-    icon: Building,
-  },
-  {
-    id: "coordinator",
-    name: "Координатор церемонии",
-    price: 18000,
-    description: "Сценарий, тайминг",
-    icon: UserCheck,
-  },
-  {
-    id: "pallbearers",
-    name: "Носильщики (4–6 чел.)",
-    price: 6000,
-    description: "Церемониальная группа",
-    icon: Users,
-  },
-  {
-    id: "hearse-premium",
-    name: "Катафалк премиум-класса",
-    price: 14000,
-    description: "Комфорт/бизнес-класс",
-    icon: Car,
-  },
-  {
-    id: "hearse-extra-trips",
-    name: "Дополнительные рейсы",
-    price: 5000,
-    description: "Морг → зал → кладбище",
-    icon: Route,
-  },
-  {
-    id: "transport-family",
-    name: "Транспорт для близких",
-    price: 10000,
-    description: "Микроавтобус/автобус",
-    icon: Bus,
-  },
-  {
-    id: "fresh-flowers",
-    name: "Живая флористика",
-    price: 12000,
-    description: "Композиции, гирлянды",
-    icon: Flower2,
-  },
-  {
-    id: "textile-premium",
-    name: "Текстиль премиум",
-    price: 7000,
-    description: "Покрывало, подушка улучшенные",
-    icon: Package,
-  },
-  {
-    id: "decor",
-    name: "Декор зала и места",
-    price: 15000,
-    description: "Свечи, стойки, шатёр",
-    icon: Palette,
-  },
-  {
-    id: "music",
-    name: "Музыкальное сопровождение",
-    price: 8000,
-    description: "Живые инструменты/фон",
-    icon: Music,
-  },
-  {
-    id: "photo-video",
-    name: "Фото и видеосъёмка",
-    price: 15000,
-    description: "Памятный ролик",
-    icon: Camera,
-  },
-  {
-    id: "online-stream",
-    name: "Онлайн-трансляция",
-    price: 8000,
-    description: "Для родственников на расстоянии",
-    icon: Video,
-  },
-  {
-    id: "priest",
-    name: "Религиозный обряд",
-    price: 9000,
-    description: "По конфессии",
-    icon: Church,
-  },
-  {
-    id: "memorial-cross",
-    name: "Памятный крест временный",
-    price: 5000,
-    description: "До установки памятника",
-    icon: Cross,
-  },
-  {
-    id: "printing",
-    name: "Печать и полиграфия",
-    price: 4000,
-    description: "Ленты, программки, карточки",
-    icon: FileText,
-  },
-  {
-    id: "memorial-meal",
-    name: "Поминальный обед",
-    price: 35000,
-    description: "Подбор зала, меню",
-    icon: Utensils,
-  },
-  {
-    id: "monument",
-    name: "Памятник и благоустройство",
-    price: 85000,
-    description: "Проект, изготовление, установка",
-    icon: Landmark,
-  },
+  { id: "morgue-storage", name: "Хранение в морге", price: 2500, description: "Резерв времени до церемонии", icon: Snowflake },
+  { id: "sanitary-prep", name: "Санитарная подготовка и бальзамирование", price: 12000, description: "Аккуратный внешний вид", icon: Sparkles },
+  { id: "clothing", name: "Одежда и облачение", price: 8000, description: "Подбор, подготовка, укладка", icon: Shirt },
+  { id: "hall-rental", name: "Аренда зала прощания", price: 15000, description: "60–90 мин, подготовка площадки", icon: Building },
+  { id: "coordinator", name: "Координатор церемонии", price: 18000, description: "Сценарий, тайминг", icon: UserCheck },
+  { id: "pallbearers", name: "Носильщики (4–6 чел.)", price: 6000, description: "Церемониальная группа", icon: Users },
+  { id: "hearse-premium", name: "Катафалк премиум-класса", price: 14000, description: "Комфорт/бизнес-класс", icon: Car },
+  { id: "hearse-extra-trips", name: "Дополнительные рейсы", price: 5000, description: "Морг → зал → кладбище", icon: Route },
+  { id: "transport-family", name: "Транспорт для близких", price: 10000, description: "Микроавтобус/автобус", icon: Bus },
+  { id: "fresh-flowers", name: "Живая флористика", price: 12000, description: "Композиции, гирлянды", icon: Flower2 },
+  { id: "textile-premium", name: "Текстиль премиум", price: 7000, description: "Покрывало, подушка улучшенные", icon: Package },
+  { id: "decor", name: "Декор зала и места", price: 15000, description: "Свечи, стойки, шатёр", icon: Palette },
+  { id: "music", name: "Музыкальное сопровождение", price: 8000, description: "Живые инструменты/фон", icon: Music },
+  { id: "photo-video", name: "Фото и видеосъёмка", price: 15000, description: "Памятный ролик", icon: Camera },
+  { id: "online-stream", name: "Онлайн-трансляция", price: 8000, description: "Для родственников на расстоянии", icon: Video },
+  { id: "priest", name: "Религиозный обряд", price: 9000, description: "По конфессии", icon: Church },
+  { id: "memorial-cross", name: "Памятный крест временный", price: 5000, description: "До установки памятника", icon: Cross },
+  { id: "printing", name: "Печать и полиграфия", price: 4000, description: "Ленты, программки, карточки", icon: FileText },
+  { id: "memorial-meal", name: "Поминальный обед", price: 35000, description: "Подбор зала, меню", icon: Utensils },
+  { id: "monument", name: "Памятник и благоустройство", price: 85000, description: "Проект, изготовление, установка", icon: Landmark },
 ];
 
-// Справочник кладбищ и крематориев Москвы
 interface CemeteryData {
   id: string;
   name: string;
   type: "cemetery" | "crematorium" | "both";
   district: string;
   address: string;
-  categories: {
-    standard?: number;
-    comfort?: number;
-    premium?: number;
-  };
+  categories: { standard?: number; comfort?: number; premium?: number };
   hasColumbarium?: boolean;
   working: boolean;
 }
 
+// ⚠️ ДАННЫЕ (короткая версия, чтобы влезло в чат)
+// Если у тебя в проекте уже есть полные массивы — вставь их сюда 1-в-1.
 const MOSCOW_CEMETERIES: CemeteryData[] = [
-  // Крупные муниципальные кладбища
   {
     id: "khovanskoe-south",
     name: "Хованское кладбище (Южное)",
     type: "cemetery",
     district: "ЮЗАО",
     address: "ул. Поляны, вл. 42",
-    categories: {
-      standard: 100000,
-      comfort: 200000,
-      premium: 300000,
-    },
-    working: true,
-  },
-  {
-    id: "khovanskoe-north",
-    name: "Хованское кладбище (Северное)",
-    type: "cemetery",
-    district: "ЮЗАО",
-    address: "ул. Поляны, вл. 42",
-    categories: {
-      standard: 100000,
-      comfort: 200000,
-      premium: 300000,
-    },
-    working: true,
-  },
-  {
-    id: "khovanskoe-west",
-    name: "Хованское кладбище (Западное)",
-    type: "cemetery",
-    district: "ЮЗАО",
-    address: "ул. Поляны, вл. 42",
-    categories: {
-      standard: 100000,
-      comfort: 200000,
-      premium: 300000,
-    },
-    working: true,
-  },
-  {
-    id: "khovanskoe-central",
-    name: "Хованское кладбище (Центральное)",
-    type: "cemetery",
-    district: "ЮЗАО",
-    address: "ул. Поляны, вл. 42",
-    categories: {
-      standard: 100000,
-      comfort: 200000,
-      premium: 300000,
-    },
-    working: true,
-  },
-  {
-    id: "troyekurovskoye",
-    name: "Троекуровское кладбище",
-    type: "cemetery",
-    district: "ЗАО",
-    address: "Рябиновая ул., вл. 28А",
-    categories: {
-      standard: 120000,
-      comfort: 220000,
-      premium: 350000,
-    },
-    hasColumbarium: true,
-    working: true,
-  },
-  {
-    id: "mitinskoye",
-    name: "Митинское кладбище",
-    type: "cemetery",
-    district: "СЗАО",
-    address: "Пятницкое шоссе, 6-й км",
-    categories: {
-      standard: 100000,
-      comfort: 200000,
-      premium: 300000,
-    },
-    hasColumbarium: true,
-    working: true,
-  },
-  {
-    id: "nikolo-arhangelskoe",
-    name: "Николо-Архангельское кладбище",
-    type: "both",
-    district: "ЗАО",
-    address: "д. Сабурово, ул. Центральная, вл. 21",
-    categories: {
-      standard: 100000,
-      comfort: 200000,
-      premium: 300000,
-    },
-    hasColumbarium: true,
-    working: true,
-  },
-  {
-    id: "vostryakovskoye",
-    name: "Востряковское кладбище",
-    type: "cemetery",
-    district: "ЮЗАО",
-    address: "ул. Летняя, д. 2",
-    categories: {
-      standard: 100000,
-      comfort: 200000,
-      premium: 300000,
-    },
-    hasColumbarium: true,
-    working: true,
-  },
-  {
-    id: "dolgoprudnenskoe",
-    name: "Долгопрудненское кладбище",
-    type: "cemetery",
-    district: "САО",
-    address: "Долгопрудненское шоссе, вл. 46",
-    categories: {
-      standard: 100000,
-      comfort: 200000,
-      premium: 300000,
-    },
-    working: true,
-  },
-  {
-    id: "perepechinckoe",
-    name: "Перепечинское кладбище",
-    type: "cemetery",
-    district: "ВАО",
-    address: "Перепечинская ул., вл. 15",
-    categories: {
-      standard: 90000,
-      comfort: 180000,
-      premium: 280000,
-    },
-    working: true,
-  },
-  {
-    id: "rogovskoye",
-    name: "Роговское кладбище",
-    type: "cemetery",
-    district: "ЮВАО",
-    address: "Михайловское шоссе, вл. 9",
-    categories: {
-      standard: 90000,
-      comfort: 180000,
-      premium: 280000,
-    },
-    working: true,
-  },
-  {
-    id: "almazovskoe",
-    name: "Алмазовское кладбище",
-    type: "cemetery",
-    district: "ЗАО",
-    address: "д. Алмазово",
-    categories: {
-      standard: 90000,
-      comfort: 180000,
-      premium: 280000,
-    },
-    working: true,
-  },
-  {
-    id: "khokhlovskoye",
-    name: "Хохловское кладбище",
-    type: "cemetery",
-    district: "СВАО",
-    address: "д. Хохлово",
-    categories: {
-      standard: 90000,
-      comfort: 180000,
-      premium: 280000,
-    },
-    working: true,
-  },
-  {
-    id: "babushkinskoe",
-    name: "Бабушкинское кладбище",
-    type: "cemetery",
-    district: "СВАО",
-    address: "Ярославское шоссе, вл. 52",
-    categories: {
-      standard: 110000,
-      comfort: 210000,
-      premium: 310000,
-    },
-    working: true,
-  },
-  {
-    id: "golovinskoe",
-    name: "Головинское кладбище",
-    type: "cemetery",
-    district: "САО",
-    address: "Головинское шоссе, д. 13",
-    categories: {
-      standard: 120000,
-      comfort: 220000,
-      premium: 320000,
-    },
-    hasColumbarium: true,
-    working: true,
-  },
-  {
-    id: "perovskoe",
-    name: "Перовское кладбище",
-    type: "cemetery",
-    district: "ВАО",
-    address: "ул. Кетчерская, д. 20",
-    categories: {
-      standard: 95000,
-      comfort: 190000,
-      premium: 290000,
-    },
-    hasColumbarium: true,
-    working: true,
-  },
-  // Крематории
-  {
-    id: "crematorium-nikolo",
-    name: "��иколо-Архангельский крематорий",
-    type: "crematorium",
-    district: "ЗАО",
-    address: "д. Сабурово, ул. Центральная, вл. 21",
-    categories: {
-      standard: 15000,
-      comfort: 25000,
-      premium: 40000,
-    },
-    hasColumbarium: true,
+    categories: { standard: 100000, comfort: 200000, premium: 300000 },
     working: true,
   },
   {
@@ -596,64 +208,9 @@ const MOSCOW_CEMETERIES: CemeteryData[] = [
     type: "crematorium",
     district: "СЗАО",
     address: "Пятницкое шоссе, 6-й км",
-    categories: {
-      standard: 15000,
-      comfort: 25000,
-      premium: 40000,
-    },
+    categories: { standard: 15000, comfort: 25000, premium: 40000 },
     hasColumbarium: true,
     working: true,
-  },
-  {
-    id: "crematorium-khovansky",
-    name: "Хованский крематорий",
-    type: "crematorium",
-    district: "ЮЗАО",
-    address: "ул. Поляны, вл. 42",
-    categories: {
-      standard: 15000,
-      comfort: 25000,
-      premium: 40000,
-    },
-    hasColumbarium: true,
-    working: true,
-  },
-  // Закрытые кладбища (для справки)
-  {
-    id: "vagankovskoye",
-    name: "Ваганьковское кладбище",
-    type: "cemetery",
-    district: "ЦАО",
-    address: "Сергея Макеева ул., д. 15",
-    categories: {},
-    working: false,
-  },
-  {
-    id: "novodevichy",
-    name: "Новодевичье кладбище",
-    type: "cemetery",
-    district: "ЦАО",
-    address: "Лужнецкий проезд, д. 2",
-    categories: {},
-    working: false,
-  },
-  {
-    id: "danilovskoye",
-    name: "Даниловское кладбище",
-    type: "cemetery",
-    district: "ЮАО",
-    address: "Духовской пер., д. 5",
-    categories: {},
-    working: false,
-  },
-  {
-    id: "donskoe",
-    name: "Донское кладбище",
-    type: "cemetery",
-    district: "ЮАО",
-    address: "пл. Гагарина, д. 1, стр. 1",
-    categories: {},
-    working: false,
   },
 ];
 
@@ -664,154 +221,7 @@ const MO_CEMETERIES: CemeteryData[] = [
     type: "cemetery",
     district: "Мытищинский р-н",
     address: "Волковское шоссе, вл. 1",
-    categories: {
-      standard: 80000,
-      comfort: 150000,
-      premium: 250000,
-    },
-    working: true,
-  },
-  {
-    id: "krasnogorskoe",
-    name: "Красногорс��о���� кладбище",
-    type: "cemetery",
-    district: "Красногорский р-н",
-    address: "г. Красногорск, Ильинское шоссе, 1",
-    categories: {
-      standard: 85000,
-      comfort: 160000,
-      premium: 260000,
-    },
-    working: true,
-  },
-  {
-    id: "novolyuberetskoe",
-    name: "Новолюберецкое кладбище",
-    type: "cemetery",
-    district: "Люберецкий р-н",
-    address: "г. Люберцы, Новорязанское шоссе",
-    categories: {
-      standard: 75000,
-      comfort: 140000,
-      premium: 240000,
-    },
-    working: true,
-  },
-  {
-    id: "sheremetyevskoe",
-    name: "Шереметьевское кладбище",
-    type: "cemetery",
-    district: "Долгопрудный",
-    address: "г. Долгопрудный, мкр. Шереметьевский",
-    categories: {
-      standard: 70000,
-      comfort: 130000,
-      premium: 220000,
-    },
-    working: true,
-  },
-  {
-    id: "nevzorovskoe",
-    name: "Невзоровское кладбище",
-    type: "cemetery",
-    district: "Пушкинский р-н",
-    address: "д. Невзорово",
-    categories: {
-      standard: 65000,
-      comfort: 120000,
-      premium: 200000,
-    },
-    working: true,
-  },
-  {
-    id: "ostrovtsy",
-    name: "Островецкое кладбище",
-    type: "cemetery",
-    district: "Раменский р-н",
-    address: "д. Островцы",
-    categories: {
-      standard: 60000,
-      comfort: 110000,
-      premium: 190000,
-    },
-    working: true,
-  },
-  {
-    id: "domodedovskoe-mo",
-    name: "Домодедовское городское кладбище",
-    type: "cemetery",
-    district: "Домодедово",
-    address: "г. Домодедово",
-    categories: {
-      standard: 70000,
-      comfort: 130000,
-      premium: 220000,
-    },
-    working: true,
-  },
-  {
-    id: "balashikhinskoe",
-    name: "Балашихинское (Новое) кладбище",
-    type: "cemetery",
-    district: "Балашиха",
-    address: "г. Балашиха, Новское шоссе",
-    categories: {
-      standard: 75000,
-      comfort: 140000,
-      premium: 230000,
-    },
-    working: true,
-  },
-  {
-    id: "khimkinskoe",
-    name: "Химкинское кладбище",
-    type: "cemetery",
-    district: "Химки",
-    address: "г. Химки, Новосходненское шоссе",
-    categories: {
-      standard: 90000,
-      comfort: 170000,
-      premium: 270000,
-    },
-    working: true,
-  },
-  {
-    id: "odin-laykovskoe",
-    name: "Лайковское кладбище",
-    type: "cemetery",
-    district: "Одинцовский р-н",
-    address: "с. Лайково",
-    categories: {
-      standard: 100000,
-      comfort: 200000,
-      premium: 300000,
-    },
-    working: true,
-  },
-  {
-    id: "nakhabinskoe",
-    name: "Нахабинское кладбище",
-    type: "cemetery",
-    district: "Красногорский р-н",
-    address: "п. Нахабино",
-    categories: {
-      standard: 70000,
-      comfort: 130000,
-      premium: 220000,
-    },
-    working: true,
-  },
-  {
-    id: "kashirskoe",
-    name: "Каширское кладбище",
-    type: "cemetery",
-    district: "Кашира",
-    address: "г. Кашира",
-    categories: {
-      standard: 50000,
-      comfort: 90000,
-      premium: 150000,
-    },
+    categories: { standard: 80000, comfort: 150000, premium: 250000 },
     working: true,
   },
 ];
@@ -824,42 +234,41 @@ interface StepperWorkflowProps {
     ceremonyType: string;
     confession: string;
     ceremonyOrder: string;
+
     cemetery: string;
     selectedSlot: string;
+
     needsHearse: boolean;
-    hearseRoute: {
-      morgue: boolean;
-      hall: boolean;
-      church: boolean;
-      cemetery: boolean;
-    };
+    hearseRoute: { morgue: boolean; hall: boolean; church: boolean; cemetery: boolean };
+
     needsFamilyTransport: boolean;
     familyTransportSeats: number;
+
     distance: string;
+
     clientName: string;
     clientEmail: string;
+
     userEmail: string;
+
     needsPallbearers: boolean;
-    packageType:
-      | "basic"
-      | "standard"
-      | "premium"
-      | "custom"
-      | "";
+
+    packageType: "basic" | "standard" | "premium" | "custom" | "";
     selectedAdditionalServices: string[];
+
     specialRequests: string;
+
     fullName: string;
     birthDate: string;
     deathDate: string;
     deathCertificate: string;
     relationship: string;
+
     dataConsent: boolean;
   };
   onUpdateFormData: (field: string, value: any) => void;
   onStepChange?: (step: number) => void;
-  onCemeteryCategoryChange?: (
-    category: "standard" | "comfort" | "premium",
-  ) => void;
+  onCemeteryCategoryChange?: (category: "standard" | "comfort" | "premium") => void;
 }
 
 export function StepperWorkflow({
@@ -869,306 +278,160 @@ export function StepperWorkflow({
   onCemeteryCategoryChange,
 }: StepperWorkflowProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const SimplifiedAny = SimplifiedStepperWorkflow as any;
+
   const [currentStep, setCurrentStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState<
-    number[]
-  >([]);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [showHearseDialog, setShowHearseDialog] =
-    useState(false);
+
+  // ✅ флаг: скроллим только если переход был через "Далее"
+  const shouldScrollOnStepChangeRef = useRef(false);
   const isInitialMountRef = useRef(true);
   const previousStepRef = useRef(0);
-  const [showConsentError, setShowConsentError] =
-    useState(false);
-  const [cemeterySearchQuery, setCemeterySearchQuery] =
-    useState("");
-  const [showCemeteryResults, setShowCemeteryResults] =
-    useState(false);
-  const [
-    selectedCemeteryCategory,
-    setSelectedCemeteryCategory,
-  ] = useState<"standard" | "comfort" | "premium">("standard");
-  const [paymentMethod, setPaymentMethod] = useState<
-  "card" | "sbp" | "installment"
->("card");
 
-  const [isAccountOpen, setIsAccountOpen] = useState(false);
-  
-  const [cardData, setCardData] = useState({
-  number: "",
-  holder: "",
-  expiry: "",
-  cvc: "",
-});
-
-const [workflowMode, setWorkflowMode] = useState<
-  "wizard" | "packages" | "simplified"
->("wizard");
-
+  const [workflowMode, setWorkflowMode] = useState<"wizard" | "packages">("wizard");
   const [selectedPackageForSimplified, setSelectedPackageForSimplified] =
     useState<(typeof PACKAGES)[number] | null>(null);
-    const openPackagesMode = () => {
-  setWorkflowMode("packages");
 
-  if (!selectedPackageForSimplified) {
-    const defaultPkg = PACKAGES.find((p) => p.popular) ?? PACKAGES[0];
-    setSelectedPackageForSimplified(defaultPkg);
-  }
-};
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
 
+  const [showConsentError, setShowConsentError] = useState(false);
 
-  // ✅ ЕДИНЫЙ confirm для wizard (и он же совместим с тем, что часто ждёт backend)
-const handleConfirmBooking = async () => {
-  try {
-    const orderEmail = (formData.userEmail || "").trim();
+  const [cemeterySearchQuery, setCemeterySearchQuery] = useState("");
+  const [showCemeteryResults, setShowCemeteryResults] = useState(false);
+  const [selectedCemeteryCategory, setSelectedCemeteryCategory] =
+    useState<"standard" | "comfort" | "premium">("standard");
 
-    if (!orderEmail) {
-      alert("Укажите email для получения подтверждения.");
-      return;
-    }
+  const [showHearseDialog, setShowHearseDialog] = useState(false);
 
-    const total = calculateTotal();
-    const breakdown = calculateBreakdown();
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
+  const [cardData, setCardData] = useState({ number: "", holder: "", expiry: "", cvc: "" });
 
-    // ⚠️ Шлём сразу оба формата:
-    // - плоский (userEmail/formData/total...)
-    // - структурный (customer/deceased/ceremony...)
-    // чтобы /api/orders сработал при любом из вариантов, который у тебя сейчас в бэке.
-    const payload = {
-      // плоский формат
-      userEmail: orderEmail,
-      userName: (formData.clientName || formData.fullName || "").trim() || undefined,
-      formData,
-      total,
-      breakdown,
-      paymentMethod,
+  const scrollToWizardTop = () => {
+    if (!containerRef.current) return;
+    containerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
-      // структурный формат (как часто делают в “готовых решениях”)
-      customer: {
-        email: orderEmail,
-      },
-      deceased: {
-        name: formData.fullName || undefined,
-        birthDate: formData.birthDate || undefined,
-        deathDate: formData.deathDate || undefined,
-        relationship: (formData as any).relationship || undefined,
-      },
-      ceremony: {
-        type: formData.ceremonyType || undefined,
-        order: (formData as any).ceremonyOrder || undefined,
-        serviceType: formData.serviceType || undefined,
-        cemetery: formData.cemetery || undefined,
-      },
-      notes: (formData as any).specialRequests || undefined,
-    };
-
-    const res = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok || data?.ok === false) {
-      console.error("Ошибка при создании заказа", data);
-      alert("Не удалось оформить бронирование. Попробуйте ещё раз.");
-      return;
-    }
-
-    alert("Бронирование оформлено! Детали отправлены на указанную почту.");
-  } catch (error) {
-    console.error("Сетевая ошибка при оформлении бронирования", error);
-    alert("Сетевая ошибка. Проверьте интернет и попробуйте ещё раз.");
-  }
-};
-
-  // Состояния для выбора даты и времени
-  const [pickupDateTime, setPickupDateTime] = useState<{
-    date?: Date;
-    time?: string;
-  }>({});
-  const [farewellDateTime, setFarewellDateTime] = useState<{
-    date?: Date;
-    time?: string;
-  }>({});
-  const [burialDateTime, setBurialDateTime] = useState<{
-    date?: Date;
-    time?: string;
-  }>({});
-  const [showPickupDialog, setShowPickupDialog] =
-    useState(false);
-  const [showFarewellDialog, setShowFarewellDialog] =
-    useState(false);
-  const [showBurialDialog, setShowBurialDialog] =
-    useState(false);
-
-  // Инициализация (всегда начинаем с шага 0)
+  // ✅ “первое монтирование”
   useEffect(() => {
-    // Не загружаем currentStep из localStorage - всегда начинаем с первого шага
-    // Помечаем, что первое монтирование завершено
-    const timer = setTimeout(() => {
+    const t = setTimeout(() => {
       isInitialMountRef.current = false;
     }, 100);
-    return () => clearTimeout(timer);
+    return () => clearTimeout(t);
   }, []);
 
-  // Уведомление родителя об изменении шага (без сохранения в localStorage)
+  // ✅ notify parent step change
   useEffect(() => {
-    // Уведомляем родительский компонент об изменении шага
-    // Только если это не первая загрузка
-    if (!isInitialMountRef.current && onStepChange) {
-      onStepChange(currentStep);
-    }
+    if (!isInitialMountRef.current && onStepChange) onStepChange(currentStep);
   }, [currentStep, onStepChange]);
 
-  // Автоматический скролл вверх при смене шага
+  // ✅ скролл-триггер: только по флагу (т.е. "Далее")
   useEffect(() => {
-    // Скроллим только если шаг реально изменился (не при первой загрузке)
-    if (
-      !isInitialMountRef.current &&
-      previousStepRef.current !== currentStep
-    ) {
-      // Используем только window.scrollTo для согласованного скроллинга
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    if (!isInitialMountRef.current && previousStepRef.current !== currentStep) {
+      if (shouldScrollOnStepChangeRef.current) {
+        scrollToWizardTop();
+      }
+      shouldScrollOnStepChangeRef.current = false;
     }
     previousStepRef.current = currentStep;
   }, [currentStep]);
 
-  // Уведомляем родительский компонент об изменении категории кладбища
   useEffect(() => {
-    if (onCemeteryCategoryChange) {
-      onCemeteryCategoryChange(selectedCemeteryCategory);
-    }
+    if (onCemeteryCategoryChange) onCemeteryCategoryChange(selectedCemeteryCategory);
   }, [selectedCemeteryCategory, onCemeteryCategoryChange]);
 
-  // Закрытие результатов поиска при клике вне области
+  // ✅ закрытие результатов поиска при клике вне
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (
-        !target.closest("#cemetery") &&
-        !target.closest(".cemetery-results")
-      ) {
+      if (!target.closest("#cemetery") && !target.closest(".cemetery-results")) {
         setShowCemeteryResults(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener(
-        "mousedown",
-        handleClickOutside,
-      );
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Расчёт стоимости
+  const handleInputChange = (field: string, value: any) => onUpdateFormData(field, value);
+
+  const handleSkipField = (field: string) => {
+    const currentValue = (formData as any)[field];
+    onUpdateFormData(field, currentValue === "—" ? "" : "—");
+  };
+
+  // ✅ КЛЮЧЕВОЕ: если выключили зал — чистим маршрут и время
+  const [farewellDateTime, setFarewellDateTime] = useState<{ date?: Date; time?: string }>({});
+  const [pickupDateTime, setPickupDateTime] = useState<{ date?: Date; time?: string }>({});
+  const [burialDateTime, setBurialDateTime] = useState<{ date?: Date; time?: string }>({});
+
+  const [showPickupDialog, setShowPickupDialog] = useState(false);
+  const [showFarewellDialog, setShowFarewellDialog] = useState(false);
+  const [showBurialDialog, setShowBurialDialog] = useState(false);
+
+  useEffect(() => {
+    if (!formData.hasHall) {
+      // hallDuration у тебя number → ставим 0
+      onUpdateFormData("hallDuration", 0);
+
+      // маршруту hall/church = false
+      onUpdateFormData("hearseRoute", {
+        ...formData.hearseRoute,
+        hall: false,
+        church: false,
+      });
+
+      // время прощания убрать
+      setFarewellDateTime({});
+      setShowFarewellDialog(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.hasHall]);
+
   const calculateTotal = () => {
     let total = 0;
 
-    // Если выбран готовый пакет
-    if (
-      formData.packageType &&
-      formData.packageType !== "custom"
-    ) {
-      const pkg = PACKAGES.find(
-        (p) => p.id === formData.packageType,
-      );
-      if (pkg) {
-        total = pkg.price;
-      }
+    if (formData.packageType && formData.packageType !== "custom") {
+      const pkg = PACKAGES.find((p) => p.id === formData.packageType);
+      if (pkg) total = pkg.price;
     } else {
-      // Базовая цена
       total = 25000;
 
-      // Зал прощания
       if (formData.hasHall) {
-        total +=
-          PRICES.hallDuration[
-            formData.hallDuration as keyof typeof PRICES.hallDuration
-          ] || 0;
+        total += PRICES.hallDuration[formData.hallDuration as 30 | 60 | 90] || 0;
       }
 
-      // Тип церемонии
-      total +=
-        PRICES.ceremonyType[
-          formData.ceremonyType as keyof typeof PRICES.ceremonyType
-        ] || 0;
+      total += PRICES.ceremonyType[formData.ceremonyType as keyof typeof PRICES.ceremonyType] || 0;
 
-      // Транспорт
-      if (formData.needsHearse) {
-        total += PRICES.hearse;
-      }
+      if (formData.needsHearse) total += PRICES.hearse;
+
       if (formData.needsFamilyTransport) {
-        total +=
-          PRICES.familyTransport[
-            formData.familyTransportSeats as keyof typeof PRICES.familyTransport
-          ] || 0;
+        total += PRICES.familyTransport[formData.familyTransportSeats as 5 | 10 | 15] || 0;
       }
 
-      // Носильщики
-      if (formData.needsPallbearers) {
-        total += PRICES.pallbearers;
-      }
+      if (formData.needsPallbearers) total += PRICES.pallbearers;
 
-      // Дополнительные услуги
-      if (
-        formData.selectedAdditionalServices &&
-        Array.isArray(formData.selectedAdditionalServices)
-      ) {
-        formData.selectedAdditionalServices.forEach(
-          (serviceId) => {
-            const service = additionalServices.find(
-              (s) => s.id === serviceId,
-            );
-            if (service) {
-              total += service.price;
-            }
-          },
-        );
+      if (Array.isArray(formData.selectedAdditionalServices)) {
+        for (const serviceId of formData.selectedAdditionalServices) {
+          const s = additionalServices.find((x) => x.id === serviceId);
+          if (s) total += s.price;
+        }
       }
     }
 
-    // Место на кладбище/в крематории
     if (formData.cemetery) {
-      const allCemeteries = [
-        ...MOSCOW_CEMETERIES,
-        ...MO_CEMETERIES,
-      ];
-      const selectedCemetery = allCemeteries.find(
-        (c) => c.name === formData.cemetery,
-      );
-      if (
-        selectedCemetery &&
-        selectedCemetery.categories[selectedCemeteryCategory]
-      ) {
-        total +=
-          selectedCemetery.categories[
-            selectedCemeteryCategory
-          ] || 0;
-      }
+      const all = [...MOSCOW_CEMETERIES, ...MO_CEMETERIES];
+      const selected = all.find((c) => c.name === formData.cemetery);
+      const price = selected?.categories?.[selectedCemeteryCategory];
+      if (price) total += price;
     }
 
     return total;
   };
 
-  // Функция для расчета детализации стоимости
   const calculateBreakdown = () => {
-    const breakdown: {
-      category: string;
-      price: number;
-      items?: { name: string; price?: number }[];
-    }[] = [];
+    const breakdown: { category: string; price: number; items?: { name: string; price?: number }[] }[] = [];
 
-    // Если выбран готовый пакет
-    if (
-      formData.packageType &&
-      formData.packageType !== "custom"
-    ) {
-      const pkg = PACKAGES.find(
-        (p) => p.id === formData.packageType,
-      );
+    if (formData.packageType && formData.packageType !== "custom") {
+      const pkg = PACKAGES.find((p) => p.id === formData.packageType);
       if (pkg) {
         breakdown.push({
           category: `Пакет "${pkg.name}"`,
@@ -1176,248 +439,196 @@ const handleConfirmBooking = async () => {
           items: pkg.features.map((f) => ({ name: f })),
         });
       }
-    } else {
-      // Базовые услуги
-      breakdown.push({
-        category: "Базовые услуги",
-        price: 25000,
-        items: [
-          { name: "Оформление документов" },
-          { name: "Подтверждение места захоронения" },
-          { name: "Хранение и базовая подготовка тела" },
-          { name: "Гроб из массива сосны + подушка/покрывало" },
-          { name: "Транспортировка покойного и перенос" },
-          { name: "Кладбищенские работы" },
-        ],
-      });
-
-      // Формат
-      const formatItems: { name: string; price?: number }[] =
-        [];
-      let formatTotal = 0;
-
-      if (formData.hasHall) {
-        const hallPrice =
-          PRICES.hallDuration[
-            formData.hallDuration as keyof typeof PRICES.hallDuration
-          ] || 0;
-        formatItems.push({
-          name: `Зал прощания (${formData.hallDuration} мин)`,
-          price: hallPrice,
-        });
-        formatTotal += hallPrice;
-      }
-
-      const ceremonyPrice =
-        PRICES.ceremonyType[
-          formData.ceremonyType as keyof typeof PRICES.ceremonyType
-        ] || 0;
-      if (ceremonyPrice > 0) {
-        const ceremonyName =
-          formData.ceremonyType === "religious"
-            ? "Религиозная церемония"
-            : "Комбинированная церемония";
-        formatItems.push({
-          name: ceremonyName,
-          price: ceremonyPrice,
-        });
-        formatTotal += ceremonyPrice;
-      }
-
-      if (formatItems.length > 0) {
-        breakdown.push({
-          category: "Формат",
-          price: formatTotal,
-          items: formatItems,
-        });
-      }
-
-      // Логистика
-      const logisticsItems: { name: string; price?: number }[] =
-        [];
-      let logisticsTotal = 0;
-
-      if (formData.needsHearse) {
-        logisticsItems.push({
-          name: "Катафалк",
-          price: PRICES.hearse,
-        });
-        logisticsTotal += PRICES.hearse;
-      }
-
-      if (formData.needsFamilyTransport) {
-        const transportPrice =
-          PRICES.familyTransport[
-            formData.familyTransportSeats as keyof typeof PRICES.familyTransport
-          ] || 0;
-        logisticsItems.push({
-          name: `Транспорт для близких (${formData.familyTransportSeats} мест)`,
-          price: transportPrice,
-        });
-        logisticsTotal += transportPrice;
-      }
-
-      if (formData.needsPallbearers) {
-        logisticsItems.push({
-          name: "Носильщики",
-          price: PRICES.pallbearers,
-        });
-        logisticsTotal += PRICES.pallbearers;
-      }
-
-      if (logisticsItems.length > 0) {
-        breakdown.push({
-          category: "Логистика",
-          price: logisticsTotal,
-          items: logisticsItems,
-        });
-      }
-
-      // Дополнительные услуги
-      if (
-        formData.selectedAdditionalServices &&
-        formData.selectedAdditionalServices.length > 0
-      ) {
-        const additionalItems: {
-          name: string;
-          price?: number;
-        }[] = [];
-        let additionalTotal = 0;
-
-        formData.selectedAdditionalServices.forEach(
-          (serviceId) => {
-            const service = additionalServices.find(
-              (s) => s.id === serviceId,
-            );
-            if (service) {
-              additionalItems.push({
-                name: service.name,
-                price: service.price,
-              });
-              additionalTotal += service.price;
-            }
-          },
-        );
-
-        if (additionalItems.length > 0) {
-          breakdown.push({
-            category: "Дополнительные услуги",
-            price: additionalTotal,
-            items: additionalItems,
-          });
-        }
-      }
+      return breakdown;
     }
 
-    // Место на кладбище/в крематории
+    breakdown.push({
+      category: "Базовые услуги",
+      price: 25000,
+      items: [
+        { name: "Оформление документов" },
+        { name: "Подтверждение места захоронения" },
+        { name: "Хранение и базовая подготовка тела" },
+        { name: "Гроб из массива сосны + подушка/покрывало" },
+        { name: "Транспортировка покойного и перенос" },
+        { name: "Кладбищенские работы" },
+      ],
+    });
+
+    const formatItems: { name: string; price?: number }[] = [];
+    let formatTotal = 0;
+
+    if (formData.hasHall && formData.hallDuration) {
+      const hallPrice = PRICES.hallDuration[formData.hallDuration as 30 | 60 | 90] || 0;
+      formatItems.push({ name: `Зал прощания (${formData.hallDuration} мин)`, price: hallPrice });
+      formatTotal += hallPrice;
+    }
+
+    const ceremonyPrice = PRICES.ceremonyType[formData.ceremonyType as keyof typeof PRICES.ceremonyType] || 0;
+    if (ceremonyPrice > 0) {
+      formatItems.push({
+        name: formData.ceremonyType === "religious" ? "Религиозная церемония" : "Комбинированная церемония",
+        price: ceremonyPrice,
+      });
+      formatTotal += ceremonyPrice;
+    }
+
+    if (formatItems.length) breakdown.push({ category: "Формат", price: formatTotal, items: formatItems });
+
+    const logisticsItems: { name: string; price?: number }[] = [];
+    let logisticsTotal = 0;
+
+    if (formData.needsHearse) {
+      logisticsItems.push({ name: "Катафалк", price: PRICES.hearse });
+      logisticsTotal += PRICES.hearse;
+    }
+    if (formData.needsFamilyTransport) {
+      const tp = PRICES.familyTransport[formData.familyTransportSeats as 5 | 10 | 15] || 0;
+      logisticsItems.push({ name: `Транспорт для близких (${formData.familyTransportSeats} мест)`, price: tp });
+      logisticsTotal += tp;
+    }
+    if (formData.needsPallbearers) {
+      logisticsItems.push({ name: "Носильщики", price: PRICES.pallbearers });
+      logisticsTotal += PRICES.pallbearers;
+    }
+
+    if (logisticsItems.length) breakdown.push({ category: "Логистика", price: logisticsTotal, items: logisticsItems });
+
+    if (formData.selectedAdditionalServices?.length) {
+      const addItems: { name: string; price?: number }[] = [];
+      let addTotal = 0;
+      for (const id of formData.selectedAdditionalServices) {
+        const s = additionalServices.find((x) => x.id === id);
+        if (!s) continue;
+        addItems.push({ name: s.name, price: s.price });
+        addTotal += s.price;
+      }
+      if (addItems.length) breakdown.push({ category: "Дополнительные услуги", price: addTotal, items: addItems });
+    }
+
     if (formData.cemetery) {
-      const allCemeteries = [
-        ...MOSCOW_CEMETERIES,
-        ...MO_CEMETERIES,
-      ];
-      const selectedCemetery = allCemeteries.find(
-        (c) => c.name === formData.cemetery,
-      );
-      if (
-        selectedCemetery &&
-        selectedCemetery.categories[selectedCemeteryCategory]
-      ) {
-        const cemeteryPrice =
-          selectedCemetery.categories[
-            selectedCemeteryCategory
-          ] || 0;
-        const categoryName =
-          selectedCemeteryCategory === "standard"
-            ? "Стандарт"
-            : selectedCemeteryCategory === "comfort"
-              ? "Комфорт"
-              : "Премиум";
-        breakdown.push({
-          category: `Место на кладбище (${categoryName})`,
-          price: cemeteryPrice,
-          items: [{ name: formData.cemetery }],
-        });
+      const all = [...MOSCOW_CEMETERIES, ...MO_CEMETERIES];
+      const selected = all.find((c) => c.name === formData.cemetery);
+      const price = selected?.categories?.[selectedCemeteryCategory] || 0;
+      if (price) {
+        const catName =
+          selectedCemeteryCategory === "standard" ? "Стандарт" : selectedCemeteryCategory === "comfort" ? "Комфорт" : "Премиум";
+        breakdown.push({ category: `Место на кладбище (${catName})`, price, items: [{ name: formData.cemetery }] });
       }
     }
 
     return breakdown;
   };
 
-  const handleInputChange = (field: string, value: any) => {
-    onUpdateFormData(field, value);
-  };
+  const handleConfirmBooking = async () => {
+    try {
+      const orderEmail = (formData.userEmail || "").trim();
+      if (!orderEmail) {
+        alert("Укажите email для получения подтверждения.");
+        return;
+      }
 
-  const handleSkipField = (field: string) => {
-    // Переключаем значение: если уже прочерк, то очищаем, если нет - ставим прочерк
-    const currentValue =
-      formData[field as keyof typeof formData];
-    onUpdateFormData(field, currentValue === "—" ? "" : "—");
+      const total = calculateTotal();
+      const breakdown = calculateBreakdown();
+
+      const payload = {
+        userEmail: orderEmail,
+        userName: (formData.clientName || formData.fullName || "").trim() || undefined,
+        formData,
+        total,
+        breakdown,
+        paymentMethod,
+        customer: { email: orderEmail },
+        deceased: {
+          name: formData.fullName || undefined,
+          birthDate: formData.birthDate || undefined,
+          deathDate: formData.deathDate || undefined,
+          relationship: formData.relationship || undefined,
+        },
+        ceremony: {
+          type: formData.ceremonyType || undefined,
+          order: formData.ceremonyOrder || undefined,
+          serviceType: formData.serviceType || undefined,
+          cemetery: formData.cemetery || undefined,
+        },
+        notes: formData.specialRequests || undefined,
+      };
+
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data?.ok === false) {
+        console.error("Ошибка при создании заказа", data);
+        alert("Не удалось оформить бронирование. Попробуйте ещё раз.");
+        return;
+      }
+
+      alert("Бронирование оформлено! Детали отправлены на указанную почту.");
+    } catch (e) {
+      console.error(e);
+      alert("Сетевая ошибка. Проверьте интернет и попробуйте ещё раз.");
+    }
   };
 
   const handleNext = () => {
-    // Проверка согласия на шаге документов
+    // consent check
     if (currentStep === 3 && !formData.dataConsent) {
       setShowConsentError(true);
       setTimeout(() => {
-        const consentElement =
-          document.getElementById("data-consent");
-        if (consentElement) {
-          consentElement.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
-        }
+        document.getElementById("data-consent")?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 100);
       return;
     }
 
-    if (currentStep < steps.length - 1 && !isTransitioning) {
-      setIsTransitioning(true);
-      setShowConsentError(false);
+    if (currentStep >= steps.length - 1 || isTransitioning) return;
 
-      if (!completedSteps.includes(currentStep)) {
-        setCompletedSteps([...completedSteps, currentStep]);
-      }
+    setIsTransitioning(true);
+    setShowConsentError(false);
 
-      setTimeout(() => {
-        setCurrentStep(currentStep + 1);
-        setIsTransitioning(false);
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }, 200);
+    if (!completedSteps.includes(currentStep)) {
+      setCompletedSteps((prev) => [...prev, currentStep]);
     }
+
+    setTimeout(() => {
+      // ✅ только при "Далее" — скролл к верху мастера
+      shouldScrollOnStepChangeRef.current = true;
+
+      setCurrentStep((s) => s + 1);
+      setIsTransitioning(false);
+    }, 200);
   };
 
   const handlePrev = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    if (currentStep <= 0) return;
+    // Назад — без скролла (как шаг-клик)
+    shouldScrollOnStepChangeRef.current = false;
+    setCurrentStep((s) => s - 1);
   };
 
   const handleStepClick = (stepIndex: number) => {
+    // ✅ круги — НЕ скроллят
+    shouldScrollOnStepChangeRef.current = false;
     setCurrentStep(stepIndex);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleEditStep = (stepIndex: number) => {
+    // ✅ редактирование — тоже без скролла
+    shouldScrollOnStepChangeRef.current = false;
     setCurrentStep(stepIndex);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Фильтрация кладбищ по поисковому запросу
-  const filteredCemeteries = [
-    ...MOSCOW_CEMETERIES,
-    ...MO_CEMETERIES,
-  ].filter((cemetery) => {
+  const filteredCemeteries = [...MOSCOW_CEMETERIES, ...MO_CEMETERIES].filter((cemetery) => {
     if (!cemeterySearchQuery.trim()) return false;
-
     const query = cemeterySearchQuery.toLowerCase();
+
     const matchesType =
       formData.serviceType === "burial"
-        ? cemetery.type === "cemetery" ||
-          cemetery.type === "both"
-        : cemetery.type === "crematorium" ||
-          cemetery.type === "both";
+        ? (cemetery.type === "cemetery" || cemetery.type === "both") && cemetery.working
+        : cemetery.type === "crematorium" || cemetery.type === "both";
 
     const matchesSearch =
       cemetery.name.toLowerCase().includes(query) ||
@@ -1433,79 +644,24 @@ const handleConfirmBooking = async () => {
     setShowCemeteryResults(false);
   };
 
-  // app/components/StepperWorkflow.tsx
-
-// Отправка заказа на /api/orders
-const handleConfirmAndBook = async () => {
-  try {
-    // Собираем все нужные данные из formData
-    const payload = {
-      customer: {
-        // почта, куда уйдёт письмо
-        email: formData.userEmail,
-        // отдельного поля для имени заказчика у тебя нет — оставляем пусто
-        // name и phone можно добавить позже, если появятся в форме
-      },
-      deceased: {
-        // ФИО усопшего
-        name: formData.fullName || undefined,
-        // Доп. поля
-        birthDate: formData.birthDate || undefined,
-        deathDate: formData.deathDate || undefined,
-        relationship: formData.relationship || undefined,
-        // deathCertificate сейчас нигде не используем, можно будет
-        // добавить в письмо отдельной строкой по желанию
-      },
-      ceremony: {
-        // Тип церемонии (religious / secular и т.п.)
-        type: formData.ceremonyType || undefined,
-        // Формат / пакет (basic / premium и т.п.)
-        order: formData.ceremonyOrder || undefined,
-        // Даты/время/место у тебя пока нет в formData — поэтому в письме "не указана"
-        // как только заведёшь, сюда же добавишь:
-        // date: formData.ceremonyDate || undefined,
-        // time: formData.ceremonyTime || undefined,
-        // place: formData.ceremonyPlace || undefined,
-      },
-      // Особые пожелания
-      notes: formData.specialRequests || undefined,
-    };
-
-    const res = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      console.error("Order API error", data);
-      alert("Ошибка при оформлении бронирования. Попробуйте ещё раз.");
-      return;
+  const openPackagesMode = () => {
+    setWorkflowMode("packages");
+    if (!selectedPackageForSimplified) {
+      const defaultPkg = PACKAGES.find((p: any) => (p as any).popular) ?? PACKAGES[0];
+      setSelectedPackageForSimplified(defaultPkg as any);
     }
-
-    alert(
-      "Бронирование оформлено. Договор и детали заказа отправлены на указанную почту."
-    );
-  } catch (error) {
-    console.error("Network error", error);
-    alert("Произошла сетевая ошибка. Попробуйте ещё раз.");
-  }
-};
+  };
 
   const renderStepContent = () => {
     switch (currentStep) {
-    case 0:
-        // Шаг 1: Формат
+      case 0: {
         return (
           <div className="space-y-6">
             <div>
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={() =>
-                    handleInputChange("serviceType", "burial")
-                  }
+                  type="button"
+                  onClick={() => handleInputChange("serviceType", "burial")}
                   className={cn(
                     "px-5 py-2 border-2 rounded-full text-left transition-all backdrop-blur-sm",
                     formData.serviceType === "burial"
@@ -1513,21 +669,13 @@ const handleConfirmAndBook = async () => {
                       : "border-gray-300/50 bg-white/30 hover:border-gray-400/60 hover:bg-white/40",
                   )}
                 >
-                  <div className="text-sm text-gray-900">
-                    Захоронение
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    Традиционное погребение
-                  </div>
+                  <div className="text-sm text-gray-900">Захоронение</div>
+                  <div className="text-xs text-gray-600">Традиционное погребение</div>
                 </button>
 
                 <button
-                  onClick={() =>
-                    handleInputChange(
-                      "serviceType",
-                      "cremation",
-                    )
-                  }
+                  type="button"
+                  onClick={() => handleInputChange("serviceType", "cremation")}
                   className={cn(
                     "px-5 py-2 border-2 rounded-full text-left transition-all backdrop-blur-sm",
                     formData.serviceType === "cremation"
@@ -1535,12 +683,8 @@ const handleConfirmAndBook = async () => {
                       : "border-gray-300/50 bg-white/30 hover:border-gray-400/60 hover:bg-white/40",
                   )}
                 >
-                  <div className="text-sm text-gray-900">
-                    Кремация
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    С выдачей урны
-                  </div>
+                  <div className="text-sm text-gray-900">Кремация</div>
+                  <div className="text-xs text-gray-600">С выдачей урны</div>
                 </button>
               </div>
             </div>
@@ -1550,30 +694,18 @@ const handleConfirmAndBook = async () => {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <Label className="text-gray-900">
-                    Зал прощания
-                  </Label>
-                  <p className="text-xs text-gray-700 mt-1">
-                    Церемония прощания с родными
-                  </p>
+                  <Label className="text-gray-900">Зал прощания</Label>
+                  <p className="text-xs text-gray-700 mt-1">Церемония прощания с родными</p>
                 </div>
-                <Switch
-                  checked={formData.hasHall}
-                  onCheckedChange={(checked) =>
-                    handleInputChange("hasHall", checked)
-                  }
-                />
+                <Switch checked={formData.hasHall} onCheckedChange={(checked) => handleInputChange("hasHall", checked)} />
               </div>
 
               {!formData.hasHall && (
                 <div className="bg-amber-500/10 backdrop-blur-sm border border-amber-400/30 rounded-full p-4">
                   <p className="text-sm text-amber-900">
-                    Без зала — технологическая кремация без
-                    церемонии. Можно попрощаться в зале морга.{" "}
+                    Без зала — технологическая кремация без церемонии. Можно попрощаться в зале морга.
                     <br />
-                    <span className="text-green-800">
-                      Экономия: −8 000 ₽ • −60 мин
-                    </span>
+                    <span className="text-green-800">Экономия: −8 000 ₽ • −60 мин</span>
                   </p>
                 </div>
               )}
@@ -1582,121 +714,65 @@ const handleConfirmAndBook = async () => {
             {formData.hasHall && (
               <>
                 <div>
-                  <Label className="mb-3 block">
-                    Тип церемонии
-                  </Label>
+                  <Label className="mb-3 block">Тип церемонии</Label>
                   <RadioGroup
                     value={formData.ceremonyType}
-                    onValueChange={(value) =>
-                      handleInputChange("ceremonyType", value)
-                    }
+                    onValueChange={(value) => handleInputChange("ceremonyType", value)}
                     className="space-y-3"
                   >
                     <div
                       className={cn(
                         "flex items-start space-x-3 p-4 border rounded-full transition-all",
-                        formData.ceremonyType === "civil" &&
-                          "border-black bg-gray-50",
+                        formData.ceremonyType === "civil" && "border-black bg-gray-50",
                       )}
                     >
-                      <RadioGroupItem
-                        value="civil"
-                        id="civil"
-                        className="mt-0.5"
-                      />
+                      <RadioGroupItem value="civil" id="civil" className="mt-0.5" />
                       <div className="flex-1">
-                        <Label
-                          htmlFor="civil"
-                          className="cursor-pointer"
-                        >
-                          Светская
-                        </Label>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Без религиозных обрядов
-                        </p>
+                        <Label htmlFor="civil" className="cursor-pointer">Светская</Label>
+                        <p className="text-xs text-gray-500 mt-1">Без религиозных обрядов</p>
                       </div>
                     </div>
+
                     <div
                       className={cn(
                         "flex items-start space-x-3 p-4 border rounded-full transition-all",
-                        formData.ceremonyType === "religious" &&
-                          "border-black bg-gray-50",
+                        formData.ceremonyType === "religious" && "border-black bg-gray-50",
                       )}
                     >
-                      <RadioGroupItem
-                        value="religious"
-                        id="religious"
-                        className="mt-0.5"
-                      />
+                      <RadioGroupItem value="religious" id="religious" className="mt-0.5" />
                       <div className="flex-1">
-                        <Label
-                          htmlFor="religious"
-                          className="cursor-pointer"
-                        >
-                          Религиозная
-                        </Label>
-                        <p className="text-xs text-gray-500 mt-1">
-                          С участием священнослужителя
-                        </p>
+                        <Label htmlFor="religious" className="cursor-pointer">Религиозная</Label>
+                        <p className="text-xs text-gray-500 mt-1">С участием священнослужителя</p>
                       </div>
-                      <span className="text-sm text-gray-500">
-                        +15 000 ₽
-                      </span>
+                      <span className="text-sm text-gray-500">+15 000 ₽</span>
                     </div>
+
                     <div
                       className={cn(
                         "flex items-start space-x-3 p-4 border rounded-full transition-all",
-                        formData.ceremonyType === "combined" &&
-                          "border-black bg-gray-50",
+                        formData.ceremonyType === "combined" && "border-black bg-gray-50",
                       )}
                     >
-                      <RadioGroupItem
-                        value="combined"
-                        id="combined"
-                        className="mt-0.5"
-                      />
+                      <RadioGroupItem value="combined" id="combined" className="mt-0.5" />
                       <div className="flex-1">
-                        <Label
-                          htmlFor="combined"
-                          className="cursor-pointer"
-                        >
-                          Комбинированная
-                        </Label>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Светская + религиозная часть
-                        </p>
+                        <Label htmlFor="combined" className="cursor-pointer">Комбинированная</Label>
+                        <p className="text-xs text-gray-500 mt-1">Светская + религиозная часть</p>
                       </div>
-                      <span className="text-sm text-gray-500">
-                        +20 000 ₽
-                      </span>
+                      <span className="text-sm text-gray-500">+20 000 ₽</span>
                     </div>
                   </RadioGroup>
                 </div>
 
                 {formData.ceremonyType === "combined" && (
                   <div>
-                    <Label htmlFor="ceremonyOrder">
-                      Последовательность
-                    </Label>
-                    <Select
-                      value={formData.ceremonyOrder}
-                      onValueChange={(value) =>
-                        handleInputChange(
-                          "ceremonyOrder",
-                          value,
-                        )
-                      }
-                    >
+                    <Label htmlFor="ceremonyOrder">Последовательность</Label>
+                    <Select value={formData.ceremonyOrder} onValueChange={(value) => handleInputChange("ceremonyOrder", value)}>
                       <SelectTrigger className="mt-2">
                         <SelectValue placeholder="Выберите порядок" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="civil-first">
-                          Светская → Религиозная
-                        </SelectItem>
-                        <SelectItem value="religious-first">
-                          Религиозная → Светская
-                        </SelectItem>
+                        <SelectItem value="civil-first">Светская → Религиозная</SelectItem>
+                        <SelectItem value="religious-first">Религиозная → Светская</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1705,37 +781,22 @@ const handleConfirmAndBook = async () => {
                 <Separator />
 
                 <div>
-                  <Label className="mb-3 block">
-                    Длительность
-                  </Label>
-                  <p className="text-xs text-gray-500 mb-3">
-                    Рекомендуем 60–90 мин
-                  </p>
+                  <Label className="mb-3 block">Длительность</Label>
+                  <p className="text-xs text-gray-500 mb-3">Рекомендуем 60–90 мин</p>
                   <div className="grid grid-cols-3 gap-3">
                     {[30, 60, 90].map((duration) => (
                       <button
                         key={duration}
-                        onClick={() =>
-                          handleInputChange(
-                            "hallDuration",
-                            duration,
-                          )
-                        }
+                        type="button"
+                        onClick={() => handleInputChange("hallDuration", duration)}
                         className={cn(
                           "p-4 border-2 rounded-full text-center transition-all",
-                          formData.hallDuration === duration
-                            ? "border-gray-900 bg-gray-50"
-                            : "border-gray-200 hover:border-gray-300",
+                          formData.hallDuration === duration ? "border-gray-900 bg-gray-50" : "border-gray-200 hover:border-gray-300",
                         )}
                       >
-                        <div className="text-sm mb-1">
-                          {duration} мин
-                        </div>
+                        <div className="text-sm mb-1">{duration} мин</div>
                         <div className="text-xs text-gray-500">
-                          {PRICES.hallDuration[
-                            duration as keyof typeof PRICES.hallDuration
-                          ].toLocaleString("ru-RU")}{" "}
-                          ₽
+                          {(PRICES.hallDuration as any)[duration].toLocaleString("ru-RU")} ₽
                         </div>
                       </button>
                     ))}
@@ -1745,194 +806,107 @@ const handleConfirmAndBook = async () => {
             )}
           </div>
         );
+      }
 
-      case 1:
-        // Шаг 2: Логистика
+      case 1: {
         return (
           <div className="space-y-6">
             <div className="relative">
               <Label htmlFor="cemetery" className="mb-3 block">
-                {formData.serviceType === "burial"
-                  ? "Выбор кладбища"
-                  : "Выбор крематория"}
+                {formData.serviceType === "burial" ? "Выбор кладбища" : "Выбор крематория"}
               </Label>
 
               <div className="relative">
                 <Input
                   id="cemetery"
-                  value={
-                    cemeterySearchQuery || formData.cemetery
-                  }
+                  value={cemeterySearchQuery || formData.cemetery}
                   onChange={(e) => {
                     setCemeterySearchQuery(e.target.value);
                     setShowCemeteryResults(true);
-                    if (!e.target.value) {
-                      handleInputChange("cemetery", "");
-                    }
+                    if (!e.target.value) handleInputChange("cemetery", "");
                   }}
                   onFocus={() => {
-                    if (cemeterySearchQuery) {
-                      setShowCemeteryResults(true);
-                    }
+                    if (cemeterySearchQuery) setShowCemeteryResults(true);
                   }}
                   placeholder="Начните вводить название или адрес..."
                   className="mt-2 rounded-full"
                 />
+
                 <p className="text-xs text-gray-500 mt-2">
-                  Единый поиск по Москве и области •{" "}
-                  {
-                    [
-                      ...MOSCOW_CEMETERIES,
-                      ...MO_CEMETERIES,
-                    ].filter((c) =>
-                      formData.serviceType === "burial"
-                        ? (c.type === "cemetery" ||
-                            c.type === "both") &&
-                          c.working
-                        : c.type === "crematorium" ||
-                          c.type === "both",
-                    ).length
-                  }{" "}
-                  активных{" "}
-                  {formData.serviceType === "burial"
-                    ? "кладбищ"
-                    : "крематориев"}
+                  Единый поиск по Москве и области
                 </p>
 
-                {/* Результаты поиска */}
-                {showCemeteryResults &&
-                  filteredCemeteries.length > 0 && (
-                    <div className="cemetery-results absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-2xl shadow-lg max-h-96 overflow-y-auto">
-                      <div className="p-2">
-                        {filteredCemeteries.map((cemetery) => (
-                          <button
-                            key={cemetery.id}
-                            onClick={() =>
-                              handleCemeterySelect(cemetery)
-                            }
-                            className="w-full text-left p-3 rounded-xl hover:bg-gray-50 transition-colors"
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-sm text-gray-900">
-                                    {cemetery.name}
+                {showCemeteryResults && filteredCemeteries.length > 0 && (
+                  <div className="cemetery-results absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-2xl shadow-lg max-h-96 overflow-y-auto">
+                    <div className="p-2">
+                      {filteredCemeteries.map((cemetery) => (
+                        <button
+                          key={cemetery.id}
+                          type="button"
+                          onClick={() => handleCemeterySelect(cemetery)}
+                          className="w-full text-left p-3 rounded-xl hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-sm text-gray-900">{cemetery.name}</span>
+                                {!cemetery.working && (
+                                  <Badge variant="secondary" className="text-xs">Закрыто</Badge>
+                                )}
+                                {cemetery.hasColumbarium && formData.serviceType === "cremation" && (
+                                  <Badge variant="outline" className="text-xs">Колумбарий</Badge>
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-500">{cemetery.address}</div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge variant="outline" className="text-xs">{cemetery.district}</Badge>
+                                {cemetery.working && cemetery.categories.standard && (
+                                  <span className="text-xs text-gray-600">
+                                    от {cemetery.categories.standard.toLocaleString("ru-RU")} ₽
                                   </span>
-                                  {!cemetery.working && (
-                                    <Badge
-                                      variant="secondary"
-                                      className="text-xs"
-                                    >
-                                      Закрыто
-                                    </Badge>
-                                  )}
-                                  {cemetery.hasColumbarium &&
-                                    formData.serviceType ===
-                                      "cremation" && (
-                                      <Badge
-                                        variant="outline"
-                                        className="text-xs"
-                                      >
-                                        Колумбарий
-                                      </Badge>
-                                    )}
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                  {cemetery.address}
-                                </div>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <Badge
-                                    variant="outline"
-                                    className="text-xs"
-                                  >
-                                    {cemetery.district}
-                                  </Badge>
-                                  {cemetery.working &&
-                                    cemetery.categories
-                                      .standard && (
-                                      <span className="text-xs text-gray-600">
-                                        от{" "}
-                                        {cemetery.categories.standard.toLocaleString(
-                                          "ru-RU",
-                                        )}{" "}
-                                        ₽
-                                      </span>
-                                    )}
-                                </div>
+                                )}
                               </div>
                             </div>
-                          </button>
-                        ))}
-                      </div>
+                          </div>
+                        </button>
+                      ))}
                     </div>
-                  )}
+                  </div>
+                )}
 
-                {/* Сообщение если нет результатов */}
-                {showCemeteryResults &&
-                  cemeterySearchQuery &&
-                  filteredCemeteries.length === 0 && (
-                    <div className="cemetery-results absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-2xl shadow-lg p-4">
-                      <p className="text-sm text-gray-500 text-center">
-                        Ничего не найдено. Попробуйте изменить
-                        запрос.
-                      </p>
-                    </div>
-                  )}
+                {showCemeteryResults && cemeterySearchQuery && filteredCemeteries.length === 0 && (
+                  <div className="cemetery-results absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-2xl shadow-lg p-4">
+                    <p className="text-sm text-gray-500 text-center">Ничего не найдено. Попробуйте изменить запрос.</p>
+                  </div>
+                )}
               </div>
 
-              {/* Категория места (если кладбище выбрано) */}
               {formData.cemetery && (
                 <div className="mt-4 space-y-3">
-                  <Label className="text-gray-900">
-                    Категория места
-                  </Label>
+                  <Label className="text-gray-900">Категория места</Label>
                   <div className="grid grid-cols-3 gap-3">
-                    {(
-                      [
-                        "standard",
-                        "comfort",
-                        "premium",
-                      ] as const
-                    ).map((category) => {
-                      const allCemeteries = [
-                        ...MOSCOW_CEMETERIES,
-                        ...MO_CEMETERIES,
-                      ];
-                      const selectedCemetery =
-                        allCemeteries.find(
-                          (c) => c.name === formData.cemetery,
-                        );
-                      const price =
-                        selectedCemetery?.categories[category];
-
+                    {(["standard", "comfort", "premium"] as const).map((category) => {
+                      const all = [...MOSCOW_CEMETERIES, ...MO_CEMETERIES];
+                      const selected = all.find((c) => c.name === formData.cemetery);
+                      const price = selected?.categories[category];
                       if (!price) return null;
 
                       return (
                         <button
                           key={category}
-                          onClick={() =>
-                            setSelectedCemeteryCategory(
-                              category,
-                            )
-                          }
+                          type="button"
+                          onClick={() => setSelectedCemeteryCategory(category)}
                           className={cn(
                             "p-4 border-2 rounded-full text-center transition-all",
-                            selectedCemeteryCategory ===
-                              category
+                            selectedCemeteryCategory === category
                               ? "border-gray-900 bg-gray-50"
                               : "border-gray-200 hover:border-gray-300",
                           )}
                         >
                           <div className="text-sm mb-1">
-                            {category === "standard"
-                              ? "Стандарт"
-                              : category === "comfort"
-                                ? "Комфорт"
-                                : "Премиум"}
+                            {category === "standard" ? "Стандарт" : category === "comfort" ? "Комфорт" : "Премиум"}
                           </div>
-                          <div className="text-xs text-gray-500">
-                            {price.toLocaleString("ru-RU")} ₽
-                          </div>
+                          <div className="text-xs text-gray-500">{price.toLocaleString("ru-RU")} ₽</div>
                         </button>
                       );
                     })}
@@ -1944,29 +918,13 @@ const handleConfirmAndBook = async () => {
             <div className="space-y-6">
               {/* Время забора тела */}
               <div className="space-y-2">
-                <Label className="text-gray-900">
-                  Время забора тела
-                </Label>
-                <Dialog
-                  open={showPickupDialog}
-                  onOpenChange={setShowPickupDialog}
-                >
+                <Label className="text-gray-900">Время забора тела</Label>
+                <Dialog open={showPickupDialog} onOpenChange={setShowPickupDialog}>
                   <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start h-12 bg-white border-gray-200 hover:bg-gray-50 shadow-sm"
-                    >
+                    <Button variant="outline" className="w-full justify-start h-12 bg-white border-gray-200 hover:bg-gray-50 shadow-sm">
                       <Clock className="h-4 w-4 mr-3 text-gray-500" />
-                      <span
-                        className={cn(
-                          pickupDateTime.date &&
-                            pickupDateTime.time
-                            ? "text-gray-900"
-                            : "text-gray-600",
-                        )}
-                      >
-                        {pickupDateTime.date &&
-                        pickupDateTime.time
+                      <span className={cn(pickupDateTime.date && pickupDateTime.time ? "text-gray-900" : "text-gray-600")}>
+                        {pickupDateTime.date && pickupDateTime.time
                           ? `${pickupDateTime.date.toLocaleDateString("ru-RU")} в ${pickupDateTime.time}`
                           : "Выбрать время забора"}
                       </span>
@@ -1974,154 +932,53 @@ const handleConfirmAndBook = async () => {
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                      <DialogTitle>
-                        Выбор даты и времени забора
-                      </DialogTitle>
-                      <DialogDescription>
-                        Выберите дату и время, когда требуется
-                        забрать тело
-                      </DialogDescription>
+                      <DialogTitle>Выбор даты и времени забора</DialogTitle>
+                      <DialogDescription>Выберите дату и время, когда требуется забрать тело</DialogDescription>
                     </DialogHeader>
+
                     <div className="flex flex-col gap-6 py-2">
                       <div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
-                        <style>{`
-                          .rdp-caption_label { 
-                            text-transform: capitalize; 
-                            font-size: 1.1rem; 
-                            font-weight: 600; 
-                            color: #111827;
-                          }
-                          .rdp-nav_button {
-                            width: 32px;
-                            height: 32px;
-                            border-radius: 50%;
-                            background-color: #f3f4f6;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                          }
-                          .rdp-nav_button:hover {
-                            background-color: #e5e7eb;
-                          }
-                          .rdp-head_cell {
-                            color: #9ca3af;
-                            font-weight: 500;
-                            font-size: 0.875rem;
-                          }
-                        `}</style>
                         <Calendar
                           mode="single"
                           selected={pickupDateTime.date}
-                          onSelect={(date) =>
-                            setPickupDateTime({
-                              ...pickupDateTime,
-                              date,
-                            })
-                          }
+                          onSelect={(date) => setPickupDateTime({ ...pickupDateTime, date })}
                           disabled={(date) => date < new Date()}
                           className="rounded-xl border-none mx-auto bg-transparent shadow-none w-full p-0"
-                          classNames={{
-                            months:
-                              "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-                            month: "space-y-4 w-full",
-                            caption:
-                              "flex justify-between pt-1 relative items-center px-2",
-                            caption_label:
-                              "text-lg font-semibold text-gray-900 block", // Force show
-                            nav: "space-x-1 flex items-center",
-                            nav_button:
-                              "h-8 w-8 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity",
-                            nav_button_previous: "",
-                            nav_button_next: "",
-                            table:
-                              "w-full border-collapse space-y-1",
-                            head_row:
-                              "flex justify-between mb-2",
-                            head_cell:
-                              "text-gray-400 rounded-md w-10 font-normal text-[0.9rem]",
-                            row: "flex w-full mt-2 justify-between",
-                            cell: "h-10 w-10 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-gray-900/5 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                            day: "h-10 w-10 p-0 font-normal aria-selected:opacity-100 rounded-full hover:bg-gray-100 transition-colors text-gray-900",
-                            day_selected:
-                              "!bg-gray-900 !text-white hover:bg-gray-900 hover:text-white focus:bg-gray-900 focus:text-white shadow-md",
-                            day_today:
-                              "bg-gray-50 text-gray-900 font-semibold border border-gray-200",
-                            day_outside:
-                              "text-gray-300 opacity-50",
-                            day_disabled:
-                              "text-gray-300 opacity-50",
-                            day_hidden: "invisible",
-                          }}
                         />
                       </div>
 
                       {pickupDateTime.date && (
-                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                          <div className="flex items-center justify-between px-1">
-                            <div className="flex flex-col">
-                              <span className="text-sm font-medium text-gray-900">
-                                Время
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                Выберите удобный слот
-                              </span>
-                            </div>
-                            {pickupDateTime.time && (
-                              <Badge
-                                variant="secondary"
-                                className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-900"
-                              >
-                                {pickupDateTime.time}
-                              </Badge>
-                            )}
-                          </div>
-
-                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
-                            {Array.from(
-                              { length: 24 },
-                              (_, i) => {
-                                const hour = i
-                                  .toString()
-                                  .padStart(2, "0");
-                                const times = [
-                                  `${hour}:00`,
-                                  `${hour}:30`,
-                                ];
-                                return times.map((time) => (
-                                  <button
-                                    key={time}
-                                    onClick={() =>
-                                      setPickupDateTime({
-                                        ...pickupDateTime,
-                                        time,
-                                      })
-                                    }
-                                    className={cn(
-                                      "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
-                                      pickupDateTime.time ===
-                                        time
-                                        ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
-                                        : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105",
-                                    )}
-                                  >
-                                    {time}
-                                  </button>
-                                ));
-                              },
-                            ).flat()}
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
+                            {Array.from({ length: 24 }, (_, i) => i)
+                              .flatMap((i) => {
+                                const hour = i.toString().padStart(2, "0");
+                                return [`${hour}:00`, `${hour}:30`];
+                              })
+                              .map((time) => (
+                                <button
+                                  key={time}
+                                  type="button"
+                                  onClick={() => setPickupDateTime({ ...pickupDateTime, time })}
+                                  className={cn(
+                                    "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
+                                    pickupDateTime.time === time
+                                      ? "bg-gray-900 text-white border-gray-900 shadow-md"
+                                      : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50",
+                                  )}
+                                >
+                                  {time}
+                                </button>
+                              ))}
                           </div>
                         </div>
                       )}
 
                       <Button
-                        onClick={() =>
-                          setShowPickupDialog(false)
-                        }
-                        className="w-full h-12 rounded-full text-base bg-gray-900 hover:bg-gray-800 shadow-lg shadow-gray-900/20 transition-all active:scale-[0.98]"
-                        disabled={
-                          !pickupDateTime.date ||
-                          !pickupDateTime.time
-                        }
+                        type="button"
+                        onClick={() => setShowPickupDialog(false)}
+                        className="w-full h-12 rounded-full text-base bg-gray-900 hover:bg-gray-800"
+                        disabled={!pickupDateTime.date || !pickupDateTime.time}
                       >
                         Подтвердить
                       </Button>
@@ -2130,378 +987,143 @@ const handleConfirmAndBook = async () => {
                 </Dialog>
               </div>
 
-              {/* Зал прощания / Церковь */}
-              <div className="space-y-2">
-                <Label className="text-gray-900">
-                  Зал прощания / Церковь
-                </Label>
-                <Dialog
-                  open={showFarewellDialog}
-                  onOpenChange={setShowFarewellDialog}
-                >
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start h-12 bg-white border-gray-200 hover:bg-gray-50 shadow-sm"
-                    >
-                      <Church className="h-4 w-4 mr-3 text-gray-500" />
-                      <span
-                        className={cn(
-                          farewellDateTime.date &&
-                            farewellDateTime.time
-                            ? "text-gray-900"
-                            : "text-gray-600",
-                        )}
-                      >
-                        {farewellDateTime.date &&
-                        farewellDateTime.time
-                          ? `${farewellDateTime.date.toLocaleDateString("ru-RU")} в ${farewellDateTime.time}`
-                          : "Выбрать время прощания"}
-                      </span>
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>
-                        Выбор даты и времени прощания
-                      </DialogTitle>
-                      <DialogDescription>
-                        Выберите дату и время прощания в зале
-                        или церкви
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex flex-col gap-6 py-2">
-                      <div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
-                        <style>{`
-                          .rdp-caption_label { 
-                            text-transform: capitalize; 
-                            font-size: 1.1rem; 
-                            font-weight: 600; 
-                            color: #111827;
-                          }
-                          .rdp-nav_button {
-                            width: 32px;
-                            height: 32px;
-                            border-radius: 50%;
-                            background-color: #f3f4f6;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                          }
-                          .rdp-nav_button:hover {
-                            background-color: #e5e7eb;
-                          }
-                          .rdp-head_cell {
-                            color: #9ca3af;
-                            font-weight: 500;
-                            font-size: 0.875rem;
-                          }
-                        `}</style>
-                        <Calendar
-                          mode="single"
-                          selected={farewellDateTime.date}
-                          onSelect={(date) =>
-                            setFarewellDateTime({
-                              ...farewellDateTime,
-                              date,
-                            })
-                          }
-                          disabled={(date) => date < new Date()}
-                          className="rounded-xl border-none mx-auto bg-transparent shadow-none w-full p-0"
-                         
-                          classNames={{
-                            months:
-                              "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-                            month: "space-y-4 w-full",
-                            caption:
-                              "flex justify-between pt-1 relative items-center px-2",
-                            caption_label:
-                              "text-lg font-semibold text-gray-900 block",
-                            nav: "space-x-1 flex items-center",
-                            nav_button:
-                              "h-8 w-8 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity",
-                            nav_button_previous: "",
-                            nav_button_next: "",
-                            table:
-                              "w-full border-collapse space-y-1",
-                            head_row:
-                              "flex justify-between mb-2",
-                            head_cell:
-                              "text-gray-400 rounded-md w-10 font-normal text-[0.9rem]",
-                            row: "flex w-full mt-2 justify-between",
-                            cell: "h-10 w-10 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-gray-900/5 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                            day: "h-10 w-10 p-0 font-normal aria-selected:opacity-100 rounded-full hover:bg-gray-100 transition-colors text-gray-900",
-                            day_selected:
-                              "!bg-gray-900 !text-white hover:bg-gray-900 hover:text-white focus:bg-gray-900 focus:text-white shadow-md",
-                            day_today:
-                              "bg-gray-50 text-gray-900 font-semibold border border-gray-200",
-                            day_outside:
-                              "text-gray-300 opacity-50",
-                            day_disabled:
-                              "text-gray-300 opacity-50",
-                            day_hidden: "invisible",
-                          }}
-                        />
-                      </div>
-                      {farewellDateTime.date && (
-                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                          <div className="flex items-center justify-between px-1">
-                            <div className="flex flex-col">
-                              <span className="text-sm font-medium text-gray-900">
-                                Время прощания
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                Выберите удобный слот
-                              </span>
-                            </div>
-                            {farewellDateTime.time && (
-                              <Badge
-                                variant="secondary"
-                                className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-900"
-                              >
-                                {farewellDateTime.time}
-                              </Badge>
-                            )}
-                          </div>
-
-                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
-                            {Array.from(
-                              { length: 24 },
-                              (_, i) => {
-                                const hour = i
-                                  .toString()
-                                  .padStart(2, "0");
-                                const times = [
-                                  `${hour}:00`,
-                                  `${hour}:30`,
-                                ];
-                                return times.map((time) => (
-                                  <button
-                                    key={time}
-                                    onClick={() =>
-                                      setFarewellDateTime({
-                                        ...farewellDateTime,
-                                        time,
-                                      })
-                                    }
-                                    className={cn(
-                                      "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
-                                      farewellDateTime.time ===
-                                        time
-                                        ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
-                                        : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105",
-                                    )}
-                                  >
-                                    {time}
-                                  </button>
-                                ));
-                              },
-                            ).flat()}
-                          </div>
-                        </div>
-                      )}
-                      <Button
-                        onClick={() =>
-                          setShowFarewellDialog(false)
-                        }
-                        className="w-full h-12 rounded-full text-base bg-gray-900 hover:bg-gray-800 shadow-lg shadow-gray-900/20 transition-all active:scale-[0.98]"
-                        disabled={
-                          !farewellDateTime.date ||
-                          !farewellDateTime.time
-                        }
-                      >
-                        <Check className="h-4 w-4 mr-2" />
-                        Подтвердить выбор
+              {/* ✅ Зал прощания / Церковь — только если включён зал */}
+              {formData.hasHall && (
+                <div className="space-y-2">
+                  <Label className="text-gray-900">Зал прощания / Церковь</Label>
+                  <Dialog open={showFarewellDialog} onOpenChange={setShowFarewellDialog}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start h-12 bg-white border-gray-200 hover:bg-gray-50 shadow-sm">
+                        <Church className="h-4 w-4 mr-3 text-gray-500" />
+                        <span className={cn(farewellDateTime.date && farewellDateTime.time ? "text-gray-900" : "text-gray-600")}>
+                          {farewellDateTime.date && farewellDateTime.time
+                            ? `${farewellDateTime.date.toLocaleDateString("ru-RU")} в ${farewellDateTime.time}`
+                            : "Выбрать время прощания"}
+                        </span>
                       </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
+                    </DialogTrigger>
+
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Выбор даты и времени прощания</DialogTitle>
+                        <DialogDescription>Выберите дату и время прощания в зале или церкви</DialogDescription>
+                      </DialogHeader>
+
+                      <div className="flex flex-col gap-6 py-2">
+                        <div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
+                          <Calendar
+                            mode="single"
+                            selected={farewellDateTime.date}
+                            onSelect={(date) => setFarewellDateTime({ ...farewellDateTime, date })}
+                            disabled={(date) => date < new Date()}
+                            className="rounded-xl border-none mx-auto bg-transparent shadow-none w-full p-0"
+                          />
+                        </div>
+
+                        {farewellDateTime.date && (
+                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
+                            {Array.from({ length: 24 }, (_, i) => i)
+                              .flatMap((i) => {
+                                const hour = i.toString().padStart(2, "0");
+                                return [`${hour}:00`, `${hour}:30`];
+                              })
+                              .map((time) => (
+                                <button
+                                  key={time}
+                                  type="button"
+                                  onClick={() => setFarewellDateTime({ ...farewellDateTime, time })}
+                                  className={cn(
+                                    "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
+                                    farewellDateTime.time === time
+                                      ? "bg-gray-900 text-white border-gray-900 shadow-md"
+                                      : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50",
+                                  )}
+                                >
+                                  {time}
+                                </button>
+                              ))}
+                          </div>
+                        )}
+
+                        <Button
+                          type="button"
+                          onClick={() => setShowFarewellDialog(false)}
+                          className="w-full h-12 rounded-full text-base bg-gray-900 hover:bg-gray-800"
+                          disabled={!farewellDateTime.date || !farewellDateTime.time}
+                        >
+                          <Check className="h-4 w-4 mr-2" />
+                          Подтвердить выбор
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              )}
 
               {/* Время захоронения / кремации */}
               <div className="space-y-2">
-                <Label className="text-gray-900">
-                  Время захоронения / кремации
-                </Label>
-                <Dialog
-                  open={showBurialDialog}
-                  onOpenChange={setShowBurialDialog}
-                >
+                <Label className="text-gray-900">Время захоронения / кремации</Label>
+                <Dialog open={showBurialDialog} onOpenChange={setShowBurialDialog}>
                   <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start h-12 bg-white border-gray-200 hover:bg-gray-50 shadow-sm"
-                    >
+                    <Button variant="outline" className="w-full justify-start h-12 bg-white border-gray-200 hover:bg-gray-50 shadow-sm">
                       <Clock className="h-4 w-4 mr-3 text-gray-500" />
-                      <span
-                        className={cn(
-                          burialDateTime.date &&
-                            burialDateTime.time
-                            ? "text-gray-900"
-                            : "text-gray-600",
-                        )}
-                      >
-                        {burialDateTime.date &&
-                        burialDateTime.time
+                      <span className={cn(burialDateTime.date && burialDateTime.time ? "text-gray-900" : "text-gray-600")}>
+                        {burialDateTime.date && burialDateTime.time
                           ? `${burialDateTime.date.toLocaleDateString("ru-RU")} в ${burialDateTime.time}`
                           : "Выбрать время"}
                       </span>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                   <DialogHeader>
-           <DialogTitle>
-             Выбор даты и времени{" "}
-                  {formData.serviceType === "cremation" ? "кремации" : "захоронения"}
-                </DialogTitle>
 
-                    <DialogDescription>
-                Укажите удобные дату и время церемонии.
-                       </DialogDescription>
-                     </DialogHeader>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>
+                        Выбор даты и времени {formData.serviceType === "cremation" ? "кремации" : "захоронения"}
+                      </DialogTitle>
+                      <DialogDescription>Укажите удобные дату и время церемонии.</DialogDescription>
+                    </DialogHeader>
+
                     <div className="flex flex-col gap-6 py-2">
                       <div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
-                        <style>{`
-                          .rdp-caption_label { 
-                            text-transform: capitalize; 
-                            font-size: 1.1rem; 
-                            font-weight: 600; 
-                            color: #111827;
-                          }
-                          .rdp-nav_button {
-                            width: 32px;
-                            height: 32px;
-                            border-radius: 50%;
-                            background-color: #f3f4f6;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                          }
-                          .rdp-nav_button:hover {
-                            background-color: #e5e7eb;
-                          }
-                          .rdp-head_cell {
-                            color: #9ca3af;
-                            font-weight: 500;
-                            font-size: 0.875rem;
-                          }
-                        `}</style>
                         <Calendar
                           mode="single"
                           selected={burialDateTime.date}
-                          onSelect={(date) =>
-                            setBurialDateTime({
-                              ...burialDateTime,
-                              date,
-                            })
-                          }
+                          onSelect={(date) => setBurialDateTime({ ...burialDateTime, date })}
                           disabled={(date) => date < new Date()}
                           className="rounded-xl border-none mx-auto bg-transparent shadow-none w-full p-0"
-                        
-                          classNames={{
-                            months:
-                              "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-                            month: "space-y-4 w-full",
-                            caption:
-                              "flex justify-between pt-1 relative items-center px-2",
-                            caption_label:
-                              "text-lg font-semibold text-gray-900 block",
-                            nav: "space-x-1 flex items-center",
-                            nav_button:
-                              "h-8 w-8 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity",
-                            nav_button_previous: "",
-                            nav_button_next: "",
-                            table:
-                              "w-full border-collapse space-y-1",
-                            head_row:
-                              "flex justify-between mb-2",
-                            head_cell:
-                              "text-gray-400 rounded-md w-10 font-normal text-[0.9rem]",
-                            row: "flex w-full mt-2 justify-between",
-                            cell: "h-10 w-10 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-gray-900/5 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                            day: "h-10 w-10 p-0 font-normal aria-selected:opacity-100 rounded-full hover:bg-gray-100 transition-colors text-gray-900",
-                            day_selected:
-                              "!bg-gray-900 !text-white hover:bg-gray-900 hover:text-white focus:bg-gray-900 focus:text-white shadow-md",
-                            day_today:
-                              "bg-gray-50 text-gray-900 font-semibold border border-gray-200",
-                            day_outside:
-                              "text-gray-300 opacity-50",
-                            day_disabled:
-                              "text-gray-300 opacity-50",
-                            day_hidden: "invisible",
-                          }}
                         />
                       </div>
-                      {burialDateTime.date && (
-                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                          <div className="flex items-center justify-between px-1">
-                            <div className="flex flex-col">
-                              <span className="text-sm font-medium text-gray-900">
-                                Время{" "}
-                                {formData.serviceType ===
-                                "cremation"
-                                  ? "кремации"
-                                  : "захоронения"}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                Выберите удобный слот
-                              </span>
-                            </div>
-                            {burialDateTime.time && (
-                              <Badge
-                                variant="secondary"
-                                className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-900"
-                              >
-                                {burialDateTime.time}
-                              </Badge>
-                            )}
-                          </div>
 
-                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
-                            {Array.from(
-                              { length: 24 },
-                              (_, i) => {
-                                const hour = i
-                                  .toString()
-                                  .padStart(2, "0");
-                                const times = [
-                                  `${hour}:00`,
-                                  `${hour}:30`,
-                                ];
-                                return times.map((time) => (
-                                  <button
-                                    key={time}
-                                    onClick={() =>
-                                      setBurialDateTime({
-                                        ...burialDateTime,
-                                        time,
-                                      })
-                                    }
-                                    className={cn(
-                                      "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
-                                      burialDateTime.time ===
-                                        time
-                                        ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
-                                        : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105",
-                                    )}
-                                  >
-                                    {time}
-                                  </button>
-                                ));
-                              },
-                            ).flat()}
-                          </div>
+                      {burialDateTime.date && (
+                        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
+                          {Array.from({ length: 24 }, (_, i) => i)
+                            .flatMap((i) => {
+                              const hour = i.toString().padStart(2, "0");
+                              return [`${hour}:00`, `${hour}:30`];
+                            })
+                            .map((time) => (
+                              <button
+                                key={time}
+                                type="button"
+                                onClick={() => setBurialDateTime({ ...burialDateTime, time })}
+                                className={cn(
+                                  "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
+                                  burialDateTime.time === time
+                                    ? "bg-gray-900 text-white border-gray-900 shadow-md"
+                                    : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50",
+                                )}
+                              >
+                                {time}
+                              </button>
+                            ))}
                         </div>
                       )}
+
                       <Button
-                        onClick={() =>
-                          setShowBurialDialog(false)
-                        }
-                        className="w-full h-12 rounded-full text-base bg-gray-900 hover:bg-gray-800 shadow-lg shadow-gray-900/20 transition-all active:scale-[0.98]"
-                        disabled={
-                          !burialDateTime.date ||
-                          !burialDateTime.time
-                        }
+                        type="button"
+                        onClick={() => setShowBurialDialog(false)}
+                        className="w-full h-12 rounded-full text-base bg-gray-900 hover:bg-gray-800"
+                        disabled={!burialDateTime.date || !burialDateTime.time}
                       >
                         Подтвердить
                       </Button>
@@ -2511,67 +1133,47 @@ const handleConfirmAndBook = async () => {
               </div>
 
               <p className="text-xs text-gray-500 pt-2">
-                Время и слоты бронируются онлайн. Подтверждение
-                придёт в интерфейс и на почту.
+                Время и слоты бронируются онлайн. Подтверждение придёт в интерфейс и на почту.
               </p>
             </div>
 
             <Separator />
 
+            {/* Нужен катафалк */}
             <div>
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <Label>Нужен катафалк?</Label>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Специализированный транспорт
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1">Специализированный транспорт</p>
                 </div>
                 <Switch
                   checked={formData.needsHearse}
                   onCheckedChange={(checked) => {
-                    if (!checked && formData.needsHearse) {
-                      setShowHearseDialog(true);
-                    } else {
-                      handleInputChange("needsHearse", checked);
-                    }
+                    if (!checked && formData.needsHearse) setShowHearseDialog(true);
+                    else handleInputChange("needsHearse", checked);
                   }}
                 />
               </div>
 
-              <AlertDialog
-                open={showHearseDialog}
-                onOpenChange={setShowHearseDialog}
-              >
+              <AlertDialog open={showHearseDialog} onOpenChange={setShowHearseDialog}>
                 <AlertDialogContent className="bg-white rounded-[30px]">
                   <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      Вы уверены, что хотите отключить катафалк?
-                    </AlertDialogTitle>
+                    <AlertDialogTitle>Вы уверены, что хотите отключить катафалк?</AlertDialogTitle>
                     <AlertDialogDescription asChild>
                       <div className="space-y-3 pt-2">
                         <p>
-                          Катафалк — это специализированный
-                          транспорт для перевозки усопшего. Без
-                          него вам придётся организовывать
-                          транспортировку самостоятельно.
+                          Катафалк — специализированный транспорт для перевозки усопшего. Без него транспортировку придётся организовывать самостоятельно.
                         </p>
-                        <div className="bg-amber-50 p-4 rounded-none border border-amber-200">
+                        <div className="bg-amber-50 p-4 border border-amber-200">
                           <p className="text-sm text-amber-900">
-                            <span className="font-medium">
-                              ⚠️ Внимание:
-                            </span>{" "}
-                            При отключении катафалка вам
-                            потребуется найти альтернативный
-                            способ транспортировки.
+                            <span className="font-medium">Внимание:</span> при отключении катафалка потребуется альтернативный способ транспортировки.
                           </p>
                         </div>
                       </div>
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>
-                      Оставить катафалк
-                    </AlertDialogCancel>
+                    <AlertDialogCancel>Оставить катафалк</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={() => {
                         handleInputChange("needsHearse", false);
@@ -2588,14 +1190,11 @@ const handleConfirmAndBook = async () => {
               {formData.needsHearse && (
                 <div className="space-y-3 pl-4 border-l-2 border-gray-200">
                   <Label className="text-sm">Маршрут:</Label>
+
                   <div className="flex flex-col md:flex-row md:flex-wrap items-stretch md:items-center gap-2">
                     <Button
                       type="button"
-                      variant={
-                        formData.hearseRoute.morgue
-                          ? "default"
-                          : "outline"
-                      }
+                      variant={formData.hearseRoute.morgue ? "default" : "outline"}
                       className="rounded-full px-6 h-10 transition-all duration-200 w-full md:w-auto"
                       onClick={() =>
                         handleInputChange("hearseRoute", {
@@ -2614,131 +1213,101 @@ const handleConfirmAndBook = async () => {
                       </div>
                     )}
 
-                    <Button
-                      type="button"
-                      variant={
-                        formData.hearseRoute.hall
-                          ? "default"
-                          : "outline"
-                      }
-                      className="rounded-full px-6 h-10 transition-all duration-200 w-full md:w-auto"
-                      onClick={() =>
-                        handleInputChange("hearseRoute", {
-                          ...formData.hearseRoute,
-                          hall: !formData.hearseRoute.hall,
-                        })
-                      }
-                    >
-                      Зал прощания
-                    </Button>
+                    {/* ✅ зал/церковь — только если hasHall */}
+                    {formData.hasHall && (
+                      <>
+                        <Button
+                          type="button"
+                          variant={formData.hearseRoute.hall ? "default" : "outline"}
+                          className="rounded-full px-6 h-10 transition-all duration-200 w-full md:w-auto"
+                          onClick={() =>
+                            handleInputChange("hearseRoute", {
+                              ...formData.hearseRoute,
+                              hall: !formData.hearseRoute.hall,
+                            })
+                          }
+                        >
+                          Зал прощания
+                        </Button>
 
-                    {formData.hearseRoute.hall && (
-                      <div className="flex justify-center md:block">
-                        <ChevronDown className="h-5 w-5 text-gray-400 md:hidden" />
-                        <ChevronRight className="h-5 w-5 text-gray-400 hidden md:block" />
-                      </div>
+                        {formData.hearseRoute.hall && (
+                          <div className="flex justify-center md:block">
+                            <ChevronDown className="h-5 w-5 text-gray-400 md:hidden" />
+                            <ChevronRight className="h-5 w-5 text-gray-400 hidden md:block" />
+                          </div>
+                        )}
+
+                        <Button
+                          type="button"
+                          variant={formData.hearseRoute.church ? "default" : "outline"}
+                          className="rounded-full px-6 h-10 transition-all duration-200 w-full md:w-auto"
+                          onClick={() =>
+                            handleInputChange("hearseRoute", {
+                              ...formData.hearseRoute,
+                              church: !formData.hearseRoute.church,
+                            })
+                          }
+                        >
+                          Церковь
+                        </Button>
+
+                        {formData.hearseRoute.church && (
+                          <div className="flex justify-center md:block">
+                            <ChevronDown className="h-5 w-5 text-gray-400 md:hidden" />
+                            <ChevronRight className="h-5 w-5 text-gray-400 hidden md:block" />
+                          </div>
+                        )}
+                      </>
                     )}
 
                     <Button
                       type="button"
-                      variant={
-                        formData.hearseRoute.church
-                          ? "default"
-                          : "outline"
-                      }
+                      variant={formData.hearseRoute.cemetery ? "default" : "outline"}
                       className="rounded-full px-6 h-10 transition-all duration-200 w-full md:w-auto"
                       onClick={() =>
                         handleInputChange("hearseRoute", {
                           ...formData.hearseRoute,
-                          church: !formData.hearseRoute.church,
+                          cemetery: !formData.hearseRoute.cemetery,
                         })
                       }
                     >
-                      Церковь
-                    </Button>
-
-                    {formData.hearseRoute.church && (
-                      <div className="flex justify-center md:block">
-                        <ChevronDown className="h-5 w-5 text-gray-400 md:hidden" />
-                        <ChevronRight className="h-5 w-5 text-gray-400 hidden md:block" />
-                      </div>
-                    )}
-
-                    <Button
-                      type="button"
-                      variant={
-                        formData.hearseRoute.cemetery
-                          ? "default"
-                          : "outline"
-                      }
-                      className="rounded-full px-6 h-10 transition-all duration-200 w-full md:w-auto"
-                      onClick={() =>
-                        handleInputChange("hearseRoute", {
-                          ...formData.hearseRoute,
-                          cemetery:
-                            !formData.hearseRoute.cemetery,
-                        })
-                      }
-                    >
-                      {formData.serviceType === "burial"
-                        ? "Кладбище"
-                        : "Крематорий"}
+                      {formData.serviceType === "burial" ? "Кладбище" : "Крематорий"}
                     </Button>
                   </div>
                 </div>
               )}
             </div>
 
+            {/* Транспорт для близких */}
             <div>
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <Label>Транспорт для близких?</Label>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Автобус для родных и гостей
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1">Автобус для родных и гостей</p>
                 </div>
                 <Switch
                   checked={formData.needsFamilyTransport}
-                  onCheckedChange={(checked) =>
-                    handleInputChange(
-                      "needsFamilyTransport",
-                      checked,
-                    )
-                  }
+                  onCheckedChange={(checked) => handleInputChange("needsFamilyTransport", checked)}
                 />
               </div>
 
               {formData.needsFamilyTransport && (
                 <div className="mt-3">
-                  <Label className="mb-3 block text-sm">
-                    Количество мест:
-                  </Label>
+                  <Label className="mb-3 block text-sm">Количество мест:</Label>
                   <div className="grid grid-cols-3 gap-3">
                     {[5, 10, 15].map((seats) => (
                       <button
                         key={seats}
-                        onClick={() =>
-                          handleInputChange(
-                            "familyTransportSeats",
-                            seats,
-                          )
-                        }
+                        type="button"
+                        onClick={() => handleInputChange("familyTransportSeats", seats)}
                         className={cn(
                           "p-3 border-2 rounded-full text-center transition-all",
-                          formData.familyTransportSeats ===
-                            seats
-                            ? "border-gray-900 bg-gray-50"
-                            : "border-gray-200 hover:border-gray-300",
+                          formData.familyTransportSeats === seats ? "border-gray-900 bg-gray-50" : "border-gray-200 hover:border-gray-300",
                         )}
                       >
-                        <div className="text-sm mb-1">
-                          {seats} мест
-                        </div>
+                        <div className="text-sm mb-1">{seats} мест</div>
                         <div className="text-xs text-gray-500">
-                          {PRICES.familyTransport[
-                            seats as keyof typeof PRICES.familyTransport
-                          ].toLocaleString("ru-RU")}{" "}
-                          ₽
+                          {(PRICES.familyTransport as any)[seats].toLocaleString("ru-RU")} ₽
                         </div>
                       </button>
                     ))}
@@ -2749,35 +1318,23 @@ const handleConfirmAndBook = async () => {
 
             <Separator />
 
+            {/* Носильщики */}
             <div className="flex items-center justify-between">
               <div>
                 <Label>Нужны носильщики (4 чел.)</Label>
-                <p className="text-xs text-gray-500 mt-1">
-                  {PRICES.pallbearers.toLocaleString("ru-RU")} ₽
-                </p>
+                <p className="text-xs text-gray-500 mt-1">{PRICES.pallbearers.toLocaleString("ru-RU")} ₽</p>
               </div>
-              <Switch
-                checked={formData.needsPallbearers}
-                onCheckedChange={(checked) =>
-                  handleInputChange("needsPallbearers", checked)
-                }
-              />
+              <Switch checked={formData.needsPallbearers} onCheckedChange={(checked) => handleInputChange("needsPallbearers", checked)} />
             </div>
           </div>
         );
+      }
 
-      case 2:
-        // Шаг 3: Атрибутика
+      case 2: {
         return (
           <div className="space-y-6">
-             {/* 3D-сцена зала и гроба */}
-
-
-            {/* 3D Конфигуратор гроба и венка */}
             <UnifiedCoffinConfigurator
               onConfirm={(data) => {
-                console.log("Coffin configuration:", data);
-                // Сохраняем конфигурацию в formData
                 handleInputChange("coffinConfig", data);
               }}
             />
@@ -2785,351 +1342,279 @@ const handleConfirmAndBook = async () => {
             <Separator />
 
             <div>
-              <Label htmlFor="specialRequests">
-                Особые пожелания
-              </Label>
+              <Label htmlFor="specialRequests">Особые пожелания</Label>
               <Textarea
                 id="specialRequests"
                 value={formData.specialRequests}
                 onChange={(e) => {
-                  if (e.target.value.length <= 300) {
-                    handleInputChange(
-                      "specialRequests",
-                      e.target.value,
-                    );
-                  }
+                  if (e.target.value.length <= 300) handleInputChange("specialRequests", e.target.value);
                 }}
                 placeholder="Музыка, фотография усопшего, лента с надписью..."
                 className="mt-2"
                 rows={4}
                 maxLength={300}
               />
-              <p className="text-xs text-gray-500 mt-2">
-                {formData.specialRequests.length}/300 символов
-              </p>
+              <p className="text-xs text-gray-500 mt-2">{formData.specialRequests.length}/300 символов</p>
             </div>
           </div>
         );
+      }
 
-            case 3:
-  // Шаг 4: Документы
-  return (
-    <div className="space-y-6">
-      <div>
-        <Label htmlFor="fullName">ФИО усопшего *</Label>
-        <Input
-          id="fullName"
-          value={formData.fullName}
-          onChange={(e) => handleInputChange("fullName", e.target.value)}
-          placeholder="Иванов Иван Иванович"
-          className="mt-2"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="birthDate">Дата рождения</Label>
-          <div className="flex gap-2 mt-2">
-            <Input
-              id="birthDate"
-              type={formData.birthDate === "—" ? "text" : "date"}
-              value={formData.birthDate}
-              onChange={(e) => handleInputChange("birthDate", e.target.value)}
-              className="flex-1"
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSkipField("birthDate")}
-              className="whitespace-nowrap rounded-[30px]"
-              type="button"
-            >
-              Не знаю
-            </Button>
-          </div>
-        </div>
-
-        <div>
-          <Label htmlFor="deathDate">Дата смерти</Label>
-          <div className="flex gap-2 mt-2">
-            <Input
-              id="deathDate"
-              type={formData.deathDate === "—" ? "text" : "date"}
-              value={formData.deathDate}
-              onChange={(e) => handleInputChange("deathDate", e.target.value)}
-              className="flex-1"
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSkipField("deathDate")}
-              className="whitespace-nowrap rounded-[30px]"
-              type="button"
-            >
-              Не знаю
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <Label htmlFor="deathCertificate">№ свидетельства о смерти</Label>
-        <div className="flex gap-2 mt-2">
-          <Input
-            id="deathCertificate"
-            value={formData.deathCertificate}
-            onChange={(e) => handleInputChange("deathCertificate", e.target.value)}
-            placeholder="AA-000 № 000000"
-            className="flex-1"
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleSkipField("deathCertificate")}
-            className="whitespace-nowrap"
-            type="button"
-          >
-            Позже
-          </Button>
-        </div>
-        <p className="text-xs text-gray-500 mt-2">
-          Можно ввести позже — бронирование не задержит
-        </p>
-      </div>
-
-      <div>
-        <Label htmlFor="relationship">Степень родства *</Label>
-        <Select
-          value={formData.relationship}
-          onValueChange={(value) => handleInputChange("relationship", value)}
-        >
-          <SelectTrigger className="mt-2">
-            <SelectValue placeholder="Выберите степень родства" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="spouse">Супруг(а)</SelectItem>
-            <SelectItem value="parent">Родитель</SelectItem>
-            <SelectItem value="child">Сын/дочь</SelectItem>
-            <SelectItem value="relative">Дальний родственник</SelectItem>
-            <SelectItem value="representative">Доверенное лицо</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div
-        id="data-consent"
-        className={cn(
-          "flex items-start gap-2 md:gap-3 p-2 md:p-4 rounded-2xl md:rounded-full transition-all",
-          showConsentError
-            ? "bg-gray-50 border-2 border-gray-300"
-            : "bg-gray-50 border border-gray-200",
-        )}
-      >
-        <Checkbox
-          id="privacy"
-          checked={formData.dataConsent}
-          onCheckedChange={(checked) => {
-            handleInputChange("dataConsent", checked === true);
-            setShowConsentError(false);
-          }}
-          className="mt-0.5 md:mt-1 flex-shrink-0"
-        />
-        <Label
-          htmlFor="privacy"
-          className="text-xs md:text-sm cursor-pointer leading-snug"
-        >
-          Я согласен на обработку персональных данных и подтверждаю, что ознакомлен с{" "}
-          <a href="#" className="underline text-blue-600">
-            политикой конфиденциальности
-          </a>
-        </Label>
-      </div>
-
-      {showConsentError && (
-        <div className="bg-gray-50 border border-gray-300 rounded-full p-4">
-          <p className="text-sm text-gray-600">
-            Для продолжения необходимо дать согласие на обработку персональных данных
-          </p>
-        </div>
-      )}
-    </div>
-  );
-
-case 4:
-  // Шаг 5: Подтверждение
-  return (
-    <div className="space-y-6">
-      <div className="bg-green-50 border border-green-200 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
-        <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-        <div>
-          <h3 className="text-green-900 mb-2">Все данные заполнены</h3>
-          <p className="text-sm text-green-700">
-            Пожалуйста, проверьте информацию перед бронированием.
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm text-gray-500">Формат церемонии</h4>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleEditStep(0)}
-              className="h-8 w-8 p-0"
-              type="button"
-            >
-              <Edit2 className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Формат:</span>
-              <span className="text-gray-900">
-                {formData.serviceType === "burial" ? "Захоронение" : "Кремация"}
-              </span>
+      case 3: {
+        return (
+          <div className="space-y-6">
+            <div>
+              <Label htmlFor="fullName">ФИО усопшего *</Label>
+              <Input
+                id="fullName"
+                value={formData.fullName}
+                onChange={(e) => handleInputChange("fullName", e.target.value)}
+                placeholder="Иванов Иван Иванович"
+                className="mt-2"
+              />
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Зал прощания:</span>
-              <span className="text-gray-900">{formData.hasHall ? "Да" : "Нет"}</span>
-            </div>
-          </div>
-        </div>
 
-        <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm text-gray-500">Логистика</h4>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleEditStep(1)}
-              className="h-8 w-8 p-0"
-              type="button"
-            >
-              <Edit2 className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">
-                {formData.serviceType === "burial" ? "Кладбище:" : "Крематорий:"}
-              </span>
-              <span className="text-gray-900">{formData.cemetery || "—"}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Катафалк:</span>
-              <span className="text-gray-900">{formData.needsHearse ? "Да" : "Нет"}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm text-gray-500">Атрибутика</h4>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleEditStep(2)}
-              className="h-8 w-8 p-0"
-              type="button"
-            >
-              <Edit2 className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="space-y-2 text-sm">
-            {formData.packageType && formData.packageType !== "custom" ? (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Пакет:</span>
-                <span className="text-gray-900">
-                  {PACKAGES.find((p) => p.id === formData.packageType)?.name || "—"}
-                </span>
-              </div>
-            ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <span className="text-gray-600 block mb-2">Индивидуальный пакет</span>
-                {formData.selectedAdditionalServices?.length ? (
-                  <div className="space-y-1">
-                    {formData.selectedAdditionalServices.map((serviceId: string) => {
-                      const service = additionalServices.find((s) => s.id === serviceId);
-                      if (!service) return null;
-                      return (
-                        <div key={serviceId} className="text-xs text-gray-900">
-                          • {service.name}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <span className="text-xs text-gray-500">Услуги не выбраны</span>
-                )}
+                <Label htmlFor="birthDate">Дата рождения</Label>
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    id="birthDate"
+                    type={formData.birthDate === "—" ? "text" : "date"}
+                    value={formData.birthDate}
+                    onChange={(e) => handleInputChange("birthDate", e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button type="button" variant="outline" size="sm" onClick={() => handleSkipField("birthDate")} className="whitespace-nowrap rounded-[30px]">
+                    Не знаю
+                  </Button>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="deathDate">Дата смерти</Label>
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    id="deathDate"
+                    type={formData.deathDate === "—" ? "text" : "date"}
+                    value={formData.deathDate}
+                    onChange={(e) => handleInputChange("deathDate", e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button type="button" variant="outline" size="sm" onClick={() => handleSkipField("deathDate")} className="whitespace-nowrap rounded-[30px]">
+                    Не знаю
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="deathCertificate">№ свидетельства о смерти</Label>
+              <div className="flex gap-2 mt-2">
+                <Input
+                  id="deathCertificate"
+                  value={formData.deathCertificate}
+                  onChange={(e) => handleInputChange("deathCertificate", e.target.value)}
+                  placeholder="AA-000 № 000000"
+                  className="flex-1"
+                />
+                <Button type="button" variant="outline" size="sm" onClick={() => handleSkipField("deathCertificate")} className="whitespace-nowrap">
+                  Позже
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">Можно ввести позже — бронирование не задержит</p>
+            </div>
+
+            <div>
+              <Label htmlFor="relationship">Степень родства *</Label>
+              <Select value={formData.relationship} onValueChange={(value) => handleInputChange("relationship", value)}>
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Выберите степень родства" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="spouse">Супруг(а)</SelectItem>
+                  <SelectItem value="parent">Родитель</SelectItem>
+                  <SelectItem value="child">Сын/дочь</SelectItem>
+                  <SelectItem value="relative">Дальний родственник</SelectItem>
+                  <SelectItem value="representative">Доверенное лицо</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div
+              id="data-consent"
+              className={cn(
+                "flex items-start gap-2 md:gap-3 p-2 md:p-4 rounded-2xl md:rounded-full transition-all",
+                showConsentError ? "bg-gray-50 border-2 border-gray-300" : "bg-gray-50 border border-gray-200",
+              )}
+            >
+              <Checkbox
+                id="privacy"
+                checked={formData.dataConsent}
+                onCheckedChange={(checked) => {
+                  handleInputChange("dataConsent", checked === true);
+                  setShowConsentError(false);
+                }}
+                className="mt-0.5 md:mt-1 flex-shrink-0"
+              />
+              <Label htmlFor="privacy" className="text-xs md:text-sm cursor-pointer leading-snug">
+                Я согласен на обработку персональных данных и подтверждаю, что ознакомлен с{" "}
+                <a href="#" className="underline text-blue-600">
+                  политикой конфиденциальности
+                </a>
+              </Label>
+            </div>
+
+            {showConsentError && (
+              <div className="bg-gray-50 border border-gray-300 rounded-full p-4">
+                <p className="text-sm text-gray-600">Для продолжения необходимо дать согласие на обработку персональных данных</p>
               </div>
             )}
           </div>
-        </div>
+        );
+      }
 
-        <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm text-gray-500">Документы</h4>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleEditStep(3)}
-              className="h-8 w-8 p-0"
-              type="button"
-            >
-              <Edit2 className="h-4 w-4" />
-            </Button>
+      case 4: {
+        return (
+          <div className="space-y-6">
+            <div className="bg-green-50 border border-green-200 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
+              <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="text-green-900 mb-2">Все данные заполнены</h3>
+                <p className="text-sm text-green-700">Пожалуйста, проверьте информацию перед бронированием.</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm text-gray-500">Формат церемонии</h4>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => handleEditStep(0)} className="h-8 w-8 p-0">
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Формат:</span>
+                    <span className="text-gray-900">{formData.serviceType === "burial" ? "Захоронение" : "Кремация"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Зал прощания:</span>
+                    <span className="text-gray-900">{formData.hasHall ? "Да" : "Нет"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm text-gray-500">Логистика</h4>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => handleEditStep(1)} className="h-8 w-8 p-0">
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">{formData.serviceType === "burial" ? "Кладбище:" : "Крематорий:"}</span>
+                    <span className="text-gray-900">{formData.cemetery || "—"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Катафалк:</span>
+                    <span className="text-gray-900">{formData.needsHearse ? "Да" : "Нет"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm text-gray-500">Атрибутика</h4>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => handleEditStep(2)} className="h-8 w-8 p-0">
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="space-y-2 text-sm">
+                  {formData.packageType && formData.packageType !== "custom" ? (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Пакет:</span>
+                      <span className="text-gray-900">
+                        {PACKAGES.find((p) => p.id === formData.packageType)?.name || "—"}
+                      </span>
+                    </div>
+                  ) : (
+                    <div>
+                      <span className="text-gray-600 block mb-2">Индивидуальный пакет</span>
+                      {formData.selectedAdditionalServices?.length ? (
+                        <div className="space-y-1">
+                          {formData.selectedAdditionalServices.map((serviceId: string) => {
+                            const s = additionalServices.find((x) => x.id === serviceId);
+                            if (!s) return null;
+                            return (
+                              <div key={serviceId} className="text-xs text-gray-900">
+                                • {s.name}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-500">Услуги не выбраны</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm text-gray-500">Документы</h4>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => handleEditStep(3)} className="h-8 w-8 p-0">
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">ФИО:</span>
+                    <span className="text-gray-900">{formData.fullName || "—"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Дата рождения:</span>
+                    <span className="text-gray-900">{formData.birthDate || "—"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Дата смерти:</span>
+                    <span className="text-gray-900">{formData.deathDate || "—"}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <PaymentStep
+              total={calculateTotal()}
+              paymentMethod={paymentMethod}
+              setPaymentMethod={setPaymentMethod}
+              cardData={cardData}
+              setCardData={setCardData}
+              email={formData.userEmail || ""}
+              setEmail={(v) => handleInputChange("userEmail", v)}
+              onConfirm={handleConfirmBooking}
+            />
           </div>
+        );
+      }
 
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">ФИО:</span>
-              <span className="text-gray-900">{formData.fullName || "—"}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Дата рождения:</span>
-              <span className="text-gray-900">{formData.birthDate || "—"}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Дата смерти:</span>
-              <span className="text-gray-900">{formData.deathDate || "—"}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <PaymentStep
-  total={calculateTotal()}
-  paymentMethod={paymentMethod}
-  setPaymentMethod={setPaymentMethod}
-  cardData={cardData}
-  setCardData={setCardData}
-  email={formData.userEmail || ""}
-  setEmail={(v) => handleInputChange("userEmail", v)}
-  onConfirm={handleConfirmBooking}
-/>
-    </div>
-  );
-
-default:
-  return null;
-
+      default:
+        return null;
     }
   };
 
-  // Если выбран пакет для упрощенного мастера, показываем SimplifiedStepperWorkflow
+  // simplified workflow
   if (selectedPackageForSimplified) {
     return (
-      <div
-        ref={containerRef}
-        className="max-w-5xl mx-auto -translate-y-12 pb-32"
-      >
+      <div ref={containerRef} className="max-w-5xl mx-auto -translate-y-12 pb-32">
         <SimplifiedStepperWorkflow
-          selectedPackage={selectedPackageForSimplified}
+          selectedPackage={selectedPackageForSimplified as any}
           onBack={() => {
             setSelectedPackageForSimplified(null);
             setWorkflowMode("packages");
@@ -3142,14 +1627,12 @@ default:
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="max-w-5xl mx-auto -translate-y-12 pb-32"
-    >
+    <div ref={containerRef} className="max-w-5xl mx-auto -translate-y-12 pb-32">
       <Card className="bg-white/20 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30 relative">
         <CardHeader className="pb-4 pt-8 px-6 sm:px-8">
           <div className="absolute -top-5 right-8 z-50">
             <button
+              type="button"
               onClick={() => setIsAccountOpen(true)}
               className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-200 text-white hover:scale-105 active:scale-95"
               aria-label="Личный кабинет"
@@ -3161,29 +1644,27 @@ default:
           <div className="flex justify-center mb-6">
             <div className="bg-white/20 backdrop-blur-md p-1 rounded-full border border-white/20 inline-flex">
               <button
+                type="button"
                 onClick={() => {
                   setWorkflowMode("wizard");
                   setSelectedPackageForSimplified(null);
                 }}
                 className={cn(
                   "px-6 py-2 rounded-full text-sm font-medium transition-all duration-200",
-                  workflowMode === "wizard"
-                    ? "bg-white text-black shadow-lg"
-                    : "text-white hover:bg-white/10",
+                  workflowMode === "wizard" ? "bg-white text-black shadow-lg" : "text-white hover:bg-white/10",
                 )}
               >
                 Пошаговый мастер
               </button>
               <button
+                type="button"
                 onClick={() => {
                   setWorkflowMode("packages");
                   setSelectedPackageForSimplified(null);
                 }}
                 className={cn(
                   "px-6 py-2 rounded-full text-sm font-medium transition-all duration-200",
-                  workflowMode === "packages"
-                    ? "bg-white text-black shadow-lg"
-                    : "text-white hover:bg-white/10",
+                  workflowMode === "packages" ? "bg-white text-black shadow-lg" : "text-white hover:bg-white/10",
                 )}
               >
                 Готовые решения
@@ -3192,11 +1673,8 @@ default:
           </div>
 
           <div className="text-center mb-2" style={{ fontWeight: 40 }}>
-            <CardTitle
-              className="text-2xl sm:text-3xl mb-2 text-white text-[30px] not-italic no-underline font-sans"
-              style={{ fontWeight: 40 }}
-            >
-              
+            <CardTitle className="text-2xl sm:text-3xl mb-2 text-white text-[30px] not-italic no-underline font-sans" style={{ fontWeight: 40 }}>
+              {/* заголовок если нужен */}
             </CardTitle>
             <CardDescription className="text-base text-white/90 text-[14px] font-sans">
               {workflowMode === "wizard"
@@ -3206,12 +1684,7 @@ default:
           </div>
 
           {workflowMode === "wizard" && (
-            <Stepper
-              steps={steps}
-              currentStep={currentStep}
-              completedSteps={completedSteps}
-              onStepClick={handleStepClick}
-            />
+            <Stepper steps={steps as any} currentStep={currentStep} completedSteps={completedSteps} onStepClick={handleStepClick} />
           )}
         </CardHeader>
 
@@ -3221,21 +1694,14 @@ default:
               <div
                 className={cn(
                   "transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]",
-                  isTransitioning
-                    ? "opacity-0 translate-y-8 scale-[0.96] blur-sm"
-                    : "opacity-100 translate-y-0 scale-100 blur-0",
+                  isTransitioning ? "opacity-0 translate-y-8 scale-[0.96] blur-sm" : "opacity-100 translate-y-0 scale-100 blur-0",
                 )}
               >
                 {renderStepContent()}
               </div>
 
               <div className="flex items-center justify-between mt-8 pt-6 border-t">
-                <Button
-                  variant="outline"
-                  onClick={handlePrev}
-                  disabled={currentStep === 0}
-                  className="gap-2 rounded-[30px]"
-                >
+                <Button variant="outline" onClick={handlePrev} disabled={currentStep === 0} className="gap-2 rounded-[30px]">
                   <ChevronLeft className="h-4 w-4" />
                   Назад
                 </Button>
@@ -3244,11 +1710,7 @@ default:
                   Шаг {currentStep + 1} из {steps.length}
                 </div>
 
-                <Button
-                  onClick={handleNext}
-                  disabled={currentStep === steps.length - 1}
-                  className="gap-2 bg-gray-900 hover:bg-gray-800 rounded-[30px]"
-                >
+                <Button onClick={handleNext} disabled={currentStep === steps.length - 1} className="gap-2 bg-gray-900 hover:bg-gray-800 rounded-[30px]">
                   Далее
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -3261,16 +1723,14 @@ default:
                   key={pkg.id}
                   className={cn(
                     "cursor-pointer hover:border-gray-400 hover:shadow-lg transition-all duration-300 relative overflow-hidden group border-white/50 bg-white/80 backdrop-blur-sm",
-                    formData.packageType === pkg.id
-                      ? "ring-2 ring-gray-900 border-gray-900"
-                      : "",
+                    formData.packageType === pkg.id ? "ring-2 ring-gray-900 border-gray-900" : "",
                   )}
                   onClick={() => {
                     handleInputChange("packageType", pkg.id);
                     setSelectedPackageForSimplified(pkg);
                   }}
                 >
-                  {pkg.popular && (
+                  {(pkg as any).popular && (
                     <div className="absolute top-0 right-0 bg-gray-900 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
                       Популярный
                     </div>
@@ -3280,9 +1740,7 @@ default:
                     <CardDescription>{pkg.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-light mb-6">
-                      {pkg.price.toLocaleString("ru-RU")} ₽
-                    </div>
+                    <div className="text-3xl font-light mb-6">{pkg.price.toLocaleString("ru-RU")} ₽</div>
                     <ul className="space-y-3 mb-6">
                       {pkg.features.map((feature, i) => (
                         <li key={i} className="flex items-start text-sm">
@@ -3302,10 +1760,7 @@ default:
         </CardContent>
       </Card>
 
-      <PersonalAccountModal
-  open={isAccountOpen}
-  onOpenChange={setIsAccountOpen}
-/>
+      <PersonalAccountModal open={isAccountOpen} onOpenChange={setIsAccountOpen} />
     </div>
   );
 }
