@@ -145,6 +145,12 @@ const coffinPhotos: Record<string, string> = {
 'pine-satin-white': '/images/coffin/previews/pine-atlas.jpg',
 'oak-silk-cream': '/images/coffin/previews/oak-silk-cream.jpg',
 'elite-velvet-burgundy': '/images/coffin/previews/elite-velvet-burgundy.jpg',
+'oak-satin-white': '/images/coffin/previews/oak-atlas.jpg',
+'elite-silk-cream': '/images/coffin/previews/elite-silk-cream.jpg',
+'oak-velvet-burgundy': '/images/coffin/previews/oak-velvet-burgundy.jpg',
+'pine-silk-cream': '/images/coffin/previews/pine-silk-cream.jpg',
+'pine-velvet-burgundy': '/images/coffin/previews/pine-velvet-burgundy.jpg',
+'elite-satin-white': '/images/coffin/previews/elite-atlas.jpg'
 
 // Если захочешь точечно под разные фурнитуры — добавляй так:
 // 'pine-satin-white-brass': '/images/coffin/previews/pine-atlas-brass.jpg',
