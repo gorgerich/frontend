@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Stepper } from "./Stepper";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
@@ -29,6 +29,28 @@ import { cn } from "./ui/utils";
 import { Calendar } from "./ui/calendar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { RubleSign, Download, Share2 } from "./Icons";
+
+import type { ImgHTMLAttributes } from "react";
+
+function SafeImg(
+  props: ImgHTMLAttributes<HTMLImageElement> & { fallbackSrc?: string }
+) {
+
+  const { fallbackSrc, ...rest } = props;
+
+  // eslint-disable-next-line @next/next/no-img-element
+  return (
+    <img
+      {...rest}
+      onError={(e) => {
+        if (!fallbackSrc) return;
+        const target = e.currentTarget;
+        if (target.src !== fallbackSrc) target.src = fallbackSrc;
+      }}
+    />
+  );
+}
+
 
 // Упрощенные шаги для готовых решений
 const simplifiedSteps = [
@@ -150,10 +172,71 @@ working: true,
 
 // Опции для цвета внутренней отделки
 const liningOptions = [
-{ id: "satin-white", name: "Белый", description: "Классический белый цвет", price: 0 },
-{ id: "silk-cream", name: "Кремовый", description: "Теплый кремовый оттенок", price: 0 },
-{ id: "velvet-burgundy", name: "Бордовый", description: "Глубокий бордовый цвет", price: 0 },
+  {
+    id: "satin-white",
+    name: "Атлас белый",
+    description: "Классическая белая отделка",
+    price: 0,
+    texture: "/images/coffin/fabric/atlas-white.jpg",
+  },
+  {
+    id: "silk-cream",
+    name: "Шелк кремовый",
+    description: "Премиальная шелковая ткань",
+    price: 0,
+    texture: "/images/coffin/fabric/silk-cream.jpg",
+  },
+  {
+    id: "velvet-burgundy",
+    name: "Бархат бордовый",
+    description: "Роскошный бархат",
+    price: 0,
+    texture: "/images/coffin/fabric/velvet-bordo.jpg",
+  },
 ];
+
+
+const COFFIN_PHOTOS: Record<string, string> = {
+  // pine
+  "pine-satin-white": "/coffins/pine/pine-atlas.jpg",
+  "pine-silk-cream": "/coffins/pine/pine-silk-cream.jpg",
+  "pine-velvet-burgundy": "/coffins/pine/pine-velvet-burgundy.jpg",
+
+  // oak
+  "oak-satin-white": "/coffins/oak/oak-satin-white.jpg",
+  "oak-silk-cream": "/coffins/oak/oak-silk-cream.jpg",
+  "oak-velvet-burgundy": "/coffins/oak/oak-velvet-burgundy.jpg",
+
+  // elite
+  "elite-satin-white": "/coffins/elite/elite-satin-white.jpg",
+  "elite-silk-cream": "/coffins/elite/elite-silk-cream.jpg",
+  "elite-velvet-burgundy": "/coffins/elite/elite-velvet-burgundy.jpg",
+};
+
+
+
+const PACKAGE_TO_MATERIAL: Record<string, "pine" | "oak" | "elite"> = {
+  base: "pine",
+  standard: "pine",
+  comfort: "oak",
+  premium: "elite",
+};
+
+const LINING_LABELS: Record<string, { title: string; subtitle?: string }> = {
+  "satin-white": {
+    title: "Атлас белый",
+    subtitle: "Классическая светлая отделка",
+  },
+  "silk-cream": {
+    title: "Шёлк кремовый",
+    subtitle: "Тёплый благородный оттенок",
+  },
+  "velvet-burgundy": {
+    title: "Бархат бордовый",
+    subtitle: "Глубокий насыщенный цвет",
+  },
+};
+
 
 type HearseRoute = {
 morgue: boolean;
@@ -234,6 +317,67 @@ const previousStepRef = useRef(0);
 
 // ВСЕГДА безопасный объект для рендера (главное исправление: ВСЕГДА использовать его в JSX)
 const safeFormData: FormDataShape = formData ?? DEFAULT_FORM_DATA;
+
+
+// 1) Маппинг пакета -> дерево (исправляем: базовый = дуб, премиум = элитное)
+const PACKAGE_TO_WOOD: Record<string, "pine" | "oak" | "elite"> = {
+  // БАЗОВЫЙ -> СОСНА
+  base: "pine",
+  basic: "pine",
+  "базовый": "pine",
+
+  // СТАНДАРТ -> ДУБ
+  standard: "oak",
+  "стандарт": "oak",
+
+  // ПРЕМИУМ -> КРАСНОЕ ДЕРЕВО
+  premium: "elite",
+  "премиум": "elite",
+};
+
+
+// 2) Сопоставление id ткани -> часть имени файла (у тебя pine-ATLAS.jpg, а id = satin-white)
+const LINING_TO_FILE: Record<string, string> = {
+  "satin-white": "atlas",
+  "silk-cream": "silk-cream",
+  "velvet-burgundy": "velvet-burgundy",
+};
+
+const packageWoodId = useMemo<"pine" | "oak" | "elite">(() => {
+  const id = (selectedPackage?.id || "").toLowerCase();
+  if (PACKAGE_TO_WOOD[id]) return PACKAGE_TO_WOOD[id];
+
+  const name = (selectedPackage?.name || "").toLowerCase();
+
+  if (name.includes("премиум")) return "elite";
+  if (name.includes("стандарт")) return "oak";
+  if (name.includes("баз")) return "pine"; // важно: базовый = pine
+
+  return "pine";
+}, [selectedPackage?.id, selectedPackage?.name]);
+
+const currentLiningId = safeFormData.liningColor || "satin-white";
+const liningFileKey = LINING_TO_FILE[currentLiningId] || "atlas";
+
+// ключ для словаря фоток (если используешь COFFIN_PHOTOS)
+const previewKey = `${packageWoodId}-${currentLiningId}`;
+
+// если у тебя есть COFFIN_PHOTOS — оставляем поддержку,
+// но чтобы всегда работало даже без него — строим путь напрямую:
+const currentCoffinPreview = useMemo(() => {
+  // 1) если есть словарь COFFIN_PHOTOS (как в основном мастере)
+  // @ts-ignore
+  if (typeof COFFIN_PHOTOS !== "undefined" && COFFIN_PHOTOS?.[previewKey]) {
+    // @ts-ignore
+    return COFFIN_PHOTOS[previewKey];
+  }
+
+  // 2) fallback: путь по твоей структуре public/coffins/{wood}/{wood}-{lining}.jpg
+  return `/coffins/${packageWoodId}/${packageWoodId}-${liningFileKey}.jpg`;
+}, [packageWoodId, liningFileKey, previewKey]);
+
+
+
 
 // Состояния для поиска кладбищ
 const [cemeterySearchQuery, setCemeterySearchQuery] = useState("");
@@ -353,68 +497,121 @@ setCemeterySearchQuery("");
 setShowCemeteryResults(false);
 };
 
+const material =
+  PACKAGE_TO_MATERIAL[selectedPackage?.id] ?? "pine";
+
+const coffinPreviewSrc = `/coffins/${material}/${safeFormData.liningColor}.jpg`;
+
+
 const renderStepContent = () => {
 switch (currentStep) {
 case 0: {
-return (
-<div className="space-y-6">
-<div className="bg-blue-500/10 backdrop-blur-sm border border-blue-300/30 rounded-full p-4">
-<p className="text-sm text-blue-900">
-Пакет &quot;{selectedPackage?.name ?? "Пакет"}&quot; уже включает базовую комплектацию.
-Здесь вы можете выбрать цвет внутренней отделки.
-</p>
+  return (
+    <div className="space-y-8">
+
+      {/* ✅ Превью гроба */}
+<div className="bg-[#1a1c23] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 relative">
+  <div className="aspect-[16/9] md:aspect-[2/1] relative">
+    <SafeImg
+      src={currentCoffinPreview}
+      fallbackSrc="/coffins/pine/pine-atlas.jpg"
+      alt="Превью гроба"
+      className="w-full h-full object-cover"
+    />
+    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+    {/* Инфо-панель */}
+    <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
+      <div className="min-w-0">
+        <div className="text-white text-sm font-medium truncate">
+          Пакет: {selectedPackage?.name ?? "—"}
+        </div>
+        <div className="text-white/80 text-xs truncate">
+          Отделка: {liningOptions.find(l => l.id === currentLiningId)?.name ?? "—"}
+        </div>
+      </div>
+
+      <Badge className="bg-white/10 text-white border border-white/20 backdrop-blur-sm">
+        Включено в пакет
+      </Badge>
+    </div>
+  </div>
 </div>
 
-<div>
-<Label className="mb-3 block">Цвет внутренней отделки</Label>
-<RadioGroup
-value={safeFormData.liningColor ?? "satin-white"}
-onValueChange={(value) => handleInputChange("liningColor", value)}
-className="space-y-3"
->
-{liningOptions.map((option) => (
-<div
-key={option.id}
-className={cn(
-"flex items-start space-x-3 p-4 border rounded-full transition-all",
-safeFormData.liningColor === option.id && "border-black bg-gray-50"
-)}
->
-<RadioGroupItem value={option.id} id={option.id} className="mt-0.5" />
-<div className="flex-1">
-<Label htmlFor={option.id} className="cursor-pointer">
-{option.name}
-</Label>
-<p className="text-xs text-gray-500 mt-1">{option.description}</p>
-</div>
-</div>
-))}
-</RadioGroup>
+{/* ✅ Заголовок блока */}
+<div className="space-y-4">
+  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0">
+    <Label className="text-base font-medium text-gray-900">Внутренняя отделка</Label>
+    <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">
+      Ткань и цвет
+    </span>
+  </div>
+
+  {/* ✅ Карточки как в основном мастере */}
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+    {liningOptions.map((lining) => (
+      <button
+        key={lining.id}
+        type="button"
+        onClick={() => handleInputChange("liningColor", lining.id)}
+        className={cn(
+          "group relative rounded-2xl overflow-hidden transition-all duration-300 text-left",
+          currentLiningId === lining.id
+            ? "ring-2 ring-purple-600 ring-offset-2 shadow-xl scale-[1.02]"
+            : "ring-1 ring-gray-200 hover:ring-gray-300 hover:shadow-lg hover:-translate-y-0.5"
+        )}
+      >
+        <div className="aspect-[16/9] sm:aspect-[4/3] w-full relative">
+          <SafeImg
+            src={lining.texture}
+            fallbackSrc="https://images.unsplash.com/photo-1619043519379-99df2736108d?w=800"
+            alt={lining.name}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          />
+
+          {/* градиент/оверлей */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60" />
+
+          {/* галочка */}
+          {currentLiningId === lining.id && (
+            <div className="absolute top-3 right-3 w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center shadow-lg animate-in zoom-in">
+              <Check className="w-3.5 h-3.5 text-white" />
+            </div>
+          )}
+
+          {/* подписи */}
+          <div className="absolute bottom-0 inset-x-0 p-3 bg-white/90 backdrop-blur-sm border-t border-white/50">
+            <div className="text-gray-900 font-medium text-sm truncate">
+              {lining.name}
+            </div>
+            <div className="text-gray-500 text-xs">
+              {lining.description}
+            </div>
+          </div>
+        </div>
+      </button>
+    ))}
+  </div>
 </div>
 
-<Separator />
 
-<div>
-<Label htmlFor="specialRequests">Особые пожелания</Label>
-<Textarea
-id="specialRequests"
-value={safeFormData.specialRequests ?? ""}
-onChange={(e) => {
-if (e.target.value.length <= 300) {
-handleInputChange("specialRequests", e.target.value);
-}
-}}
-placeholder="Музыка, фотография усопшего, лента с надписью..."
-className="mt-2"
-rows={4}
-maxLength={300}
-/>
-<p className="text-xs text-gray-500 mt-2">
-{(safeFormData.specialRequests?.length ?? 0)}/300 символов
-</p>
-</div>
-</div>
-);
+      <Separator />
+
+      {/* ОСОБЫЕ ПОЖЕЛАНИЯ */}
+      <div>
+        <Label>Особые пожелания</Label>
+        <Textarea
+          value={safeFormData.specialRequests}
+          onChange={(e) =>
+            handleInputChange("specialRequests", e.target.value)
+          }
+          rows={4}
+          maxLength={300}
+          className="mt-2"
+        />
+      </div>
+    </div>
+  );
 }
 
 case 1: {
