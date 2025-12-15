@@ -200,7 +200,7 @@ export function Stepper({
                       {step.label}
                     </span>
                     {step.description && isCurrent && (
-                      <span className="text-xs text-white mt-0.5 whitespace-nowrap">
+                      <span className="text-xs text-gray-500 md:text-white mt-0.5 whitespace-nowrap">
                         {step.description}
                       </span>
                     )}
