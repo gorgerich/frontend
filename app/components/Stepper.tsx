@@ -193,17 +193,19 @@ export function Stepper({
                     }}
                   >
                     <span
-                      className={cn(
-                        "text-sm transition-all duration-300 whitespace-nowrap text-white font-medium"
-                      )}
-                    >
-                      {step.label}
-                    </span>
-                    {step.description && isCurrent && (
-                      <span className="text-xs text-gray-500 md:text-white mt-0.5 whitespace-nowrap">
-                        {step.description}
-                      </span>
-                    )}
+  className={cn(
+    "text-sm font-medium transition-all duration-300 whitespace-nowrap text-gray-900 md:text-white"
+  )}
+>
+  {step.label}
+</span>
+
+{step.description && isCurrent && (
+  <span className="text-xs mt-0.5 whitespace-nowrap text-gray-600 md:text-white/70">
+    {step.description}
+  </span>
+)}
+
                   </motion.div>
                 </div>
               </motion.div>

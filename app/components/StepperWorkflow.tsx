@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { User } from "lucide-react";
+import { PriceComparison } from "./PriceComparison";
 import { PersonalAccountModal } from "./PersonalAccountModal";
 import { SimplifiedStepperWorkflow } from "./SimplifiedStepperWorkflow";
 import PaymentStep from "./PaymentStep";
@@ -54,6 +55,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  ChevronUp,
   CheckCircle2,
   Clock,
   Church,
@@ -87,6 +89,7 @@ import {
 import { cn } from "./ui/utils";
 import { UnifiedCoffinConfigurator } from "./UnifiedCoffinConfigurator";
 
+
 type PaymentMethod = "card" | "sbp" | "installment";
 
 const steps = [
@@ -98,7 +101,7 @@ const steps = [
 ] as const;
 
 const PRICES = {
-  hallDuration: { 30: 5000, 60: 8000, 90: 12000 },
+  hallDuration: { 30: 0, 60: 8000, 90: 12000 },
   ceremonyType: { civil: 0, religious: 15000, combined: 20000 },
   hearse: 8000,
   familyTransport: { 5: 5000, 10: 8000, 15: 12000 },
@@ -190,40 +193,97 @@ interface CemeteryData {
   working: boolean;
 }
 
-// ⚠️ ДАННЫЕ (короткая версия, чтобы влезло в чат)
-// Если у тебя в проекте уже есть полные массивы — вставь их сюда 1-в-1.
 const MOSCOW_CEMETERIES: CemeteryData[] = [
-  {
-    id: "khovanskoe-south",
-    name: "Хованское кладбище (Южное)",
-    type: "cemetery",
-    district: "ЮЗАО",
-    address: "ул. Поляны, вл. 42",
-    categories: { standard: 100000, comfort: 200000, premium: 300000 },
-    working: true,
-  },
-  {
-    id: "crematorium-mitino",
-    name: "Митинский крематорий",
-    type: "crematorium",
-    district: "СЗАО",
-    address: "Пятницкое шоссе, 6-й км",
-    categories: { standard: 15000, comfort: 25000, premium: 40000 },
-    hasColumbarium: true,
-    working: true,
-  },
+{
+id: "khovanskoe-south",
+name: "Хованское кладбище (Южное)",
+type: "cemetery",
+district: "ЮЗАО",
+address: "ул. Поляны, вл. 42",
+categories: { standard: 100000, comfort: 200000, premium: 300000 },
+working: true,
+},
+{
+id: "troyekurovskoye",
+name: "Троекуровское кладбище",
+type: "cemetery",
+district: "ЗАО",
+address: "Рябиновая ул., вл. 28А",
+categories: { standard: 120000, comfort: 220000, premium: 350000 },
+hasColumbarium: true,
+working: true,
+},
+{
+id: "mitinskoye",
+name: "Митинское кладбище",
+type: "cemetery",
+district: "СЗАО",
+address: "Пятницкое шоссе, 6-й км",
+categories: { standard: 100000, comfort: 200000, premium: 300000 },
+hasColumbarium: true,
+working: true,
+},
+{
+id: "nikolo-arhangelskoe",
+name: "Николо-Архангельское кладбище",
+type: "both",
+district: "ЗАО",
+address: "д. Сабурово, ул. Центральная, вл. 21",
+categories: { standard: 100000, comfort: 200000, premium: 300000 },
+hasColumbarium: true,
+working: true,
+},
+{
+id: "crematorium-nikolo",
+name: "Николо-Архангельский крематорий",
+type: "crematorium",
+district: "ЗАО",
+address: "д. Сабурово, ул. Центральная, вл. 21",
+categories: { standard: 15000, comfort: 25000, premium: 40000 },
+hasColumbarium: true,
+working: true,
+},
+{
+id: "crematorium-mitino",
+name: "Митинский крематорий",
+type: "crematorium",
+district: "СЗАО",
+address: "Пятницкое шоссе, 6-й км",
+categories: { standard: 15000, comfort: 25000, premium: 40000 },
+hasColumbarium: true,
+working: true,
+},
+{
+id: "crematorium-khovansky",
+name: "Хованский крематорий",
+type: "crematorium",
+district: "ЮЗАО",
+address: "ул. Поляны, вл. 42",
+categories: { standard: 15000, comfort: 25000, premium: 40000 },
+hasColumbarium: true,
+working: true,
+},
 ];
 
 const MO_CEMETERIES: CemeteryData[] = [
-  {
-    id: "mytishchinskoe",
-    name: "Мытищинское кладбище (Волковское)",
-    type: "cemetery",
-    district: "Мытищинский р-н",
-    address: "Волковское шоссе, вл. 1",
-    categories: { standard: 80000, comfort: 150000, premium: 250000 },
-    working: true,
-  },
+{
+id: "mytishchinskoe",
+name: "Мытищинское кладбище (Волковское)",
+type: "cemetery",
+district: "Мытищинский р-н",
+address: "Волковское шоссе, вл. 1",
+categories: { standard: 80000, comfort: 150000, premium: 250000 },
+working: true,
+},
+{
+id: "krasnogorskoe",
+name: "Красногорское кладбище",
+type: "cemetery",
+district: "Красногорский р-н",
+address: "г. Красногорск, Ильинское шоссе, 1",
+categories: { standard: 85000, comfort: 160000, premium: 260000 },
+working: true,
+},
 ];
 
 interface StepperWorkflowProps {
