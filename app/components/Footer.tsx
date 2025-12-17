@@ -8,13 +8,13 @@ export function Footer() {
           {/* Brand Column */}
           <div className="md:col-span-4 flex flex-col justify-between h-full">
             <div>
-              <h2 className="text-lg font-semibold tracking-tight text-neutral-900 mb-4">Тихая Память</h2>
+              <h2 className="text-lg font-semibold tracking-tight text-neutral-900 mb-4">Тихий дом</h2>
               <p className="text-sm text-neutral-500 leading-relaxed mb-6 max-w-sm">
                 Цифровой сервис ритуальных услуг. Мы обеспечиваем прозрачность, фиксацию цен и полную юридическую защиту на каждом этапе.
               </p>
               <div className="flex items-center gap-2 text-xs font-medium text-neutral-900 bg-neutral-100 w-fit px-3 py-1.5 rounded-full">
                 <Shield className="w-3.5 h-3.5" />
-                <span>Официальный договор</span>
+               
               </div>
             </div>
           </div>
@@ -57,7 +57,7 @@ export function Footer() {
                   <span className="font-medium">24/7</span>
                 </div>
                 <p className="text-sm text-neutral-600 pl-6">Без выходных</p>
-                <p className="text-xs text-neutral-400 pl-6 pt-1">Мгновенный выезд агента</p>
+               
               </div>
             </div>
 
@@ -65,9 +65,9 @@ export function Footer() {
             <div className="space-y-4">
               <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-neutral-400">Данные</h3>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-neutral-900">ООО «Тихая Память»</p>
+                <p className="text-sm font-medium text-neutral-900">ООО «Тихий дом</p>
                 <div className="font-mono text-xs text-neutral-500 space-y-1">
-                  <p>ИНН: 7701234567</p>
+                  <p>ИНН: 1111111111</p>
                   <p>ОГРН: 1234567890123</p>
                   <p>Лицензия № 2384-РБ</p>
                 </div>
@@ -80,7 +80,7 @@ export function Footer() {
         <div className="mt-16 pt-8 border-t border-neutral-200">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="text-xs text-neutral-400 max-w-xl">
-              <p className="mb-2">© 2024 Тихая Память. Все права защищены.</p>
+              <p className="mb-2">© 2024 Тихий дом. Все права защищены.</p>
               <p>Информация на сайте не является публичной офертой. Цены фиксируются в договоре.</p>
             </div>
             <div className="flex flex-wrap gap-6 text-xs font-medium text-neutral-500">
