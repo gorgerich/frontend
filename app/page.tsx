@@ -5,10 +5,7 @@ import { HeroSection } from './components/HeroSection';
 import { StepperWorkflow } from './components/StepperWorkflow';
 import { PackagesSection } from './components/PackagesSection';
 import { FloatingCalculator } from './components/FloatingCalculator';
-import {
-  calculateTotal,
-  calculateBreakdown,
-} from './components/calculationUtils';
+import { calculateTotal, calculateBreakdown } from './components/calculationUtils';
 
 export default function Home() {
   // Глобальный обработчик ошибок для предотвращения краша из-за hls.js и других внешних библиотек
@@ -51,15 +48,13 @@ export default function Home() {
     const handleError = (event: ErrorEvent) => {
       if (
         event.message &&
-        (
-          event.message.includes('DataCloneError') ||
+        (event.message.includes('DataCloneError') ||
           event.message.includes('postMessage') ||
           event.message.includes('hls.js') ||
           event.message.includes('out of memory') ||
           event.message.includes('esm.sh/hls') ||
           event.message.includes('cannot be cloned') ||
-          event.message.includes('DedicatedWorkerGlobalScope')
-        )
+          event.message.includes('DedicatedWorkerGlobalScope'))
       ) {
         console.warn('Intercepted and suppressed worker error:', event.message);
         event.preventDefault();
@@ -70,11 +65,9 @@ export default function Home() {
 
       if (
         event.error instanceof Error &&
-        (
-          event.error.name === 'DataCloneError' ||
+        (event.error.name === 'DataCloneError' ||
           event.error.message.includes('out of memory') ||
-          event.error.message.includes('cannot be cloned')
-        )
+          event.error.message.includes('cannot be cloned'))
       ) {
         console.warn('Intercepted worker error object:', event.error.message);
         event.preventDefault();
@@ -88,20 +81,15 @@ export default function Home() {
       const message = event.reason?.message || String(event.reason);
       if (
         message &&
-        (
-          message.includes('DataCloneError') ||
+        (message.includes('DataCloneError') ||
           message.includes('postMessage') ||
           message.includes('hls.js') ||
           message.includes('out of memory') ||
           message.includes('esm.sh/hls') ||
           message.includes('cannot be cloned') ||
-          message.includes('DedicatedWorkerGlobalScope')
-        )
+          message.includes('DedicatedWorkerGlobalScope'))
       ) {
-        console.warn(
-          'Intercepted and suppressed worker promise rejection:',
-          message
-        );
+        console.warn('Intercepted and suppressed worker promise rejection:', message);
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
@@ -163,7 +151,7 @@ export default function Home() {
     relationship: '',
     dataConsent: false,
 
-    // Контакты клиента (то, чего не хватало типу StepperWorkflowProps)
+    // Контакты клиента
     clientName: '',
     clientEmail: '',
     userEmail: '',
@@ -194,8 +182,7 @@ export default function Home() {
               ...initialFormData.hearseRoute,
               ...(parsed.formData.hearseRoute || {}),
             },
-            selectedAdditionalServices:
-              parsed.formData.selectedAdditionalServices || [],
+            selectedAdditionalServices: parsed.formData.selectedAdditionalServices || [],
             birthDate: parsed.formData.birthDate === '—' ? '' : parsed.formData.birthDate,
             deathDate: parsed.formData.deathDate === '—' ? '' : parsed.formData.deathDate,
           };
@@ -213,6 +200,7 @@ export default function Home() {
         console.error('Failed to clear storage:', clearError);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Сохранение в localStorage при изменении
@@ -259,38 +247,36 @@ export default function Home() {
     setCurrentStep(step);
   };
 
-  const handleCemeteryCategoryChange = (
-    category: 'standard' | 'comfort' | 'premium',
-  ) => {
+  const handleCemeteryCategoryChange = (category: 'standard' | 'comfort' | 'premium') => {
     setSelectedCemeteryCategory(category);
   };
 
   return (
-    <div className="min-h-screen bg-white pt-8">
-      <HeroSection />
+    <main className="min-h-screen bg-white pt-8 flex flex-col">
+      {/* ВЕСЬ КОНТЕНТ СТРАНИЦЫ */}
+      <div className="flex-1">
+        <HeroSection />
 
-      <div className="relative z-20 stepper-overlay-position">
-        <StepperWorkflow
-          formData={formData}
-          onUpdateFormData={handleUpdateFormData}
-          onStepChange={handleStepChange}
-          onCemeteryCategoryChange={handleCemeteryCategoryChange}
-        />
+        <div className="relative z-20 stepper-overlay-position">
+          <StepperWorkflow
+            formData={formData}
+            onUpdateFormData={handleUpdateFormData}
+            onStepChange={handleStepChange}
+            onCemeteryCategoryChange={handleCemeteryCategoryChange}
+          />
+        </div>
+
+        {currentStep === 2 && (
+          <PackagesSection formData={formData} onUpdateFormData={handleUpdateFormData} />
+        )}
+
+        {currentStep >= 1 && (
+          <FloatingCalculator
+            total={calculateTotal(formData, selectedCemeteryCategory)}
+            breakdown={calculateBreakdown(formData, selectedCemeteryCategory)}
+          />
+        )}
       </div>
-
-      {currentStep === 2 && (
-        <PackagesSection
-          formData={formData}
-          onUpdateFormData={handleUpdateFormData}
-        />
-      )}
-
-      {currentStep >= 1 && (
-        <FloatingCalculator
-          total={calculateTotal(formData, selectedCemeteryCategory)}
-          breakdown={calculateBreakdown(formData, selectedCemeteryCategory)}
-        />
-      )}
-    </div>
+    </main>
   );
 }
