@@ -1732,16 +1732,28 @@ export function StepperWorkflow({
             </div>
           </div>
 
-          <div className="text-center mb-2" style={{ fontWeight: 40 }}>
-            <CardTitle className="text-2xl sm:text-3xl mb-2 text-white text-[30px] not-italic no-underline font-sans" style={{ fontWeight: 40 }}>
-              {/* заголовок если нужен */}
-            </CardTitle>
-            <CardDescription className="text-base text-white/90 text-[14px] font-sans">
-              {workflowMode === "wizard"
-                ? "Организуйте церемонию прощания за 5 простых шагов"
-                : "Выберите оптимальный пакет услуг под ваши задачи"}
-            </CardDescription>
-          </div>
+          <div className="text-center mb-2">
+  <CardDescription className="text-[15px] font-sans max-w-xl mx-auto leading-relaxed text-left text-[rgb(16,24,40)] md:text-white">
+    {workflowMode === "wizard" ? (
+      <>
+        {currentStep === 0 &&
+          "Настройте формат прощания: выберите тип церемонии (светская или религиозная) и длительность аренды зала."}
+        {currentStep === 1 &&
+          "Спланируйте логистику: укажите дату и время прощания, выберите транспорт для усопшего и гостей."}
+        {currentStep === 2 &&
+          "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности."}
+        {currentStep === 3 &&
+          "Заполните документы: укажите паспортные данные заявителя и информацию об усопшем для оформления."}
+        {currentStep === 4 &&
+          "Проверьте и подтвердите: внимательно ознакомьтесь со всеми деталями заказа перед финальным оформлением."}
+      </>
+    ) : (
+      "Выберите оптимальный пакет услуг под ваши задачи"
+    )}
+  </CardDescription>
+</div>
+
+          
 
           {workflowMode === "wizard" && (
             <Stepper steps={steps as any} currentStep={currentStep} completedSteps={completedSteps} onStepClick={handleStepClick} />
