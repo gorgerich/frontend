@@ -403,128 +403,156 @@ className="w-full h-full object-cover transition-transform duration-700 group-ho
 </div>
 </div>
 
-{/* Фурнитура */}
-<div className="space-y-4">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0">
-<Label className="text-base font-medium text-gray-900">Фурнитура</Label>
-<span className="text-xs text-gray-500 uppercase tracking-wider font-medium">Ручки и декор</span>
-</div>
 
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-{hardwareOptions.map((hardware) => (
-<button
-key={hardware.id}
-type="button"
-onClick={() => setSelectedHardware(hardware.id)}
-className={`group relative rounded-2xl overflow-hidden transition-all duration-300 text-left bg-white ${
-selectedHardware === hardware.id
-? 'ring-2 ring-amber-500 ring-offset-2 shadow-xl scale-[1.02]'
-: 'ring-1 ring-gray-200 hover:ring-gray-300 hover:shadow-lg hover:-translate-y-0.5'
-}`}
->
-<div
-className="aspect-[16/9] sm:aspect-[2/1] w-full relative flex items-center justify-center overflow-hidden"
-style={{ background: (hardware as any).metallic }}
->
-<div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-50" />
 
-<div className="relative w-16 h-3 rounded-full shadow-sm" style={{ backgroundColor: (hardware as any).color }}>
-<div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/40 to-black/10" />
-<div className="absolute -left-1 -top-1 w-2 h-5 rounded-sm shadow-md" style={{ backgroundColor: (hardware as any).color }} />
-<div className="absolute -right-1 -top-1 w-2 h-5 rounded-sm shadow-md" style={{ backgroundColor: (hardware as any).color }} />
-</div>
+{/* Hardware Selection - Фурнитура */}
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0">
+                <Label className="text-base font-medium text-gray-900">Фурнитура</Label>
+                <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">Ручки и декор</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+                {hardwareOptions.map((hardware) => (
+                  <button
+                    key={hardware.id}
+                    onClick={() => setSelectedHardware(hardware.id)}
+                    className={`group relative rounded-2xl overflow-hidden transition-all duration-300 text-left bg-white ${
+                      selectedHardware === hardware.id
+                        ? 'ring-2 ring-amber-500 ring-offset-2 shadow-xl scale-[1.02]'
+                        : 'ring-1 ring-gray-200 hover:ring-gray-300 hover:shadow-lg hover:-translate-y-0.5'
+                    }`}
+                  >
+                    <div 
+                      className="aspect-[16/9] sm:aspect-[2/1] w-full relative flex items-center justify-center overflow-hidden"
+                      style={{ background: hardware.metallic }}
+                    >
+                      {/* Эффект блеска */}
+                      <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-50" />
+                      
+                      {/* Имитация ручки - более реалистичная */}
+                      <div className="relative w-16 h-3 rounded-full shadow-sm" style={{ backgroundColor: hardware.color }}>
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/40 to-black/10" />
+                        <div className="absolute -left-1 -top-1 w-2 h-5 rounded-sm shadow-md" style={{ backgroundColor: hardware.color }} />
+                        <div className="absolute -right-1 -top-1 w-2 h-5 rounded-sm shadow-md" style={{ backgroundColor: hardware.color }} />
+                      </div>
+                      
+                      {selectedHardware === hardware.id && (
+                        <div className="absolute top-3 right-3 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center shadow-lg animate-in zoom-in z-10">
+                          <Check className="w-3.5 h-3.5 text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3 border-t border-gray-100">
+                      <div className="text-gray-900 font-medium text-sm truncate">{hardware.name}</div>
+                      <div className="text-gray-500 text-xs">
+                        {hardware.price === 0 ? 'Включено' : `+${hardware.price.toLocaleString('ru-RU')} ₽`}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-{selectedHardware === hardware.id && (
-<div className="absolute top-3 right-3 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center shadow-lg animate-in zoom-in z-10">
-<Check className="w-3.5 h-3.5 text-white" />
-</div>
-)}
-</div>
+            {/* Quantity */}
+            <div className="space-y-3">
+              <Label className="text-gray-900">Количество</Label>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setCoffinQuantity(Math.max(1, coffinQuantity - 1))}
+                  className="h-10 w-10 rounded-xl"
+                >
+                  <Minus className="w-4 h-4" />
+                </Button>
+                <div className="flex-1 text-center">
+                  <div className="text-2xl text-gray-900">{coffinQuantity}</div>
+                  <div className="text-xs text-gray-500">шт.</div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setCoffinQuantity(coffinQuantity + 1)}
+                  className="h-10 w-10 rounded-xl"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
 
-<div className="p-3 border-t border-gray-100">
-<div className="text-gray-900 font-medium text-sm truncate">{hardware.name}</div>
-<div className="text-gray-500 text-xs">
-{(hardware as any).price === 0 ? 'Включено' : `+${(hardware as any).price.toLocaleString('ru-RU')} ₽`}
-</div>
-</div>
-</button>
-))}
-</div>
-</div>
+            {/* Price Summary Block inside Tab */}
+            <div className="mt-8 p-4 md:p-6 rounded-2xl bg-slate-900 text-white shadow-2xl relative overflow-hidden">
+               {/* Декоративный фон */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-[80px] rounded-full pointer-events-none" />
+              
+              <div className="relative z-10 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
+                  <div className="flex-1">
+                    <div className="text-blue-200 text-sm mb-1 font-medium">Итоговая стоимость комплектации</div>
+                    <div className="text-3xl font-light tracking-tight">
+                      {getCoffinPrice().toLocaleString('ru-RU')} ₽
+                    </div>
+                  </div>
+                  <div className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center border border-white/10 self-end sm:self-center flex-shrink-0">
+                     <svg className="w-6 h-6 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
 
-{/* Количество */}
-<div className="space-y-3">
-<Label className="text-gray-900">Количество</Label>
-<div className="flex items-center gap-3">
-<Button
-type="button"
-variant="outline"
-size="icon"
-onClick={() => setCoffinQuantity(Math.max(1, coffinQuantity - 1))}
-className="h-10 w-10 rounded-xl"
->
-<Minus className="w-4 h-4" />
-</Button>
-<div className="flex-1 text-center">
-<div className="text-2xl text-gray-900">{coffinQuantity}</div>
-<div className="text-xs text-gray-500">шт.</div>
-</div>
-<Button
-type="button"
-variant="outline"
-size="icon"
-onClick={() => setCoffinQuantity(coffinQuantity + 1)}
-className="h-10 w-10 rounded-xl"
->
-<Plus className="w-4 h-4" />
-</Button>
-</div>
-</div>
+                {/* Детальная разбивка цен */}
+                <div className="pt-4 border-t border-white/10 space-y-2.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-300">Базовая цена корпуса</span>
+                    <span className="text-white font-medium">15 000 ₽</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-300">
+                      Порода дерева · {woodOptions.find(w => w.id === selectedWood)?.name}
+                    </span>
+                    <span className={`font-medium ${woodOptions.find(w => w.id === selectedWood)?.price === 0 ? 'text-slate-400' : 'text-blue-300'}`}>
+                      {woodOptions.find(w => w.id === selectedWood)?.price === 0 
+                        ? 'Включено' 
+                        : `+${woodOptions.find(w => w.id === selectedWood)?.price.toLocaleString('ru-RU')} ₽`}
+                    </span>
+                  </div>
 
-{/* Итог + Confirm */}
-<div className="mt-8 p-4 md:p-6 rounded-2xl bg-slate-900 text-white shadow-2xl relative overflow-hidden">
-<div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-[80px] rounded-full pointer-events-none" />
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-300">
+                      Внутренняя отделка · {liningOptions.find(l => l.id === selectedLining)?.name}
+                    </span>
+                    <span className={`font-medium ${liningOptions.find(l => l.id === selectedLining)?.price === 0 ? 'text-slate-400' : 'text-blue-300'}`}>
+                      {liningOptions.find(l => l.id === selectedLining)?.price === 0 
+                        ? 'Включено' 
+                        : `+${liningOptions.find(l => l.id === selectedLining)?.price.toLocaleString('ru-RU')} ₽`}
+                    </span>
+                  </div>
 
-<div className="relative z-10 space-y-4">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
-<div>
-<div className="text-blue-200 text-sm mb-1 font-medium">Итоговая стоимость комплектации</div>
-<div className="text-3xl font-light tracking-tight">{getCoffinPrice().toLocaleString('ru-RU')} ₽</div>
-<div className="text-slate-400 text-xs mt-2 flex flex-wrap gap-2">
-<span>{woodOptions.find((w) => w.id === selectedWood)?.name || 'Не выбрано'}</span>
-<span>•</span>
-<span>{liningOptions.find((l) => l.id === selectedLining)?.name || 'Не выбрано'}</span>
-<span>•</span>
-<span>{hardwareOptions.find((h) => h.id === selectedHardware)?.name || 'Не выбрано'}</span>
-</div>
-</div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-300">
+                      Фурнитура · {hardwareOptions.find(h => h.id === selectedHardware)?.name}
+                    </span>
+                    <span className={`font-medium ${hardwareOptions.find(h => h.id === selectedHardware)?.price === 0 ? 'text-slate-400' : 'text-blue-300'}`}>
+                      {hardwareOptions.find(h => h.id === selectedHardware)?.price === 0 
+                        ? 'Включено' 
+                        : `+${hardwareOptions.find(h => h.id === selectedHardware)?.price.toLocaleString('ru-RU')} ₽`}
+                    </span>
+                  </div>
 
-<div className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center border border-white/10 self-end sm:self-center flex-shrink-0">
-<svg className="w-6 h-6 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path
-strokeLinecap="round"
-strokeLinejoin="round"
-strokeWidth={1.5}
-d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-/>
-</svg>
-</div>
-</div>
+                  {coffinQuantity > 1 && (
+                    <div className="flex items-center justify-between text-sm pt-2 border-t border-white/10">
+                      <span className="text-slate-300">Количество</span>
+                      <span className="text-white font-medium">× {coffinQuantity}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
 
-<Button
-type="button"
-onClick={handleConfirm}
-className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white py-3 h-auto rounded-xl shadow-lg transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
->
-<span className="flex items-center justify-center gap-2">
-<Check className="w-4 h-4" />
-<span className="font-medium">Подтвердить конфигурацию</span>
-</span>
-</Button>
-</div>
-</div>
-</div>
-</TabsContent>
+
 
 {/* Wreath Tab */}
 <TabsContent value="wreath" className="mt-0">
