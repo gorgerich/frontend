@@ -241,7 +241,7 @@ export default function PaymentStep({
                 </div>
 
                 {/* СПРАВА: CVC + Email */}
-                <div className="lg:col-span-1 space-y-4 min-w-0">
+                <div className="space-y-4">
                   <div className="bg-white border border-gray-200 rounded-xl p-4">
                     <Label
                       htmlFor="cardCvc"
@@ -264,7 +264,7 @@ export default function PaymentStep({
                         }}
                         maxLength={3}
                       />
-                      <p className="text-xs text-gray-500 pt-1 flex-1 min-w-0">
+                      <p className="text-xs text-gray-500 mt-2">
                         3 цифры на обратной стороне карты
                       </p>
                     </div>

@@ -247,8 +247,6 @@ breakdown={calculateBreakdown(formData, selectedCemeteryCategory)}
 )}
 </div>
 
-{/* ФУТЕР */}
-<Footer />
 </main>
 );
 }

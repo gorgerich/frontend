@@ -1783,7 +1783,7 @@ return;
 const data = await res.json();
 console.log("Order created:", data);
 
-alert("Бронирование оформлено! Детали и договор отправлены на указанную электронную почту.");
+alert("Бронирование оформлено! Детали и договор отправлены на указанную электронную почту. К сожалению оплата не прошла, агент свяжется с вами в скором времени");
 } catch (e) {
 console.error("Order request failed:", e);
 alert("Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой.");
@@ -1808,7 +1808,7 @@ return (
 <Button
 variant="ghost"
 onClick={onBack}
-className="self-start text-white-900 hover:bg-gray-100 gap-2 rounded-full -ml-2"
+className="self-start text-white md:text-gray-900 hover:bg-gray/10 md:hover:bg-gray-100 gap-2 rounded-full -ml-2"
 type="button"
 >
 <ArrowLeft className="h-4 w-4" />
@@ -1816,10 +1816,10 @@ type="button"
 </Button>
 
 <div className="text-center">
-<CardTitle className="text-2xl sm:text-3xl mb-2">
+<CardTitle className="text-2xl sm:text-3xl mb-2 text-white md:text-gray-900">
 Настройка пакета &quot;{selectedPackage?.name ?? "—"}&quot;
 </CardTitle>
-<CardDescription className="text-base">
+<CardDescription className="text-base text-white md:text-gray-900">
 Персонализируйте выбранное решение под ваши потребности
 </CardDescription>
 </div>
