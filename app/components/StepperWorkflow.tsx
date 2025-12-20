@@ -991,7 +991,7 @@ export function StepperWorkflow({
         return;
       }
 
-      alert("Бронирование оформлено! Детали отправлены на указанную почту.");
+      alert("Бронирование оформлено! Детали отправлены на указанную почту. К сожалению оплата не прошла, агент свяжется с вами в скором времени");
     } catch (e) {
       console.error(e);
       alert("Сетевая ошибка. Проверьте интернет и попробуйте ещё раз.");
@@ -2098,7 +2098,7 @@ export function StepperWorkflow({
 
           <div className="text-center mb-2">
   <CardDescription
-  style={{ color: "rgb(16,24,40)" }}                 // мобилка всегда тёмный
+  style={{ color: "rgba(255, 255, 255, 1)" }}                 // мобилка всегда тёмный
   className="text-[15px] font-sans max-w-xl mx-auto leading-relaxed text-left md:!text-white"  // десктоп белый
 >
 
