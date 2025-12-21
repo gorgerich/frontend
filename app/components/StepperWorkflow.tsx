@@ -115,6 +115,7 @@ const PACKAGES = [
     price: 45000,
     description: "Необходимый минимум",
     features: ["Гроб сосна", "Венок искусственный", "Базовая отделка", "Катафалк", "Носильщики"],
+    popular: false,
   },
   {
     id: "standard",
@@ -148,6 +149,7 @@ const PACKAGES = [
       "Координатор церемонии",
       "Музыкальное сопровождение",
     ],
+    popular: false,
   },
 ] as const;
 
@@ -1327,6 +1329,7 @@ export function StepperWorkflow({
                               : "border-gray-200 hover:border-gray-300",
                           )}
                         >
+                          
                           <div className="text-sm mb-1">
                             {category === "standard" ? "Стандарт" : category === "comfort" ? "Комфорт" : "Премиум"}
                           </div>
@@ -2157,44 +2160,75 @@ export function StepperWorkflow({
               </div>
             </>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-              {PACKAGES.map((pkg) => (
-                <Card
-                  key={pkg.id}
-                  className={cn(
-                    "cursor-pointer hover:border-gray-400 hover:shadow-lg transition-all duration-300 relative overflow-hidden group border-white/50 bg-white/80 backdrop-blur-sm",
-                    formData.packageType === pkg.id ? "ring-2 ring-gray-900 border-gray-900" : "",
-                  )}
-                  onClick={() => {
-                    handleInputChange("packageType", pkg.id);
-                    setSelectedPackageForSimplified(pkg);
-                  }}
-                >
-                  {(pkg as any).popular && (
-                    <div className="absolute top-0 right-0 bg-gray-900 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-                      Популярный
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 px-2 items-start">
+              {PACKAGES.map((pkg) => {
+                const isSelected = formData.packageType === pkg.id;
+                return (
+                  <div
+                    key={pkg.id}
+                    onClick={() => {
+                      handleInputChange("packageType", pkg.id);
+                      setSelectedPackageForSimplified(pkg);
+                    }}
+                    className={cn(
+                      "group relative flex flex-col p-8 rounded-3xl border transition-all duration-300 cursor-pointer bg-white",
+                      isSelected
+                        ? "border-gray-900 shadow-2xl scale-[1.02] z-10"
+                        : "border-gray-100 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1"
+                    )}
+                  >
+                    {pkg.popular && (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[9px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg ring-4 ring-white">
+                        Популярный выбор
+                      </div>
+                    )}
+                    
+                    <div className="text-center mb-8">
+                      <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
+                        {pkg.name}
+                      </h3>
+                      <div className="flex items-start justify-center gap-1 text-gray-900">
+                        <span className="text-5xl font-light tracking-tighter">
+                          {pkg.price.toLocaleString("ru-RU")}
+                        </span>
+                        <span className="text-xl font-light mt-1">₽</span>
+                      </div>
+                      <p className="text-sm text-gray-400 mt-3 font-medium">
+                        {pkg.description}
+                      </p>
                     </div>
-                  )}
-                  <CardHeader>
-                    <CardTitle className="text-xl">{pkg.name}</CardTitle>
-                    <CardDescription>{pkg.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-light mb-6">{pkg.price.toLocaleString("ru-RU")} ₽</div>
-                    <ul className="space-y-3 mb-6">
+
+                    <div className="space-y-4 mb-8 flex-1">
                       {pkg.features.map((feature, i) => (
-                        <li key={i} className="flex items-start text-sm">
-                          <Check className="h-4 w-4 mr-2 text-green-600 mt-0.5 shrink-0" />
-                          <span className="text-gray-600">{feature}</span>
-                        </li>
+                        <div key={i} className="flex items-start gap-3 text-sm group/item">
+                          <div className={cn(
+                            "mt-0.5 h-5 w-5 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300",
+                            isSelected 
+                              ? "bg-gray-900 text-white" 
+                              : "bg-gray-100 text-gray-400 group-hover/item:text-gray-600"
+                          )}>
+                             <Check className="h-3 w-3" />
+                          </div>
+                          <span className="text-gray-600 font-medium leading-tight pt-0.5">
+                            {feature}
+                          </span>
+                        </div>
                       ))}
-                    </ul>
-                    <Button className="w-full rounded-full bg-black text-white hover:bg-gray-800">
-                      Настроить
+                    </div>
+
+                    <Button 
+                      className={cn(
+                        "w-full rounded-2xl h-12 text-sm font-semibold tracking-wide transition-all duration-300",
+                        isSelected 
+                          ? "bg-gray-900 text-white shadow-lg hover:bg-gray-800" 
+                          : "bg-gray-50 text-gray-900 hover:bg-gray-100 border border-gray-100"
+                      )}
+                    >
+                      {isSelected ? "Выбран" : "Выбрать"}
                     </Button>
-                  </CardContent>
-                </Card>
-              ))}
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>
