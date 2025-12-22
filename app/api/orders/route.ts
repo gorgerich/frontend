@@ -11,7 +11,7 @@ type ServiceItem = {
   id?: string;
   name: string;
   description?: string;
-  price: number;
+  price: number; // рубли
   quantity?: number;
 };
 
@@ -161,17 +161,17 @@ export async function POST(req: NextRequest) {
         return acc + s.price * qty;
       }, 0) ?? 0;
 
-    // В БД храним в копейках
+    // В БД храним в копейках (SQLite + платежи)
     const totalAmount = Math.round(totalRub * 100);
 
-    // 1) создаём/обновляем пользователя
+    // 1) user
     const user = await prisma.user.upsert({
       where: { email: body.customer.email },
       update: { name: body.customer.name ?? undefined },
       create: { email: body.customer.email, name: body.customer.name ?? null },
     });
 
-    // 2) создаём заказ в БД
+    // 2) order
     const serviceType =
       body.ceremony?.type?.toUpperCase() === "CREMATION" ? "CREMATION" : "BURIAL";
 
@@ -185,29 +185,48 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // 3) письмо (как было)
+    // 3) email (не блокирует создание заказа)
     const html = buildEmailHtml(body, totalRub);
 
     const managerEmail = process.env.ORDER_TARGET_EMAIL || "gorgerichig@gmail.com";
     const recipients = [body.customer.email, managerEmail].filter((email): email is string => Boolean(email));
 
-    await sendOrderEmail({
-      to: recipients,
-      subject: "Договор и детали заказа",
-      html,
-    });
+    let emailSent = true;
+    let emailError: string | null = null;
+
+    try {
+      await sendOrderEmail({
+        to: recipients,
+        subject: "Договор и детали заказа",
+        html,
+      });
+    } catch (e: any) {
+      console.error("sendOrderEmail failed:", e);
+      emailSent = false;
+      emailError = String(e?.message ?? e);
+    }
 
     return NextResponse.json(
       {
         success: true,
-        orderId: order.id,        // ВАЖНО: это реальный id из БД
-        totalAmount,              // копейки
+        orderId: order.id,    // реальный id в БД
+        totalAmount,          // копейки
+        emailSent,
+        emailError,
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("ORDER API ERROR (POST):", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+
+    return NextResponse.json(
+      {
+        error: "Internal Server Error",
+        details: String(error?.message ?? error),
+        stack: process.env.NODE_ENV === "development" ? String(error?.stack ?? "") : undefined,
+      },
+      { status: 500 }
+    );
   }
 }
 
