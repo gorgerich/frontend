@@ -2224,7 +2224,7 @@ export function StepperWorkflow({
                           : "bg-gray-50 text-gray-900 hover:bg-gray-100 border border-gray-100"
                       )}
                     >
-                      {isSelected ? "Выбран" : "Выбрать"}
+                      {isSelected ? "Настроить" : "Настроить"}
                     </Button>
                   </div>
                 );
