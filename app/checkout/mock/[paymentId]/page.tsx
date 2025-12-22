@@ -1,39 +1,34 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function MockCheckoutPage({
-  params,
-}: {
-  params: { paymentId: string };
-}) {
-  const searchParams = useSearchParams();
-  const orderId = searchParams.get("orderId");
+export default function MockCheckout({ params }: any) {
   const router = useRouter();
+  const search = useSearchParams();
+  const orderId = search.get("orderId");
 
-  function paySuccess() {
-    router.push(`/payment-success?orderId=${orderId}`);
+  function success() {
+    router.push(`/payment/success?orderId=${orderId}`);
   }
 
-  function payFail() {
-    router.push(`/payment-failed?orderId=${orderId}`);
+  function fail() {
+    router.push(`/payment/fail?orderId=${orderId}`);
   }
 
   return (
-    <div style={{ maxWidth: 420, margin: "60px auto", fontFamily: "system-ui" }}>
-      <h1>Оплата заказа</h1>
-      <p>Платёж: <b>{params.paymentId}</b></p>
-      <p>Заказ: <b>{orderId}</b></p>
+    <div style={{ maxWidth: 420, margin: "80px auto", fontFamily: "system-ui" }}>
+      <h2>Оплата банковской картой</h2>
 
-      <button onClick={paySuccess} style={{ width: "100%", padding: 12, marginTop: 12 }}>
-        Оплатить (успешно)
+      <input placeholder="Номер карты" style={{ width: "100%", marginBottom: 12 }} />
+      <input placeholder="MM / YY" style={{ width: "48%", marginRight: "4%" }} />
+      <input placeholder="CVC" style={{ width: "48%" }} />
+
+      <button onClick={success} style={{ marginTop: 20, width: "100%" }}>
+        Оплатить
       </button>
 
-      <button
-        onClick={payFail}
-        style={{ width: "100%", padding: 12, marginTop: 8, opacity: 0.6 }}
-      >
-        Ошибка оплаты
+      <button onClick={fail} style={{ marginTop: 8, width: "100%" }}>
+        Отменить
       </button>
     </div>
   );
