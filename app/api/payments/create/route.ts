@@ -55,7 +55,7 @@ export async function POST(req: Request) {
       currency: "RUB",
       status: "pending",
       confirmationUrl,
-      createRaw: { orderId, amount },
+      createRaw: JSON.stringify({ orderId, amount }),
     },
   });
 

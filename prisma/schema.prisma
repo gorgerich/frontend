@@ -15,21 +15,23 @@ model User {
 }
 
 model Order {
-  id          Int    @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   userId      Int
-  user        User   @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
 
-  status      String @default("PENDING") // DRAFT, PENDING, CONFIRMED, CANCELLED, COMPLETED
-  serviceType String
+  status      String   @default("PENDING")
+  serviceType String   @default("BURIAL")
   totalAmount Int
-  meta        String
+  meta        String   @default("{}")
 
   payments    Payment[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Payment {
   id                String   @id @default(cuid())
-  provider          String
+  provider          String   @default("mock")
   providerPaymentId String   @unique
 
   orderId           Int
@@ -37,11 +39,11 @@ model Payment {
 
   amount            Int
   currency          String   @default("RUB")
-  status            String
+  status            String   @default("pending")
   confirmationUrl   String?
 
-  createRaw         Json?
-  webhookRaw        Json?
+  createRaw         String?
+  webhookRaw        String?
 
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt

@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
   await prisma.payment.update({
     where: { providerPaymentId: provider_payment_id },
-    data: { status, webhookRaw: body },
+    data: { status, webhookRaw: JSON.stringify(body) },
   });
 
   if (status === "succeeded") {
