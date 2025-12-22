@@ -241,7 +241,7 @@ export default function PaymentStep({
                 </div>
 
                 {/* СПРАВА: CVC + Email */}
-                <div className="space-y-4">
+                <div className="lg:col-span-1 space-y-4 min-w-0">
                   <div className="bg-white border border-gray-200 rounded-xl p-4">
                     <Label
                       htmlFor="cardCvc"

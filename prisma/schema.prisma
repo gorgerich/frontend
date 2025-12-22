@@ -1,5 +1,3 @@
-// prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -17,20 +15,36 @@ model User {
 }
 
 model Order {
-  id           Int    @id @default(autoincrement())
-  userId       Int
-  user         User   @relation(fields: [userId], references: [id])
+  id          Int    @id @default(autoincrement())
+  userId      Int
+  user        User   @relation(fields: [userId], references: [id])
 
-  // Статус заказа как строка
-  status       String @default("PENDING") // DRAFT, PENDING, CONFIRMED, CANCELLED, COMPLETED
+  status      String @default("PENDING") // DRAFT, PENDING, CONFIRMED, CANCELLED, COMPLETED
+  serviceType String
+  totalAmount Int
+  meta        String
 
-  // Тип услуги как строка
-  serviceType  String // BURIAL, CREMATION и т.п.
-
-  // Итоговая сумма
-  totalAmount  Int
-
-  // Весь заказ как строка (JSON в виде текста)
-meta         String
+  payments    Payment[]
 }
- 
+
+model Payment {
+  id                String   @id @default(cuid())
+  provider          String
+  providerPaymentId String   @unique
+
+  orderId           Int
+  order             Order    @relation(fields: [orderId], references: [id])
+
+  amount            Int
+  currency          String   @default("RUB")
+  status            String
+  confirmationUrl   String?
+
+  createRaw         Json?
+  webhookRaw        Json?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([orderId])
+}

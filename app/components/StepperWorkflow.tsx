@@ -652,6 +652,32 @@ const MO_CEMETERIES: CemeteryData[] = [
   },
 ];
 
+type CemeteryCategory = "standard" | "comfort" | "premium";
+
+const CATEGORY_INFO: Record<
+CemeteryCategory,
+{ subtitle: string; title: string; description: string }
+> = {
+standard: {
+subtitle: "Обычное место",
+title: "Стандарт",
+description:
+"Стандартное место включает участок 2×2.5 м в общедоступных секторах кладбища. Подходит для установки традиционного памятника и базового благоустройства. Размещение в зонах с удобным подъездом.",
+},
+comfort: {
+subtitle: "Удобное расположение",
+title: "Комфорт",
+description:
+"Место в более удобных секторах: проще подъезд и логистика, комфортнее для гостей. Обычно ближе к аллеям/ориентирам.",
+},
+premium: {
+subtitle: "Престижная зона",
+title: "Премиум",
+description:
+"Престижная зона: наиболее удобное и статусное расположение, минимальная сложность подъезда и организации церемонии.",
+},
+};
+
 interface StepperWorkflowProps {
   formData: {
     serviceType: string;

@@ -14,14 +14,20 @@ expiry: string;
 cvc: string;
 };
 
+// Эти типы совпадают с твоими calculationUtils
+export type CalculatorItem = { name: string; price?: number };
+export type CalculatorSection = { category: string; price: number; items?: CalculatorItem[] };
+
 export function PaymentSection({
 total = 47000,
 email,
 onEmailChange,
+breakdown = [],
 }: {
 total?: number;
 email: string;
 onEmailChange: (v: string) => void;
+breakdown?: CalculatorSection[];
 }) {
 const [method, setMethod] = useState<PaymentMethod>('card');
 
@@ -37,6 +43,55 @@ const formattedTotal = useMemo(() => total.toLocaleString('ru-RU'), [total]);
 return (
 <section className="relative">
 <div className="rounded-[28px] bg-[#0b0f14] border border-white/10 p-6 min-[1024px]:p-8 text-white">
+{/* === BREAKDOWN (Итоговая смета) === */}
+{breakdown.length > 0 && (
+<div className="mb-8">
+<div className="flex items-center justify-between">
+<h3 className="text-base font-medium text-white/90">Итоговая смета</h3>
+</div>
+
+<div className="mt-4">
+{/* На десктопе ограничиваем высоту, чтобы блок не был громоздким */}
+<div className="rounded-[22px] border border-white/10 bg-white/0 p-4 min-[1024px]:p-5 min-[1024px]:max-h-[360px] min-[1024px]:overflow-auto">
+<div className="space-y-5">
+{breakdown.map((section, index) => (
+<div key={index} className="space-y-2">
+<div className="flex items-start justify-between gap-4">
+<span className="font-medium text-white/90">{section.category}</span>
+<span className="font-medium text-white/90 whitespace-nowrap">
+{section.price.toLocaleString('ru-RU')} ₽
+</span>
+</div>
+
+{section.items && section.items.length > 0 && (
+<div className="pl-4 space-y-1.5 border-l-2 border-white/10">
+{section.items.map((item, itemIndex) => (
+<div
+key={itemIndex}
+className="flex items-start justify-between gap-4 text-sm"
+>
+<span className="text-white/70">{item.name}</span>
+
+{item.price !== undefined && (
+<span className="text-white/70 whitespace-nowrap">
+{item.price.toLocaleString('ru-RU')} ₽
+</span>
+)}
+</div>
+))}
+</div>
+)}
+</div>
+))}
+</div>
+</div>
+</div>
+
+<div className="mt-6 h-px bg-white/10" />
+</div>
+)}
+
+{/* Header */}
 <div className="flex items-center gap-3 mb-6">
 <div className="h-8 w-8 rounded-xl bg-white/10" />
 <h3 className="text-lg font-medium">Способ оплаты</h3>
@@ -47,13 +102,7 @@ return (
 <div className="grid grid-cols-1 gap-6 min-[1024px]:grid-cols-12 min-[1024px]:items-start">
 {/* Card left */}
 <div className="min-[1024px]:col-span-7">
-<div
-className={cn(
-'relative w-full aspect-[1.586/1] rounded-[22px] shadow-2xl bg-white border border-black/5 text-black overflow-hidden',
-// make card less “gromozdky” only on desktop
-'p-6 min-[1024px]:p-5',
-)}
->
+<div className="relative w-full aspect-[1.586/1] rounded-[22px] shadow-2xl bg-white border border-black/5 text-black overflow-hidden p-6 min-[1024px]:p-5">
 {/* Chip */}
 <div className="absolute top-6 left-6 w-12 h-10 rounded bg-gradient-to-br from-yellow-300/80 to-yellow-500/80 backdrop-blur" />
 
@@ -143,7 +192,6 @@ setCardData((p) => ({ ...p, cvc: value }));
 className="mt-2 h-11 rounded-xl bg-white text-black placeholder:text-black/40"
 />
 
-{/* force the hint to stay INSIDE the block on desktop */}
 <p className="mt-2 text-xs text-black/50 block w-full max-w-full whitespace-normal break-words">
 3 цифры на обратной стороне карты
 </p>
