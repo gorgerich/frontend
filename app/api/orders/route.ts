@@ -1,8 +1,11 @@
 // app/api/orders/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 import { sendOrderEmail } from "../../../lib/mailer";
 
 export const runtime = "nodejs";
+
+const prisma = new PrismaClient();
 
 type ServiceItem = {
   id?: string;
@@ -149,26 +152,44 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as OrderPayload;
 
     if (!body.customer?.email) {
-      return NextResponse.json(
-        { error: "Поле customer.email обязательно" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Поле customer.email обязательно" }, { status: 400 });
     }
 
-    const total =
+    const totalRub =
       body.services?.reduce((acc, s) => {
         const qty = s.quantity ?? 1;
         return acc + s.price * qty;
       }, 0) ?? 0;
 
-    const html = buildEmailHtml(body, total);
+    // В БД храним в копейках
+    const totalAmount = Math.round(totalRub * 100);
 
-    const managerEmail =
-      process.env.ORDER_TARGET_EMAIL || "gorgerichig@gmail.com";
+    // 1) создаём/обновляем пользователя
+    const user = await prisma.user.upsert({
+      where: { email: body.customer.email },
+      update: { name: body.customer.name ?? undefined },
+      create: { email: body.customer.email, name: body.customer.name ?? null },
+    });
 
-    const recipients = [body.customer.email, managerEmail].filter(
-      (email): email is string => Boolean(email)
-    );
+    // 2) создаём заказ в БД
+    const serviceType =
+      body.ceremony?.type?.toUpperCase() === "CREMATION" ? "CREMATION" : "BURIAL";
+
+    const order = await prisma.order.create({
+      data: {
+        userId: user.id,
+        status: "PENDING",
+        serviceType,
+        totalAmount,
+        meta: JSON.stringify(body),
+      },
+    });
+
+    // 3) письмо (как было)
+    const html = buildEmailHtml(body, totalRub);
+
+    const managerEmail = process.env.ORDER_TARGET_EMAIL || "gorgerichig@gmail.com";
+    const recipients = [body.customer.email, managerEmail].filter((email): email is string => Boolean(email));
 
     await sendOrderEmail({
       to: recipients,
@@ -176,21 +197,17 @@ export async function POST(req: NextRequest) {
       html,
     });
 
-    const orderId = Date.now();
-
     return NextResponse.json(
       {
         success: true,
-        orderId,
+        orderId: order.id,        // ВАЖНО: это реальный id из БД
+        totalAmount,              // копейки
       },
       { status: 201 }
     );
   } catch (error) {
     console.error("ORDER API ERROR (POST):", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 

@@ -9,42 +9,29 @@ const ReqSchema = z.object({
   orderId: z.number().int().positive(),
   amount: z.number().int().positive(), // копейки
   method: z.enum(["card", "sbp"]).optional(),
-  description: z.string().optional(),
 });
 
 export async function POST(req: Request) {
   const body = await req.json();
   const parsed = ReqSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ success: false, error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json({ ok: false, error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { orderId, amount } = parsed.data;
+  const { orderId, amount, method } = parsed.data;
 
-  // Важно: у вас Order требует userId, serviceType, meta.
-  // Поэтому мы НЕ создаём Order здесь (upsert убрать нельзя без заполнения обязательных полей).
-  // Мы проверяем, что Order существует.
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: `Order ${orderId} not found. Create order first (with userId, serviceType, meta, totalAmount).`,
-      },
-      { status: 404 }
-    );
+    return NextResponse.json({ ok: false, error: `Order ${orderId} not found` }, { status: 404 });
   }
 
-  // (опционально) синхронизируем сумму заказа
+  // синхронизируем сумму заказа (опционально)
   if (order.totalAmount !== amount) {
-    await prisma.order.update({
-      where: { id: orderId },
-      data: { totalAmount: amount },
-    });
+    await prisma.order.update({ where: { id: orderId }, data: { totalAmount: amount } });
   }
 
   const providerPaymentId = "mock_" + crypto.randomBytes(8).toString("hex");
-  const confirmationUrl = `/mock-checkout/${providerPaymentId}?orderId=${orderId}`;
+  const payUrl = `/checkout/mock/${providerPaymentId}?orderId=${orderId}${method ? `&method=${method}` : ""}`;
 
   await prisma.payment.create({
     data: {
@@ -54,15 +41,16 @@ export async function POST(req: Request) {
       amount,
       currency: "RUB",
       status: "pending",
-      confirmationUrl,
-      createRaw: JSON.stringify({ orderId, amount }),
+      confirmationUrl: payUrl,
+      createRaw: JSON.stringify({ orderId, amount, method: method ?? null }),
     },
   });
 
   return NextResponse.json({
+    ok: true,
     provider: "mock",
     providerPaymentId,
     status: "pending",
-    payUrl: confirmationUrl,
+    payUrl,
   });
 }
