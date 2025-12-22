@@ -1007,17 +1007,43 @@ export function StepperWorkflow({
       };
 
       const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload),
+});
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data?.ok === false) {
-        console.error("Ошибка при создании заказа", data);
-        alert("Не удалось оформить бронирование. Попробуйте ещё раз.");
-        return;
-      }
+const orderData = await res.json().catch(() => ({} as any));
+
+if (!res.ok || orderData?.success !== true) {
+  console.error("Ошибка при создании заказа", orderData);
+  alert("Не удалось оформить бронирование. Попробуйте ещё раз.");
+  return;
+}
+
+// 2) Создаём платёж (эмулятор)
+const payRes = await fetch("/api/payments/create", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    // orderId у нас строка вида order_xxx (из нового /api/orders)
+    orderId: orderData.orderId,
+    // amount должен быть в копейках — мы уже возвращаем totalAmount (копейки)
+    amount: orderData.totalAmount,
+    method: "card", // или "sbp" если выбрал СБП в UI
+  }),
+});
+
+const payData = await payRes.json().catch(() => ({} as any));
+
+if (!payRes.ok || payData?.ok === false) {
+  console.error("Ошибка при создании платежа", payData);
+  alert("Не удалось создать платеж. Попробуйте ещё раз.");
+  return;
+}
+
+// 3) Редирект на страницу эмулятора оплаты
+window.location.href = payData.payUrl;
+
 
       alert("Бронирование оформлено! Детали отправлены на указанную почту. К сожалению оплата не прошла, агент свяжется с вами в скором времени");
     } catch (e) {
