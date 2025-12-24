@@ -4,11 +4,11 @@ import crypto from "crypto";
 import { PrismaClient } from "@prisma/client";
 
 export const runtime = "nodejs";
+
 const prisma = new PrismaClient();
 
 const ReqSchema = z.object({
-  orderId: z.union([z.string().min(1), z.number().int().positive()]), // поддерживаем оба
-  amount: z.number().int().optional(), // фронт может слать, но мы берём из БД
+  orderId: z.string().min(3),                 // <-- publicId "order_xxx"
   method: z.enum(["card", "sbp"]).optional(),
 });
 
@@ -23,53 +23,46 @@ export async function POST(req: Request) {
     );
   }
 
-  const { orderId, method } = parsed.data;
+  const { orderId: orderPublicId, method } = parsed.data;
 
-  // Находим заказ по publicId (строка) или по id (число)
-  const order =
-    typeof orderId === "number"
-      ? await prisma.order.findUnique({ where: { id: orderId } })
-      : await prisma.order.findUnique({ where: { publicId: orderId } });
+  const order = await prisma.order.findUnique({
+    where: { publicId: orderPublicId },
+  });
 
   if (!order) {
     return NextResponse.json(
-      { ok: false, error: `Order ${String(orderId)} not found`, got: body },
+      { ok: false, error: `Order ${orderPublicId} not found` },
       { status: 404 }
     );
   }
 
-  // сумма СТРОГО из БД
-  const amount = order.totalAmount;
+  const amount = order.totalAmount; // строго из БД (копейки)
 
   const providerPaymentId = "mock_" + crypto.randomBytes(8).toString("hex");
-
-  const payUrl =
-    `/checkout/mock/${providerPaymentId}` +
-    `?orderId=${encodeURIComponent(order.publicId)}` +
-    (method ? `&method=${method}` : "");
+  const payUrl = `/checkout/mock/${providerPaymentId}?orderId=${encodeURIComponent(orderPublicId)}${
+    method ? `&method=${method}` : ""
+  }`;
 
   await prisma.payment.create({
     data: {
       provider: "mock",
       providerPaymentId,
-      orderId: order.id,             // Int
-      orderPublicId: order.publicId, // обязательное поле
+      orderId: order.id,             // Int FK
+      orderPublicId: order.publicId, // копия
       amount,
       currency: "RUB",
       status: "pending",
       confirmationUrl: payUrl,
-      createRaw: JSON.stringify({ orderPublicId: order.publicId, amount, method: method ?? null }),
+      createRaw: JSON.stringify({ orderPublicId, amount, method: method ?? null }),
     },
   });
 
-  // Возвращаем и payUrl, и confirmationUrl — чтобы фронт точно нашёл нужное
   return NextResponse.json({
     ok: true,
     provider: "mock",
     providerPaymentId,
     status: "pending",
     payUrl,
-    confirmationUrl: payUrl,
     amount,
     orderId: order.publicId,
   });

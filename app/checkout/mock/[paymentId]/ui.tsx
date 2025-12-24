@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 
 type PaymentDTO = {
   providerPaymentId: string;
-  orderId: number;
-  amount: number; // копейки
+  orderId: string;      // <-- string
+  amount: number;       // копейки
   currency: string;
   status: string;
   method: "card" | "sbp";

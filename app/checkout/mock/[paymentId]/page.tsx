@@ -31,13 +31,14 @@ export default async function Page({
   }
 
   const method = (searchParams.method ?? "card") as "card" | "sbp";
+  const orderId = searchParams.orderId ?? payment.orderPublicId; // <-- строка
 
   return (
     <MockCheckoutUI
       payment={{
         providerPaymentId: payment.providerPaymentId,
-        orderId: payment.orderId, // Int из БД
-        amount: payment.amount,   // копейки из БД
+        orderId,                 // <-- string
+        amount: payment.amount,  // копейки
         currency: payment.currency,
         status: payment.status,
         method,

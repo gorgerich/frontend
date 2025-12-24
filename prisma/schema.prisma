@@ -5,8 +5,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -25,17 +26,17 @@ model Order {
   userId      Int
   user        User     @relation(fields: [userId], references: [id])
 
-  status      String   @default("PENDING") // PENDING|PAID|CANCELED...
+  status      String   @default("PENDING") // PENDING|paid|canceled...
   serviceType String
   totalAmount Int      // копейки
   meta        String
 
-  // связи с Payment: по внутреннему id и по publicId (вторая — чтобы Prisma не ругался, если ты её используешь)
-  payments            Payment[] @relation("OrderById")
-  paymentsByPublicId  Payment[] @relation("OrderByPublicId")
+  payments    Payment[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([publicId])
 }
 
 model Payment {
@@ -45,11 +46,10 @@ model Payment {
 
   // FK на Order.id (Int)
   orderId           Int
-  order             Order    @relation("OrderById", fields: [orderId], references: [id], onDelete: Cascade)
+  order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  // внешний id заказа (string) + связь по publicId
+  // копия внешнего id заказа (для удобства)
   orderPublicId     String
-  orderByPublicId   Order    @relation("OrderByPublicId", fields: [orderPublicId], references: [publicId], onDelete: Cascade)
 
   amount            Int
   currency          String   @default("RUB")

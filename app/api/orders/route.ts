@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import { sendOrderEmail } from "../../../lib/mailer";
 
 export const runtime = "nodejs";
+
 const prisma = new PrismaClient();
 
 type ServiceItem = {
@@ -37,9 +38,11 @@ type OrderPayload = {
     serviceType?: string;
   };
 
+  // старый формат
   services?: ServiceItem[];
   notes?: string;
 
+  // текущий формат твоего фронта
   breakdown?: Array<{
     category?: string;
     name?: string;
@@ -50,8 +53,10 @@ type OrderPayload = {
     qty?: number;
   }>;
 
+  // итог с фронта (RUB)
   total?: number | string;
 
+  // дополнительные поля
   paymentMethod?: string;
   userEmail?: string;
   userName?: string;
@@ -105,7 +110,7 @@ function normalizeServices(body: OrderPayload): ServiceItem[] {
 
         const q1 = toNumber(b?.quantity);
         const q2 = toNumber(b?.qty);
-        const quantity = (q1 && q1 > 0 ? q1 : q2 && q2 > 0 ? q2 : 1);
+        const quantity = q1 && q1 > 0 ? q1 : q2 && q2 > 0 ? q2 : 1;
         const qty = Math.floor(quantity);
 
         return {
@@ -150,13 +155,19 @@ function buildEmailHtml(body: OrderPayload, services: ServiceItem[], totalRub: n
               <div style="font-weight:600;">${escapeHtml(s.name)}</div>
               ${
                 s.description
-                  ? `<div style="color:#555; font-size:12px; margin-top:2px;">${escapeHtml(s.description)}</div>`
+                  ? `<div style="color:#555; font-size:12px; margin-top:2px;">${escapeHtml(
+                      s.description
+                    )}</div>`
                   : ""
               }
             </td>
             <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${qty}</td>
-            <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${s.price.toLocaleString("ru-RU")} ₽</td>
-            <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${sum.toLocaleString("ru-RU")} ₽</td>
+            <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${s.price.toLocaleString(
+              "ru-RU"
+            )} ₽</td>
+            <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${sum.toLocaleString(
+              "ru-RU"
+            )} ₽</td>
           </tr>
         `;
       })
@@ -258,64 +269,70 @@ export async function POST(req: NextRequest) {
     const totalRub = computeTotalRub(body, services);
     const totalAmount = Math.round(totalRub * 100);
 
-    // 1) user
+    // внешний id, который будет жить во фронте и в платежке
+    const publicId = "order_" + crypto.randomBytes(6).toString("hex");
+
     const user = await prisma.user.upsert({
       where: { email: customerEmail },
-      update: { name: body.customer?.name ?? body.userName ?? null },
+      update: { name: body.customer?.name ?? body.userName ?? undefined },
       create: { email: customerEmail, name: body.customer?.name ?? body.userName ?? null },
     });
 
-    // 2) order
-    const publicId = "order_" + crypto.randomBytes(8).toString("hex");
-    const serviceType = String(body.ceremony?.serviceType ?? body.formData?.serviceType ?? "burial");
+    const serviceType =
+      (body.ceremony?.serviceType ?? body.formData?.serviceType ?? "burial").toString();
 
-    const order = await prisma.order.create({
+    await prisma.order.create({
       data: {
         publicId,
         userId: user.id,
         status: "PENDING",
         serviceType,
         totalAmount,
-        meta: JSON.stringify(body),
+        meta: JSON.stringify({ ...body, services }),
       },
-      select: { id: true, publicId: true, totalAmount: true },
     });
 
-    // 3) email (важно: не “пустое”)
-    const managerEmail = process.env.ORDER_TARGET_EMAIL || "gorgerichig@gmail.com";
-    const html = buildEmailHtml(
-      {
+    // письмо
+    try {
+      const managerEmail = process.env.ORDER_TARGET_EMAIL || "gorgerichig@gmail.com";
+
+      const bodyForEmail: OrderPayload = {
         ...body,
         customer: {
           email: customerEmail,
           name: body.customer?.name ?? body.userName,
           phone: body.customer?.phone,
         },
-      },
-      services,
-      totalRub
-    );
+      };
 
-    // НЕ глотаем ошибку молча — иначе ты никогда не узнаешь причину
-    await sendOrderEmail({
-      to: [customerEmail, managerEmail],
-      subject: `Договор и детали заказа (${order.publicId})`,
-      html,
-    });
+      const html = buildEmailHtml(bodyForEmail, services, totalRub);
+
+      await sendOrderEmail({
+        to: [customerEmail, managerEmail],
+        subject: "Договор и детали заказа",
+        html,
+      });
+    } catch (e) {
+      console.warn("Email failed (ignored):", e);
+    }
 
     return NextResponse.json(
       {
         success: true,
-        orderId: order.publicId,     // фронту — строка
-        totalAmount: order.totalAmount, // копейки
-        totalRub,
+        orderId: publicId,     // ВАЖНО: строка, которую ждёт твой фронт
+        totalAmount,           // копейки
+        totalRub,              // можно убрать позже
       },
       { status: 201 }
     );
   } catch (error: any) {
     console.error("ORDER API ERROR:", error);
+
     return NextResponse.json(
-      { error: "Internal Server Error", details: String(error?.message ?? error) },
+      {
+        error: "Internal Server Error",
+        details: String(error?.message ?? error),
+      },
       { status: 500 }
     );
   }
