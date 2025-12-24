@@ -1,19 +1,37 @@
 // app/checkout/mock/[paymentId]/page.tsx
-import { PrismaClient } from "@prisma/client";
 import MockCheckoutUI from "./ui";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const prisma = new PrismaClient();
+type Params = { paymentId: string };
+type Search = { orderId?: string; method?: string };
 
 export default async function Page({
   params,
   searchParams,
 }: {
-  params: { paymentId: string };
-  searchParams: { orderId?: string; method?: string };
+  params: Params | Promise<Params>;
+  searchParams: Search | Promise<Search>;
 }) {
-  const paymentId = params.paymentId;
+  const p = await Promise.resolve(params);
+  const sp = await Promise.resolve(searchParams);
+
+  const paymentId = p?.paymentId;
+
+  // ВАЖНО: не даём Prisma получить undefined
+  if (!paymentId || typeof paymentId !== "string") {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-2xl border border-white/10 bg-black/30 p-6 text-white">
+          <div className="text-xl font-semibold">Некорректный paymentId</div>
+          <div className="mt-2 text-white/70 break-words">
+            params.paymentId: {String(paymentId)}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const payment = await prisma.payment.findUnique({
     where: { providerPaymentId: paymentId },
@@ -30,15 +48,15 @@ export default async function Page({
     );
   }
 
-  const method = (searchParams.method ?? "card") as "card" | "sbp";
-  const orderId = searchParams.orderId ?? payment.orderPublicId; // <-- строка
+  const method = ((sp as any)?.method ?? "card") as "card" | "sbp";
+  const orderId = (sp as any)?.orderId ?? payment.orderPublicId ?? String(payment.orderId);
 
   return (
     <MockCheckoutUI
       payment={{
         providerPaymentId: payment.providerPaymentId,
-        orderId,                 // <-- string
-        amount: payment.amount,  // копейки
+        orderId: String(orderId),
+        amount: payment.amount,
         currency: payment.currency,
         status: payment.status,
         method,
