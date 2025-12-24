@@ -1,3 +1,5 @@
+// prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,38 +17,49 @@ model User {
 }
 
 model Order {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  user        User     @relation(fields: [userId], references: [id])
+  id Int @id @default(autoincrement())
 
-  status      String   @default("PENDING")
-  serviceType String   @default("BURIAL")
-  totalAmount Int
-  meta        String   @default("{}")
+  // внешний id для фронта/платежки/эмулятора
+  publicId String @unique
 
-  payments    Payment[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  status      String @default("PENDING")
+  serviceType String
+  totalAmount Int // копейки
+  meta        String
+
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Payment {
-  id                String   @id @default(cuid())
-  provider          String   @default("mock")
-  providerPaymentId String   @unique
+  id                String @id @default(cuid())
+  provider          String
+  providerPaymentId String @unique
 
-  orderId           Int
-  order             Order    @relation(fields: [orderId], references: [id])
+  // FK на Order.id (Int)
+  orderId Int
+  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  amount            Int
-  currency          String   @default("RUB")
-  status            String   @default("pending")
-  confirmationUrl   String?
+  // дубль publicId заказа (БЕЗ relation)
+  orderPublicId String
 
-  createRaw         String?
-  webhookRaw        String?
+  amount          Int
+  currency        String  @default("RUB")
+  status          String // pending|succeeded|canceled|failed
+  confirmationUrl String?
+  createRaw       String?
+  webhookRaw      String?
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([orderId])
+  @@index([orderPublicId])
 }
