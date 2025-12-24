@@ -1,8 +1,7 @@
-// app/api/orders/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { prisma } from "../../../lib/prisma";
-import { sendOrderEmail } from "../../../lib/mailer";
+import { prisma } from "@/lib/prisma";
+import { sendOrderEmail } from "@/lib/mailer";
 
 export const runtime = "nodejs";
 
@@ -14,47 +13,21 @@ type ServiceItem = {
 };
 
 type OrderPayload = {
-  customer?: {
-    email?: string;
-    name?: string;
-    phone?: string;
-  };
-  deceased?: {
-    name?: string;
-    age?: number;
-    birthDate?: string;
-    deathDate?: string;
-    relationship?: string;
-  };
-  ceremony?: {
-    type?: string;
-    order?: string;
-    date?: string;
-    time?: string;
-    place?: string;
-    cemetery?: string;
-    serviceType?: string;
-  };
-
-  // старый формат
+  customer?: { email?: string; name?: string; phone?: string };
+  deceased?: { name?: string; age?: number; birthDate?: string; deathDate?: string; relationship?: string };
+  ceremony?: { type?: string; order?: string; date?: string; time?: string; place?: string; cemetery?: string; serviceType?: string };
   services?: ServiceItem[];
   notes?: string;
-
-  // текущий формат твоего фронта
   breakdown?: Array<{
     category?: string;
     name?: string;
     title?: string;
     description?: string;
-    price?: number | string; // RUB
+    price?: number | string;
     quantity?: number;
     qty?: number;
   }>;
-
-  // итог с фронта (RUB)
   total?: number | string;
-
-  // дополнительные поля
   paymentMethod?: string;
   userEmail?: string;
   userName?: string;
@@ -140,45 +113,33 @@ function buildEmailHtml(body: OrderPayload, services: ServiceItem[], totalRub: n
   const ceremony = body.ceremony ?? {};
   const deceased = body.deceased ?? {};
 
-  let servicesRows = "";
-  if (services.length) {
-    servicesRows = services
-      .map((s, idx) => {
-        const qty = s.quantity ?? 1;
-        const sum = s.price * qty;
-        return `
-          <tr>
-            <td style="padding: 6px 10px; border: 1px solid #ddd;">${idx + 1}</td>
-            <td style="padding: 6px 10px; border: 1px solid #ddd;">
-              <div style="font-weight:600;">${escapeHtml(s.name)}</div>
-              ${
-                s.description
-                  ? `<div style="color:#555; font-size:12px; margin-top:2px;">${escapeHtml(
-                      s.description
-                    )}</div>`
-                  : ""
-              }
-            </td>
-            <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${qty}</td>
-            <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${s.price.toLocaleString(
-              "ru-RU"
-            )} ₽</td>
-            <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${sum.toLocaleString(
-              "ru-RU"
-            )} ₽</td>
-          </tr>
-        `;
-      })
-      .join("");
-  } else {
-    servicesRows = `
-      <tr>
-        <td colspan="5" style="padding: 10px; border: 1px solid #ddd; text-align:center;">
-          Перечень услуг не заполнен
-        </td>
-      </tr>
-    `;
-  }
+  const servicesRows =
+    services.length
+      ? services
+          .map((s, idx) => {
+            const qty = s.quantity ?? 1;
+            const sum = s.price * qty;
+            return `
+              <tr>
+                <td style="padding: 6px 10px; border: 1px solid #ddd;">${idx + 1}</td>
+                <td style="padding: 6px 10px; border: 1px solid #ddd;">
+                  <div style="font-weight:600;">${escapeHtml(s.name)}</div>
+                  ${s.description ? `<div style="color:#555; font-size:12px; margin-top:2px;">${escapeHtml(s.description)}</div>` : ""}
+                </td>
+                <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${qty}</td>
+                <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${s.price.toLocaleString("ru-RU")} ₽</td>
+                <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${sum.toLocaleString("ru-RU")} ₽</td>
+              </tr>
+            `;
+          })
+          .join("")
+      : `
+        <tr>
+          <td colspan="5" style="padding: 10px; border: 1px solid #ddd; text-align:center;">
+            Перечень услуг не заполнен
+          </td>
+        </tr>
+      `;
 
   const notes = body.notes ?? body.formData?.specialRequests;
 
@@ -267,7 +228,6 @@ export async function POST(req: NextRequest) {
     const totalRub = computeTotalRub(body, services);
     const totalAmount = Math.round(totalRub * 100);
 
-    // внешний id, который будет жить во фронте и в платежке
     const publicId = "order_" + crypto.randomBytes(6).toString("hex");
 
     const user = await prisma.user.upsert({
@@ -276,8 +236,7 @@ export async function POST(req: NextRequest) {
       create: { email: customerEmail, name: body.customer?.name ?? body.userName ?? null },
     });
 
-    const serviceType =
-      (body.ceremony?.serviceType ?? body.formData?.serviceType ?? "burial").toString();
+    const serviceType = String(body.ceremony?.serviceType ?? body.formData?.serviceType ?? "burial");
 
     await prisma.order.create({
       data: {
@@ -290,7 +249,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // письмо
+    // email
     try {
       const managerEmail = process.env.ORDER_TARGET_EMAIL || "gorgerichig@gmail.com";
 
@@ -317,20 +276,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        orderId: publicId,     // ВАЖНО: строка, которую ждёт твой фронт
-        totalAmount,           // копейки
-        totalRub,              // можно убрать позже
+        orderId: publicId, // фронт ждёт строку
+        totalAmount,
+        totalRub,
       },
       { status: 201 }
     );
   } catch (error: any) {
     console.error("ORDER API ERROR:", error);
-
     return NextResponse.json(
-      {
-        error: "Internal Server Error",
-        details: String(error?.message ?? error),
-      },
+      { error: "Internal Server Error", details: String(error?.message ?? error) },
       { status: 500 }
     );
   }

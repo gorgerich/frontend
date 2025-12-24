@@ -1,33 +1,24 @@
 // app/checkout/mock/[paymentId]/page.tsx
-import MockCheckoutUI from "./ui";
 import { prisma } from "@/lib/prisma";
+import MockCheckoutUI from "./ui";
 
 export const runtime = "nodejs";
-
-type Params = { paymentId: string };
-type Search = { orderId?: string; method?: string };
 
 export default async function Page({
   params,
   searchParams,
 }: {
-  params: Params | Promise<Params>;
-  searchParams: Search | Promise<Search>;
+  params: { paymentId: string };
+  searchParams: { orderId?: string; method?: string; payPlan?: string };
 }) {
-  const p = await Promise.resolve(params);
-  const sp = await Promise.resolve(searchParams);
+  const paymentId = params.paymentId;
 
-  const paymentId = p?.paymentId;
-
-  // ВАЖНО: не даём Prisma получить undefined
+  // Жёсткая проверка — чтобы больше не ловить providerPaymentId: undefined
   if (!paymentId || typeof paymentId !== "string") {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-6">
         <div className="max-w-md w-full rounded-2xl border border-white/10 bg-black/30 p-6 text-white">
-          <div className="text-xl font-semibold">Некорректный paymentId</div>
-          <div className="mt-2 text-white/70 break-words">
-            params.paymentId: {String(paymentId)}
-          </div>
+          <div className="text-xl font-semibold">Некорректный идентификатор платежа</div>
         </div>
       </div>
     );
@@ -48,18 +39,21 @@ export default async function Page({
     );
   }
 
-  const method = ((sp as any)?.method ?? "card") as "card" | "sbp";
-  const orderId = (sp as any)?.orderId ?? payment.orderPublicId ?? String(payment.orderId);
+  const method = (searchParams.method ?? "card") as "card" | "sbp";
+
+  const meta = payment.createRaw ? JSON.parse(payment.createRaw) : null;
 
   return (
     <MockCheckoutUI
       payment={{
         providerPaymentId: payment.providerPaymentId,
-        orderId: String(orderId),
-        amount: payment.amount,
+        orderId: payment.orderPublicId, // publicId заказа
+        amount: payment.amount,         // к оплате сейчас
         currency: payment.currency,
         status: payment.status,
         method,
+        payPlan: meta?.payPlan,
+        meta,
       }}
     />
   );
