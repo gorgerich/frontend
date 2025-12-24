@@ -1,3 +1,4 @@
+// app/api/payments/create/route.ts
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import crypto from "crypto";
@@ -8,12 +9,13 @@ export const runtime = "nodejs";
 const prisma = new PrismaClient();
 
 const ReqSchema = z.object({
-  orderId: z.number().int().positive(),
+  // ВАЖНО: это publicId вида "order_xxx", а не числовой Order.id
+  orderId: z.string().min(1),
   method: z.enum(["card", "sbp"]).optional(),
 });
 
 export async function POST(req: Request) {
-  const body = await req.json();
+  const body = await req.json().catch(() => ({}));
   const parsed = ReqSchema.safeParse(body);
 
   if (!parsed.success) {
@@ -23,38 +25,41 @@ export async function POST(req: Request) {
     );
   }
 
-  const { orderId, method } = parsed.data;
+  const { orderId: orderPublicId, method } = parsed.data;
 
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
-    select: { id: true, publicId: true, totalAmount: true },
-  });
-
+  // ищем заказ по publicId
+  const order = await prisma.order.findUnique({ where: { publicId: orderPublicId } });
   if (!order) {
     return NextResponse.json(
-      { ok: false, error: `Order ${orderId} not found` },
+      { ok: false, error: `Order ${orderPublicId} not found` },
       { status: 404 }
     );
   }
 
+  // сумма строго из БД (копейки)
   const amount = order.totalAmount;
 
   const providerPaymentId = "mock_" + crypto.randomBytes(8).toString("hex");
-  const payUrl = `/checkout/mock/${providerPaymentId}?orderId=${orderId}${
-    method ? `&method=${method}` : ""
-  }`;
+
+  // ссылка на эмулятор: достаточно paymentId, orderId можно не таскать query-параметром
+  const payUrl = `/checkout/mock/${providerPaymentId}?method=${method ?? "card"}`;
 
   await prisma.payment.create({
     data: {
       provider: "mock",
       providerPaymentId,
+
+      // внутренняя связь
       orderId: order.id,
-      orderPublicId: order.publicId, // <-- ВОТ ЭТОГО НЕ ХВАТАЛО
+
+      // внешняя связь/отображение
+      orderPublicId: order.publicId,
+
       amount,
       currency: "RUB",
       status: "pending",
       confirmationUrl: payUrl,
-      createRaw: JSON.stringify({ orderId: order.id, amount, method: method ?? null }),
+      createRaw: JSON.stringify({ orderPublicId, amount, method: method ?? null }),
     },
   });
 
