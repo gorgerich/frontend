@@ -1,21 +1,19 @@
-// app/api/payments/create/route.ts
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import crypto from "crypto";
 import { PrismaClient } from "@prisma/client";
 
 export const runtime = "nodejs";
-
 const prisma = new PrismaClient();
 
 const ReqSchema = z.object({
-  // ВАЖНО: это publicId вида "order_xxx", а не числовой Order.id
-  orderId: z.string().min(1),
+  orderId: z.union([z.string().min(1), z.number().int().positive()]), // поддерживаем оба
+  amount: z.number().int().optional(), // фронт может слать, но мы берём из БД
   method: z.enum(["card", "sbp"]).optional(),
 });
 
 export async function POST(req: Request) {
-  const body = await req.json().catch(() => ({}));
+  const body = await req.json();
   const parsed = ReqSchema.safeParse(body);
 
   if (!parsed.success) {
@@ -25,50 +23,54 @@ export async function POST(req: Request) {
     );
   }
 
-  const { orderId: orderPublicId, method } = parsed.data;
+  const { orderId, method } = parsed.data;
 
-  // ищем заказ по publicId
-  const order = await prisma.order.findUnique({ where: { publicId: orderPublicId } });
+  // Находим заказ по publicId (строка) или по id (число)
+  const order =
+    typeof orderId === "number"
+      ? await prisma.order.findUnique({ where: { id: orderId } })
+      : await prisma.order.findUnique({ where: { publicId: orderId } });
+
   if (!order) {
     return NextResponse.json(
-      { ok: false, error: `Order ${orderPublicId} not found` },
+      { ok: false, error: `Order ${String(orderId)} not found`, got: body },
       { status: 404 }
     );
   }
 
-  // сумма строго из БД (копейки)
+  // сумма СТРОГО из БД
   const amount = order.totalAmount;
 
   const providerPaymentId = "mock_" + crypto.randomBytes(8).toString("hex");
 
-  // ссылка на эмулятор: достаточно paymentId, orderId можно не таскать query-параметром
-  const payUrl = `/checkout/mock/${providerPaymentId}?method=${method ?? "card"}`;
+  const payUrl =
+    `/checkout/mock/${providerPaymentId}` +
+    `?orderId=${encodeURIComponent(order.publicId)}` +
+    (method ? `&method=${method}` : "");
 
   await prisma.payment.create({
     data: {
       provider: "mock",
       providerPaymentId,
-
-      // внутренняя связь
-      orderId: order.id,
-
-      // внешняя связь/отображение
-      orderPublicId: order.publicId,
-
+      orderId: order.id,             // Int
+      orderPublicId: order.publicId, // обязательное поле
       amount,
       currency: "RUB",
       status: "pending",
       confirmationUrl: payUrl,
-      createRaw: JSON.stringify({ orderPublicId, amount, method: method ?? null }),
+      createRaw: JSON.stringify({ orderPublicId: order.publicId, amount, method: method ?? null }),
     },
   });
 
+  // Возвращаем и payUrl, и confirmationUrl — чтобы фронт точно нашёл нужное
   return NextResponse.json({
     ok: true,
     provider: "mock",
     providerPaymentId,
     status: "pending",
     payUrl,
+    confirmationUrl: payUrl,
     amount,
+    orderId: order.publicId,
   });
 }

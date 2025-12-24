@@ -5,7 +5,6 @@ import { PrismaClient } from "@prisma/client";
 import { sendOrderEmail } from "../../../lib/mailer";
 
 export const runtime = "nodejs";
-
 const prisma = new PrismaClient();
 
 type ServiceItem = {
@@ -151,19 +150,13 @@ function buildEmailHtml(body: OrderPayload, services: ServiceItem[], totalRub: n
               <div style="font-weight:600;">${escapeHtml(s.name)}</div>
               ${
                 s.description
-                  ? `<div style="color:#555; font-size:12px; margin-top:2px;">${escapeHtml(
-                      s.description
-                    )}</div>`
+                  ? `<div style="color:#555; font-size:12px; margin-top:2px;">${escapeHtml(s.description)}</div>`
                   : ""
               }
             </td>
             <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${qty}</td>
-            <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${s.price.toLocaleString(
-              "ru-RU"
-            )} ₽</td>
-            <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${sum.toLocaleString(
-              "ru-RU"
-            )} ₽</td>
+            <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${s.price.toLocaleString("ru-RU")} ₽</td>
+            <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${sum.toLocaleString("ru-RU")} ₽</td>
           </tr>
         `;
       })
@@ -265,79 +258,64 @@ export async function POST(req: NextRequest) {
     const totalRub = computeTotalRub(body, services);
     const totalAmount = Math.round(totalRub * 100);
 
-    const serviceTypeRaw =
-      body.ceremony?.serviceType ??
-      body.ceremony?.type ??
-      body.formData?.serviceType ??
-      body.formData?.ceremonyType ??
-      "BURIAL";
-
-    const serviceType = String(serviceTypeRaw);
-
-    const publicId = "order_" + crypto.randomBytes(8).toString("hex");
-
-    // 1) user upsert
+    // 1) user
     const user = await prisma.user.upsert({
       where: { email: customerEmail },
-      update: { name: body.customer?.name ?? body.userName ?? undefined },
+      update: { name: body.customer?.name ?? body.userName ?? null },
       create: { email: customerEmail, name: body.customer?.name ?? body.userName ?? null },
     });
 
-    // 2) order create
+    // 2) order
+    const publicId = "order_" + crypto.randomBytes(8).toString("hex");
+    const serviceType = String(body.ceremony?.serviceType ?? body.formData?.serviceType ?? "burial");
+
     const order = await prisma.order.create({
       data: {
         publicId,
         userId: user.id,
         status: "PENDING",
         serviceType,
-        totalAmount, // копейки
+        totalAmount,
         meta: JSON.stringify(body),
       },
       select: { id: true, publicId: true, totalAmount: true },
     });
 
-    // 3) email
-    try {
-      const managerEmail = process.env.ORDER_TARGET_EMAIL || "gorgerichig@gmail.com";
-
-      const bodyForEmail: OrderPayload = {
+    // 3) email (важно: не “пустое”)
+    const managerEmail = process.env.ORDER_TARGET_EMAIL || "gorgerichig@gmail.com";
+    const html = buildEmailHtml(
+      {
         ...body,
         customer: {
           email: customerEmail,
           name: body.customer?.name ?? body.userName,
           phone: body.customer?.phone,
         },
-      };
+      },
+      services,
+      totalRub
+    );
 
-      const html = buildEmailHtml(bodyForEmail, services, totalRub);
-
-      await sendOrderEmail({
-        to: [customerEmail, managerEmail],
-        subject: "Договор и детали заказа",
-        html,
-      });
-    } catch (e) {
-      console.warn("Email failed (ignored):", e);
-    }
+    // НЕ глотаем ошибку молча — иначе ты никогда не узнаешь причину
+    await sendOrderEmail({
+      to: [customerEmail, managerEmail],
+      subject: `Договор и детали заказа (${order.publicId})`,
+      html,
+    });
 
     return NextResponse.json(
       {
         success: true,
-        orderId: order.id,            // Int (для /payments/create)
-        orderPublicId: order.publicId, // String (внешний)
+        orderId: order.publicId,     // фронту — строка
         totalAmount: order.totalAmount, // копейки
-        totalRub,                     // RUB (можешь убрать позже)
+        totalRub,
       },
       { status: 201 }
     );
   } catch (error: any) {
     console.error("ORDER API ERROR:", error);
-
     return NextResponse.json(
-      {
-        error: "Internal Server Error",
-        details: String(error?.message ?? error),
-      },
+      { error: "Internal Server Error", details: String(error?.message ?? error) },
       { status: 500 }
     );
   }
