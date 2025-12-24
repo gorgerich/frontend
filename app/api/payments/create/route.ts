@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import crypto from "crypto";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../../../../lib/prisma";
 
 export const runtime = "nodejs";
 
-const prisma = new PrismaClient();
 
 const ReqSchema = z.object({
   orderId: z.string().min(3),                 // <-- publicId "order_xxx"

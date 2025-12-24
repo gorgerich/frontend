@@ -1,12 +1,10 @@
 // app/api/orders/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../../../lib/prisma";
 import { sendOrderEmail } from "../../../lib/mailer";
 
 export const runtime = "nodejs";
-
-const prisma = new PrismaClient();
 
 type ServiceItem = {
   name: string;
