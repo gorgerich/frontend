@@ -1,24 +1,20 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import crypto from "crypto";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../../../../lib/prisma";
 
 export const runtime = "nodejs";
 
-type PayPlan = "full" | "deposit" | "split";
-
 const ReqSchema = z.object({
-  orderId: z.string().min(3), // publicId: "order_xxx"
+  orderId: z.string().min(3), // publicId "order_xxx"
   method: z.enum(["card", "sbp"]).optional(),
-  payPlan: z.enum(["full", "deposit", "split"]).optional(),
+  payPlan: z.enum(["full", "deposit", "split"]).optional(), // NEW
 });
 
-function splitAmount(total: number, parts: number): number[] {
-  const base = Math.floor(total / parts);
-  const remainder = total - base * parts;
-  const arr = Array(parts).fill(base) as number[];
-  for (let i = 0; i < remainder; i++) arr[i] += 1;
-  return arr;
+function calcPayNowAmount(totalAmount: number, payPlan: "full" | "deposit" | "split") {
+  if (payPlan === "deposit") return Math.max(1, Math.round(totalAmount * 0.05)); // 5%
+  if (payPlan === "split") return Math.max(1, Math.round(totalAmount * 0.25)); // 1/4
+  return totalAmount; // full
 }
 
 export async function POST(req: Request) {
@@ -45,50 +41,34 @@ export async function POST(req: Request) {
     );
   }
 
-  const orderTotal = order.totalAmount; // копейки (полная сумма заказа)
-
-  let amountDueNow = orderTotal;
-  let schedule: Array<{ at: string; amount: number }> = [];
-
-  if (payPlan === "deposit") {
-    amountDueNow = Math.max(1, Math.round(orderTotal * 0.05));
-  }
-
-  if (payPlan === "split") {
-    const parts = splitAmount(orderTotal, 4);
-    amountDueNow = parts[0];
-
-    const now = new Date();
-    schedule = parts.map((amt, idx) => ({
-      at: new Date(now.getTime() + idx * 14 * 24 * 60 * 60 * 1000).toISOString(),
-      amount: amt,
-    }));
-  }
+  const totalAmount = order.totalAmount; // копейки
+  const payNowAmount = calcPayNowAmount(totalAmount, payPlan);
 
   const providerPaymentId = "mock_" + crypto.randomBytes(8).toString("hex");
 
-  const payUrl =
-    `/checkout/mock/${providerPaymentId}` +
-    `?orderId=${encodeURIComponent(orderPublicId)}` +
-    (method ? `&method=${method}` : "") +
-    `&payPlan=${payPlan}`;
+  // Мы больше не ведём на отдельную страницу, но оставим confirmationUrl на будущее.
+  const confirmationUrl =
+    `/checkout/mock?paymentId=${encodeURIComponent(providerPaymentId)}` +
+    `&orderId=${encodeURIComponent(orderPublicId)}` +
+    (method ? `&method=${encodeURIComponent(method)}` : "") +
+    `&payPlan=${encodeURIComponent(payPlan)}`;
 
   await prisma.payment.create({
     data: {
       provider: "mock",
       providerPaymentId,
-      orderId: order.id,             // Int FK
-      orderPublicId: order.publicId, // копия
-      amount: amountDueNow,          // К ОПЛАТЕ СЕЙЧАС
+      orderId: order.id, // Int FK
+      orderPublicId: order.publicId,
+      amount: payNowAmount, // <-- ВАЖНО: сумма "сейчас"
       currency: "RUB",
       status: "pending",
-      confirmationUrl: payUrl,
+      confirmationUrl,
       createRaw: JSON.stringify({
         orderPublicId,
         method: method ?? null,
         payPlan,
-        orderTotal,   // полная сумма
-        schedule,     // график для split
+        totalAmount,
+        payNowAmount,
       }),
     },
   });
@@ -98,9 +78,10 @@ export async function POST(req: Request) {
     provider: "mock",
     providerPaymentId,
     status: "pending",
-    payUrl,
-    amount: amountDueNow,      // к оплате сейчас
-    orderId: order.publicId,   // внешний id
+    confirmationUrl,
     payPlan,
+    totalAmount,
+    payNowAmount,
+    orderId: order.publicId,
   });
 }

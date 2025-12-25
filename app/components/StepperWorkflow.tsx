@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { User } from "lucide-react";
+import InlineMockPayment from "@/app/components/InlineMockPayment";
 import { PriceComparison } from "./PriceComparison";
 import { PersonalAccountModal } from "./PersonalAccountModal";
 import { SimplifiedStepperWorkflow } from "./SimplifiedStepperWorkflow";
@@ -687,6 +688,11 @@ interface StepperWorkflowProps {
     confession: string;
     ceremonyOrder: string;
 
+paymentPlan?: "full" | "deposit" | "split";
+paidNowRub?: string;
+splitSchedule?: string;
+
+
     cemetery: string;
     selectedSlot: string;
 
@@ -1042,7 +1048,8 @@ if (!payRes.ok || payData?.ok === false) {
 }
 
 // 3) Редирект на страницу эмулятора оплаты
-window.location.href = payData.payUrl;
+alert("Оплата принята. Подтверждение отправлено на почту.");
+return;
 
 
       alert("Бронирование оформлено! Детали отправлены на указанную почту. К сожалению оплата не прошла, агент свяжется с вами в скором времени");
@@ -1129,6 +1136,74 @@ window.location.href = payData.payUrl;
       setSelectedPackageForSimplified(defaultPkg as any);
     }
   };
+
+type BreakdownLine = {
+  title: string;
+  qty: number;
+  priceRub: number | null; // null = цена не рассчитана/включено
+};
+
+function buildBreakdownLines(params: {
+  formData: any;
+  PACKAGES: any[];
+  additionalServices: any[];
+}): BreakdownLine[] {
+  const { formData, PACKAGES, additionalServices } = params;
+
+  const lines: BreakdownLine[] = [];
+
+  // 1) Пакет (если выбран не custom)
+  if (formData.packageType && formData.packageType !== "custom") {
+    const pkg = PACKAGES.find((p) => p.id === formData.packageType);
+    if (pkg) {
+      lines.push({
+        title: `Пакет: ${pkg.name}`,
+        qty: 1,
+        priceRub: typeof pkg.price === "number" ? pkg.price : null,
+      });
+    }
+  }
+
+  // 2) Индивидуальный пакет (additional services)
+  if (formData.packageType === "custom" && Array.isArray(formData.selectedAdditionalServices)) {
+    for (const serviceId of formData.selectedAdditionalServices) {
+      const s = additionalServices.find((x) => x.id === serviceId);
+      if (!s) continue;
+
+      lines.push({
+        title: s.name,
+        qty: 1,
+        priceRub: typeof s.price === "number" ? s.price : null,
+      });
+    }
+  }
+
+  // 3) Зал прощания (если включён) — цену не выдумываю, если у тебя она не определена
+  if (formData.hasHall) {
+    const minutes = Number(formData.hallDuration || 0);
+    lines.push({
+      title: minutes > 0 ? `Зал прощания (${minutes} мин)` : "Зал прощания",
+      qty: 1,
+      priceRub: null, // если у тебя есть цена — скажи, я подключу без гаданий
+    });
+  }
+
+  // 4) Катафалк / логистика (если включено) — цена неизвестна, не выдумываю
+  if (formData.needsHearse) {
+    lines.push({
+      title: "Катафалк",
+      qty: 1,
+      priceRub: null,
+    });
+  }
+
+  // 5) Если вообще ничего не собралось — возвращаем пусто
+  return lines;
+}
+
+function formatRub(n: number) {
+  return n.toLocaleString("ru-RU");
+}
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -1953,7 +2028,70 @@ window.location.href = payData.payUrl;
         );
       }
 
-      case 4: {
+            case 4: {
+        // ---- helpers (только для этого шага) ----
+        const formatRubLocal = (v: number) => Math.round(v).toLocaleString("ru-RU");
+
+        const calcSplitSchedule = (total: number) => {
+          const t = Math.max(0, Math.round(total || 0));
+          const base = Math.floor(t / 4);
+          const p1 = base;
+          const p2 = base;
+          const p3 = base;
+          const p4 = t - (p1 + p2 + p3);
+          return [
+            { title: "Сегодня", amountRub: p1 },
+            { title: "Через 2 недели", amountRub: p2 },
+            { title: "Через 4 недели", amountRub: p3 },
+            { title: "Через 6 недель", amountRub: p4 },
+          ];
+        };
+
+        const totalRub = Math.max(0, Math.round(calculateTotal() || 0));
+        const depositRub = Math.max(0, Math.round(totalRub * 0.05));
+        const splitSchedule = calcSplitSchedule(totalRub);
+
+        const payPlan = (formData.paymentPlan || "full") as "full" | "deposit" | "split";
+
+        const payNowRub =
+          payPlan === "deposit"
+            ? depositRub
+            : payPlan === "split"
+              ? splitSchedule[0].amountRub
+              : totalRub;
+
+        const emailValue = (formData.userEmail || "").trim();
+
+        const cardNumberDigits = (cardData?.number || "").replace(/\D/g, "");
+        const expOk = /^\d{2}\/\d{2}$/.test(cardData?.expiry || "");
+        const cvcOk = /^\d{3,4}$/.test(cardData?.cvc || "");
+        const cardOk = cardNumberDigits.length >= 12;
+        const emailOk = emailValue.includes("@");
+
+        const canPay = totalRub > 0 && emailOk && cardOk && expOk && cvcOk;
+
+        const breakdown = calculateBreakdown();
+
+        const onPayClick = async () => {
+          // сохраняем план оплаты в formData (для письма/БД/аналитики)
+          handleInputChange("paymentPlan", payPlan);
+          handleInputChange("paidNowRub", String(payNowRub));
+
+          if (payPlan === "split") {
+            handleInputChange("splitSchedule", JSON.stringify(splitSchedule));
+          } else {
+            handleInputChange("splitSchedule", "");
+          }
+
+          // UX-эмуляция процессинга (без фейковых надписей)
+          await new Promise((r) => setTimeout(r, 450));
+
+          // твой текущий флоу создания заказа + создания платежа
+          // ВАЖНО: сейчас handleConfirmBooking() делает редирект на /checkout/mock.
+          // Если хочешь остаться на шаге 5 — смотри правку ниже после этого кода.
+          await handleConfirmBooking();
+        };
+
         return (
           <div className="space-y-6">
             <div className="bg-green-50 border border-green-200 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
@@ -1964,6 +2102,7 @@ window.location.href = payData.payUrl;
               </div>
             </div>
 
+            {/* КАРТОЧКИ ПРОВЕРКИ */}
             <div className="space-y-4">
               <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
@@ -2017,9 +2156,7 @@ window.location.href = payData.payUrl;
                   {formData.packageType && formData.packageType !== "custom" ? (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Пакет:</span>
-                      <span className="text-gray-900">
-                        {PACKAGES.find((p) => p.id === formData.packageType)?.name || "—"}
-                      </span>
+                      <span className="text-gray-900">{PACKAGES.find((p) => p.id === formData.packageType)?.name || "—"}</span>
                     </div>
                   ) : (
                     <div>
@@ -2069,16 +2206,228 @@ window.location.href = payData.payUrl;
               </div>
             </div>
 
-            <PaymentStep
-              total={calculateTotal()}
-              paymentMethod={paymentMethod}
-              setPaymentMethod={setPaymentMethod}
-              cardData={cardData}
-              setCardData={setCardData}
-              email={formData.userEmail || ""}
-              setEmail={(v) => handleInputChange("userEmail", v)}
-              onConfirm={handleConfirmBooking}
-            />
+            {/* СОСТАВ ЗАКАЗА */}
+            <div className="bg-white border border-gray-200 rounded-[30px] p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className="text-sm font-semibold text-gray-900">Состав заказа</div>
+                  <div className="text-xs text-gray-500 mt-1">Полный перечень услуг, которые входят в итоговую стоимость</div>
+                </div>
+                <div className="text-sm font-semibold text-gray-900">{formatRubLocal(totalRub)} ₽</div>
+              </div>
+
+              <div className="space-y-4">
+                {breakdown.map((block, idx) => (
+                  <div key={`${block.category}-${idx}`} className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="text-sm font-semibold text-gray-900">{block.category}</div>
+                      <div className="text-sm font-semibold text-gray-900">{formatRubLocal(block.price)} ₽</div>
+                    </div>
+
+                    {block.items?.length ? (
+                      <div className="mt-3 space-y-2">
+                        {block.items.map((it, i) => (
+                          <div key={`${block.category}-it-${i}`} className="flex items-start justify-between gap-3 text-sm">
+                            <div className="text-gray-700">
+                              <span className="text-gray-900">•</span> {it.name}
+                            </div>
+                            <div className="text-gray-600 whitespace-nowrap">
+                              {typeof it.price === "number" ? `${formatRubLocal(it.price)} ₽` : "включено"}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ОПЛАТА ВНУТРИ ШАГА 5 */}
+            <div className="pt-2">
+              <div className="text-sm font-semibold text-gray-900 mb-3">Оплата</div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
+                {/* LEFT: поля карты + email */}
+                <div className="bg-white border border-gray-200 rounded-[30px] p-6 shadow-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <div className="text-sm text-gray-700 mb-2">Номер карты</div>
+                      <input
+                        value={cardData.number}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, "").slice(0, 16);
+                          const parts = digits.match(/.{1,4}/g) ?? [];
+                          setCardData({ ...cardData, number: parts.join(" ") });
+                        }}
+                        placeholder="0000 0000 0000 0000"
+                        className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
+                        inputMode="numeric"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="text-sm text-gray-700 mb-2">Держатель карты</div>
+                      <input
+                        value={cardData.holder}
+                        onChange={(e) => setCardData({ ...cardData, holder: e.target.value.slice(0, 26) })}
+                        placeholder="IVAN IVANOV"
+                        className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm text-gray-700 mb-2">Срок</div>
+                        <input
+                          value={cardData.expiry}
+                          onChange={(e) => {
+                            const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
+                            const v = digits.length <= 2 ? digits : `${digits.slice(0, 2)}/${digits.slice(2)}`;
+                            setCardData({ ...cardData, expiry: v });
+                          }}
+                          placeholder="MM/YY"
+                          className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
+                          inputMode="numeric"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="text-sm text-gray-700 mb-2">CVC</div>
+                        <input
+                          value={cardData.cvc}
+                          onChange={(e) => setCardData({ ...cardData, cvc: e.target.value.replace(/\D/g, "").slice(0, 4) })}
+                          placeholder="123"
+                          className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
+                          inputMode="numeric"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <div className="text-sm font-semibold text-gray-900 mt-2 mb-2">Email для получения информации</div>
+                      <input
+                        value={emailValue}
+                        onChange={(e) => handleInputChange("userEmail", e.target.value)}
+                        placeholder="name@email.com"
+                        className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
+                        inputMode="email"
+                      />
+                      <div className="mt-2 text-xs text-gray-500">
+                        На этот адрес придёт подтверждение заказа, детали церемонии и документы.
+                      </div>
+                    </div>
+                  </div>
+
+                  {(!cardOk || !expOk || !cvcOk || !emailOk) && (
+                    <div className="mt-4 text-xs text-red-600 space-y-1">
+                      {!emailOk && <div>Укажи корректный email.</div>}
+                      {!cardOk && <div>Проверь номер карты.</div>}
+                      {!expOk && <div>Срок действия должен быть в формате MM/YY.</div>}
+                      {!cvcOk && <div>CVC должен быть 3–4 цифры.</div>}
+                    </div>
+                  )}
+                </div>
+
+                {/* RIGHT: планы оплаты + итог + кнопка */}
+                <div className="space-y-4">
+                  <div className="bg-white border border-gray-200 rounded-[30px] p-5 shadow-sm">
+                    <div className="text-sm font-semibold text-gray-900 mb-3">Вариант оплаты</div>
+
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => handleInputChange("paymentPlan", "full")}
+                        className={[
+                          "w-full rounded-2xl border px-4 py-3 text-left flex items-center justify-between",
+                          payPlan === "full" ? "border-gray-900" : "border-gray-200 hover:border-gray-300",
+                        ].join(" ")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={payPlan === "full" ? "h-4 w-4 rounded-full bg-gray-900" : "h-4 w-4 rounded-full border border-gray-400"} />
+                          <div className="text-sm text-gray-900">Оплатить всю сумму</div>
+                        </div>
+                        <div className="text-sm font-semibold text-gray-900">{formatRubLocal(totalRub)} ₽</div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleInputChange("paymentPlan", "deposit")}
+                        className={[
+                          "w-full rounded-2xl border px-4 py-3 text-left flex items-center justify-between",
+                          payPlan === "deposit" ? "border-gray-900" : "border-gray-200 hover:border-gray-300",
+                        ].join(" ")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={payPlan === "deposit" ? "h-4 w-4 rounded-full bg-gray-900" : "h-4 w-4 rounded-full border border-gray-400"} />
+                          <div className="text-sm text-gray-900">Оплатить депозит (5%)</div>
+                        </div>
+                        <div className="text-sm font-semibold text-gray-900">{formatRubLocal(depositRub)} ₽</div>
+                      </button>
+
+                      {payPlan === "deposit" && (
+                        <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-xs text-gray-600">
+                          Депозит фиксирует бронь времени и ключевых ресурсов: слот церемонии, зал прощания (если выбран),
+                          логистику и подготовку. Депозит входит в общую сумму; остаток оплачивается позже.
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => handleInputChange("paymentPlan", "split")}
+                        className={[
+                          "w-full rounded-2xl border px-4 py-3 text-left flex items-center justify-between",
+                          payPlan === "split" ? "border-gray-900" : "border-gray-200 hover:border-gray-300",
+                        ].join(" ")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={payPlan === "split" ? "h-4 w-4 rounded-full bg-gray-900" : "h-4 w-4 rounded-full border border-gray-400"} />
+                          <div className="text-sm text-gray-900">Оплатить сплитом</div>
+                        </div>
+                        <div className="text-sm font-semibold text-gray-900">4× {formatRubLocal(splitSchedule[0].amountRub)} ₽</div>
+                      </button>
+                    </div>
+
+                    {payPlan === "split" && (
+                      <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
+                        <div className="text-xs font-semibold text-gray-700 mb-2">График платежей</div>
+                        <div className="space-y-1">
+                          {splitSchedule.map((p) => (
+                            <div key={p.title} className="flex justify-between text-sm text-gray-700">
+                              <span>{p.title}</span>
+                              <span className="font-medium">{formatRubLocal(p.amountRub)} ₽</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-3 text-xs text-gray-600">
+                          Остаток будет списываться автоматически по графику. Это UX-режим; позже подключим реальный BNPL.
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="mt-5 flex items-center justify-between rounded-2xl bg-gray-900 text-white px-4 py-4">
+                      <div>
+                        <div className="text-[11px] text-white/70">К оплате сейчас</div>
+                        <div className="text-xl font-semibold">{formatRubLocal(payNowRub)} ₽</div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={onPayClick}
+                        disabled={!canPay}
+                        className="rounded-2xl bg-white text-gray-900 hover:bg-gray-100 px-5 py-3 text-sm font-semibold disabled:opacity-60"
+                      >
+                        Оплатить
+                      </Button>
+                    </div>
+
+                    <div className="mt-3 text-xs text-gray-500">
+                      После оплаты вы получите подтверждение и детали на email.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         );
       }
@@ -2152,31 +2501,28 @@ window.location.href = payData.payUrl;
           </div>
 
           <div className="text-center mb-2">
-  <CardDescription
-  style={{ color: "rgba(255, 255, 255, 1)" }}                 // мобилка всегда тёмный
-  className="text-[15px] font-sans max-w-xl mx-auto leading-relaxed text-left md:!text-white"  // десктоп белый
->
-
-    {workflowMode === "wizard" ? (
-      <>
-        {currentStep === 0 &&
-          "Настройте формат прощания: выберите тип церемонии (светская или религиозная) и длительность аренды зала."}
-        {currentStep === 1 &&
-          "Спланируйте логистику: укажите дату и время прощания, выберите транспорт для усопшего и гостей."}
-        {currentStep === 2 &&
-          "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности."}
-        {currentStep === 3 &&
-          "Заполните документы: укажите паспортные данные заявителя и информацию об усопшем для оформления."}
-        {currentStep === 4 &&
-          "Проверьте и подтвердите: внимательно ознакомьтесь со всеми деталями заказа перед финальным оформлением."}
-      </>
-    ) : (
-      "Выберите оптимальный пакет услуг под ваши задачи"
-    )}
-  </CardDescription>
-</div>
-
-          
+            <CardDescription
+              style={{ color: "rgba(255, 255, 255, 1)" }}
+              className="text-[15px] font-sans max-w-xl mx-auto leading-relaxed text-left md:!text-white"
+            >
+              {workflowMode === "wizard" ? (
+                <>
+                  {currentStep === 0 &&
+                    "Настройте формат прощания: выберите тип церемонии (светская или религиозная) и длительность аренды зала."}
+                  {currentStep === 1 &&
+                    "Спланируйте логистику: укажите дату и время прощания, выберите транспорт для усопшего и гостей."}
+                  {currentStep === 2 &&
+                    "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности."}
+                  {currentStep === 3 &&
+                    "Заполните документы: укажите паспортные данные заявителя и информацию об усопшем для оформления."}
+                  {currentStep === 4 &&
+                    "Проверьте и подтвердите: внимательно ознакомьтесь со всеми деталями заказа перед финальным оформлением."}
+                </>
+              ) : (
+                "Выберите оптимальный пакет услуг под ваши задачи"
+              )}
+            </CardDescription>
+          </div>
 
           {workflowMode === "wizard" && (
             <Stepper steps={steps as any} currentStep={currentStep} completedSteps={completedSteps} onStepClick={handleStepClick} />
@@ -2205,7 +2551,11 @@ window.location.href = payData.payUrl;
                   Шаг {currentStep + 1} из {steps.length}
                 </div>
 
-                <Button onClick={handleNext} disabled={currentStep === steps.length - 1} className="gap-2 bg-gray-900 hover:bg-gray-800 rounded-[30px]">
+                <Button
+                  onClick={handleNext}
+                  disabled={currentStep === steps.length - 1}
+                  className="gap-2 bg-gray-900 hover:bg-gray-800 rounded-[30px]"
+                >
                   Далее
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -2224,9 +2574,7 @@ window.location.href = payData.payUrl;
                     }}
                     className={cn(
                       "group relative flex flex-col p-8 rounded-3xl border transition-all duration-300 cursor-pointer bg-white",
-                      isSelected
-                        ? "border-gray-900 shadow-2xl scale-[1.02] z-10"
-                        : "border-gray-100 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1"
+                      isSelected ? "border-gray-900 shadow-2xl scale-[1.02] z-10" : "border-gray-100 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1",
                     )}
                   >
                     {pkg.popular && (
@@ -2234,49 +2582,39 @@ window.location.href = payData.payUrl;
                         Популярный выбор
                       </div>
                     )}
-                    
+
                     <div className="text-center mb-8">
-                      <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
-                        {pkg.name}
-                      </h3>
+                      <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">{pkg.name}</h3>
                       <div className="flex items-start justify-center gap-1 text-gray-900">
-                        <span className="text-5xl font-light tracking-tighter">
-                          {pkg.price.toLocaleString("ru-RU")}
-                        </span>
+                        <span className="text-5xl font-light tracking-tighter">{pkg.price.toLocaleString("ru-RU")}</span>
                         <span className="text-xl font-light mt-1">₽</span>
                       </div>
-                      <p className="text-sm text-gray-400 mt-3 font-medium">
-                        {pkg.description}
-                      </p>
+                      <p className="text-sm text-gray-400 mt-3 font-medium">{pkg.description}</p>
                     </div>
 
                     <div className="space-y-4 mb-8 flex-1">
                       {pkg.features.map((feature, i) => (
                         <div key={i} className="flex items-start gap-3 text-sm group/item">
-                          <div className={cn(
-                            "mt-0.5 h-5 w-5 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300",
-                            isSelected 
-                              ? "bg-gray-900 text-white" 
-                              : "bg-gray-100 text-gray-400 group-hover/item:text-gray-600"
-                          )}>
-                             <Check className="h-3 w-3" />
+                          <div
+                            className={cn(
+                              "mt-0.5 h-5 w-5 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300",
+                              isSelected ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-400 group-hover/item:text-gray-600",
+                            )}
+                          >
+                            <Check className="h-3 w-3" />
                           </div>
-                          <span className="text-gray-600 font-medium leading-tight pt-0.5">
-                            {feature}
-                          </span>
+                          <span className="text-gray-600 font-medium leading-tight pt-0.5">{feature}</span>
                         </div>
                       ))}
                     </div>
 
-                    <Button 
+                    <Button
                       className={cn(
                         "w-full rounded-2xl h-12 text-sm font-semibold tracking-wide transition-all duration-300",
-                        isSelected 
-                          ? "bg-gray-900 text-white shadow-lg hover:bg-gray-800" 
-                          : "bg-gray-50 text-gray-900 hover:bg-gray-100 border border-gray-100"
+                        isSelected ? "bg-gray-900 text-white shadow-lg hover:bg-gray-800" : "bg-gray-50 text-gray-900 hover:bg-gray-100 border border-gray-100",
                       )}
                     >
-                      {isSelected ? "Настроить" : "Настроить"}
+                      Настроить
                     </Button>
                   </div>
                 );
