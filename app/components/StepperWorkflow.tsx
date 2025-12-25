@@ -764,6 +764,8 @@ export function StepperWorkflow({
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
   const [cardData, setCardData] = useState({ number: "", holder: "", expiry: "", cvc: "" });
 
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+
   const scrollToWizardTop = () => {
     if (!containerRef.current) return;
     containerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -2073,24 +2075,38 @@ function formatRub(n: number) {
         const breakdown = calculateBreakdown();
 
         const onPayClick = async () => {
-          // сохраняем план оплаты в formData (для письма/БД/аналитики)
-          handleInputChange("paymentPlan", payPlan);
-          handleInputChange("paidNowRub", String(payNowRub));
+  if (isSubmittingOrder) return;
 
-          if (payPlan === "split") {
-            handleInputChange("splitSchedule", JSON.stringify(splitSchedule));
-          } else {
-            handleInputChange("splitSchedule", "");
-          }
+  try {
+    setIsSubmittingOrder(true);
 
-          // UX-эмуляция процессинга (без фейковых надписей)
-          await new Promise((r) => setTimeout(r, 450));
+    // сохраняем план (если нужно писать в БД/письмо)
+    handleInputChange("paymentPlan", payPlan);
+    handleInputChange("paidNowRub", String(payNowRub));
 
-          // твой текущий флоу создания заказа + создания платежа
-          // ВАЖНО: сейчас handleConfirmBooking() делает редирект на /checkout/mock.
-          // Если хочешь остаться на шаге 5 — смотри правку ниже после этого кода.
-          await handleConfirmBooking();
-        };
+    if (payPlan === "split") {
+      handleInputChange("splitSchedule", JSON.stringify(splitSchedule));
+    } else {
+      handleInputChange("splitSchedule", "");
+    }
+
+    // UX-эмуляция процессинга
+    await new Promise((r) => setTimeout(r, 400));
+
+    // ВАЖНО:
+    // "пока письмо не улетит" в реальности невозможно гарантировать на фронте.
+    // Но мы держим "Оформление..." ДО момента, пока /api/orders не вернёт success.
+    // handleConfirmBooking делает fetch /api/orders и ждёт ответ — это и есть наш триггер.
+    await handleConfirmBooking();
+
+    // если внутри handleConfirmBooking у тебя происходит redirect — сюда код уже не вернётся (и это ок)
+  } catch (e) {
+    console.error(e);
+    setIsSubmittingOrder(false);
+    alert("Сетевая ошибка. Проверьте интернет и попробуйте ещё раз.");
+  }
+};
+
 
         return (
           <div className="space-y-6">
@@ -2414,10 +2430,10 @@ function formatRub(n: number) {
                       <Button
                         type="button"
                         onClick={onPayClick}
-                        disabled={!canPay}
+                        disabled={!canPay || isSubmittingOrder}
                         className="rounded-2xl bg-white text-gray-900 hover:bg-gray-100 px-5 py-3 text-sm font-semibold disabled:opacity-60"
                       >
-                        Оплатить
+                        {isSubmittingOrder ? "Оформление..." : "Оплатить"}
                       </Button>
                     </div>
 
