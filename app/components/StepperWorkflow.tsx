@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { User } from "lucide-react";
+import { User, Flame } from "lucide-react";
 import InlineMockPayment from "@/app/components/InlineMockPayment";
-import { PriceComparison } from "./PriceComparison";
+import { PackagesSelection } from "./PackagesSelection";
+import type { Package as UiPackage } from "./PackagesSelection";
+
 import { PersonalAccountModal } from "./PersonalAccountModal";
 import { SimplifiedStepperWorkflow } from "./SimplifiedStepperWorkflow";
 import PaymentStep from "./PaymentStep";
@@ -93,6 +95,7 @@ import { UnifiedCoffinConfigurator } from "./UnifiedCoffinConfigurator";
 
 type PaymentMethod = "card" | "sbp" | "installment";
 
+
 const steps = [
   { id: "format", label: "Формат", description: "Выбор церемонии" },
   { id: "logistics", label: "Логистика", description: "Место и транспорт" },
@@ -161,6 +164,66 @@ interface AdditionalService {
   description: string;
   icon: any;
 }
+
+const PACKAGES_BURIAL = PACKAGES;
+
+const PACKAGES_CREMATION = [
+  {
+    id: "cremation-standard",
+    name: "Стандарт",
+    price: 35000,
+    description: "Базовый комплект услуг для кремации",
+    features: [
+      "Оформление документов",
+      "Бронирование места в колумбарии",
+      "Хранение и базовая подготовка тела",
+      "Гроб-контейнер для кремации",
+      "Транспортировка до крематория",
+      "Кремация + урна стандартная",
+    ],
+    popular: false,
+  },
+  {
+    id: "cremation-comfort",
+    name: "Комфорт",
+    price: 75000,
+    description: "Расширенный набор услуг для кремации",
+    features: [
+      "Оформление документов",
+      "Бронирование места в колумбарии",
+      "Хранение и подготовка тела",
+      "Гроб для прощания + гроб-контейнер",
+      "Транспортировка до крематория",
+      "Кремация",
+      "Урна керамическая",
+      "Зал прощания на 2 часа",
+      "Поминальный обед (до 20 человек)",
+    ],
+    popular: true,
+  },
+  {
+    id: "cremation-premium",
+    name: "Премиум",
+    price: 120000,
+    description: "Полный спектр услуг премиум класса",
+    features: [
+      "Оформление документов",
+      "Бронирование места в колумбарии премиум",
+      "Хранение и подготовка тела",
+      "Гроб элитный для прощания + контейнер",
+      "Транспортировка покойного",
+      "Кремация",
+      "Урна премиум (мрамор/гранит)",
+      "Композиция из живых цветов",
+      "Ритуальные принадлежности премиум",
+      "Ритуальный зал на 4 часа",
+      "Поминальный обед (до 40 человек)",
+      "Индивидуальный координатор",
+    ],
+    popular: false,
+  },
+] as const;
+
 
 const additionalServices: AdditionalService[] = [
   { id: "morgue-storage", name: "Хранение в морге", price: 2500, description: "Резерв времени до церемонии", icon: Snowflake },
@@ -711,7 +774,7 @@ splitSchedule?: string;
 
     needsPallbearers: boolean;
 
-    packageType: "basic" | "standard" | "premium" | "custom" | "";
+    packageType: string;
     selectedAdditionalServices: string[];
 
     specialRequests: string;
@@ -747,8 +810,10 @@ export function StepperWorkflow({
   const previousStepRef = useRef(0);
 
   const [workflowMode, setWorkflowMode] = useState<"wizard" | "packages">("wizard");
-  const [selectedPackageForSimplified, setSelectedPackageForSimplified] =
-    useState<(typeof PACKAGES)[number] | null>(null);
+
+const [selectedPackageForSimplified, setSelectedPackageForSimplified] =
+  useState<UiPackage | null>(null);
+
 
   const [isAccountOpen, setIsAccountOpen] = useState(false);
 
@@ -826,6 +891,17 @@ export function StepperWorkflow({
   const [showPickupDialog, setShowPickupDialog] = useState(false);
   const [showFarewellDialog, setShowFarewellDialog] = useState(false);
   const [showBurialDialog, setShowBurialDialog] = useState(false);
+
+  useEffect(() => {
+  const list = formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES_BURIAL;
+  const exists = list.some((p) => p.id === formData.packageType);
+
+  if (!exists) {
+    handleInputChange("packageType", "");
+    setSelectedPackageForSimplified(null);
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [formData.serviceType]);
 
   useEffect(() => {
     if (!formData.hasHall) {
@@ -2541,106 +2617,116 @@ function formatRub(n: number) {
           </div>
 
           {workflowMode === "wizard" && (
-            <Stepper steps={steps as any} currentStep={currentStep} completedSteps={completedSteps} onStepClick={handleStepClick} />
-          )}
-        </CardHeader>
+  <Stepper
+    steps={steps as any}
+    currentStep={currentStep}
+    completedSteps={completedSteps}
+    onStepClick={handleStepClick}
+  />
+)}
+</CardHeader>
 
-        <CardContent className="px-6 sm:px-8 pb-8">
-          {workflowMode === "wizard" ? (
-            <>
-              <div
+<CardContent className="px-6 sm:px-8 pb-8">
+  {workflowMode === "wizard" ? (
+    <>
+      <div
+        className={cn(
+          "transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          isTransitioning
+            ? "opacity-0 translate-y-8 scale-[0.96] blur-sm"
+            : "opacity-100 translate-y-0 scale-100 blur-0",
+        )}
+      >
+        {renderStepContent()}
+      </div>
+
+      <div className="flex items-center justify-between mt-8 pt-6 border-t">
+        <Button
+          variant="outline"
+          onClick={handlePrev}
+          disabled={currentStep === 0}
+          className="gap-2 rounded-[30px]"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Назад
+        </Button>
+
+        <div className="text-sm text-gray-500">
+          Шаг {currentStep + 1} из {steps.length}
+        </div>
+
+        <Button
+          onClick={handleNext}
+          disabled={currentStep === steps.length - 1}
+          className="gap-2 bg-gray-900 hover:bg-gray-800 rounded-[30px]"
+        >
+          Далее
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </>
+  ) : (
+    <div className="space-y-8">
+      <div className="flex justify-center">
+        <div className="inline-flex items-center p-1.5 rounded-full bg-zinc-100/80 border border-zinc-200/50 backdrop-blur-sm shadow-inner">
+          <button
+            type="button"
+            onClick={() => handleInputChange("serviceType", "burial")}
+            className={cn(
+              "px-8 py-2.5 rounded-full text-sm font-medium transition-all duration-300 relative overflow-hidden",
+              formData.serviceType === "burial"
+                ? "bg-white text-gray-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-black/5"
+                : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
+            )}
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              <Church
                 className={cn(
-                  "transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]",
-                  isTransitioning ? "opacity-0 translate-y-8 scale-[0.96] blur-sm" : "opacity-100 translate-y-0 scale-100 blur-0",
+                  "w-4 h-4",
+                  formData.serviceType === "burial" ? "text-gray-900" : "text-gray-400",
                 )}
-              >
-                {renderStepContent()}
-              </div>
+              />
+              Захоронение
+            </span>
+          </button>
 
-              <div className="flex items-center justify-between mt-8 pt-6 border-t">
-                <Button variant="outline" onClick={handlePrev} disabled={currentStep === 0} className="gap-2 rounded-[30px]">
-                  <ChevronLeft className="h-4 w-4" />
-                  Назад
-                </Button>
+          <button
+            type="button"
+            onClick={() => handleInputChange("serviceType", "cremation")}
+            className={cn(
+              "px-8 py-2.5 rounded-full text-sm font-medium transition-all duration-300 relative overflow-hidden",
+              formData.serviceType === "cremation"
+                ? "bg-white text-gray-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-black/5"
+                : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
+            )}
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              <Flame
+                className={cn(
+                  "w-4 h-4",
+                  formData.serviceType === "cremation" ? "text-gray-900" : "text-gray-400",
+                )}
+              />
+              Кремация
+            </span>
+          </button>
+        </div>
+      </div>
 
-                <div className="text-sm text-gray-500">
-                  Шаг {currentStep + 1} из {steps.length}
-                </div>
-
-                <Button
-                  onClick={handleNext}
-                  disabled={currentStep === steps.length - 1}
-                  className="gap-2 bg-gray-900 hover:bg-gray-800 rounded-[30px]"
-                >
-                  Далее
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 px-2 items-start">
-              {PACKAGES.map((pkg) => {
-                const isSelected = formData.packageType === pkg.id;
-                return (
-                  <div
-                    key={pkg.id}
-                    onClick={() => {
-                      handleInputChange("packageType", pkg.id);
-                      setSelectedPackageForSimplified(pkg);
-                    }}
-                    className={cn(
-                      "group relative flex flex-col p-8 rounded-3xl border transition-all duration-300 cursor-pointer bg-white",
-                      isSelected ? "border-gray-900 shadow-2xl scale-[1.02] z-10" : "border-gray-100 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1",
-                    )}
-                  >
-                    {pkg.popular && (
-                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[9px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg ring-4 ring-white">
-                        Популярный выбор
-                      </div>
-                    )}
-
-                    <div className="text-center mb-8">
-                      <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">{pkg.name}</h3>
-                      <div className="flex items-start justify-center gap-1 text-gray-900">
-                        <span className="text-5xl font-light tracking-tighter">{pkg.price.toLocaleString("ru-RU")}</span>
-                        <span className="text-xl font-light mt-1">₽</span>
-                      </div>
-                      <p className="text-sm text-gray-400 mt-3 font-medium">{pkg.description}</p>
-                    </div>
-
-                    <div className="space-y-4 mb-8 flex-1">
-                      {pkg.features.map((feature, i) => (
-                        <div key={i} className="flex items-start gap-3 text-sm group/item">
-                          <div
-                            className={cn(
-                              "mt-0.5 h-5 w-5 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300",
-                              isSelected ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-400 group-hover/item:text-gray-600",
-                            )}
-                          >
-                            <Check className="h-3 w-3" />
-                          </div>
-                          <span className="text-gray-600 font-medium leading-tight pt-0.5">{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <Button
-                      className={cn(
-                        "w-full rounded-2xl h-12 text-sm font-semibold tracking-wide transition-all duration-300",
-                        isSelected ? "bg-gray-900 text-white shadow-lg hover:bg-gray-800" : "bg-gray-50 text-gray-900 hover:bg-gray-100 border border-gray-100",
-                      )}
-                    >
-                      Настроить
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <PersonalAccountModal open={isAccountOpen} onOpenChange={setIsAccountOpen} />
+      <PackagesSelection
+        selectedPackageId={formData.packageType}
+        packages={formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES_BURIAL}
+        onSelectPackage={(pkg) => {
+          handleInputChange("packageType", pkg.id);
+          setSelectedPackageForSimplified(pkg);
+        }}
+      />
     </div>
-  );
+  )}
+</CardContent>
+</Card>
+
+<PersonalAccountModal open={isAccountOpen} onOpenChange={setIsAccountOpen} />
+</div>
+);
 }
