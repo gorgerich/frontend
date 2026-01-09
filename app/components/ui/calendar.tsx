@@ -3,6 +3,7 @@
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
+import { ru } from "date-fns/locale";
 import { cn } from "./utils";
 
 type CalendarProps = React.ComponentProps<typeof DayPicker> & {
@@ -12,125 +13,126 @@ type CalendarProps = React.ComponentProps<typeof DayPicker> & {
 function Calendar({
   className,
   classNames,
-  showOutsideDays = true,
+  showOutsideDays = false,
+  weekStartsOn = 1,
+  locale = ru,
+  month,
+  onMonthChange,
   ...props
 }: CalendarProps) {
-  const [currentMonth, setCurrentMonth] = React.useState(
-    props.month || new Date(),
+  const normalizeMonth = React.useCallback(
+    (value: Date) => new Date(value.getFullYear(), value.getMonth(), 1),
+    [],
   );
 
-  const monthNames = [
-    "Январь",
-    "Февраль",
-    "Март",
-    "Апрель",
-    "Май",
-    "Июнь",
-    "Июль",
-    "Август",
-    "Сентябрь",
-    "Октябрь",
-    "Ноябрь",
-    "Декабрь",
-  ];
+  const [currentMonth, setCurrentMonth] = React.useState(
+    normalizeMonth(month || new Date()),
+  );
+
+  React.useEffect(() => {
+    if (month) {
+      setCurrentMonth(normalizeMonth(month));
+    }
+  }, [month, normalizeMonth]);
+
+  const monthLabel = currentMonth
+    .toLocaleDateString("ru-RU", { month: "long" })
+    .replace(/^./, (char) => char.toUpperCase());
+
+  const handleMonthChange = (nextMonth: Date) => {
+    const normalizedMonth = normalizeMonth(nextMonth);
+    if (!month) {
+      setCurrentMonth(normalizedMonth);
+    }
+    onMonthChange?.(normalizedMonth);
+  };
 
   const handlePreviousMonth = () => {
-    setCurrentMonth((prev) => {
-      const newDate = new Date(prev);
-      newDate.setMonth(newDate.getMonth() - 1);
-      return newDate;
-    });
+    const nextMonth = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() - 1,
+      1,
+    );
+    handleMonthChange(nextMonth);
   };
 
   const handleNextMonth = () => {
-    setCurrentMonth((prev) => {
-      const newDate = new Date(prev);
-      newDate.setMonth(newDate.getMonth() + 1);
-      return newDate;
-    });
+    const nextMonth = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() + 1,
+      1,
+    );
+    handleMonthChange(nextMonth);
   };
 
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
       month={currentMonth}
-      onMonthChange={setCurrentMonth}
+      onMonthChange={handleMonthChange}
+      weekStartsOn={weekStartsOn}
+      locale={locale}
       className={cn(
-        "p-6 bg-gradient-to-br from-gray-50/80 to-white/90 rounded-3xl border border-gray-200/50",
+        "w-full rounded-2xl border border-gray-100 bg-white p-5 shadow-sm",
         className,
       )}
       classNames={{
-        months: "flex flex-col sm:flex-row gap-4",
-        month: "flex flex-col gap-6",
-        caption: "flex justify-between items-center mb-4 relative",
+        months: "flex flex-col",
+        month: "flex flex-col",
+        caption: "mb-4",
         caption_label: "hidden",
         nav: "hidden",
         table: "w-full border-collapse",
-        head_row: "flex gap-2 mb-3",
-        head_cell:
-          "text-[#a0a0c8] uppercase text-xs w-[42px] text-center tracking-wide",
-        row: "flex gap-2 mb-2",
+        head_row: "grid grid-cols-7 gap-1 mb-2",
+        head_cell: "text-[11px] font-medium text-indigo-300 text-center",
+        row: "grid grid-cols-7 gap-1",
         cell: cn(
-          "relative p-0 text-center focus-within:relative focus-within:z-20",
+          "p-0 text-center flex items-center justify-center",
           props.mode === "range"
             ? "[&:has(>.day-range-end)]:rounded-md [&:has(>.day-range-start)]:rounded-md first:[&:has([aria-selected])]:rounded-md last:[&:has([aria-selected])]:rounded-md"
             : "[&:has([aria-selected])]:rounded-md",
         ),
-        day: "w-[42px] h-[42px] p-0 text-[#3a3a5f] hover:bg-blue-50/50 hover:text-[#0066ff] rounded-md transition-all duration-150 aria-selected:opacity-100",
+        day: "h-10 w-10 rounded-xl font-medium text-indigo-900 hover:bg-indigo-50 aria-selected:opacity-100",
         day_range_start: "day-range-start",
         day_range_end: "day-range-end",
         day_selected:
-          "bg-[#0066ff] text-white hover:bg-[#0052cc] hover:text-white focus:bg-[#0066ff] focus:text-white shadow-lg shadow-blue-500/30 scale-105",
-        day_today: "bg-blue-50 text-[#0066ff] ring-2 ring-blue-200/50",
-        day_outside:
-          "day-outside text-[#d4d4e8] opacity-50 aria-selected:text-white",
-        day_disabled: "text-[#d4d4e8] opacity-30",
-        day_range_middle: "aria-selected:bg-blue-50 aria-selected:text-[#0066ff]",
+          "bg-blue-600 text-white hover:bg-blue-600",
+        day_today: "bg-blue-100 text-blue-700 border border-blue-200",
+        day_outside: "opacity-0 pointer-events-none",
+        day_disabled: "text-gray-300",
+        day_range_middle: "aria-selected:bg-blue-100 aria-selected:text-blue-700",
         day_hidden: "invisible",
         ...classNames,
       }}
       formatters={{
         formatWeekdayName: (date) => {
-          const days = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
-          return days[(date.getDay() + 6) % 7];
+          const days = ["ВС", "ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"];
+          return days[date.getDay()];
         },
-      }}
-      modifiersClassNames={{
-        weekend: "text-[#0066ff]",
-      }}
-      modifiers={{
-        weekend: (date) => date.getDay() === 0 || date.getDay() === 6,
       }}
       components={
         {
           Caption: () => (
-            <div className="flex justify-between items-center w-full mb-4">
-              <div
-                className="text-[#1a1a4d] italic tracking-tight"
-                style={{ fontFamily: "Georgia, serif", fontSize: "24px" }}
-              >
-                Rowi
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+              <div className="text-indigo-900 font-serif italic text-lg">Rowi</div>
+              <div className="text-center text-base font-semibold text-indigo-900">
+                {monthLabel}
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-2xl text-[#1a1a4d] tracking-tight">
-                  {monthNames[currentMonth.getMonth()]}
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handlePreviousMonth}
-                    className="size-8 bg-white/80 hover:bg-white border border-gray-200 rounded-lg opacity-60 hover:opacity-100 transition-all duration-150 flex items-center justify-center"
-                  >
-                    <ChevronLeft className="size-4 text-[#1a1a4d]" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleNextMonth}
-                    className="size-8 bg-white/80 hover:bg-white border border-gray-200 rounded-lg opacity-60 hover:opacity-100 transition-all duration-150 flex items-center justify-center"
-                  >
-                    <ChevronRight className="size-4 text-[#1a1a4d]" />
-                  </button>
-                </div>
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={handlePreviousMonth}
+                  className="h-8 w-8 rounded-full border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50"
+                >
+                  <ChevronLeft className="h-4 w-4 mx-auto" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextMonth}
+                  className="h-8 w-8 rounded-full border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50"
+                >
+                  <ChevronRight className="h-4 w-4 mx-auto" />
+                </button>
               </div>
             </div>
           ),

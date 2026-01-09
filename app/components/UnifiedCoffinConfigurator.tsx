@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -19,6 +19,7 @@ price?: number;
 
 interface UnifiedCoffinConfiguratorProps {
 onConfirm?: (data: any) => void;
+onChange?: (data: any) => void;
 }
 
 /**
@@ -40,7 +41,7 @@ if (target.src !== fallbackSrc) target.src = fallbackSrc;
 );
 }
 
-export function UnifiedCoffinConfigurator({ onConfirm }: UnifiedCoffinConfiguratorProps) {
+export function UnifiedCoffinConfigurator({ onConfirm, onChange }: UnifiedCoffinConfiguratorProps) {
 const [activeTab, setActiveTab] = useState<'coffin' | 'wreath'>('coffin');
 
 // Состояние для гроба
@@ -232,12 +233,12 @@ const getTotalPrice = () => getCoffinPrice() + getWreathPrice();
 const getCurrentCoffin = () => coffinOptions.find((c) => c.id === selectedWood) || coffinOptions[0];
 const getCurrentWreath = () => wreathOptions.find((w) => w.id === wreathType) || wreathOptions[0];
 
-const handleConfirm = () => {
+const buildConfigData = () => {
 const wood = woodOptions.find((w) => w.id === selectedWood);
 const lining = liningOptions.find((l) => l.id === selectedLining);
 const hardware = hardwareOptions.find((h) => h.id === selectedHardware);
 
-const data = {
+return {
 coffin: {
 wood,
 lining,
@@ -254,8 +255,29 @@ price: getWreathPrice(),
 },
 total: getTotalPrice(),
 };
+};
 
-onConfirm?.(data);
+const configData = useMemo(
+() => buildConfigData(),
+[
+selectedWood,
+selectedLining,
+selectedHardware,
+coffinQuantity,
+wreathType,
+wreathSize,
+wreathText,
+wreathQuantity,
+],
+);
+
+useEffect(() => {
+if (!onChange) return;
+onChange(configData);
+}, [configData, onChange]);
+
+const handleConfirm = () => {
+onConfirm?.(configData);
 };
 
 // Чтобы не пересоздавать строку для img каждый ререндер

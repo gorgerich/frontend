@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+
 import { User, Flame } from "lucide-react";
 import InlineMockPayment from "@/app/components/InlineMockPayment";
-import { PackagesSelection } from "./PackagesSelection";
-import type { Package as UiPackage } from "./PackagesSelection";
+import { PackagesSelection, type Package as PackagesSelectionPackage } from "./PackagesSelection";
 
 import { PersonalAccountModal } from "./PersonalAccountModal";
+import { SimpleCalendar } from "./SimpleCalendar";
 import { SimplifiedStepperWorkflow } from "./SimplifiedStepperWorkflow";
 import PaymentStep from "./PaymentStep";
 
@@ -91,6 +92,11 @@ import {
 
 import { cn } from "./ui/utils";
 import { UnifiedCoffinConfigurator } from "./UnifiedCoffinConfigurator";
+import {
+  calculateBreakdown as calculateBreakdownFromUtils,
+  calculateTotal as calculateTotalFromUtils,
+  type CalculatorConfig,
+} from "./calculationUtils";
 
 
 type PaymentMethod = "card" | "sbp" | "installment";
@@ -223,6 +229,31 @@ const PACKAGES_CREMATION = [
     popular: false,
   },
 ] as const;
+
+const PICKUP_TIME_SLOTS = [
+  ...Array.from({ length: 8 }, (_, i) => {
+    const hour = String(8 + i).padStart(2, "0");
+    return [`${hour}:00`, `${hour}:30`];
+  }).flat(),
+  "16:00",
+];
+
+const PICKUP_TIME_SLOTS_SET = new Set(PICKUP_TIME_SLOTS);
+
+const normalizePickupDateTime = (
+  value?: { date?: string | Date; time?: string },
+) => {
+  const rawDate = value?.date;
+  const parsedDate =
+    rawDate instanceof Date ? rawDate : rawDate ? new Date(rawDate) : undefined;
+  const date =
+    parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate : undefined;
+  const time =
+    value?.time && PICKUP_TIME_SLOTS_SET.has(value.time)
+      ? value.time
+      : undefined;
+  return { date, time };
+};
 
 
 const additionalServices: AdditionalService[] = [
@@ -557,6 +588,8 @@ const MOSCOW_CEMETERIES: CemeteryData[] = [
   },
 ];
 
+type SimplifiedPackage = PackagesSelectionPackage;
+
 const MO_CEMETERIES: CemeteryData[] = [
   {
     id: "mytishchinskoe",
@@ -716,6 +749,56 @@ const MO_CEMETERIES: CemeteryData[] = [
   },
 ];
 
+const STEPPER_CALCULATOR_CONFIG: CalculatorConfig = {
+  base: {
+    title: "Базовые услуги",
+    price: 25000,
+    items: [
+      "Оформление документов",
+      "Подтверждение места захоронения",
+      "Хранение и базовая подготовка тела",
+      "Гроб, подушка и покрывало",
+      "Транспортировка покойного и перенос",
+      "Кладбищенские работы",
+    ],
+  },
+  prices: {
+    hallDuration: PRICES.hallDuration,
+    ceremonyType: PRICES.ceremonyType,
+    hearse: PRICES.hearse,
+    familyTransport: PRICES.familyTransport,
+    pallbearers: PRICES.pallbearers,
+  },
+  packages: PACKAGES.map((pkg) => ({
+    id: pkg.id,
+    name: pkg.name,
+    price: pkg.price,
+    features: [...pkg.features],
+  })),
+  additionalServices: additionalServices.map((service) => ({
+    id: service.id,
+    name: service.name,
+    price: service.price,
+  })),
+  cemeteries: [...MOSCOW_CEMETERIES, ...MO_CEMETERIES].map((cemetery) => ({
+    name: cemetery.name,
+    categories: { ...cemetery.categories },
+  })),
+  cemeteryCategoryLabels: {
+    standard: "Стандарт",
+    comfort: "Комфорт",
+    premium: "Премиум",
+  },
+  cemeterySectionTitle: (categoryLabel) => `Место на кладбище (${categoryLabel})`,
+  includeCemeteryCategoryItem: false,
+  includeCemeteryWithPackage: true,
+  includeLogisticsWithPackage: true,
+  includeFormatWithPackage: true,
+  includeAdditionalWithPackage: true,
+  includeBaseWithPackage: false,
+  packageSectionMinPrice: 0,
+};
+
 type CemeteryCategory = "standard" | "comfort" | "premium";
 
 const CATEGORY_INFO: Record<
@@ -758,6 +841,7 @@ splitSchedule?: string;
 
     cemetery: string;
     selectedSlot: string;
+    pickupDateTime?: { date?: string | Date; time?: string };
 
     needsHearse: boolean;
     hearseRoute: { morgue: boolean; hall: boolean; church: boolean; cemetery: boolean };
@@ -810,9 +894,8 @@ export function StepperWorkflow({
   const previousStepRef = useRef(0);
 
   const [workflowMode, setWorkflowMode] = useState<"wizard" | "packages">("wizard");
-
-const [selectedPackageForSimplified, setSelectedPackageForSimplified] =
-  useState<UiPackage | null>(null);
+  const [selectedPackageForSimplified, setSelectedPackageForSimplified] =
+    useState<SimplifiedPackage | null>(null);
 
 
   const [isAccountOpen, setIsAccountOpen] = useState(false);
@@ -878,6 +961,13 @@ const [selectedPackageForSimplified, setSelectedPackageForSimplified] =
 
   const handleInputChange = (field: string, value: any) => onUpdateFormData(field, value);
 
+  // В wizard не допускаем пакет из "Готовых решений"
+  useEffect(() => {
+    if (workflowMode === "wizard" && formData.packageType) {
+      handleInputChange("packageType", "");
+    }
+  }, [workflowMode, formData.packageType, onUpdateFormData]);
+
   const handleSkipField = (field: string) => {
     const currentValue = (formData as any)[field];
     onUpdateFormData(field, currentValue === "—" ? "" : "—");
@@ -892,16 +982,30 @@ const [selectedPackageForSimplified, setSelectedPackageForSimplified] =
   const [showFarewellDialog, setShowFarewellDialog] = useState(false);
   const [showBurialDialog, setShowBurialDialog] = useState(false);
 
-  useEffect(() => {
-  const list = formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES_BURIAL;
-  const exists = list.some((p) => p.id === formData.packageType);
+  const savedPickupDateTime = normalizePickupDateTime(formData.pickupDateTime);
 
-  if (!exists) {
-    handleInputChange("packageType", "");
-    setSelectedPackageForSimplified(null);
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [formData.serviceType]);
+  const handlePickupDialogOpenChange = (open: boolean) => {
+    setShowPickupDialog(open);
+    if (open) {
+      setPickupDateTime(savedPickupDateTime);
+    }
+  };
+
+  useEffect(() => {
+    if (currentStep === 1 && !showPickupDialog) {
+      setPickupDateTime(normalizePickupDateTime(formData.pickupDateTime));
+    }
+  }, [currentStep, showPickupDialog, formData.pickupDateTime]);
+
+  useEffect(() => {
+    const list = formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES_BURIAL;
+    const exists = list.some((p) => p.id === formData.packageType);
+
+    if (!exists && formData.packageType) {
+      handleInputChange("packageType", "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.serviceType, formData.packageType]);
 
   useEffect(() => {
     if (!formData.hasHall) {
@@ -922,139 +1026,11 @@ const [selectedPackageForSimplified, setSelectedPackageForSimplified] =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.hasHall]);
 
-  const calculateTotal = () => {
-    let total = 0;
+  const calculateTotal = () =>
+    calculateTotalFromUtils(formData as any, selectedCemeteryCategory, STEPPER_CALCULATOR_CONFIG);
 
-    if (formData.packageType && formData.packageType !== "custom") {
-      const pkg = PACKAGES.find((p) => p.id === formData.packageType);
-      if (pkg) total = pkg.price;
-    } else {
-      total = 25000;
-
-      if (formData.hasHall) {
-        total += PRICES.hallDuration[formData.hallDuration as 30 | 60 | 90] || 0;
-      }
-
-      total += PRICES.ceremonyType[formData.ceremonyType as keyof typeof PRICES.ceremonyType] || 0;
-
-      if (formData.needsHearse) total += PRICES.hearse;
-
-      if (formData.needsFamilyTransport) {
-        total += PRICES.familyTransport[formData.familyTransportSeats as 5 | 10 | 15] || 0;
-      }
-
-      if (formData.needsPallbearers) total += PRICES.pallbearers;
-
-      if (Array.isArray(formData.selectedAdditionalServices)) {
-        for (const serviceId of formData.selectedAdditionalServices) {
-          const s = additionalServices.find((x) => x.id === serviceId);
-          if (s) total += s.price;
-        }
-      }
-    }
-
-    if (formData.cemetery) {
-      const all = [...MOSCOW_CEMETERIES, ...MO_CEMETERIES];
-      const selected = all.find((c) => c.name === formData.cemetery);
-      const price = selected?.categories?.[selectedCemeteryCategory];
-      if (price) total += price;
-    }
-
-    return total;
-  };
-
-  const calculateBreakdown = () => {
-    const breakdown: { category: string; price: number; items?: { name: string; price?: number }[] }[] = [];
-
-    if (formData.packageType && formData.packageType !== "custom") {
-      const pkg = PACKAGES.find((p) => p.id === formData.packageType);
-      if (pkg) {
-        breakdown.push({
-          category: `Пакет "${pkg.name}"`,
-          price: pkg.price,
-          items: pkg.features.map((f) => ({ name: f })),
-        });
-      }
-      return breakdown;
-    }
-
-    breakdown.push({
-      category: "Базовые услуги",
-      price: 25000,
-      items: [
-        { name: "Оформление документов" },
-        { name: "Подтверждение места захоронения" },
-        { name: "Хранение и базовая подготовка тела" },
-        { name: "Гроб из массива сосны + подушка/покрывало" },
-        { name: "Транспортировка покойного и перенос" },
-        { name: "Кладбищенские работы" },
-      ],
-    });
-
-    const formatItems: { name: string; price?: number }[] = [];
-    let formatTotal = 0;
-
-    if (formData.hasHall && formData.hallDuration) {
-      const hallPrice = PRICES.hallDuration[formData.hallDuration as 30 | 60 | 90] || 0;
-      formatItems.push({ name: `Зал прощания (${formData.hallDuration} мин)`, price: hallPrice });
-      formatTotal += hallPrice;
-    }
-
-    const ceremonyPrice = PRICES.ceremonyType[formData.ceremonyType as keyof typeof PRICES.ceremonyType] || 0;
-    if (ceremonyPrice > 0) {
-      formatItems.push({
-        name: formData.ceremonyType === "religious" ? "Религиозная церемония" : "Комбинированная церемония",
-        price: ceremonyPrice,
-      });
-      formatTotal += ceremonyPrice;
-    }
-
-    if (formatItems.length) breakdown.push({ category: "Формат", price: formatTotal, items: formatItems });
-
-    const logisticsItems: { name: string; price?: number }[] = [];
-    let logisticsTotal = 0;
-
-    if (formData.needsHearse) {
-      logisticsItems.push({ name: "Катафалк", price: PRICES.hearse });
-      logisticsTotal += PRICES.hearse;
-    }
-    if (formData.needsFamilyTransport) {
-      const tp = PRICES.familyTransport[formData.familyTransportSeats as 5 | 10 | 15] || 0;
-      logisticsItems.push({ name: `Транспорт для близких (${formData.familyTransportSeats} мест)`, price: tp });
-      logisticsTotal += tp;
-    }
-    if (formData.needsPallbearers) {
-      logisticsItems.push({ name: "Носильщики", price: PRICES.pallbearers });
-      logisticsTotal += PRICES.pallbearers;
-    }
-
-    if (logisticsItems.length) breakdown.push({ category: "Логистика", price: logisticsTotal, items: logisticsItems });
-
-    if (formData.selectedAdditionalServices?.length) {
-      const addItems: { name: string; price?: number }[] = [];
-      let addTotal = 0;
-      for (const id of formData.selectedAdditionalServices) {
-        const s = additionalServices.find((x) => x.id === id);
-        if (!s) continue;
-        addItems.push({ name: s.name, price: s.price });
-        addTotal += s.price;
-      }
-      if (addItems.length) breakdown.push({ category: "Дополнительные услуги", price: addTotal, items: addItems });
-    }
-
-    if (formData.cemetery) {
-      const all = [...MOSCOW_CEMETERIES, ...MO_CEMETERIES];
-      const selected = all.find((c) => c.name === formData.cemetery);
-      const price = selected?.categories?.[selectedCemeteryCategory] || 0;
-      if (price) {
-        const catName =
-          selectedCemeteryCategory === "standard" ? "Стандарт" : selectedCemeteryCategory === "comfort" ? "Комфорт" : "Премиум";
-        breakdown.push({ category: `Место на кладбище (${catName})`, price, items: [{ name: formData.cemetery }] });
-      }
-    }
-
-    return breakdown;
-  };
+  const calculateBreakdown = () =>
+    calculateBreakdownFromUtils(formData as any, selectedCemeteryCategory, STEPPER_CALCULATOR_CONFIG);
 
   const handleConfirmBooking = async () => {
     try {
@@ -1209,9 +1185,11 @@ return;
 
   const openPackagesMode = () => {
     setWorkflowMode("packages");
-    if (!selectedPackageForSimplified) {
-      const defaultPkg = PACKAGES.find((p: any) => (p as any).popular) ?? PACKAGES[0];
-      setSelectedPackageForSimplified(defaultPkg as any);
+    if (formData.packageType) {
+      handleInputChange("packageType", "");
+    }
+    if (selectedPackageForSimplified) {
+      setSelectedPackageForSimplified(null);
     }
   };
 
@@ -1548,69 +1526,153 @@ function formatRub(n: number) {
             </div>
 
             <div className="space-y-6">
-              {/* Время забора тела */}
+             {/* Время забора тела */}
               <div className="space-y-2">
-                <Label className="text-gray-900">Время забора тела</Label>
-                <Dialog open={showPickupDialog} onOpenChange={setShowPickupDialog}>
+                <Label className="text-gray-900">
+                  Время забора тела
+                </Label>
+                <Dialog
+                  open={showPickupDialog}
+                  onOpenChange={setShowPickupDialog}
+                >
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start h-12 bg-white border-gray-200 hover:bg-gray-50 shadow-sm">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start h-12 bg-white border-gray-200 hover:bg-gray-50 shadow-sm"
+                    >
                       <Clock className="h-4 w-4 mr-3 text-gray-500" />
-                      <span className={cn(pickupDateTime.date && pickupDateTime.time ? "text-gray-900" : "text-gray-600")}>
-                        {pickupDateTime.date && pickupDateTime.time
+                      <span
+                        className={cn(
+                          pickupDateTime.date &&
+                            pickupDateTime.time
+                            ? "text-gray-900"
+                            : "text-gray-600",
+                        )}
+                      >
+                        {pickupDateTime.date &&
+                        pickupDateTime.time
                           ? `${pickupDateTime.date.toLocaleDateString("ru-RU")} в ${pickupDateTime.time}`
                           : "Выбрать время забора"}
                       </span>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
+                  <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
                     <DialogHeader>
-                      <DialogTitle>Выбор даты и времени забора</DialogTitle>
-                      <DialogDescription>Выберите дату и время, когда требуется забрать тело</DialogDescription>
+                      <DialogTitle>
+                        Выбор даты и времени забора
+                      </DialogTitle>
+                      <DialogDescription>
+                        Выберите дату и время, когда требуется
+                        забрать тело
+                      </DialogDescription>
                     </DialogHeader>
-
-                    <div className="flex flex-col gap-6 py-2">
+                    <div className="flex flex-col gap-6 py-2 overflow-y-auto pr-2">
                       <div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
-                        <Calendar
-                          mode="single"
+                        <style>{`
+                          .rdp-caption_label { 
+                            text-transform: capitalize; 
+                            font-size: 1.1rem; 
+                            font-weight: 600; 
+                            color: #111827;
+                          }
+                          .rdp-nav_button {
+                            width: 32px;
+                            height: 32px;
+                            border-radius: 50%;
+                            background-color: #f3f4f6;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                          }
+                          .rdp-nav_button:hover {
+                            background-color: #e5e7eb;
+                          }
+                          .rdp-head_cell {
+                            color: #9ca3af;
+                            font-weight: 500;
+                            font-size: 0.875rem;
+                          }
+                        `}</style>
+                        <SimpleCalendar
                           selected={pickupDateTime.date}
-                          onSelect={(date) => setPickupDateTime({ ...pickupDateTime, date })}
-                          disabled={(date) => date < new Date()}
-                          className="rounded-xl border-none mx-auto bg-transparent shadow-none w-full p-0"
+                          onSelect={(date) =>
+                            setPickupDateTime({
+                              ...pickupDateTime,
+                              date,
+                            })
+                          }
+                          
+                          className="mx-auto w-full"
                         />
                       </div>
 
                       {pickupDateTime.date && (
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
-                            {Array.from({ length: 24 }, (_, i) => i)
-                              .flatMap((i) => {
-                                const hour = i.toString().padStart(2, "0");
-                                return [`${hour}:00`, `${hour}:30`];
-                              })
-                              .map((time) => (
-                                <button
-                                  key={time}
-                                  type="button"
-                                  onClick={() => setPickupDateTime({ ...pickupDateTime, time })}
-                                  className={cn(
-                                    "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
-                                    pickupDateTime.time === time
-                                      ? "bg-gray-900 text-white border-gray-900 shadow-md"
-                                      : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50",
-                                  )}
-                                >
-                                  {time}
-                                </button>
-                              ))}
+                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                          <div className="flex items-center justify-between px-1">
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium text-gray-900">
+                                Время
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                Выберите удобный слот
+                              </span>
+                            </div>
+                            {pickupDateTime.time && (
+                              <Badge
+                                variant="secondary"
+                                className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-900"
+                              >
+                                {pickupDateTime.time}
+                              </Badge>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
+                            {Array.from(
+                              { length: 24 },
+                              (_, i) => {
+                                const hour = i
+                                  .toString()
+                                  .padStart(2, "0");
+                                const times = [
+                                  `${hour}:00`,
+                                  `${hour}:30`,
+                                ];
+                                return times.map((time) => (
+                                  <button
+                                    key={time}
+                                    onClick={() =>
+                                      setPickupDateTime({
+                                        ...pickupDateTime,
+                                        time,
+                                      })
+                                    }
+                                    className={cn(
+                                      "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
+                                      pickupDateTime.time ===
+                                        time
+                                        ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
+                                        : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105",
+                                    )}
+                                  >
+                                    {time}
+                                  </button>
+                                ));
+                              },
+                            ).flat()}
                           </div>
                         </div>
                       )}
 
                       <Button
-                        type="button"
-                        onClick={() => setShowPickupDialog(false)}
-                        className="w-full h-12 rounded-full text-base bg-gray-900 hover:bg-gray-800"
-                        disabled={!pickupDateTime.date || !pickupDateTime.time}
+                        onClick={() =>
+                          setShowPickupDialog(false)
+                        }
+                        className="w-full h-12 rounded-full text-base bg-gray-900 hover:bg-gray-800 shadow-lg shadow-gray-900/20 transition-all active:scale-[0.98]"
+                        disabled={
+                          !pickupDateTime.date ||
+                          !pickupDateTime.time
+                        }
                       >
                         Подтвердить
                       </Button>
@@ -1967,6 +2029,9 @@ function formatRub(n: number) {
           <div className="space-y-6">
             <UnifiedCoffinConfigurator
               onConfirm={(data) => {
+                handleInputChange("coffinConfig", data);
+              }}
+              onChange={(data) => {
                 handleInputChange("coffinConfig", data);
               }}
             />
@@ -2579,8 +2644,7 @@ function formatRub(n: number) {
               <button
                 type="button"
                 onClick={() => {
-                  setWorkflowMode("packages");
-                  setSelectedPackageForSimplified(null);
+                  openPackagesMode();
                 }}
                 className={cn(
                   "px-6 py-2 rounded-full text-sm font-medium transition-all duration-200",
@@ -2714,10 +2778,9 @@ function formatRub(n: number) {
       </div>
 
       <PackagesSelection
-        selectedPackageId={formData.packageType}
+        selectedPackageId=""
         packages={formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES_BURIAL}
         onSelectPackage={(pkg) => {
-          handleInputChange("packageType", pkg.id);
           setSelectedPackageForSimplified(pkg);
         }}
       />

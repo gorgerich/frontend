@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { Stepper } from "./Stepper";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
@@ -16,6 +17,12 @@ import { Checkbox } from "./ui/checkbox";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
 import {
+  ChevronDown as FloatingChevronDown,
+  ChevronUp as FloatingChevronUp,
+  Download,
+  Share2,
+} from "./Icons";
+import {
 ArrowLeft,
 Check,
 CheckCircle2,
@@ -28,7 +35,13 @@ Clock,
 import { cn } from "./ui/utils";
 import { Calendar } from "./ui/calendar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
-import { RubleSign, Download, Share2 } from "./Icons";
+import {
+calculateOrder,
+type CalculatorConfig,
+type FormData as CalculatorFormData,
+PRICES,
+ADDITIONAL_SERVICES,
+} from "./calculationUtils";
 
 import type { ImgHTMLAttributes } from "react";
 
@@ -48,6 +61,182 @@ function SafeImg(
         if (target.src !== fallbackSrc) target.src = fallbackSrc;
       }}
     />
+  );
+}
+
+type SimplifiedBreakdownItem = {
+  name: string;
+  price?: number;
+};
+
+type SimplifiedBreakdownSection = {
+  category: string;
+  price: number;
+  items?: SimplifiedBreakdownItem[];
+};
+
+type SimplifiedFloatingCalculatorProps = {
+  total: number;
+  breakdown: SimplifiedBreakdownSection[];
+};
+
+function SimplifiedFloatingCalculator({
+  total,
+  breakdown,
+}: SimplifiedFloatingCalculatorProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const portalRoot = typeof document !== "undefined" ? document.body : null;
+
+  const handleDownloadPDF = () => {
+    console.log("Downloading PDF...");
+  };
+
+  const handleShare = () => {
+    console.log("Sharing...");
+  };
+
+  if (!portalRoot) return null;
+
+  return createPortal(
+    <div
+      data-simplified-floating="true"
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md transition-all duration-300 ease-out"
+    >
+      <Card className="bg-[#eef5f5]/80 backdrop-blur-2xl border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] overflow-hidden rounded-[32px] ring-1 ring-white/50">
+        <CardContent
+          className={cn(
+            "relative z-10 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+            isExpanded ? "p-6" : "p-4"
+          )}
+        >
+          <div
+            className={cn(
+              "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+              !isExpanded ? "opacity-100" : "opacity-0 h-0 overflow-hidden"
+            )}
+          >
+            {/* Закрытое состояние */}
+            <div className="flex items-center justify-between gap-6">
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-0.5 drop-shadow-sm">
+                  Итого
+                </span>
+                <span className="text-2xl font-light text-slate-800 tracking-tight tabular-nums drop-shadow-sm">
+                  {total.toLocaleString("ru-RU")}{" "}
+                  <span className="text-base text-slate-400">₽</span>
+                </span>
+              </div>
+              <button
+                onClick={() => setIsExpanded(true)}
+                className="group relative flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-b from-[#fff] to-[#eef5f5] text-slate-600 shadow-[0_8px_16px_-6px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,1)] border border-white/60 transition-all duration-300 hover:scale-105 hover:shadow-[0_12px_20px_-8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,1)] active:scale-95"
+              >
+                <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <FloatingChevronUp className="h-6 w-6 drop-shadow-sm text-slate-700" />
+              </button>
+            </div>
+          </div>
+
+          <div
+            className={cn(
+              "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+              isExpanded ? "opacity-100" : "opacity-0 h-0 overflow-hidden"
+            )}
+          >
+            {/* Открытое состояние */}
+            <div className="space-y-5">
+              {/* Заголовок */}
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200/60">
+                <h3 className="text-sm font-bold text-slate-700 tracking-widest uppercase drop-shadow-sm">
+                  Детализация
+                </h3>
+                <button
+                  onClick={() => setIsExpanded(false)}
+                  className="h-8 w-8 rounded-full bg-white/40 hover:bg-white/80 flex items-center justify-center transition-all text-slate-400 hover:text-slate-700 backdrop-blur-sm border border-white/50 shadow-sm"
+                >
+                  <FloatingChevronDown className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Список разбивки */}
+              <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-300/50 scrollbar-track-transparent hover:scrollbar-thumb-slate-400/50">
+                {breakdown.map((section, index) => (
+                  <div
+                    key={index}
+                    className="group p-4 rounded-2xl bg-gradient-to-br from-white/40 to-white/10 border border-white/50 hover:border-white/80 transition-all duration-300 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] backdrop-blur-xl ring-1 ring-white/40 hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] hover:scale-[1.01]"
+                  >
+                    {/* Категория */}
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[15px] text-slate-700 font-semibold tracking-wide group-hover:text-slate-900 transition-colors">
+                        {section.category}
+                      </span>
+                      <span className="text-[15px] text-slate-700 font-semibold tabular-nums bg-white/50 px-2 py-0.5 rounded-lg shadow-sm border border-white/50">
+                        {section.price.toLocaleString("ru-RU")} ₽
+                      </span>
+                    </div>
+
+                    {/* Подпункты */}
+                    {section.items && section.items.length > 0 && (
+                      <div className="space-y-1.5 mt-3 pt-3 border-t border-slate-200/60">
+                        {section.items.map((item, itemIndex) => (
+                          <div
+                            key={itemIndex}
+                            className="flex items-start justify-between text-sm text-slate-500 group-hover:text-slate-600 transition-colors"
+                          >
+                            <span className="flex items-start gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-slate-400/50 mt-2 shrink-0 shadow-[0_0_8px_rgba(148,163,184,0.5)]" />
+                              <span className="leading-relaxed font-medium">{item.name}</span>
+                            </span>
+                            {item.price !== undefined && (
+                              <span className="ml-3 whitespace-nowrap tabular-nums opacity-70 font-medium">
+                                {item.price.toLocaleString("ru-RU")} ₽
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Итого */}
+              <div className="flex items-center justify-between pt-5 border-t border-slate-200/60">
+                <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest drop-shadow-sm">
+                  Итого к оплате
+                </span>
+                <span className="text-3xl font-light text-slate-800 tabular-nums drop-shadow-sm">
+                  {total.toLocaleString("ru-RU")}{" "}
+                  <span className="text-lg text-slate-400 font-thin">₽</span>
+                </span>
+              </div>
+
+              {/* Кнопки действий */}
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={handleDownloadPDF}
+                  className="relative overflow-hidden group flex items-center justify-center gap-2 border-white/60 bg-white/40 hover:bg-white/60 text-slate-600 h-12 rounded-2xl text-xs font-bold uppercase tracking-wider shadow-[0_4px_12px_-2px_rgba(0,0,0,0.05)] transition-all hover:scale-[1.02] active:scale-[0.98] backdrop-blur-sm ring-1 ring-white/50"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                  <Download className="h-4 w-4 opacity-70 group-hover:opacity-100 transition-opacity text-slate-700" />
+                  <span>PDF</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleShare}
+                  className="relative overflow-hidden group flex items-center justify-center gap-2 border-white/60 bg-white/40 hover:bg-white/60 text-slate-600 h-12 rounded-2xl text-xs font-bold uppercase tracking-wider shadow-[0_4px_12px_-2px_rgba(0,0,0,0.05)] transition-all hover:scale-[1.02] active:scale-[0.98] backdrop-blur-sm ring-1 ring-white/50"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                  <Share2 className="h-4 w-4 opacity-70 group-hover:opacity-100 transition-opacity text-slate-700" />
+                  <span>Поделиться</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>,
+    portalRoot
   );
 }
 
@@ -248,6 +437,7 @@ cemetery: boolean;
 type FormDataShape = {
 serviceType: string; // "burial" | "cremation" (но у тебя строка)
 hasHall: boolean;
+hallDuration?: number;
 ceremonyType: string; // "civil" | "religious" | "combined"
 confession: string;
 ceremonyOrder: string;
@@ -262,6 +452,9 @@ deathCertificate: string;
 relationship: string;
 dataConsent: boolean;
 userEmail: string;
+paymentPlan?: "full" | "deposit" | "split";
+paidNowRub?: string;
+splitSchedule?: string;
 liningColor?: string;
 };
 
@@ -281,6 +474,7 @@ onUpdateFormData: (field: string, value: any) => void;
 const DEFAULT_FORM_DATA: FormDataShape = {
 serviceType: "",
 hasHall: false,
+hallDuration: 60,
 ceremonyType: "",
 confession: "",
 ceremonyOrder: "",
@@ -297,6 +491,16 @@ dataConsent: false,
 userEmail: "",
 liningColor: "satin-white",
 };
+
+const SIMPLIFIED_FORM_STORAGE_KEY = "TIHIYDOM_SIMPLIFIED_FORM_V1";
+
+const TIME_SLOTS = [
+  ...Array.from({ length: 8 }, (_, i) => {
+    const hour = String(8 + i).padStart(2, "0");
+    return [`${hour}:00`, `${hour}:30`];
+  }).flat(),
+  "16:00",
+];
 
 export function SimplifiedStepperWorkflow({
 selectedPackage,
@@ -315,8 +519,28 @@ const [showConsentError, setShowConsentError] = useState(false);
 const isInitialMountRef = useRef(true);
 const previousStepRef = useRef(0);
 
+const [localFormData, setLocalFormData] = useState<FormDataShape>(() => {
+  if (typeof window === "undefined") return DEFAULT_FORM_DATA;
+  try {
+    const saved = localStorage.getItem(SIMPLIFIED_FORM_STORAGE_KEY);
+    if (!saved) return DEFAULT_FORM_DATA;
+    const parsed = JSON.parse(saved);
+    const data = parsed?.formData ?? parsed;
+    return {
+      ...DEFAULT_FORM_DATA,
+      ...(data || {}),
+      hearseRoute: {
+        ...DEFAULT_FORM_DATA.hearseRoute,
+        ...(data?.hearseRoute || {}),
+      },
+    };
+  } catch {
+    return DEFAULT_FORM_DATA;
+  }
+});
+
 // ВСЕГДА безопасный объект для рендера (главное исправление: ВСЕГДА использовать его в JSX)
-const safeFormData: FormDataShape = formData ?? DEFAULT_FORM_DATA;
+const safeFormData: FormDataShape = localFormData;
 
 
 // 1) Маппинг пакета -> дерево (исправляем: базовый = дуб, премиум = элитное)
@@ -396,12 +620,14 @@ const [showFarewellDialog, setShowFarewellDialog] = useState(false);
 const [showBurialDialog, setShowBurialDialog] = useState(false);
 
 // Состояния для оплаты
-const [paymentMethod, setPaymentMethod] = useState<string>("card");
 const [cardData, setCardData] = useState({ number: "", expiry: "", cvc: "", holder: "" });
+const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
 
 const handleInputChange = (field: keyof FormDataShape | "hearseRoute", value: any) => {
-if (typeof onUpdateFormData !== "function") return;
-onUpdateFormData(field, value);
+setLocalFormData((prev) => ({
+  ...prev,
+  [field]: value,
+}));
 };
 
 const handleSkipField = (field: "birthDate" | "deathDate" | "deathCertificate") => {
@@ -416,6 +642,19 @@ handleInputChange("liningColor", "satin-white");
 // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [safeFormData.liningColor]);
 
+// Сохранение состояния simplified в отдельный ключ
+useEffect(() => {
+  if (typeof window === "undefined") return;
+  try {
+    const draft = { formData: localFormData, savedAt: new Date().toISOString() };
+    const draftString = JSON.stringify(draft);
+    if (draftString.length > 500000) return;
+    localStorage.setItem(SIMPLIFIED_FORM_STORAGE_KEY, draftString);
+  } catch {
+    // ignore
+  }
+}, [localFormData]);
+
 // Автоматический скролл вверх при смене шага
 useEffect(() => {
 if (!isInitialMountRef.current && previousStepRef.current !== currentStep) {
@@ -424,6 +663,44 @@ window.scrollTo({ top: 0, behavior: "smooth" });
 if (isInitialMountRef.current) isInitialMountRef.current = false;
 previousStepRef.current = currentStep;
 }, [currentStep]);
+
+// Скрываем глобальный floating-калькулятор, чтобы остался только simplified.
+useEffect(() => {
+  if (typeof document === "undefined") return;
+  const hidden = new Set<HTMLElement>();
+
+  const hideGlobalFloating = () => {
+    const candidates = Array.from(document.querySelectorAll("div"));
+    for (const el of candidates) {
+      if (!(el instanceof HTMLElement)) continue;
+      const classList = el.classList;
+      if (
+        !classList.contains("fixed") ||
+        !classList.contains("bottom-6") ||
+        !classList.contains("left-1/2") ||
+        !classList.contains("-translate-x-1/2") ||
+        !classList.contains("max-w-md")
+      ) {
+        continue;
+      }
+      if (el.dataset.simplifiedFloating === "true") continue;
+      if (hidden.has(el)) continue;
+      el.style.display = "none";
+      hidden.add(el);
+    }
+  };
+
+  hideGlobalFloating();
+  const observer = new MutationObserver(hideGlobalFloating);
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  return () => {
+    observer.disconnect();
+    hidden.forEach((el) => {
+      el.style.display = "";
+    });
+  };
+}, []);
 
 const handleNext = () => {
 // Проверка согласия на шаге документов
@@ -459,8 +736,104 @@ window.scrollTo({ top: 0, behavior: "smooth" });
 }
 };
 
-// Расчёт стоимости (пока без допов)
-const calculateTotal = () => (selectedPackage?.price ?? 0);
+const simplifiedCalculatorConfig = useMemo<CalculatorConfig>(() => {
+  const packages = selectedPackage
+    ? [
+        {
+          id: selectedPackage.id,
+          name: selectedPackage.name,
+          price: selectedPackage.price,
+          features: [...(selectedPackage.features || [])],
+        },
+      ]
+    : [];
+
+  return {
+    base: {
+      title: "Базовые услуги",
+      price: 25000,
+      items: [
+        "Оформление документов",
+        "Подтверждение места захоронения",
+        "Хранение и базовая подготовка тела",
+        "Гроб, подушка и покрывало",
+        "Транспортировка покойного и перенос",
+        "Кладбищенские работы",
+      ],
+    },
+    prices: {
+      hallDuration: { ...PRICES.hallDuration },
+      ceremonyType: { ...PRICES.ceremonyType },
+      hearse: PRICES.hearse,
+      familyTransport: { ...PRICES.familyTransport },
+      pallbearers: PRICES.pallbearers,
+    },
+    packages,
+    additionalServices: ADDITIONAL_SERVICES.map((service) => ({
+      id: service.id,
+      name: service.name,
+      price: service.price,
+    })),
+    cemeteries: [...MOSCOW_CEMETERIES, ...MO_CEMETERIES].map((cemetery) => ({
+      name: cemetery.name,
+      categories: { ...cemetery.categories },
+    })),
+    cemeteryCategoryLabels: {
+      standard: "Стандарт",
+      comfort: "Комфорт",
+      premium: "Премиум",
+    },
+    cemeterySectionTitle: (categoryLabel) => `Место на кладбище (${categoryLabel})`,
+    includeCemeteryCategoryItem: false,
+    includeCemeteryWithPackage: true,
+    includeLogisticsWithPackage: true,
+    includeFormatWithPackage: true,
+    includeAdditionalWithPackage: true,
+    includeBaseWithPackage: false,
+    packageSectionMinPrice: 0,
+  };
+}, [selectedPackage]);
+
+const calculatorFormData: CalculatorFormData = {
+  serviceType: safeFormData.serviceType,
+  hasHall: false,
+  hallDuration: 0,
+  ceremonyType: "",
+  packageType: selectedPackage?.id ?? "",
+  needsHearse: false,
+  needsFamilyTransport: false,
+  familyTransportSeats: 0,
+  needsPallbearers: false,
+  selectedAdditionalServices: [],
+  cemetery: "",
+};
+
+const order = calculateOrder(calculatorFormData, simplifiedCalculatorConfig, selectedCemeteryCategory);
+const formatRubLocal = (v: number) => Math.round(v).toLocaleString("ru-RU");
+const fallbackTariffSection =
+  selectedPackage
+    ? {
+        title: `Пакет "${selectedPackage.name}"`,
+        total: selectedPackage.price ?? 0,
+        items: (selectedPackage.features || []).map((feature) => ({
+          label: feature,
+          included: true,
+          price: undefined,
+        })),
+      }
+    : null;
+const tariffSection =
+  order.sections.find((section) => section.title.startsWith('Пакет "')) ?? fallbackTariffSection;
+const simplifiedSections = tariffSection ? [tariffSection] : [];
+const totalRub = Math.max(0, Math.round(tariffSection?.total || 0));
+const floatingBreakdown = simplifiedSections.map((section) => ({
+category: section.title,
+price: Math.round(section.total || 0),
+items: section.items?.map((item) => ({
+name: item.label,
+price: typeof item.price === "number" ? Math.round(item.price) : undefined,
+})),
+}));
 
 const handleStepClick = (stepIndex: number) => {
 setCurrentStep(stepIndex);
@@ -523,17 +896,10 @@ case 0: {
     {/* Инфо-панель */}
     <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
       <div className="min-w-0">
-        <div className="text-white text-sm font-medium truncate">
-          Пакет: {selectedPackage?.name ?? "—"}
-        </div>
         <div className="text-white/80 text-xs truncate">
-          Отделка: {liningOptions.find(l => l.id === currentLiningId)?.name ?? "—"}
+          Отделка: {liningOptions.find((l) => l.id === currentLiningId)?.name ?? "—"}
         </div>
       </div>
-
-      <Badge className="bg-white/10 text-white border border-white/20 backdrop-blur-sm">
-        Включено в пакет
-      </Badge>
     </div>
   </div>
 </div>
@@ -756,12 +1122,6 @@ return c.type === "crematorium" || c.type === "both";
 
 return (
 <div className="space-y-6">
-<div className="bg-blue-500/10 backdrop-blur-sm border border-blue-300/30 rounded-full p-4">
-<p className="text-sm text-blue-900">
-✓ Катафалк и носильщики (4 чел.) уже включены в ваш пакет &quot;{selectedPackage?.name ?? ""}&quot;
-</p>
-</div>
-
 <div className="relative">
 <Label htmlFor="cemetery" className="mb-3 block">
 {safeFormData.serviceType === "burial" ? "Выбор кладбища" : "Выбор крематория"}
@@ -911,21 +1271,16 @@ type="button"
 </DialogHeader>
 
 <div className="flex flex-col gap-6 py-2 overflow-y-auto pr-2">
-<div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
 <Calendar
 mode="single"
 selected={pickupDateTime.date}
-onSelect={(date) => setPickupDateTime({ ...pickupDateTime, date })}
-disabled={(date) => {
-const today = new Date();
-const compareDate = new Date(date);
-today.setHours(0, 0, 0, 0);
-compareDate.setHours(0, 0, 0, 0);
-return compareDate < today;
-}}
-className="rounded-xl border-none mx-auto bg-transparent shadow-none w-full p-0"
+onSelect={(date: Date | undefined) =>
+setPickupDateTime({
+date,
+time: undefined,
+})
+}
 />
-</div>
 
 {pickupDateTime.date && (
 <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -941,26 +1296,22 @@ className="rounded-xl border-none mx-auto bg-transparent shadow-none w-full p-0"
 )}
 </div>
 
-<div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
-{Array.from({ length: 24 }, (_, i) => {
-const hour = i.toString().padStart(2, "0");
-const times = [`${hour}:00`, `${hour}:30`];
-return times.map((time) => (
+<div className="grid grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
+{TIME_SLOTS.map((time) => (
 <button
 type="button"
 key={time}
 onClick={() => setPickupDateTime({ ...pickupDateTime, time })}
 className={cn(
-"px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
+"px-3 py-2 rounded-full text-xs font-medium transition-colors border",
 pickupDateTime.time === time
-? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
-: "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105"
+? "bg-blue-600 text-white border-blue-600"
+: "bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
 )}
 >
 {time}
 </button>
-));
-}).flat()}
+))}
 </div>
 </div>
 )}
@@ -997,22 +1348,23 @@ type="button"
 </Button>
 </DialogTrigger>
 
-<DialogContent className="sm:max-w-[425px]">
+<DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
 <DialogHeader>
 <DialogTitle>Выбор даты и времени прощания</DialogTitle>
 <DialogDescription>Выберите дату и время прощания в зале или церкви</DialogDescription>
 </DialogHeader>
 
-<div className="flex flex-col gap-6 py-2">
-<div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
+<div className="flex flex-col gap-6 py-2 overflow-y-auto pr-2">
 <Calendar
 mode="single"
 selected={farewellDateTime.date}
-onSelect={(date) => setFarewellDateTime({ ...farewellDateTime, date })}
-disabled={(date) => date < new Date()}
-className="rounded-xl border-none mx-auto bg-transparent shadow-none w-full p-0"
+onSelect={(date: Date | undefined) =>
+setFarewellDateTime({
+date,
+time: undefined,
+})
+}
 />
-</div>
 
 {farewellDateTime.date && (
 <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -1028,26 +1380,22 @@ className="rounded-xl border-none mx-auto bg-transparent shadow-none w-full p-0"
 )}
 </div>
 
-<div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
-{Array.from({ length: 24 }, (_, i) => {
-const hour = i.toString().padStart(2, "0");
-const times = [`${hour}:00`, `${hour}:30`];
-return times.map((time) => (
+<div className="grid grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
+{TIME_SLOTS.map((time) => (
 <button
 type="button"
 key={time}
 onClick={() => setFarewellDateTime({ ...farewellDateTime, time })}
 className={cn(
-"px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
+"px-3 py-2 rounded-full text-xs font-medium transition-colors border",
 farewellDateTime.time === time
-? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
-: "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105"
+? "bg-blue-600 text-white border-blue-600"
+: "bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
 )}
 >
 {time}
 </button>
-));
-}).flat()}
+))}
 </div>
 </div>
 )}
@@ -1085,7 +1433,7 @@ type="button"
 </Button>
 </DialogTrigger>
 
-<DialogContent className="sm:max-w-[425px]">
+<DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
 <DialogHeader>
 <DialogTitle>
 Выбор даты и времени{" "}
@@ -1097,16 +1445,17 @@ type="button"
 </DialogDescription>
 </DialogHeader>
 
-<div className="flex flex-col gap-6 py-2">
-<div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
+<div className="flex flex-col gap-6 py-2 overflow-y-auto pr-2">
 <Calendar
 mode="single"
 selected={burialDateTime.date}
-onSelect={(date) => setBurialDateTime({ ...burialDateTime, date })}
-disabled={(date) => date < new Date()}
-className="rounded-xl border-none mx-auto bg-transparent shadow-none w-full p-0"
+onSelect={(date: Date | undefined) =>
+setBurialDateTime({
+date,
+time: undefined,
+})
+}
 />
-</div>
 
 {burialDateTime.date && (
 <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -1124,26 +1473,22 @@ className="rounded-xl border-none mx-auto bg-transparent shadow-none w-full p-0"
 )}
 </div>
 
-<div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
-{Array.from({ length: 24 }, (_, i) => {
-const hour = i.toString().padStart(2, "0");
-const times = [`${hour}:00`, `${hour}:30`];
-return times.map((time) => (
+<div className="grid grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
+{TIME_SLOTS.map((time) => (
 <button
 type="button"
 key={time}
 onClick={() => setBurialDateTime({ ...burialDateTime, time })}
 className={cn(
-"px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
+"px-3 py-2 rounded-full text-xs font-medium transition-colors border",
 burialDateTime.time === time
-? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
-: "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105"
+? "bg-blue-600 text-white border-blue-600"
+: "bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
 )}
 >
 {time}
 </button>
-));
-}).flat()}
+))}
 </div>
 </div>
 )}
@@ -1406,6 +1751,102 @@ routeParts.push(safeFormData.serviceType === "burial" ? "Кладбище" : "К
 }
 const routeText = routeParts.length ? routeParts.join(" → ") : "Не выбран";
 
+const calcSplitSchedule = (total: number) => {
+const t = Math.max(0, Math.round(total || 0));
+const base = Math.floor(t / 4);
+const p1 = base;
+const p2 = base;
+const p3 = base;
+const p4 = t - (p1 + p2 + p3);
+return [
+{ title: "Сегодня", amountRub: p1 },
+{ title: "Через 2 недели", amountRub: p2 },
+{ title: "Через 4 недели", amountRub: p3 },
+{ title: "Через 6 недель", amountRub: p4 },
+];
+};
+
+const depositRub = Math.max(0, Math.round(totalRub * 0.05));
+const splitSchedule = calcSplitSchedule(totalRub);
+
+const payPlan = (safeFormData.paymentPlan || "full") as "full" | "deposit" | "split";
+
+const payNowRub =
+payPlan === "deposit"
+? depositRub
+: payPlan === "split"
+? splitSchedule[0].amountRub
+: totalRub;
+
+const emailValue = (safeFormData.userEmail || "").trim();
+
+const cardNumberDigits = (cardData?.number || "").replace(/\D/g, "");
+const expOk = /^\d{2}\/\d{2}$/.test(cardData?.expiry || "");
+const cvcOk = /^\d{3,4}$/.test(cardData?.cvc || "");
+const cardOk = cardNumberDigits.length >= 12;
+const emailOk = emailValue.includes("@");
+
+const canPay = totalRub > 0 && emailOk && cardOk && expOk && cvcOk;
+
+const breakdown = simplifiedSections;
+
+const onPayClick = async () => {
+if (isSubmittingOrder || !canPay) return;
+
+try {
+setIsSubmittingOrder(true);
+
+handleInputChange("paymentPlan", payPlan);
+handleInputChange("paidNowRub", String(payNowRub));
+
+if (payPlan === "split") {
+handleInputChange("splitSchedule", JSON.stringify(splitSchedule));
+} else {
+handleInputChange("splitSchedule", "");
+}
+
+await new Promise((r) => setTimeout(r, 400));
+
+if (!emailValue) {
+alert("Укажите email для получения договора и деталей заказа.");
+return;
+}
+
+const payload = {
+customer: {
+email: emailValue,
+name: safeFormData.fullName || undefined,
+},
+};
+
+const res = await fetch("/api/orders", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify(payload),
+});
+
+if (!res.ok) {
+const data = await res.json().catch(() => ({}));
+console.error("Order error:", data);
+alert(
+(data as any)?.error ||
+"Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой."
+);
+return;
+}
+
+const data = await res.json();
+console.log("Order created:", data);
+
+alert("Бронирование оформлено! Детали и договор отправлены на указанную электронную почту. К сожалению оплата не прошла, агент свяжется с вами в скором времени");
+} catch (e) {
+console.error("Order request failed:", e);
+alert("Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой.");
+} finally {
+setIsSubmittingOrder(false);
+}
+};
+
 return (
 <div className="space-y-6">
 <div className="bg-green-50 border border-green-200 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
@@ -1413,22 +1854,6 @@ return (
 <div>
 <h3 className="text-green-900 mb-2">Все данные заполнены</h3>
 <p className="text-sm text-green-700">Пожалуйста, проверьте информацию перед бронированием.</p>
-</div>
-</div>
-
-{/* Пакет */}
-<div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-<h4 className="text-sm text-gray-500 mb-3">Выбранный пакет</h4>
-<div className="space-y-2 text-sm">
-<div className="flex justify-between items-start">
-<div className="flex-1">
-<p className="font-medium">{selectedPackage?.name ?? ""}</p>
-<p className="text-xs text-gray-600 mt-1">{selectedPackage?.description ?? ""}</p>
-</div>
-<span className="text-gray-900 ml-4 shrink-0">
-{(selectedPackage?.price ?? 0).toLocaleString("ru-RU")} ₽
-</span>
-</div>
 </div>
 </div>
 
@@ -1526,272 +1951,228 @@ return (
 </div>
 </div>
 
-{/* Итоговая смета + Способ оплаты */}
-<div className="bg-gray-900 text-white rounded-3xl p-6 shadow-lg space-y-6">
-{/* Итоговая смета */}
+{/* СОСТАВ ЗАКАЗА */}
+<div className="bg-white border border-gray-200 rounded-[30px] p-5 shadow-sm">
+<div className="flex items-center justify-between mb-4">
 <div>
-<h4 className="mb-4">Итоговая смета</h4>
+<div className="text-sm font-semibold text-gray-900">Состав заказа</div>
+<div className="text-xs text-gray-500 mt-1">Полный перечень услуг, которые входят в итоговую стоимость</div>
+</div>
+<div className="text-sm font-semibold text-gray-900">{formatRubLocal(totalRub)} ₽</div>
+</div>
 
-<div className="space-y-3">
-<div className="flex justify-between pt-2">
-<span className="text-lg">Итого:</span>
-<span className="text-2xl">{calculateTotal().toLocaleString("ru-RU")} ₽</span>
+<div className="space-y-4">
+{breakdown.map((block, idx) => (
+<div key={`${block.title}-${idx}`} className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+<div className="flex items-start justify-between gap-3">
+<div className="text-sm font-semibold text-gray-900">{block.title}</div>
+<div className="text-sm font-semibold text-gray-900">{formatRubLocal(block.total)} ₽</div>
+</div>
+
+{block.items?.length ? (
+<div className="mt-3 space-y-2">
+{block.items.map((it, i) => (
+<div key={`${block.title}-it-${i}`} className="flex items-start justify-between gap-3 text-sm">
+<div className="text-gray-700">
+<span className="text-gray-900">•</span> {it.label}
+</div>
+<div className="text-gray-600 whitespace-nowrap">
+{typeof it.price === "number" ? `${formatRubLocal(it.price)} ₽` : "включено"}
+</div>
+</div>
+))}
+</div>
+) : null}
+</div>
+))}
 </div>
 </div>
 
-<div className="flex gap-3 mt-6">
-<Button
-variant="outline"
-className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
-type="button"
->
-<Download className="h-4 w-4 mr-2" />
-Договор
-</Button>
-<Button
-variant="outline"
-className="flex-1 bg-white text-gray-900 hover:bg-gray-100"
-type="button"
->
-<Share2 className="h-4 w-4 mr-2" />
-Поделиться
-</Button>
-</div>
-</div>
+{/* Оплата */}
+<div className="pt-2">
+<div className="text-sm font-semibold text-gray-900 mb-3">Оплата</div>
 
-<div className="border-t border-white/20" />
-
-{/* Способ оплаты */}
-<div>
-<div className="flex items-center gap-3 mb-4">
-<RubleSign className="h-6 w-6 text-white" />
-<h4 className="text-lg text-white">Способ оплаты</h4>
-</div>
-
-{paymentMethod !== "card" && (
-<button
-type="button"
-onClick={() => setPaymentMethod("card")}
-className="w-full p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-200 text-left mb-4"
->
-<div className="flex items-center gap-2 mb-2">
-<div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
-<span className="text-sm text-white">Банковская карта</span>
-</div>
-<p className="text-xs text-white/70 ml-7">Visa, Mastercard, МИР</p>
-</button>
-)}
-
-{paymentMethod === "card" && (
-<div className="mt-4">
-<div className="grid gap-6 md:grid-cols-2 items-start">
-{/* Левая колонка — карта */}
-<div className="relative mx-auto w-full max-w-md">
-<div className="relative w-full aspect-[1.586/1] rounded-2xl p-6 shadow-2xl bg-white border border-gray-200">
-{/* Чип */}
-<div className="absolute top-6 left-6 w-12 h-10 rounded bg-gradient-to-br from-yellow-300/80 to-yellow-500/80 backdrop-blur" />
-
-{/* Логотип */}
-<div className="absolute top-6 right-6 flex gap-2">
-<div className="w-8 h-8 rounded-full bg-white/50 backdrop-blur border border-white/60" />
-<div className="w-8 h-8 rounded-full bg-white/60 backdrop-blur border border-white/60 -ml-4" />
-</div>
-
-{/* Номер */}
-<div className="absolute top-16 left-6 right-6">
+<div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
+{/* LEFT: поля карты + email */}
+<div className="bg-white border border-gray-200 rounded-[30px] p-6 shadow-sm">
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div className="md:col-span-2">
+<div className="text-sm text-gray-700 mb-2">Номер карты</div>
 <input
-type="text"
-className="w-full bg-transparent border-none text-gray-900 text-xl tracking-[0.2em] placeholder:text-gray-500 focus:outline-none font-mono"
-placeholder="0000 0000 0000 0000"
 value={cardData.number}
 onChange={(e) => {
-const value = e.target.value
-.replace(/\s/g, "")
-.replace(/(\d{4})/g, "$1 ")
-.trim();
-setCardData((prev) => ({ ...prev, number: value }));
+const digits = e.target.value.replace(/\D/g, "").slice(0, 16);
+const parts = digits.match(/.{1,4}/g) ?? [];
+setCardData({ ...cardData, number: parts.join(" ") });
 }}
-maxLength={19}
+placeholder="0000 0000 0000 0000"
+className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
+inputMode="numeric"
 />
 </div>
 
-{/* Holder + expiry */}
-<div className="absolute bottom-10 left-6 right-6 flex justify-between items-end">
-<div className="flex-1 min-w-0 mr-4">
+<div>
+<div className="text-sm text-gray-700 mb-2">Держатель карты</div>
 <input
-type="text"
-className="w-full bg-transparent border-none text-gray-900 text-sm placeholder:text-gray-500 focus:outline-none uppercase"
-placeholder="IVAN IVANOV"
 value={cardData.holder}
-onChange={(e) => {
-const value = e.target.value
-.toUpperCase()
-.replace(/[^A-Z\s]/g, "");
-setCardData((prev) => ({ ...prev, holder: value }));
-}}
+onChange={(e) => setCardData({ ...cardData, holder: e.target.value.slice(0, 26) })}
+placeholder="IVAN IVANOV"
+className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
 />
-<div className="text-[10px] text-gray-600 mt-1 uppercase tracking-wide">
-Держатель карты
-</div>
 </div>
 
-<div className="flex-shrink-0">
+<div className="grid grid-cols-2 gap-4">
+<div>
+<div className="text-sm text-gray-700 mb-2">Срок</div>
 <input
-type="text"
-className="w-16 bg-transparent border-none text-gray-900 text-sm text-right placeholder:text-gray-500 focus:outline-none font-mono"
-placeholder="MM/ГГ"
 value={cardData.expiry}
 onChange={(e) => {
-let value = e.target.value.replace(/\D/g, "");
-if (value.length >= 2) value = value.slice(0, 2) + "/" + value.slice(2, 4);
-setCardData((prev) => ({ ...prev, expiry: value }));
+const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
+const v = digits.length <= 2 ? digits : `${digits.slice(0, 2)}/${digits.slice(2)}`;
+setCardData({ ...cardData, expiry: v });
 }}
-maxLength={5}
+placeholder="MM/YY"
+className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
+inputMode="numeric"
 />
-<div className="text-[10px] text-gray-600 mt-1 uppercase tracking-wide text-right">
-Действительна
-</div>
-</div>
-</div>
-</div>
 </div>
 
-{/* Правая колонка — CVC + Email */}
-<div className="space-y-4">
-<div className="bg-white border border-gray-200 rounded-xl p-4">
-<div className="flex items-center gap-3">
-<div className="flex-1">
-<Label htmlFor="cardCvc" className="text-gray-900 text-xs mb-2 block">
-CVC/CVV код
-</Label>
-<Input
-id="cardCvc"
-className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 text-center text-lg tracking-widest font-mono"
-placeholder="•••"
-type="password"
+<div>
+<div className="text-sm text-gray-700 mb-2">CVC</div>
+<input
 value={cardData.cvc}
-onChange={(e) => {
-const value = e.target.value.replace(/\D/g, "").slice(0, 3);
-setCardData((prev) => ({ ...prev, cvc: value }));
-}}
-maxLength={3}
+onChange={(e) => setCardData({ ...cardData, cvc: e.target.value.replace(/\D/g, "").slice(0, 4) })}
+placeholder="123"
+className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
+inputMode="numeric"
 />
-</div>
-<div className="text-xs text-gray-600 max-w-[120px]">
-3 цифры на обратной стороне карты
-</div>
 </div>
 </div>
 
-<div className="bg-white border border-gray-200 rounded-xl p-4">
-<Label htmlFor="userEmail" className="text-gray-900 text-sm mb-2 block">
-Email для получения информации
-</Label>
-<Input
-id="userEmail"
-type="email"
-className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-placeholder="example@email.com"
-value={safeFormData.userEmail}
+<div className="md:col-span-2">
+<div className="text-sm font-semibold text-gray-900 mt-2 mb-2">Email для получения информации</div>
+<input
+value={emailValue}
 onChange={(e) => handleInputChange("userEmail", e.target.value)}
+placeholder="name@email.com"
+className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
+inputMode="email"
 />
-<p className="text-xs text-gray-500 mt-2">
-На этот адрес придёт подтверждение заказа, детали церемонии и все необходимые документы.
-</p>
+<div className="mt-2 text-xs text-gray-500">
+На этот адрес придёт подтверждение заказа, детали церемонии и документы.
 </div>
 </div>
 </div>
 
-<div className="pt-4 border-t border-white/20 mt-6">
-<p className="text-xs text-white/60 mb-3">Или выберите другой способ:</p>
-<div className="grid grid-cols-2 gap-3">
-<button
-type="button"
-onClick={() => setPaymentMethod("sbp")}
-className="p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-200 text-left"
->
-<div className="flex items-center gap-2 mb-2">
-<div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
-<span className="text-sm text-white">СБП</span>
-</div>
-<p className="text-xs text-white/70 ml-7">Система быстрых платежей</p>
-</button>
-
-<button
-type="button"
-onClick={() => setPaymentMethod("installment")}
-className="p-4 rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-200 text-left"
->
-<div className="flex items-center gap-2 mb-2">
-<div className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center" />
-<span className="text-sm text-white">Рассрочка</span>
-</div>
-<p className="text-xs text-white/70 ml-7">0% на 6 месяцев</p>
-</button>
-</div>
-</div>
-
-<div className="bg-white/10 border border-white/20 rounded-2xl p-4 mt-4">
-<div className="flex items-start gap-3">
-<CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-<div className="space-y-1">
-<p className="text-sm text-white">Защищённый платёж</p>
-<p className="text-xs text-white/70">
-Данные передаются по защищённому протоколу и не хранятся на наших серверах.
-</p>
-</div>
-</div>
-</div>
+{(!cardOk || !expOk || !cvcOk || !emailOk) && (
+<div className="mt-4 text-xs text-red-600 space-y-1">
+{!emailOk && <div>Укажи корректный email.</div>}
+{!cardOk && <div>Проверь номер карты.</div>}
+{!expOk && <div>Срок действия должен быть в формате MM/YY.</div>}
+{!cvcOk && <div>CVC должен быть 3–4 цифры.</div>}
 </div>
 )}
 </div>
+
+{/* RIGHT: планы оплаты + итог + кнопка */}
+<div className="space-y-4">
+<div className="bg-white border border-gray-200 rounded-[30px] p-5 shadow-sm">
+<div className="text-sm font-semibold text-gray-900 mb-3">Вариант оплаты</div>
+
+<div className="space-y-2">
+<button
+type="button"
+onClick={() => handleInputChange("paymentPlan", "full")}
+className={[
+"w-full rounded-2xl border px-4 py-3 text-left flex items-center justify-between",
+payPlan === "full" ? "border-gray-900" : "border-gray-200 hover:border-gray-300",
+].join(" ")}
+>
+<div className="flex items-center gap-3">
+<div className={payPlan === "full" ? "h-4 w-4 rounded-full bg-gray-900" : "h-4 w-4 rounded-full border border-gray-400"} />
+<div className="text-sm text-gray-900">Оплатить всю сумму</div>
+</div>
+<div className="text-sm font-semibold text-gray-900">{formatRubLocal(totalRub)} ₽</div>
+</button>
+
+<button
+type="button"
+onClick={() => handleInputChange("paymentPlan", "deposit")}
+className={[
+"w-full rounded-2xl border px-4 py-3 text-left flex items-center justify-between",
+payPlan === "deposit" ? "border-gray-900" : "border-gray-200 hover:border-gray-300",
+].join(" ")}
+>
+<div className="flex items-center gap-3">
+<div className={payPlan === "deposit" ? "h-4 w-4 rounded-full bg-gray-900" : "h-4 w-4 rounded-full border border-gray-400"} />
+<div className="text-sm text-gray-900">Оплатить депозит (5%)</div>
+</div>
+<div className="text-sm font-semibold text-gray-900">{formatRubLocal(depositRub)} ₽</div>
+</button>
+
+{payPlan === "deposit" && (
+<div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-xs text-gray-600">
+Депозит фиксирует бронь времени и ключевых ресурсов: слот церемонии, зал прощания (если выбран),
+логистику и подготовку. Депозит входит в общую сумму; остаток оплачивается позже.
+</div>
+)}
+
+<button
+type="button"
+onClick={() => handleInputChange("paymentPlan", "split")}
+className={[
+"w-full rounded-2xl border px-4 py-3 text-left flex items-center justify-between",
+payPlan === "split" ? "border-gray-900" : "border-gray-200 hover:border-gray-300",
+].join(" ")}
+>
+<div className="flex items-center gap-3">
+<div className={payPlan === "split" ? "h-4 w-4 rounded-full bg-gray-900" : "h-4 w-4 rounded-full border border-gray-400"} />
+<div className="text-sm text-gray-900">Оплатить сплитом</div>
+</div>
+<div className="text-sm font-semibold text-gray-900">4× {formatRubLocal(splitSchedule[0].amountRub)} ₽</div>
+</button>
+</div>
+
+{payPlan === "split" && (
+<div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
+<div className="text-xs font-semibold text-gray-700 mb-2">График платежей</div>
+<div className="space-y-1">
+{splitSchedule.map((p) => (
+<div key={p.title} className="flex justify-between text-sm text-gray-700">
+<span>{p.title}</span>
+<span className="font-medium">{formatRubLocal(p.amountRub)} ₽</span>
+</div>
+))}
+</div>
+<div className="mt-3 text-xs text-gray-600">
+Остаток будет списываться автоматически по графику. Это UX-режим; позже подключим реальный BNPL.
+</div>
+</div>
+)}
+
+<div className="mt-5 flex items-center justify-between rounded-2xl bg-gray-900 text-white px-4 py-4">
+<div>
+<div className="text-[11px] text-white/70">К оплате сейчас</div>
+<div className="text-xl font-semibold">{formatRubLocal(payNowRub)} ₽</div>
 </div>
 
 <Button
-className="w-full h-14 text-lg bg-gray-900 hover:bg-gray-800 mt-6"
 type="button"
-onClick={async () => {
-try {
-if (!safeFormData.userEmail) {
-alert("Укажите email для получения договора и деталей заказа.");
-return;
-}
-
-const payload = {
-customer: {
-email: safeFormData.userEmail,
-name: safeFormData.fullName || undefined,
-},
-};
-
-const res = await fetch("/api/orders", {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify(payload),
-});
-
-if (!res.ok) {
-const data = await res.json().catch(() => ({}));
-console.error("Order error:", data);
-alert(
-(data as any)?.error ||
-"Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой."
-);
-return;
-}
-
-const data = await res.json();
-console.log("Order created:", data);
-
-alert("Бронирование оформлено! Детали и договор отправлены на указанную электронную почту. К сожалению оплата не прошла, агент свяжется с вами в скором времени");
-} catch (e) {
-console.error("Order request failed:", e);
-alert("Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой.");
-}
-}}
+onClick={onPayClick}
+disabled={!canPay || isSubmittingOrder}
+className="rounded-2xl bg-white text-gray-900 hover:bg-gray-100 px-5 py-3 text-sm font-semibold disabled:opacity-60"
 >
-Подтвердить и забронировать
+{isSubmittingOrder ? "Оформление..." : "Оплатить"}
 </Button>
+</div>
+
+<div className="mt-3 text-xs text-gray-500">
+После оплаты вы получите подтверждение и детали на email.
+</div>
+</div>
+</div>
+</div>
+</div>
 </div>
 );
 }
@@ -1817,7 +2198,7 @@ type="button"
 
 <div className="text-center">
 <CardTitle className="text-2xl sm:text-3xl mb-2 text-white md:text-gray-900">
-Настройка пакета &quot;{selectedPackage?.name ?? "—"}&quot;
+Настройка пакета
 </CardTitle>
 <CardDescription className="text-base text-white md:text-gray-900">
 Персонализируйте выбранное решение под ваши потребности
@@ -1872,6 +2253,7 @@ type="button"
 </div>
 </CardContent>
 </Card>
+<SimplifiedFloatingCalculator total={totalRub} breakdown={floatingBreakdown} />
 </div>
 );
 }

@@ -2,7 +2,7 @@
 export const PRICES = {
   // Формат
   hallDuration: {
-    30: 5000,
+    30: 0,
     60: 8000,
     90: 12000,
   },
@@ -19,6 +19,17 @@ export const PRICES = {
     15: 12000,
   },
   pallbearers: 6000,
+};
+
+const WREATH_TYPE_LABELS: Record<string, string> = {
+  artificial: "Искусственные цветы",
+  composition: "Живая композиция",
+};
+
+const WREATH_SIZE_LABELS: Record<string, string> = {
+  S: "Малый",
+  M: "Средний",
+  L: "Большой",
 };
 
 // Готовые пакеты
@@ -67,6 +78,57 @@ export const PACKAGES = [
       "Транспорт для близких",
       "Координатор церемонии",
       "Музыкальное сопровождение",
+    ],
+  },
+  {
+    id: "cremation-standard",
+    name: "Стандарт",
+    price: 35000,
+    description: "Базовый комплект услуг для кремации",
+    features: [
+      "Оформление документов",
+      "Бронирование места в колумбарии",
+      "Хранение и базовая подготовка тела",
+      "Гроб-контейнер для кремации",
+      "Транспортировка до крематория",
+      "Кремация + урна стандартная",
+    ],
+  },
+  {
+    id: "cremation-comfort",
+    name: "Комфорт",
+    price: 75000,
+    description: "Расширенный набор услуг для кремации",
+    features: [
+      "Оформление документов",
+      "Бронирование места в колумбарии",
+      "Хранение и подготовка тела",
+      "Гроб для прощания + гроб-контейнер",
+      "Транспортировка до крематория",
+      "Кремация",
+      "Урна керамическая",
+      "Зал прощания на 2 часа",
+      "Поминальный обед (до 20 человек)",
+    ],
+  },
+  {
+    id: "cremation-premium",
+    name: "Премиум",
+    price: 120000,
+    description: "Полный спектр услуг премиум класса",
+    features: [
+      "Оформление документов",
+      "Бронирование места в колумбарии премиум",
+      "Хранение и подготовка тела",
+      "Гроб элитный для прощания + контейнер",
+      "Транспортировка покойного",
+      "Кремация",
+      "Урна премиум (мрамор/гранит)",
+      "Композиция из живых цветов",
+      "Ритуальные принадлежности премиум",
+      "Ритуальный зал на 4 часа",
+      "Поминальный обед (до 40 человек)",
+      "Индивидуальный координатор",
     ],
   },
 ];
@@ -465,6 +527,70 @@ export interface CalculatorSection {
   items?: CalculatorItem[];
 }
 
+export type CalculationItem = {
+  label: string;
+  price?: number;
+  included?: boolean;
+};
+
+export type CalculationSection = {
+  title: string;
+  total: number;
+  items?: CalculationItem[];
+};
+
+export type CalculationResult = {
+  total: number;
+  sections: CalculationSection[];
+};
+
+export type CalculatorConfig = {
+  base: {
+    title: string;
+    price: number;
+    items: string[];
+  };
+  prices: {
+    hallDuration: Record<number, number>;
+    ceremonyType: Record<string, number>;
+    hearse: number;
+    familyTransport: Record<number, number>;
+    pallbearers: number;
+  };
+  packages: {
+    id: string;
+    name: string;
+    price: number;
+    features: string[];
+  }[];
+  additionalServices: {
+    id: string;
+    name: string;
+    price: number;
+  }[];
+  cemeteries: {
+    name: string;
+    categories: {
+      standard?: number;
+      comfort?: number;
+      premium?: number;
+    };
+  }[];
+  cemeteryCategoryLabels: {
+    standard: string;
+    comfort: string;
+    premium: string;
+  };
+  cemeterySectionTitle: (categoryLabel: string) => string;
+  includeCemeteryCategoryItem: boolean;
+  includeCemeteryWithPackage: boolean;
+  includeLogisticsWithPackage: boolean;
+  includeFormatWithPackage: boolean;
+  includeAdditionalWithPackage: boolean;
+  includeBaseWithPackage: boolean;
+  packageSectionMinPrice: number;
+};
+
 export interface FormData {
   serviceType: string;
   hasHall: boolean;
@@ -480,250 +606,276 @@ export interface FormData {
   [key: string]: any;
 }
 
-// Функция расчета общей стоимости
-export function calculateTotal(
+const DEFAULT_BASE_PRICE = 25000;
+const DEFAULT_CALCULATOR_CONFIG: CalculatorConfig = {
+  base: {
+    title: "Базовые услуги",
+    price: DEFAULT_BASE_PRICE,
+    items: [
+      "Оформление документов",
+      "Подтверждение места захоронения",
+      "Хранение и базовая подготовка тела",
+      "Гроб, подушка и покрывало",
+      "Транспортировка покойного и перенос",
+      "Кладбищенские работы",
+    ],
+  },
+  prices: {
+    hallDuration: PRICES.hallDuration,
+    ceremonyType: PRICES.ceremonyType,
+    hearse: PRICES.hearse,
+    familyTransport: PRICES.familyTransport,
+    pallbearers: PRICES.pallbearers,
+  },
+  packages: PACKAGES.map((pkg) => ({
+    id: pkg.id,
+    name: pkg.name,
+    price: pkg.price,
+    features: [...pkg.features],
+  })),
+  additionalServices: ADDITIONAL_SERVICES.map((s) => ({
+    id: s.id,
+    name: s.name,
+    price: s.price,
+  })),
+  cemeteries: [...MOSCOW_CEMETERIES, ...MO_CEMETERIES].map((c) => ({
+    name: c.name,
+    categories: { ...c.categories },
+  })),
+  cemeteryCategoryLabels: {
+    standard: "Стандарт",
+    comfort: "Комфорт",
+    premium: "Премиум",
+  },
+  cemeterySectionTitle: (categoryLabel) => `Место на кладбище (${categoryLabel})`,
+  includeCemeteryCategoryItem: false,
+  includeCemeteryWithPackage: true,
+  includeLogisticsWithPackage: true,
+  includeFormatWithPackage: true,
+  includeAdditionalWithPackage: true,
+  includeBaseWithPackage: false,
+  packageSectionMinPrice: 0,
+};
+
+export function calculateOrder(
   formData: FormData,
+  config: CalculatorConfig,
   selectedCemeteryCategory: string = "standard",
-): number {
-  // Базовая цена ВСЕГДА включается
-  let total = 25000;
+): CalculationResult {
+  const sections: CalculationSection[] = [];
+  const packageType = formData.packageType;
+  const packageItem =
+    packageType && packageType !== "custom"
+      ? config.packages.find((pkg) => pkg.id === packageType)
+      : undefined;
+  const hasPackage = Boolean(packageItem);
 
-  // Если выбран готовый пакет
-  if (
-    formData.packageType &&
-    formData.packageType !== "custom" &&
-    formData.packageType !== ""
-  ) {
-    const pkg = PACKAGES.find((p) => p.id === formData.packageType);
-    if (pkg) {
-      // Добавляем только разницу (пакет уже включает базовые услуги)
-      total += pkg.price - 25000;
-    }
-  } else {
-    // Зал прощания
-    if (formData.hasHall) {
-      total +=
-        PRICES.hallDuration[
-          formData.hallDuration as keyof typeof PRICES.hallDuration
-        ] || 0;
-    }
-
-    // Тип церемонии
-    total +=
-      PRICES.ceremonyType[
-        formData.ceremonyType as keyof typeof PRICES.ceremonyType
-      ] || 0;
-
-    // Дополнительные услуги
-    if (
-      formData.selectedAdditionalServices &&
-      Array.isArray(formData.selectedAdditionalServices)
-    ) {
-      formData.selectedAdditionalServices.forEach((serviceId) => {
-        const service = ADDITIONAL_SERVICES.find((s) => s.id === serviceId);
-        if (service) {
-          total += service.price;
-        }
-      });
-    }
+  const formatItems: CalculationItem[] = [];
+  let formatTotal = 0;
+  const hallDuration = Number(formData.hallDuration || 0);
+  if (formData.hasHall) {
+    const hallPrice = config.prices.hallDuration[hallDuration as keyof typeof config.prices.hallDuration] || 0;
+    formatItems.push({
+      label: hallDuration ? `Зал прощания (${hallDuration} мин)` : "Зал прощания",
+      price: hallPrice,
+    });
+    formatTotal += hallPrice;
   }
 
-  // Логистика - добавляется ВСЕГДА (независимо от пакета)
+  const ceremonyPrice =
+    config.prices.ceremonyType[formData.ceremonyType as keyof typeof config.prices.ceremonyType] || 0;
+  if (ceremonyPrice > 0) {
+    const ceremonyName =
+      formData.ceremonyType === "religious"
+        ? "Религиозная церемония"
+        : "Комбинированная церемония";
+    formatItems.push({ label: ceremonyName, price: ceremonyPrice });
+    formatTotal += ceremonyPrice;
+  }
+
+  const logisticsItems: CalculationItem[] = [];
+  let logisticsTotal = 0;
   if (formData.needsHearse) {
-    total += PRICES.hearse;
+    logisticsItems.push({ label: "Катафалк", price: config.prices.hearse });
+    logisticsTotal += config.prices.hearse;
   }
   if (formData.needsFamilyTransport) {
-    total +=
-      PRICES.familyTransport[
-        formData.familyTransportSeats as keyof typeof PRICES.familyTransport
-      ] || 0;
+    const seats = Number(formData.familyTransportSeats || 0);
+    const tp =
+      config.prices.familyTransport[seats as keyof typeof config.prices.familyTransport] || 0;
+    logisticsItems.push({
+      label: seats ? `Транспорт для близких (${seats} мест)` : "Транспорт для близких",
+      price: tp,
+    });
+    logisticsTotal += tp;
   }
   if (formData.needsPallbearers) {
-    total += PRICES.pallbearers;
+    logisticsItems.push({ label: "Носильщики", price: config.prices.pallbearers });
+    logisticsTotal += config.prices.pallbearers;
   }
 
-  // Место на кладбище/в крематории (Москва + МО)
+  const additionalItems: CalculationItem[] = [];
+  let additionalTotal = 0;
+  if (Array.isArray(formData.selectedAdditionalServices)) {
+    for (const serviceId of formData.selectedAdditionalServices) {
+      const service = config.additionalServices.find((s) => s.id === serviceId);
+      if (!service) continue;
+      additionalItems.push({ label: service.name, price: service.price });
+      additionalTotal += service.price;
+    }
+  }
+
+  const attributesItems: CalculationItem[] = [];
+  let attributesTotal = 0;
+  const coffinConfig = formData.coffinConfig as
+    | {
+        coffin?: {
+          wood?: { name?: string; price?: number };
+          lining?: { name?: string; price?: number };
+          hardware?: { name?: string; price?: number };
+          quantity?: number;
+        };
+        wreath?: {
+          type?: string;
+          size?: string;
+          text?: string;
+          quantity?: number;
+          price?: number;
+        };
+      }
+    | undefined;
+
+  if (coffinConfig?.coffin) {
+    const quantity = Math.max(1, Number(coffinConfig.coffin.quantity || 1));
+    const quantitySuffix = quantity > 1 ? ` ×${quantity}` : "";
+    const woodName = coffinConfig.coffin.wood?.name;
+    const woodPrice = Number(coffinConfig.coffin.wood?.price || 0) * quantity;
+    if (woodName) {
+      attributesItems.push({ label: `Гроб: ${woodName}${quantitySuffix}`, price: woodPrice });
+      attributesTotal += woodPrice;
+    }
+    const liningName = coffinConfig.coffin.lining?.name;
+    const liningPrice = Number(coffinConfig.coffin.lining?.price || 0) * quantity;
+    if (liningName) {
+      attributesItems.push({ label: `Обивка: ${liningName}${quantitySuffix}`, price: liningPrice });
+      attributesTotal += liningPrice;
+    }
+    const hardwareName = coffinConfig.coffin.hardware?.name;
+    const hardwarePrice = Number(coffinConfig.coffin.hardware?.price || 0) * quantity;
+    if (hardwareName) {
+      attributesItems.push({ label: `Фурнитура: ${hardwareName}${quantitySuffix}`, price: hardwarePrice });
+      attributesTotal += hardwarePrice;
+    }
+  }
+
+  if (coffinConfig?.wreath) {
+    const wreathQuantity = Math.max(1, Number(coffinConfig.wreath.quantity || 1));
+    const typeLabel =
+      WREATH_TYPE_LABELS[coffinConfig.wreath.type || ""] || coffinConfig.wreath.type || "";
+    const sizeLabel =
+      WREATH_SIZE_LABELS[coffinConfig.wreath.size || ""] || coffinConfig.wreath.size || "";
+    const labelParts = [typeLabel, sizeLabel].filter(Boolean);
+    const text = (coffinConfig.wreath.text || "").trim();
+    let wreathLabel = labelParts.length ? `Венок: ${labelParts.join(", ")}` : "Венок";
+    if (text) wreathLabel += `, "${text}"`;
+    if (wreathQuantity > 1) wreathLabel += ` ×${wreathQuantity}`;
+    const wreathPrice = Number(coffinConfig.wreath.price || 0);
+    attributesItems.push({ label: wreathLabel, price: wreathPrice });
+    attributesTotal += wreathPrice;
+  }
+
+  if (!hasPackage || config.includeBaseWithPackage) {
+    sections.push({
+      title: config.base.title,
+      total: config.base.price,
+      items: config.base.items.map((name) => ({ label: name, included: true })),
+    });
+  }
+
+  if (hasPackage && packageItem && packageItem.price >= config.packageSectionMinPrice) {
+    sections.push({
+      title: `Пакет "${packageItem.name}"`,
+      total: packageItem.price,
+      items: packageItem.features.map((feature) => ({ label: feature, included: true })),
+    });
+  }
+
+  if (formatItems.length && (!hasPackage || config.includeFormatWithPackage)) {
+    sections.push({ title: "Формат", total: formatTotal, items: formatItems });
+  }
+
+  if (logisticsItems.length && (!hasPackage || config.includeLogisticsWithPackage)) {
+    sections.push({ title: "Логистика", total: logisticsTotal, items: logisticsItems });
+  }
+
+  if (attributesItems.length) {
+    sections.push({ title: "Атрибутика", total: attributesTotal, items: attributesItems });
+  }
+
+  if (additionalItems.length && (!hasPackage || config.includeAdditionalWithPackage)) {
+    sections.push({ title: "Дополнительные услуги", total: additionalTotal, items: additionalItems });
+  }
+
+  let total = 0;
+  if (hasPackage && packageItem) {
+    total += packageItem.price;
+  } else {
+    total += config.base.price;
+  }
+
+  if (!hasPackage || config.includeFormatWithPackage) total += formatTotal;
+  if (!hasPackage || config.includeLogisticsWithPackage) total += logisticsTotal;
+  total += attributesTotal;
+  if (!hasPackage || config.includeAdditionalWithPackage) total += additionalTotal;
+
   if (formData.cemetery) {
-    const allCemeteries = [...MOSCOW_CEMETERIES, ...MO_CEMETERIES];
-    const selectedCemetery = allCemeteries.find(
-      (c) => c.name === formData.cemetery,
-    );
-    if (selectedCemetery) {
-      const price =
-        selectedCemetery.categories[
-          selectedCemeteryCategory as keyof typeof selectedCemetery.categories
-        ] || 0;
+    const selectedCemetery = config.cemeteries.find((c) => c.name === formData.cemetery);
+    const price =
+      selectedCemetery?.categories?.[selectedCemeteryCategory as keyof typeof selectedCemetery.categories] || 0;
+    if (price) {
+      const categoryLabel =
+        config.cemeteryCategoryLabels[selectedCemeteryCategory as keyof typeof config.cemeteryCategoryLabels] || "Стандарт";
+      if (!hasPackage || config.includeCemeteryWithPackage) {
+        sections.push({
+          title: config.cemeterySectionTitle(categoryLabel),
+          total: price,
+          items: config.includeCemeteryCategoryItem
+            ? [
+                { label: selectedCemetery?.name || "" },
+                { label: `Категория: ${categoryLabel}` },
+              ]
+            : [{ label: selectedCemetery?.name || "" }],
+        });
+      }
       total += price;
     }
   }
 
-  return total;
+  return { total, sections };
+}
+
+// Функция расчета общей стоимости
+export function calculateTotal(
+  formData: FormData,
+  selectedCemeteryCategory: string = "standard",
+  config: CalculatorConfig = DEFAULT_CALCULATOR_CONFIG,
+): number {
+  return calculateOrder(formData, config, selectedCemeteryCategory).total;
 }
 
 // Функция расчета детализации стоимости
 export function calculateBreakdown(
   formData: FormData,
   selectedCemeteryCategory: string = "standard",
+  config: CalculatorConfig = DEFAULT_CALCULATOR_CONFIG,
 ): CalculatorSection[] {
-  const breakdown: CalculatorSection[] = [];
-
-  // Базовые услуги
-  breakdown.push({
-    category: "Базовые услуги",
-    price: 25000,
-    items: [
-      { name: "Оформление документов" },
-      { name: "Подтверждение места захоронения" },
-      { name: "Хранение и базовая подготовка тела" },
-      { name: "Гроб из массива сосны + подушка/покрывало" },
-      { name: "Транспортировка покойного и перенос" },
-      { name: "Кладбищенские работы" },
-    ],
-  });
-
-  // Пакет или конструктор
-  if (
-    formData.packageType &&
-    formData.packageType !== "custom" &&
-    formData.packageType !== ""
-  ) {
-    const pkg = PACKAGES.find((p) => p.id === formData.packageType);
-    if (pkg && pkg.price > 25000) {
-  breakdown.push({
-    category: `Пакет "${pkg.name}"`,
-    price: pkg.price,
-    items: pkg.features.map((f) => ({ name: f })),
-  });
-}
-  } else {
-    // Формат
-    const formatItems: CalculatorItem[] = [];
-    let formatTotal = 0;
-
-    if (formData.hasHall) {
-      const hallPrice =
-        PRICES.hallDuration[
-          formData.hallDuration as keyof typeof PRICES.hallDuration
-        ] || 0;
-      formatItems.push({
-        name: `Зал прощания (${formData.hallDuration} мин)`,
-        price: hallPrice,
-      });
-      formatTotal += hallPrice;
-    }
-
-    const ceremonyPrice =
-      PRICES.ceremonyType[
-        formData.ceremonyType as keyof typeof PRICES.ceremonyType
-      ] || 0;
-    if (ceremonyPrice > 0) {
-      const ceremonyName =
-        formData.ceremonyType === "religious"
-          ? "Религиозная церемония"
-          : "Комбинированная церемония";
-      formatItems.push({ name: ceremonyName, price: ceremonyPrice });
-      formatTotal += ceremonyPrice;
-    }
-
-    if (formatItems.length > 0) {
-      breakdown.push({
-        category: "Формат",
-        price: formatTotal,
-        items: formatItems,
-      });
-    }
-
-    // Дополнительные услуги
-    if (
-      formData.selectedAdditionalServices &&
-      formData.selectedAdditionalServices.length > 0
-    ) {
-      const additionalItems: CalculatorItem[] = [];
-      let additionalTotal = 0;
-
-      formData.selectedAdditionalServices.forEach((serviceId) => {
-        const service = ADDITIONAL_SERVICES.find((s) => s.id === serviceId);
-        if (service) {
-          additionalItems.push({ name: service.name, price: service.price });
-          additionalTotal += service.price;
-        }
-      });
-
-      if (additionalItems.length > 0) {
-        breakdown.push({
-          category: "Дополнительные услуги",
-          price: additionalTotal,
-          items: additionalItems,
-        });
-      }
-    }
-  }
-
-  // Логистика
-  const logisticsItems: CalculatorItem[] = [];
-  let logisticsTotal = 0;
-
-  if (formData.needsHearse) {
-    logisticsItems.push({ name: "Катафалк", price: PRICES.hearse });
-    logisticsTotal += PRICES.hearse;
-  }
-
-  if (formData.needsFamilyTransport) {
-    const transportPrice =
-      PRICES.familyTransport[
-        formData.familyTransportSeats as keyof typeof PRICES.familyTransport
-      ] || 0;
-    logisticsItems.push({
-      name: `Транспорт для близких (${formData.familyTransportSeats} мест)`,
-      price: transportPrice,
-    });
-    logisticsTotal += transportPrice;
-  }
-
-  if (formData.needsPallbearers) {
-    logisticsItems.push({
-      name: "Носильщики",
-      price: PRICES.pallbearers,
-    });
-    logisticsTotal += PRICES.pallbearers;
-  }
-
-  if (logisticsItems.length > 0) {
-    breakdown.push({
-      category: "Логистика",
-      price: logisticsTotal,
-      items: logisticsItems,
-    });
-  }
-
-  // Место на кладбище/в крематории (Москва + МО)
-  if (formData.cemetery) {
-    const allCemeteries = [...MOSCOW_CEMETERIES, ...MO_CEMETERIES];
-    const selectedCemetery = allCemeteries.find(
-      (c) => c.name === formData.cemetery,
-    );
-    if (selectedCemetery) {
-      const price =
-        selectedCemetery.categories[
-          selectedCemeteryCategory as keyof typeof selectedCemetery.categories
-        ] || 0;
-      const categoryName =
-        selectedCemeteryCategory === "standard"
-          ? "Стандарт"
-          : selectedCemeteryCategory === "comfort"
-            ? "Комфорт"
-            : "Премиум";
-
-      breakdown.push({
-        category: "Место на кладбище / в крематории",
-        price,
-        items: [
-          { name: selectedCemetery.name },
-          { name: `Категория: ${categoryName}` },
-        ],
-      });
-    }
-  }
-
-  return breakdown;
+  const result = calculateOrder(formData, config, selectedCemeteryCategory);
+  return result.sections.map((section) => ({
+    category: section.title,
+    price: section.total,
+    items: section.items?.map((item) => ({
+      name: item.label,
+      price: item.price,
+    })),
+  }));
 }
