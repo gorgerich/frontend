@@ -992,10 +992,12 @@ export function StepperWorkflow({
   };
 
   useEffect(() => {
-    if (currentStep === 1 && !showPickupDialog) {
-      setPickupDateTime(normalizePickupDateTime(formData.pickupDateTime));
-    }
-  }, [currentStep, showPickupDialog, formData.pickupDateTime]);
+    if (currentStep !== 1) return;
+    if (pickupDateTime.date || pickupDateTime.time) return;
+    const normalized = normalizePickupDateTime(formData.pickupDateTime);
+    if (!normalized.date && !normalized.time) return;
+    setPickupDateTime(normalized);
+  }, [currentStep, formData.pickupDateTime, pickupDateTime.date, pickupDateTime.time]);
 
   useEffect(() => {
     const list = formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES_BURIAL;
@@ -1557,7 +1559,7 @@ function formatRub(n: number) {
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
-                    <DialogHeader>
+                    <DialogHeader className="shrink-0">
                       <DialogTitle>
                         Выбор даты и времени забора
                       </DialogTitle>
@@ -1566,7 +1568,7 @@ function formatRub(n: number) {
                         забрать тело
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="flex flex-col gap-6 py-2 overflow-y-auto pr-2">
+                    <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-6 py-2">
                       <div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
                         <style>{`
                           .rdp-caption_label { 
@@ -1664,6 +1666,8 @@ function formatRub(n: number) {
                         </div>
                       )}
 
+                    </div>
+                    <div className="shrink-0 pt-4 border-t border-gray-100 bg-white">
                       <Button
                         onClick={() =>
                           setShowPickupDialog(false)
@@ -1697,13 +1701,13 @@ function formatRub(n: number) {
                       </Button>
                     </DialogTrigger>
 
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
+                    <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
+                      <DialogHeader className="shrink-0">
                         <DialogTitle>Выбор даты и времени прощания</DialogTitle>
                         <DialogDescription>Выберите дату и время прощания в зале или церкви</DialogDescription>
                       </DialogHeader>
 
-                      <div className="flex flex-col gap-6 py-2">
+                      <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-6 py-2">
                         <div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
                           <Calendar
                             mode="single"
@@ -1739,6 +1743,8 @@ function formatRub(n: number) {
                           </div>
                         )}
 
+                      </div>
+                      <div className="shrink-0 pt-4 border-t border-gray-100 bg-white">
                         <Button
                           type="button"
                           onClick={() => setShowFarewellDialog(false)}
@@ -1769,15 +1775,15 @@ function formatRub(n: number) {
                     </Button>
                   </DialogTrigger>
 
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
+                  <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
+                    <DialogHeader className="shrink-0">
                       <DialogTitle>
                         Выбор даты и времени {formData.serviceType === "cremation" ? "кремации" : "захоронения"}
                       </DialogTitle>
                       <DialogDescription>Укажите удобные дату и время церемонии.</DialogDescription>
                     </DialogHeader>
 
-                    <div className="flex flex-col gap-6 py-2">
+                    <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-6 py-2">
                       <div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
                         <Calendar
                           mode="single"
@@ -1790,29 +1796,25 @@ function formatRub(n: number) {
 
                       {burialDateTime.date && (
                         <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
-                          {Array.from({ length: 24 }, (_, i) => i)
-                            .flatMap((i) => {
-                              const hour = i.toString().padStart(2, "0");
-                              return [`${hour}:00`, `${hour}:30`];
-                            })
-                            .map((time) => (
-                              <button
-                                key={time}
-                                type="button"
-                                onClick={() => setBurialDateTime({ ...burialDateTime, time })}
-                                className={cn(
-                                  "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
-                                  burialDateTime.time === time
-                                    ? "bg-gray-900 text-white border-gray-900 shadow-md"
-                                    : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50",
-                                )}
-                              >
-                                {time}
-                              </button>
-                            ))}
+                          {PICKUP_TIME_SLOTS.map((time) => (
+                            <button
+                              key={time}
+                              type="button"
+                              onClick={() => setBurialDateTime({ ...burialDateTime, time })}
+                              className={cn(
+                                "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
+                                burialDateTime.time === time
+                                  ? "bg-gray-900 text-white border-gray-900 shadow-md"
+                                  : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50",
+                              )}
+                            >
+                              {time}
+                            </button>
+                          ))}
                         </div>
                       )}
-
+                    </div>
+                    <div className="shrink-0 pt-4 border-t border-gray-100 bg-white">
                       <Button
                         type="button"
                         onClick={() => setShowBurialDialog(false)}

@@ -4,14 +4,14 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { Info, Play, Sparkles } from "lucide-react";
-import { OnboardingStories } from "./OnboardingStories";
 import { AIChatModal } from "./AIChatModal";
 import { AboutServiceModal } from "./AboutServiceModal";
+import { DeathActionGuideModal } from "./DeathActionGuideModal";
 
 export function TopButtons() {
-  const [isStoriesOpen, setIsStoriesOpen] = useState(false);
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isDeathGuideOpen, setIsDeathGuideOpen] = useState(false);
   const [selectedTariff, setSelectedTariff] = useState<string | null>(null);
 
   const handleOpenStepper = (tariffName: string) => {
@@ -38,9 +38,9 @@ export function TopButtons() {
         <motion.button
           whileHover={{ scale: 1.1, y: -2 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => setIsStoriesOpen(true)}
+          onClick={() => setIsDeathGuideOpen(true)}
           className="group relative w-20 h-20 md:w-28 md:h-28 rounded-full bg-gradient-to-b from-white/20 to-white/5 backdrop-blur-2xl border-2 border-white/30 shadow-2xl flex items-center justify-center transition-all duration-300 hover:border-white/50 flex-shrink-0"
-          aria-label="Как начать"
+          aria-label="Первые действия"
         >
           <div className="absolute inset-0 rounded-full bg-white/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <Play className="relative w-8 h-8 md:w-11 md:h-11 text-white fill-white/80 ml-0.5 group-hover:text-white group-hover:fill-white transition-colors" />
@@ -70,14 +70,14 @@ export function TopButtons() {
               isOpen={isAboutOpen}
               onClose={() => setIsAboutOpen(false)}
             />
-            <OnboardingStories
-              isOpen={isStoriesOpen}
-              onClose={() => setIsStoriesOpen(false)}
-            />
             <AIChatModal
               isOpen={isAIChatOpen}
               onClose={() => setIsAIChatOpen(false)}
               onOpenStepper={handleOpenStepper}
+            />
+            <DeathActionGuideModal
+              isOpen={isDeathGuideOpen}
+              onClose={() => setIsDeathGuideOpen(false)}
             />
           </>,
           document.body

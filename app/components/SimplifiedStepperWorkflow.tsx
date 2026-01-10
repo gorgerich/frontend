@@ -1265,12 +1265,12 @@ type="button"
 </DialogTrigger>
 
 <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
-<DialogHeader>
+<DialogHeader className="shrink-0">
 <DialogTitle>Выбор даты и времени забора</DialogTitle>
 <DialogDescription>Выберите дату и время, когда требуется забрать тело</DialogDescription>
 </DialogHeader>
 
-<div className="flex flex-col gap-6 py-2 overflow-y-auto pr-2">
+<div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-6 py-2">
 <Calendar
 mode="single"
 selected={pickupDateTime.date}
@@ -1316,6 +1316,8 @@ pickupDateTime.time === time
 </div>
 )}
 
+</div>
+<div className="shrink-0 pt-4 border-t border-gray-100 bg-white">
 <Button
 onClick={() => setShowPickupDialog(false)}
 className="w-full h-12 rounded-full text-base bg-gray-900 hover:bg-gray-800 shadow-lg shadow-gray-900/20 transition-all active:scale-[0.98]"
@@ -1349,12 +1351,12 @@ type="button"
 </DialogTrigger>
 
 <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
-<DialogHeader>
+<DialogHeader className="shrink-0">
 <DialogTitle>Выбор даты и времени прощания</DialogTitle>
 <DialogDescription>Выберите дату и время прощания в зале или церкви</DialogDescription>
 </DialogHeader>
 
-<div className="flex flex-col gap-6 py-2 overflow-y-auto pr-2">
+<div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-6 py-2">
 <Calendar
 mode="single"
 selected={farewellDateTime.date}
@@ -1400,6 +1402,8 @@ farewellDateTime.time === time
 </div>
 )}
 
+</div>
+<div className="shrink-0 pt-4 border-t border-gray-100 bg-white">
 <Button
 onClick={() => setShowFarewellDialog(false)}
 className="w-full h-12 rounded-full text-base bg-gray-900 hover:bg-gray-800 shadow-lg shadow-gray-900/20 transition-all active:scale-[0.98]"
@@ -1434,7 +1438,7 @@ type="button"
 </DialogTrigger>
 
 <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
-<DialogHeader>
+<DialogHeader className="shrink-0">
 <DialogTitle>
 Выбор даты и времени{" "}
 {safeFormData.serviceType === "cremation" ? "кремации" : "захоронения"}
@@ -1445,7 +1449,7 @@ type="button"
 </DialogDescription>
 </DialogHeader>
 
-<div className="flex flex-col gap-6 py-2 overflow-y-auto pr-2">
+<div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-6 py-2">
 <Calendar
 mode="single"
 selected={burialDateTime.date}
@@ -1493,6 +1497,8 @@ burialDateTime.time === time
 </div>
 )}
 
+</div>
+<div className="shrink-0 pt-4 border-t border-gray-100 bg-white">
 <Button
 onClick={() => setShowBurialDialog(false)}
 className="w-full h-12 rounded-full text-base bg-gray-900 hover:bg-gray-800 shadow-lg shadow-gray-900/20 transition-all active:scale-[0.98]"
