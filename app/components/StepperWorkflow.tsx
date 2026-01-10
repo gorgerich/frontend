@@ -2659,27 +2659,47 @@ function formatRub(n: number) {
           </div>
 
           <div className="text-center mb-2">
-            <CardDescription
-              style={{ color: "rgba(255, 255, 255, 1)" }}
-              className="text-[15px] font-sans max-w-xl mx-auto leading-relaxed text-left md:!text-white"
-            >
+            <div className="mt-4 w-full">
               {workflowMode === "wizard" ? (
-                <>
-                  {currentStep === 0 &&
-                    "Настройте формат прощания: выберите тип церемонии (светская или религиозная) и длительность аренды зала."}
-                  {currentStep === 1 &&
-                    "Спланируйте логистику: укажите дату и время прощания, выберите транспорт для усопшего и гостей."}
-                  {currentStep === 2 &&
-                    "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности."}
-                  {currentStep === 3 &&
-                    "Заполните документы: укажите паспортные данные заявителя и информацию об усопшем для оформления."}
-                  {currentStep === 4 &&
-                    "Проверьте и подтвердите: внимательно ознакомьтесь со всеми деталями заказа перед финальным оформлением."}
-                </>
+                <div className="relative overflow-hidden rounded-xl border border-white/10 md:border-zinc-200 bg-white/5 md:bg-zinc-50/50 p-5 transition-all md:hover:bg-zinc-50">
+                  <div className="flex gap-4 items-start">
+                    <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
+                      {currentStep === 0 && <Church className="h-5 w-5" />}
+                      {currentStep === 1 && <Car className="h-5 w-5" />}
+                      {currentStep === 2 && <Package className="h-5 w-5" />}
+                      {currentStep === 3 && <FileText className="h-5 w-5" />}
+                      {currentStep === 4 && <CheckCircle2 className="h-5 w-5" />}
+                    </div>
+                    <div className="space-y-1.5 text-left">
+                      <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-white/70 md:text-zinc-500">
+                        <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
+                          {currentStep + 1}
+                        </span>
+                        {currentStep === 0 && "Этап 1: Церемония"}
+                        {currentStep === 1 && "Этап 2: Логистика"}
+                        {currentStep === 2 && "Этап 3: Атрибутика"}
+                        {currentStep === 3 && "Этап 4: Документы"}
+                        {currentStep === 4 && "Этап 5: Итог"}
+                      </h4>
+                      <p className="text-[15px] leading-relaxed text-white md:text-zinc-800 font-normal">
+                        {currentStep === 0 && "Настройте формат прощания: выберите тип церемонии (светская или религиозная) и длительность аренды зала."}
+                        {currentStep === 1 && "Спланируйте логистику: укажите дату и время прощания, выберите транспорт для усопшего и гостей."}
+                        {currentStep === 2 && "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности."}
+                        {currentStep === 3 && "Заполните документы: укажите паспортные данные заявителя и информацию об усопшем для оформления."}
+                        {currentStep === 4 && "Проверьте и подтвердите: внимательно ознакомьтесь со всеми деталями заказа перед финальным оформлением."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               ) : (
-                "Выберите оптимальный пакет услуг под ваши задачи"
+                <CardDescription
+                  style={{ color: "rgba(255, 255, 255, 1)" }}
+                  className="text-[15px] font-sans max-w-xl mx-auto leading-relaxed text-left md:!text-white"
+                >
+                  Выберите оптимальный пакет услуг под ваши задачи
+                </CardDescription>
               )}
-            </CardDescription>
+            </div>
           </div>
 
           {workflowMode === "wizard" && (
