@@ -12,6 +12,19 @@ type ServiceItem = {
   quantity?: number;
 };
 
+type BreakdownItem = {
+  name: string;
+  price?: number;
+};
+
+type BreakdownSection = {
+  category: string;
+  price?: number;
+  description?: string;
+  quantity?: number;
+  items?: BreakdownItem[];
+};
+
 type OrderPayload = {
   customer?: { email?: string; name?: string; phone?: string };
   deceased?: { name?: string; age?: number; birthDate?: string; deathDate?: string; relationship?: string };
@@ -27,6 +40,9 @@ type OrderPayload = {
     quantity?: number;
     qty?: number;
   }>;
+  orderFlow?: string;
+  package?: { id?: string; name?: string; price?: number | string; features?: string[] };
+  addons?: Array<{ name?: string; price?: number | string }>;
   total?: number | string;
   paymentMethod?: string;
   userEmail?: string;
@@ -53,6 +69,115 @@ function toNumber(v: unknown): number | null {
   return null;
 }
 
+function formatRub(value: number) {
+  return `${value.toLocaleString("ru-RU")} ₽`;
+}
+
+function normalizeBreakdownSections(body: OrderPayload): BreakdownSection[] {
+  if (Array.isArray(body.breakdown) && body.breakdown.length) {
+    return body.breakdown
+      .map((section) => {
+        const categoryRaw = section?.category ?? section?.title ?? section?.name;
+        if (!categoryRaw) return null;
+
+        const price = toNumber(section?.price);
+        const q1 = toNumber(section?.quantity);
+        const q2 = toNumber(section?.qty);
+        const quantity = q1 && q1 > 0 ? q1 : q2 && q2 > 0 ? q2 : 1;
+        const qty = Math.floor(quantity);
+        const rawItems = (section as any)?.items;
+        const items = Array.isArray(rawItems)
+          ? rawItems
+              .map((item: any) => {
+                const nameRaw = item?.name ?? item?.label ?? item?.title ?? item?.category;
+                if (!nameRaw) return null;
+                const itemPrice = toNumber(item?.price);
+                return {
+                  name: String(nameRaw),
+                  price: itemPrice ?? undefined,
+                } as BreakdownItem;
+              })
+              .filter(Boolean)
+          : undefined;
+
+        return {
+          category: String(categoryRaw),
+          price: price ?? undefined,
+          description: section?.description ? String(section.description) : undefined,
+          quantity: qty > 0 ? qty : 1,
+          items: items && items.length ? (items as BreakdownItem[]) : undefined,
+        } as BreakdownSection;
+      })
+      .filter(Boolean) as BreakdownSection[];
+  }
+
+  const sections: BreakdownSection[] = [];
+
+  const pkg = body.package;
+  if (pkg?.name) {
+    const pkgFeatures = Array.isArray(pkg.features) ? pkg.features : [];
+    const items = pkgFeatures
+      .map((feature) => String(feature).trim())
+      .filter(Boolean)
+      .map((name) => ({ name }));
+
+    sections.push({
+      category: `Пакет "${pkg.name}"`,
+      price: toNumber(pkg.price) ?? undefined,
+      items: items.length ? items : undefined,
+    });
+  }
+
+  const addons = Array.isArray(body.addons) ? body.addons : [];
+  if (addons.length) {
+    const items = addons
+      .map((addon) => {
+        const nameRaw = addon?.name;
+        if (!nameRaw) return null;
+        const addonPrice = toNumber(addon?.price);
+        return {
+          name: String(nameRaw),
+          price: addonPrice ?? undefined,
+        } as BreakdownItem;
+      })
+      .filter(Boolean) as BreakdownItem[];
+
+    if (items.length) {
+      const addonsTotal = items.reduce((acc, item) => acc + (item.price ?? 0), 0);
+      sections.push({
+        category: "Дополнительные услуги",
+        price: addonsTotal > 0 ? addonsTotal : undefined,
+        items,
+      });
+    }
+  }
+
+  if (!sections.length && Array.isArray(body.services) && body.services.length) {
+    const items = body.services
+      .map((service) => {
+        const nameRaw = service?.name;
+        if (!nameRaw) return null;
+        const price = toNumber(service?.price);
+        return {
+          name: String(nameRaw),
+          price: price ?? undefined,
+        } as BreakdownItem;
+      })
+      .filter(Boolean) as BreakdownItem[];
+
+    if (items.length) {
+      const itemsTotal = items.reduce((acc, item) => acc + (item.price ?? 0), 0);
+      sections.push({
+        category: "Услуги",
+        price: itemsTotal > 0 ? itemsTotal : undefined,
+        items,
+      });
+    }
+  }
+
+  return sections;
+}
+
 function normalizeServices(body: OrderPayload): ServiceItem[] {
   if (Array.isArray(body.services) && body.services.length) {
     return body.services
@@ -73,22 +198,18 @@ function normalizeServices(body: OrderPayload): ServiceItem[] {
       .filter(Boolean) as ServiceItem[];
   }
 
-  if (Array.isArray(body.breakdown) && body.breakdown.length) {
-    return body.breakdown
-      .map((b) => {
-        const price = toNumber(b?.price);
+  const breakdownSections = normalizeBreakdownSections(body);
+  if (breakdownSections.length) {
+    return breakdownSections
+      .map((section) => {
+        const price = toNumber(section.price);
         if (!price || price <= 0) return null;
 
-        const q1 = toNumber(b?.quantity);
-        const q2 = toNumber(b?.qty);
-        const quantity = q1 && q1 > 0 ? q1 : q2 && q2 > 0 ? q2 : 1;
-        const qty = Math.floor(quantity);
-
         return {
-          name: String(b?.category ?? b?.title ?? b?.name ?? "Услуга"),
-          description: b?.description ? String(b.description) : undefined,
+          name: String(section.category),
+          description: section.description,
           price,
-          quantity: qty > 0 ? qty : 1,
+          quantity: section.quantity ?? 1,
         } as ServiceItem;
       })
       .filter(Boolean) as ServiceItem[];
@@ -105,7 +226,72 @@ function computeTotalRub(body: OrderPayload, services: ServiceItem[]): number {
   return calc > 0 && Number.isFinite(calc) ? calc : 0;
 }
 
-function buildEmailHtml(body: OrderPayload, services: ServiceItem[], totalRub: number) {
+function buildOrderSummaryHtml(sections: BreakdownSection[], totalRub: number) {
+  if (!sections.length) return "";
+
+  const rows = sections
+    .map((section) => {
+      const sectionPriceLabel =
+        typeof section.price === "number" && section.price > 0 ? formatRub(section.price) : "—";
+      const itemsRows = (section.items ?? [])
+        .map((item) => {
+          const itemPriceLabel =
+            typeof item.price === "number" && item.price > 0 ? formatRub(item.price) : "включено";
+          return `
+            <tr>
+              <td style="padding: 6px 10px 6px 24px; border: 1px solid #eee; color:#555;">
+                <span style="color:#888;">•</span> ${escapeHtml(item.name)}
+              </td>
+              <td style="padding: 6px 10px; border: 1px solid #eee; text-align:right; color:#555;">
+                ${itemPriceLabel}
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+
+      return `
+        <tr>
+          <td style="padding: 8px 10px; border: 1px solid #ddd; font-weight:600;">
+            ${escapeHtml(section.category)}
+          </td>
+          <td style="padding: 8px 10px; border: 1px solid #ddd; text-align:right; font-weight:600;">
+            ${sectionPriceLabel}
+          </td>
+        </tr>
+        ${itemsRows}
+      `;
+    })
+    .join("");
+
+  return `
+    <h2 style="font-size:16px; margin:18px 0 8px;">4. Состав заказа</h2>
+    <table style="border-collapse:collapse; width:100%; font-size:14px; margin:0 0 16px;">
+      <thead>
+        <tr>
+          <th style="padding:6px 10px; border:1px solid #ddd; text-align:left;">Группа / услуга</th>
+          <th style="padding:6px 10px; border:1px solid #ddd; text-align:right;">Стоимость</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+        <tr>
+          <td style="padding:10px; border:1px solid #ddd; text-align:right; font-weight:700;">Итого:</td>
+          <td style="padding:10px; border:1px solid #ddd; text-align:right; font-weight:700;">
+            ${formatRub(totalRub)}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+}
+
+function buildEmailHtml(
+  body: OrderPayload,
+  services: ServiceItem[],
+  totalRub: number,
+  options?: { orderSummaryHtml?: string; showServicesTable?: boolean },
+) {
   const customerName = body.customer?.name ?? body.userName ?? "клиент";
   const customerEmail = body.customer?.email ?? body.userEmail ?? "";
   const customerPhone = body.customer?.phone ?? "";
@@ -113,8 +299,11 @@ function buildEmailHtml(body: OrderPayload, services: ServiceItem[], totalRub: n
   const ceremony = body.ceremony ?? {};
   const deceased = body.deceased ?? {};
 
-  const servicesRows =
-    services.length
+  const orderSummaryHtml = options?.orderSummaryHtml ?? "";
+  const showServicesTable = options?.showServicesTable !== false;
+
+  const servicesRows = showServicesTable
+    ? services.length
       ? services
           .map((s, idx) => {
             const qty = s.quantity ?? 1;
@@ -139,7 +328,35 @@ function buildEmailHtml(body: OrderPayload, services: ServiceItem[], totalRub: n
             Перечень услуг не заполнен
           </td>
         </tr>
-      `;
+      `
+    : "";
+
+  const servicesTableHtml = showServicesTable
+    ? `
+    <h2 style="font-size:16px; margin:18px 0 8px;">4. Перечень услуг и стоимость</h2>
+
+    <table style="border-collapse:collapse; width:100%; font-size:14px; margin:0 0 16px;">
+      <thead>
+        <tr>
+          <th style="padding:6px 10px; border:1px solid #ddd; text-align:left;">№</th>
+          <th style="padding:6px 10px; border:1px solid #ddd; text-align:left;">Услуга</th>
+          <th style="padding:6px 10px; border:1px solid #ddd; text-align:right;">Кол-во</th>
+          <th style="padding:6px 10px; border:1px solid #ddd; text-align:right;">Цена</th>
+          <th style="padding:6px 10px; border:1px solid #ddd; text-align:right;">Сумма</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${servicesRows}
+        <tr>
+          <td colspan="4" style="padding:10px; border:1px solid #ddd; text-align:right; font-weight:700;">Итого:</td>
+          <td style="padding:10px; border:1px solid #ddd; text-align:right; font-weight:700;">
+            ${totalRub.toLocaleString("ru-RU")} ₽
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    `
+    : "";
 
   const notes = body.notes ?? body.formData?.specialRequests;
 
@@ -177,28 +394,8 @@ function buildEmailHtml(body: OrderPayload, services: ServiceItem[], totalRub: n
       Место: ${escapeHtml(ceremony.place ?? "не указано")}
     </p>
 
-    <h2 style="font-size:16px; margin:18px 0 8px;">4. Перечень услуг и стоимость</h2>
-
-    <table style="border-collapse:collapse; width:100%; font-size:14px; margin:0 0 16px;">
-      <thead>
-        <tr>
-          <th style="padding:6px 10px; border:1px solid #ddd; text-align:left;">№</th>
-          <th style="padding:6px 10px; border:1px solid #ddd; text-align:left;">Услуга</th>
-          <th style="padding:6px 10px; border:1px solid #ddd; text-align:right;">Кол-во</th>
-          <th style="padding:6px 10px; border:1px solid #ddd; text-align:right;">Цена</th>
-          <th style="padding:6px 10px; border:1px solid #ddd; text-align:right;">Сумма</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${servicesRows}
-        <tr>
-          <td colspan="4" style="padding:10px; border:1px solid #ddd; text-align:right; font-weight:700;">Итого:</td>
-          <td style="padding:10px; border:1px solid #ddd; text-align:right; font-weight:700;">
-            ${totalRub.toLocaleString("ru-RU")} ₽
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    ${orderSummaryHtml}
+    ${servicesTableHtml}
 
     ${
       notes
@@ -262,7 +459,20 @@ export async function POST(req: NextRequest) {
         },
       };
 
-      const html = buildEmailHtml(bodyForEmail, services, totalRub);
+      const breakdownSections = normalizeBreakdownSections(bodyForEmail);
+      const isSimplified = bodyForEmail.orderFlow === "simplified";
+      if (isSimplified) {
+        console.log("Email breakdown sections:", breakdownSections);
+      }
+
+      const orderSummaryHtml = isSimplified
+        ? buildOrderSummaryHtml(breakdownSections, totalRub)
+        : "";
+
+      const html = buildEmailHtml(bodyForEmail, services, totalRub, {
+        orderSummaryHtml,
+        showServicesTable: !isSimplified || !orderSummaryHtml,
+      });
 
       await sendOrderEmail({
         to: [customerEmail, managerEmail],
@@ -270,7 +480,7 @@ export async function POST(req: NextRequest) {
         html,
       });
     } catch (e) {
-      console.warn("Email failed (ignored):", e);
+      console.error("Email failed (ignored):", e);
     }
 
     return NextResponse.json(

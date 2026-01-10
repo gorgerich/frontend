@@ -1812,11 +1812,41 @@ alert("Укажите email для получения договора и дет
 return;
 }
 
+const packageInfo = selectedPackage
+? {
+    id: selectedPackage.id,
+    name: selectedPackage.name,
+    price: selectedPackage.price,
+    features: selectedPackage.features ?? [],
+  }
+: undefined;
+
 const payload = {
+orderFlow: "simplified",
 customer: {
 email: emailValue,
 name: safeFormData.fullName || undefined,
 },
+userEmail: emailValue,
+userName: safeFormData.fullName || undefined,
+total: totalRub,
+breakdown: floatingBreakdown,
+package: packageInfo,
+addons: [],
+formData: safeFormData,
+deceased: {
+name: safeFormData.fullName || undefined,
+birthDate: safeFormData.birthDate || undefined,
+deathDate: safeFormData.deathDate || undefined,
+relationship: safeFormData.relationship || undefined,
+},
+ceremony: {
+type: safeFormData.ceremonyType || undefined,
+order: safeFormData.ceremonyOrder || undefined,
+serviceType: safeFormData.serviceType || undefined,
+cemetery: safeFormData.cemetery || undefined,
+},
+notes: safeFormData.specialRequests || undefined,
 };
 
 const res = await fetch("/api/orders", {
