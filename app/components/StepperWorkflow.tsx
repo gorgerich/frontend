@@ -2671,7 +2671,7 @@ function formatRub(n: number) {
                       {currentStep === 4 && <CheckCircle2 className="h-5 w-5" />}
                     </div>
                     <div className="space-y-1.5 text-left">
-                      <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-white/70 md:text-zinc-500">
+                      <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray/70 md:text-zinc-500">
                         <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
                           {currentStep + 1}
                         </span>
@@ -2681,7 +2681,7 @@ function formatRub(n: number) {
                         {currentStep === 3 && "Этап 4: Документы"}
                         {currentStep === 4 && "Этап 5: Итог"}
                       </h4>
-                      <p className="text-[15px] leading-relaxed text-white md:text-zinc-800 font-normal">
+                      <p className="text-[15px] leading-relaxed text-gray md:text-zinc-800 font-normal">
                         {currentStep === 0 && "Настройте формат прощания: выберите тип церемонии (светская или религиозная) и длительность аренды зала."}
                         {currentStep === 1 && "Спланируйте логистику: укажите дату и время прощания, выберите транспорт для усопшего и гостей."}
                         {currentStep === 2 && "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности."}
