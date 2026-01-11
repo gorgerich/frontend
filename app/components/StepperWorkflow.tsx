@@ -897,6 +897,20 @@ splitSchedule?: string;
     selectedAdditionalServices: string[];
 
     specialRequests: string;
+    coffinConfig?: {
+      coffin?: {
+        wood?: { name?: string };
+        lining?: { name?: string };
+        hardware?: { name?: string };
+        quantity?: number;
+      };
+      wreath?: {
+        type?: string;
+        size?: string;
+        text?: string;
+        quantity?: number;
+      };
+    };
 
     fullName: string;
     birthDate: string;
@@ -2647,31 +2661,58 @@ function formatRub(n: number) {
                 </div>
 
                 <div className="space-y-2 text-sm">
-                  {formData.packageType && formData.packageType !== "custom" ? (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Пакет:</span>
-                      <span className="text-gray-900">{PACKAGES.find((p) => p.id === formData.packageType)?.name || "—"}</span>
-                    </div>
-                  ) : (
-                    <div>
-                      <span className="text-gray-600 block mb-2">Индивидуальный пакет</span>
-                      {formData.selectedAdditionalServices?.length ? (
-                        <div className="space-y-1">
-                          {formData.selectedAdditionalServices.map((serviceId: string) => {
-                            const s = additionalServices.find((x) => x.id === serviceId);
-                            if (!s) return null;
-                            return (
-                              <div key={serviceId} className="text-xs text-gray-900">
-                                • {s.name}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <span className="text-xs text-gray-500">Услуги не выбраны</span>
-                      )}
-                    </div>
-                  )}
+                  {(() => {
+                    const coffin = formData.coffinConfig?.coffin;
+                    const wreath = formData.coffinConfig?.wreath;
+
+                    const typeLabels: Record<string, string> = {
+                      artificial: "Искусственные цветы",
+                      composition: "Живая композиция",
+                    };
+                    const sizeLabels: Record<string, string> = {
+                      S: "Малый",
+                      M: "Средний",
+                      L: "Большой",
+                    };
+
+                    const items: string[] = [];
+                    if (coffin?.wood?.name) {
+                      const qty = Math.max(1, Number(coffin.quantity || 1));
+                      const qtySuffix = qty > 1 ? ` ×${qty}` : "";
+                      items.push(`Гроб: ${coffin.wood.name}${qtySuffix}`);
+                    }
+                    if (coffin?.lining?.name) {
+                      items.push(`Обивка: ${coffin.lining.name}`);
+                    }
+                    if (coffin?.hardware?.name) {
+                      items.push(`Фурнитура: ${coffin.hardware.name}`);
+                    }
+                    if (wreath) {
+                      const typeLabel = typeLabels[wreath.type || ""] || wreath.type || "";
+                      const sizeLabel = sizeLabels[wreath.size || ""] || wreath.size || "";
+                      const details = [typeLabel, sizeLabel].filter(Boolean).join(", ");
+                      const text = (wreath.text || "").trim();
+                      const qty = Math.max(1, Number(wreath.quantity || 1));
+                      let wreathLabel = details ? `Венок: ${details}` : "Венок";
+                      if (text) wreathLabel += `, "${text}"`;
+                      if (qty > 1) wreathLabel += ` ×${qty}`;
+                      items.push(wreathLabel);
+                    }
+
+                    if (!items.length) {
+                      return <span className="text-xs text-gray-500">Услуги не выбраны</span>;
+                    }
+
+                    return (
+                      <div className="space-y-1">
+                        {items.map((item) => (
+                          <div key={item} className="text-xs text-gray-900">
+                            • {item}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 

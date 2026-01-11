@@ -2193,7 +2193,7 @@ payPlan === "split" ? "border-gray-900" : "border-gray-200 hover:border-gray-300
 ))}
 </div>
 <div className="mt-3 text-xs text-gray-600">
-Остаток будет списываться автоматически по графику. Это UX-режим; позже подключим реальный BNPL.
+Остаток будет списываться автоматически по графику. 
 </div>
 </div>
 )}
