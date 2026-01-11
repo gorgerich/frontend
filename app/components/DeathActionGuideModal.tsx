@@ -54,7 +54,7 @@ export function DeathActionGuideModal({ isOpen, onClose }: { isOpen: boolean; on
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-[min(960px,calc(100vw-24px))] max-h-[90vh] overflow-hidden rounded-[32px] md:rounded-[40px] bg-slate-900/40 shadow-2xl ring-1 ring-white/10"
+            className="relative w-[min(960px,calc(100vw-24px))] h-[90vh] max-h-[90vh] overflow-hidden rounded-[32px] md:rounded-[40px] bg-slate-900/40 shadow-2xl ring-1 ring-white/10"
           >
             {/* Кнопка закрытия */}
             <button
@@ -85,7 +85,7 @@ export function DeathActionGuideModal({ isOpen, onClose }: { isOpen: boolean; on
               </motion.div>
 
               {/* Сетка шагов */}
-              <div className="flex-1 min-h-0 overflow-y-auto px-6 pb-6 pt-8 md:px-10 md:pb-8">
+              <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 pb-6 pt-8 md:px-10 md:pb-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   {steps.map((step, index) => (
                     <motion.div
