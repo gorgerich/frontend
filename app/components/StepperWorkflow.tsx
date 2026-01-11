@@ -1957,7 +1957,7 @@ function formatRub(n: number) {
                         <Info className="h-3.5 w-3.5" />
                       </button>
                       {isHearseInfoOpen && (
-                        <div className="absolute left-1/2 top-full mt-2 z-50 w-[320px] max-w-[calc(100vw-32px)] -translate-x-1/2 rounded-2xl border border-slate-200 bg-white shadow-xl sm:left-0 sm:translate-x-0">
+                        <div className="fixed left-1/2 top-1/2 z-50 w-[320px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-200 bg-white shadow-xl sm:absolute sm:left-0 sm:top-full sm:mt-2 sm:translate-x-0 sm:translate-y-0">
                           <div className="h-40 w-full overflow-hidden">
                             <img
                               src="/images/hearse-lux.jpg"
@@ -2036,17 +2036,19 @@ function formatRub(n: number) {
                             setOpenHearseCategoryInfo(null);
                           }}
                           className={cn(
-                            "w-full h-16 px-3 border-2 rounded-full text-center transition-all flex items-center justify-center",
+                            "w-full h-12 sm:h-16 px-2 sm:px-3 border-2 rounded-full text-center transition-all flex items-center justify-center overflow-hidden whitespace-nowrap",
                             formData.hearseCategory === "standard"
                               ? "border-gray-900 bg-gray-50"
                               : "border-gray-200 hover:border-gray-300",
                           )}
                         >
-                          <div className="flex flex-col items-center gap-0.5 leading-tight">
-                            <div className="text-sm">Стандарт</div>
-                            <div className="text-[11px] text-gray-400">
-                              Базовый катафалк
-                            </div>
+                          <div className="flex w-full min-w-0 items-center justify-center gap-1 sm:gap-2">
+                            <span className="shrink-0 text-xs sm:text-sm font-medium text-gray-900">
+                              Стандарт
+                            </span>
+                            <span className="hidden sm:inline-flex min-w-0 items-center text-xs text-gray-400">
+                              <span className="min-w-0 truncate">Базовый катафалк</span>
+                            </span>
                           </div>
                         </button>
                         <div
@@ -2074,7 +2076,7 @@ function formatRub(n: number) {
                             <Info className="h-4 w-4" />
                           </Button>
                           {openHearseCategoryInfo === "standard" && (
-                            <div className="absolute right-0 top-6 z-50 w-80 max-w-[calc(100vw-32px)] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                            <div className="fixed left-1/2 top-1/2 z-50 w-80 max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-6 sm:translate-x-0 sm:translate-y-0">
                               <div className="relative h-48 w-full bg-gray-100">
                                 <img
                                   src="/images/hearse-lux.jpg"
@@ -2103,20 +2105,23 @@ function formatRub(n: number) {
                             setOpenHearseCategoryInfo(null);
                           }}
                           className={cn(
-                            "w-full h-16 px-3 border-2 rounded-full text-center transition-all flex items-center justify-center",
+                            "w-full h-12 sm:h-16 px-2 sm:px-3 border-2 rounded-full text-center transition-all flex items-center justify-center overflow-hidden whitespace-nowrap",
                             formData.hearseCategory === "comfort"
                               ? "border-gray-900 bg-gray-50"
                               : "border-gray-200 hover:border-gray-300",
                           )}
                         >
-                          <div className="flex flex-col items-center gap-0.5 leading-tight">
-                            <div className="text-sm">Комфорт</div>
-                            <div className="text-[11px] text-gray-400">
-                              С кондиционером
-                            </div>
-                            <div className="text-[11px] text-gray-500">
-                              +15 000 ₽
-                            </div>
+                          <div className="flex w-full min-w-0 items-center justify-center gap-1 sm:gap-2">
+                            <span className="shrink-0 text-xs sm:text-sm font-medium text-gray-900">
+                              Комфорт
+                            </span>
+                            <span className="inline-flex min-w-0 items-center gap-1 text-[11px] text-gray-500 sm:text-xs">
+                              <span className="min-w-0 truncate">
+                                <span className="inline sm:hidden">·</span>
+                                <span className="hidden sm:inline">· с кондиционером</span>
+                              </span>
+                              <span className="shrink-0">+15 000 ₽</span>
+                            </span>
                           </div>
                         </button>
                         <div
@@ -2144,7 +2149,7 @@ function formatRub(n: number) {
                             <Info className="h-4 w-4" />
                           </Button>
                           {openHearseCategoryInfo === "comfort" && (
-                            <div className="absolute right-0 top-6 z-50 w-80 max-w-[calc(100vw-32px)] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                            <div className="fixed left-1/2 top-1/2 z-50 w-80 max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-6 sm:translate-x-0 sm:translate-y-0">
                               <div className="relative h-48 w-full bg-gray-100">
                                 <img
                                   src="/images/hearse-lux.jpg"
@@ -2173,20 +2178,23 @@ function formatRub(n: number) {
                             setOpenHearseCategoryInfo(null);
                           }}
                           className={cn(
-                            "w-full h-16 px-3 border-2 rounded-full text-center transition-all flex items-center justify-center",
+                            "w-full h-12 sm:h-16 px-2 sm:px-3 border-2 rounded-full text-center transition-all flex items-center justify-center overflow-hidden whitespace-nowrap",
                             formData.hearseCategory === "premium"
                               ? "border-gray-900 bg-gray-50"
                               : "border-gray-200 hover:border-gray-300",
                           )}
                         >
-                          <div className="flex flex-col items-center gap-0.5 leading-tight">
-                            <div className="text-sm">Премиум</div>
-                            <div className="text-[11px] text-gray-400">
-                              Mercedes-Benz
-                            </div>
-                            <div className="text-[11px] text-gray-500">
-                              +35 000 ₽
-                            </div>
+                          <div className="flex w-full min-w-0 items-center justify-center gap-1 sm:gap-2">
+                            <span className="shrink-0 text-xs sm:text-sm font-medium text-gray-900">
+                              Премиум
+                            </span>
+                            <span className="inline-flex min-w-0 items-center gap-1 text-[11px] text-gray-500 sm:text-xs">
+                              <span className="min-w-0 truncate">
+                                <span className="inline sm:hidden">·</span>
+                                <span className="hidden sm:inline">· Mercedes-Benz</span>
+                              </span>
+                              <span className="shrink-0">+35 000 ₽</span>
+                            </span>
                           </div>
                         </button>
                         <div
@@ -2214,7 +2222,7 @@ function formatRub(n: number) {
                             <Info className="h-4 w-4" />
                           </Button>
                           {openHearseCategoryInfo === "premium" && (
-                            <div className="absolute right-0 top-6 z-50 w-80 max-w-[calc(100vw-32px)] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                            <div className="fixed left-1/2 top-1/2 z-50 w-80 max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-6 sm:translate-x-0 sm:translate-y-0">
                               <div className="relative h-48 w-full bg-gray-100">
                                 <img
                                   src="/images/hearse-lux.jpg"
