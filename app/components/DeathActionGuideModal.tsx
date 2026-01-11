@@ -77,10 +77,10 @@ export function DeathActionGuideModal({ isOpen, onClose }: { isOpen: boolean; on
                   transition={{ delay: 0.1 }}
                   className="relative mb-10 md:mb-12 text-center"
                 >
-                  <h2 className="text-3xl md:text-5xl font-light text-white mb-4 tracking-tight">
-                    Первые действия
+                  <h2 className="text-4xl md:text-6xl lg:text-7xl font-light text-white mb-6 tracking-tight">
+                    Первые <span className="font-serif italic text-blue-200/90">действия</span>
                   </h2>
-                  <p className="text-base md:text-xl text-white/70 font-light max-w-2xl mx-auto leading-relaxed">
+                  <p className="text-lg md:text-2xl text-blue-100/80 font-light max-w-3xl mx-auto leading-relaxed tracking-wide">
                     Действия в случае смерти близкого человека.
                   </p>
                 </motion.div>
@@ -96,14 +96,14 @@ export function DeathActionGuideModal({ isOpen, onClose }: { isOpen: boolean; on
                       className="group p-5 md:p-6 rounded-3xl bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 hover:border-white/20 transition-all duration-300"
                     >
                       <div className="flex items-start gap-4">
-                        <div className="shrink-0 p-3 rounded-2xl bg-white/10 border border-white/20 text-white group-hover:scale-110 group-hover:bg-white/20 transition-all duration-300">
+                        <div className="shrink-0 p-3 rounded-2xl bg-white/5 border border-white/10 text-blue-200 group-hover:text-white group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300">
                           <step.icon className="w-6 h-6" />
                         </div>
                         <div>
-                          <h3 className="text-lg text-white font-medium mb-2 tracking-wide">
+                          <h3 className="text-xl text-white font-medium mb-2 tracking-wide">
                             {step.title}
                           </h3>
-                          <p className="text-sm text-white/70 font-light leading-relaxed group-hover:text-white/90 transition-colors">
+                          <p className="text-base text-blue-100/70 font-light leading-relaxed group-hover:text-blue-100/90 transition-colors">
                             {step.description}
                           </p>
                         </div>
