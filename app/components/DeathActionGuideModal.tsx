@@ -54,7 +54,7 @@ export function DeathActionGuideModal({ isOpen, onClose }: { isOpen: boolean; on
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full h-full md:h-auto md:max-w-[960px] md:max-h-[90vh] md:rounded-[40px] overflow-hidden md:overflow-y-auto bg-slate-900/40 shadow-2xl ring-1 ring-white/10"
+            className="relative w-full h-full md:h-auto md:max-w-5xl md:max-h-[90vh] md:rounded-[40px] overflow-hidden md:overflow-y-auto bg-slate-900/40 shadow-2xl ring-1 ring-white/10"
           >
             {/* Кнопка закрытия */}
             <button
@@ -66,7 +66,7 @@ export function DeathActionGuideModal({ isOpen, onClose }: { isOpen: boolean; on
 
             {/* Контент */}
             <div className="relative z-10 h-full overflow-y-auto md:h-auto md:overflow-visible">
-              <div className="min-h-full flex flex-col justify-center p-6 md:p-10 lg:p-12 pt-[calc(5rem+env(safe-area-inset-top))] pb-[calc(4rem+env(safe-area-inset-bottom))] max-w-5xl mx-auto">
+              <div className="min-h-full flex flex-col justify-center p-6 md:p-12 lg:p-16 pt-[calc(6rem+env(safe-area-inset-top))] pb-[calc(4rem+env(safe-area-inset-bottom))] max-w-6xl mx-auto">
                 {/* Декоративный фон */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-64 bg-red-500/5 blur-[120px] rounded-full pointer-events-none mix-blend-screen" />
 
@@ -75,7 +75,7 @@ export function DeathActionGuideModal({ isOpen, onClose }: { isOpen: boolean; on
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="relative mb-8 md:mb-10 text-center"
+                  className="relative mb-10 md:mb-12 text-center"
                 >
                   <h2 className="text-3xl md:text-5xl font-light text-white mb-4 tracking-tight">
                     Первые действия
@@ -86,7 +86,7 @@ export function DeathActionGuideModal({ isOpen, onClose }: { isOpen: boolean; on
                 </motion.div>
 
                 {/* Сетка шагов */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-12">
                   {steps.map((step, index) => (
                     <motion.div
                       key={index}
