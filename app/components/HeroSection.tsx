@@ -69,7 +69,7 @@ export function HeroSection() {
                       marginBottom: MOBILE_LINES_GAP,
                     }}
                   >
-                    Цифровой помощник по самостоятельной
+                    Цифровой помощник по самостоятельной организации прощания без агентств и давления
                   </span>
 
                   <span
@@ -79,7 +79,7 @@ export function HeroSection() {
                       lineHeight: MOBILE_LINE2_LINE_HEIGHT,
                     }}
                   >
-                    организации прощания без агентств и давления
+                    
                   </span>
                 </span>
               </h1>
