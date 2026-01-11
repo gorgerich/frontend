@@ -3017,7 +3017,7 @@ function formatRub(n: number) {
           <div className="text-center mb-2 mt-4">
             <div className="w-full">
               {workflowMode === "wizard" ? (
-                <div className="relative overflow-hidden rounded-xl border border-white/10 md:border-zinc-200 bg-white/100 md:bg-zinc-55/50 p-5 transition-all md:hover:bg-zinc-55">
+                <div className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55">
                   <div className="flex gap-4 items-start">
                     <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
                       {currentStep === 0 && <Church className="h-5 w-5" />}
