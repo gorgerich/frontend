@@ -131,6 +131,27 @@ const HEARSE_CATEGORY_LABELS = {
   premium: "Премиум",
 } as const;
 
+const HEARSE_CATEGORY_INFO = {
+  standard: {
+    title: "Стандарт",
+    description:
+      "Базовый катафалк. Чистый и исправный автомобиль для достойной перевозки усопшего.",
+    imageSrc: "/images/hearse-lux.jpg",
+  },
+  comfort: {
+    title: "Комфорт",
+    description:
+      "Улучшенный катафалк с кондиционером и декоративной отделкой салона. Повышенный комфорт для достойной церемонии.",
+    imageSrc: "/images/hearse-lux.jpg",
+  },
+  premium: {
+    title: "Премиум",
+    description:
+      "Mercedes-Benz с кондиционером, подиумом и декоративным оформлением. Высший класс для торжественной церемонии.",
+    imageSrc: "/images/hearse-lux.jpg",
+  },
+} as const;
+
 const PACKAGES = [
   {
     id: "basic",
@@ -1004,6 +1025,9 @@ export function StepperWorkflow({
   const hearseCategoryInfoRef = useRef<HTMLDivElement>(null);
 
   const savedPickupDateTime = normalizePickupDateTime(formData.pickupDateTime);
+  const activeHearseInfo = openHearseCategoryInfo
+    ? HEARSE_CATEGORY_INFO[openHearseCategoryInfo]
+    : null;
 
   const handlePickupDialogOpenChange = (open: boolean) => {
     setShowPickupDialog(open);
@@ -2025,7 +2049,13 @@ function formatRub(n: number) {
 
               {formData.needsHearse && (
                 <div className="space-y-4 pl-4 border-l-2 border-gray-200">
-                  <div ref={hearseCategoryInfoRef}>
+                  <div
+                    ref={hearseCategoryInfoRef}
+                    className="space-y-3"
+                    onMouseLeave={() => {
+                      if (canHoverHearseInfo) setOpenHearseCategoryInfo(null);
+                    }}
+                  >
                     <Label className="text-sm mb-3 block">Категория катафалка:</Label>
                     <div className="grid grid-cols-3 gap-3">
                       <div className="relative">
@@ -2056,9 +2086,6 @@ function formatRub(n: number) {
                           onMouseEnter={() => {
                             if (canHoverHearseInfo) setOpenHearseCategoryInfo("standard");
                           }}
-                          onMouseLeave={() => {
-                            if (canHoverHearseInfo) setOpenHearseCategoryInfo(null);
-                          }}
                         >
                           <Button
                             variant="ghost"
@@ -2075,25 +2102,6 @@ function formatRub(n: number) {
                           >
                             <Info className="h-4 w-4" />
                           </Button>
-                          {openHearseCategoryInfo === "standard" && (
-                            <div className="fixed left-1/2 top-1/2 z-50 w-80 max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-6 sm:translate-x-0 sm:translate-y-0">
-                              <div className="relative h-48 w-full bg-gray-100">
-                                <img
-                                  src="/images/hearse-lux.jpg"
-                                  alt="Стандарт"
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              <div className="p-4 bg-white">
-                                <h4 className="font-medium mb-1 text-gray-900">
-                                  Стандарт
-                                </h4>
-                                <p className="text-sm text-gray-500 leading-snug">
-                                  Базовый катафалк. Чистый и исправный автомобиль для достойной перевозки усопшего.
-                                </p>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       </div>
 
@@ -2129,9 +2137,6 @@ function formatRub(n: number) {
                           onMouseEnter={() => {
                             if (canHoverHearseInfo) setOpenHearseCategoryInfo("comfort");
                           }}
-                          onMouseLeave={() => {
-                            if (canHoverHearseInfo) setOpenHearseCategoryInfo(null);
-                          }}
                         >
                           <Button
                             variant="ghost"
@@ -2148,25 +2153,6 @@ function formatRub(n: number) {
                           >
                             <Info className="h-4 w-4" />
                           </Button>
-                          {openHearseCategoryInfo === "comfort" && (
-                            <div className="fixed left-1/2 top-1/2 z-50 w-80 max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-6 sm:translate-x-0 sm:translate-y-0">
-                              <div className="relative h-48 w-full bg-gray-100">
-                                <img
-                                  src="/images/hearse-lux.jpg"
-                                  alt="Комфорт"
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              <div className="p-4 bg-white">
-                                <h4 className="font-medium mb-1 text-gray-900">
-                                  Комфорт
-                                </h4>
-                                <p className="text-sm text-gray-500 leading-snug">
-                                  Улучшенный катафалк с кондиционером и декоративной отделкой салона. Повышенный комфорт для достойной церемонии.
-                                </p>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       </div>
 
@@ -2202,9 +2188,6 @@ function formatRub(n: number) {
                           onMouseEnter={() => {
                             if (canHoverHearseInfo) setOpenHearseCategoryInfo("premium");
                           }}
-                          onMouseLeave={() => {
-                            if (canHoverHearseInfo) setOpenHearseCategoryInfo(null);
-                          }}
                         >
                           <Button
                             variant="ghost"
@@ -2221,28 +2204,28 @@ function formatRub(n: number) {
                           >
                             <Info className="h-4 w-4" />
                           </Button>
-                          {openHearseCategoryInfo === "premium" && (
-                            <div className="fixed left-1/2 top-1/2 z-50 w-80 max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-6 sm:translate-x-0 sm:translate-y-0">
-                              <div className="relative h-48 w-full bg-gray-100">
-                                <img
-                                  src="/images/hearse-lux.jpg"
-                                  alt="Премиум"
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              <div className="p-4 bg-white">
-                                <h4 className="font-medium mb-1 text-gray-900">
-                                  Премиум
-                                </h4>
-                                <p className="text-sm text-gray-500 leading-snug">
-                                  Mercedes-Benz с кондиционером, подиумом и декоративным оформлением. Высший класс для торжественной церемонии.
-                                </p>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
+                    {activeHearseInfo && (
+                      <div className="mt-3 w-full max-h-[60vh] overflow-auto rounded-2xl border border-gray-200 bg-white shadow-lg sm:max-w-[520px] sm:max-h-[420px] sm:mx-auto">
+                        <div className="relative h-40 w-full bg-gray-100 sm:h-48">
+                          <img
+                            src={activeHearseInfo.imageSrc}
+                            alt={activeHearseInfo.title}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <div className="p-4 bg-white">
+                          <h4 className="font-medium mb-1 text-gray-900">
+                            {activeHearseInfo.title}
+                          </h4>
+                          <p className="text-sm text-gray-500 leading-snug">
+                            {activeHearseInfo.description}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <Label className="text-sm">Маршрут:</Label>
