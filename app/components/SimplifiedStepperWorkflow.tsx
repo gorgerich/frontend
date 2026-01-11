@@ -33,7 +33,7 @@ Church,
 Clock,
 } from "lucide-react";
 import { cn } from "./ui/utils";
-import { Calendar } from "./ui/calendar";
+import { SimpleCalendar } from "./SimpleCalendar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import {
 calculateOrder,
@@ -1264,15 +1264,15 @@ type="button"
 </Button>
 </DialogTrigger>
 
-<DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
+<DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden !flex !flex-col">
 <DialogHeader className="shrink-0">
 <DialogTitle>Выбор даты и времени забора</DialogTitle>
 <DialogDescription>Выберите дату и время, когда требуется забрать тело</DialogDescription>
 </DialogHeader>
 
-<div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-6 py-2">
-<Calendar
-mode="single"
+<div className="flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-6 pt-2 pb-6">
+<div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
+<SimpleCalendar
 selected={pickupDateTime.date}
 onSelect={(date: Date | undefined) =>
 setPickupDateTime({
@@ -1280,7 +1280,9 @@ date,
 time: undefined,
 })
 }
+className="mx-auto w-full"
 />
+</div>
 
 {pickupDateTime.date && (
 <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -1296,17 +1298,17 @@ time: undefined,
 )}
 </div>
 
-<div className="grid grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
+<div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
 {TIME_SLOTS.map((time) => (
 <button
 type="button"
 key={time}
 onClick={() => setPickupDateTime({ ...pickupDateTime, time })}
 className={cn(
-"px-3 py-2 rounded-full text-xs font-medium transition-colors border",
+"px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
 pickupDateTime.time === time
-? "bg-blue-600 text-white border-blue-600"
-: "bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
+: "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105"
 )}
 >
 {time}
@@ -1350,15 +1352,15 @@ type="button"
 </Button>
 </DialogTrigger>
 
-<DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
+<DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden !flex !flex-col">
 <DialogHeader className="shrink-0">
 <DialogTitle>Выбор даты и времени прощания</DialogTitle>
 <DialogDescription>Выберите дату и время прощания в зале или церкви</DialogDescription>
 </DialogHeader>
 
-<div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-6 py-2">
-<Calendar
-mode="single"
+<div className="flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-6 pt-2 pb-6">
+<div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
+<SimpleCalendar
 selected={farewellDateTime.date}
 onSelect={(date: Date | undefined) =>
 setFarewellDateTime({
@@ -1366,7 +1368,9 @@ date,
 time: undefined,
 })
 }
+className="mx-auto w-full"
 />
+</div>
 
 {farewellDateTime.date && (
 <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -1382,17 +1386,17 @@ time: undefined,
 )}
 </div>
 
-<div className="grid grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
+<div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
 {TIME_SLOTS.map((time) => (
 <button
 type="button"
 key={time}
 onClick={() => setFarewellDateTime({ ...farewellDateTime, time })}
 className={cn(
-"px-3 py-2 rounded-full text-xs font-medium transition-colors border",
+"px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
 farewellDateTime.time === time
-? "bg-blue-600 text-white border-blue-600"
-: "bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
+: "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105"
 )}
 >
 {time}
@@ -1437,7 +1441,7 @@ type="button"
 </Button>
 </DialogTrigger>
 
-<DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
+<DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden !flex !flex-col">
 <DialogHeader className="shrink-0">
 <DialogTitle>
 Выбор даты и времени{" "}
@@ -1449,9 +1453,9 @@ type="button"
 </DialogDescription>
 </DialogHeader>
 
-<div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-6 py-2">
-<Calendar
-mode="single"
+<div className="flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-6 pt-2 pb-6">
+<div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
+<SimpleCalendar
 selected={burialDateTime.date}
 onSelect={(date: Date | undefined) =>
 setBurialDateTime({
@@ -1459,7 +1463,9 @@ date,
 time: undefined,
 })
 }
+className="mx-auto w-full"
 />
+</div>
 
 {burialDateTime.date && (
 <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -1477,17 +1483,17 @@ time: undefined,
 )}
 </div>
 
-<div className="grid grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
+<div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
 {TIME_SLOTS.map((time) => (
 <button
 type="button"
 key={time}
 onClick={() => setBurialDateTime({ ...burialDateTime, time })}
 className={cn(
-"px-3 py-2 rounded-full text-xs font-medium transition-colors border",
+"px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
 burialDateTime.time === time
-? "bg-blue-600 text-white border-blue-600"
-: "bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
+: "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105"
 )}
 >
 {time}

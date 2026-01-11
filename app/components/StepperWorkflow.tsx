@@ -35,7 +35,6 @@ import { Switch } from "./ui/switch";
 import { Checkbox } from "./ui/checkbox";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
-import { Calendar } from "./ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -1692,7 +1691,7 @@ function formatRub(n: number) {
                       </span>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
+                  <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden !flex !flex-col">
                     <DialogHeader className="shrink-0">
                       <DialogTitle>
                         Выбор даты и времени забора
@@ -1702,7 +1701,7 @@ function formatRub(n: number) {
                         забрать тело
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-6 py-2">
+                    <div className="flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-6 pt-2 pb-6">
                       <div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
                         <style>{`
                           .rdp-caption_label { 
@@ -1835,45 +1834,64 @@ function formatRub(n: number) {
                       </Button>
                     </DialogTrigger>
 
-                    <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
+                    <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden !flex !flex-col">
                       <DialogHeader className="shrink-0">
                         <DialogTitle>Выбор даты и времени прощания</DialogTitle>
                         <DialogDescription>Выберите дату и время прощания в зале или церкви</DialogDescription>
                       </DialogHeader>
 
-                      <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-6 py-2">
+                      <div className="flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-6 pt-2 pb-6">
                         <div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
-                          <Calendar
-                            mode="single"
+                          <SimpleCalendar
                             selected={farewellDateTime.date}
                             onSelect={(date) => setFarewellDateTime({ ...farewellDateTime, date })}
-                            disabled={(date) => date < new Date()}
-                            className="rounded-xl border-none mx-auto bg-transparent shadow-none w-full p-0"
+                            className="mx-auto w-full"
                           />
                         </div>
 
                         {farewellDateTime.date && (
-                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
-                            {Array.from({ length: 24 }, (_, i) => i)
-                              .flatMap((i) => {
-                                const hour = i.toString().padStart(2, "0");
-                                return [`${hour}:00`, `${hour}:30`];
-                              })
-                              .map((time) => (
-                                <button
-                                  key={time}
-                                  type="button"
-                                  onClick={() => setFarewellDateTime({ ...farewellDateTime, time })}
-                                  className={cn(
-                                    "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
-                                    farewellDateTime.time === time
-                                      ? "bg-gray-900 text-white border-gray-900 shadow-md"
-                                      : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50",
-                                  )}
+                          <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div className="flex items-center justify-between px-1">
+                              <div className="flex flex-col">
+                                <span className="text-sm font-medium text-gray-900">
+                                  Время
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  Выберите удобный слот
+                                </span>
+                              </div>
+                              {farewellDateTime.time && (
+                                <Badge
+                                  variant="secondary"
+                                  className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-900"
                                 >
-                                  {time}
-                                </button>
-                              ))}
+                                  {farewellDateTime.time}
+                                </Badge>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
+                              {Array.from({ length: 24 }, (_, i) => i)
+                                .flatMap((i) => {
+                                  const hour = i.toString().padStart(2, "0");
+                                  return [`${hour}:00`, `${hour}:30`];
+                                })
+                                .map((time) => (
+                                  <button
+                                    key={time}
+                                    type="button"
+                                    onClick={() => setFarewellDateTime({ ...farewellDateTime, time })}
+                                    className={cn(
+                                      "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
+                                      farewellDateTime.time === time
+                                        ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
+                                        : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105",
+                                    )}
+                                  >
+                                    {time}
+                                  </button>
+                                ))}
+                            </div>
                           </div>
                         )}
 
@@ -1909,7 +1927,7 @@ function formatRub(n: number) {
                     </Button>
                   </DialogTrigger>
 
-                  <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
+                  <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden !flex !flex-col">
                     <DialogHeader className="shrink-0">
                       <DialogTitle>
                         Выбор даты и времени {formData.serviceType === "cremation" ? "кремации" : "захоронения"}
@@ -1917,34 +1935,53 @@ function formatRub(n: number) {
                       <DialogDescription>Укажите удобные дату и время церемонии.</DialogDescription>
                     </DialogHeader>
 
-                    <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-6 py-2">
+                    <div className="flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-6 pt-2 pb-6">
                       <div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
-                        <Calendar
-                          mode="single"
+                        <SimpleCalendar
                           selected={burialDateTime.date}
                           onSelect={(date) => setBurialDateTime({ ...burialDateTime, date })}
-                          disabled={(date) => date < new Date()}
-                          className="rounded-xl border-none mx-auto bg-transparent shadow-none w-full p-0"
+                          className="mx-auto w-full"
                         />
                       </div>
 
                       {burialDateTime.date && (
-                        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
-                          {PICKUP_TIME_SLOTS.map((time) => (
-                            <button
-                              key={time}
-                              type="button"
-                              onClick={() => setBurialDateTime({ ...burialDateTime, time })}
-                              className={cn(
-                                "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
-                                burialDateTime.time === time
-                                  ? "bg-gray-900 text-white border-gray-900 shadow-md"
-                                  : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50",
-                              )}
-                            >
-                              {time}
-                            </button>
-                          ))}
+                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                          <div className="flex items-center justify-between px-1">
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium text-gray-900">
+                                Время {formData.serviceType === "cremation" ? "кремации" : "захоронения"}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                Выберите удобный слот
+                              </span>
+                            </div>
+                            {burialDateTime.time && (
+                              <Badge
+                                variant="secondary"
+                                className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-900"
+                              >
+                                {burialDateTime.time}
+                              </Badge>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
+                            {PICKUP_TIME_SLOTS.map((time) => (
+                              <button
+                                key={time}
+                                type="button"
+                                onClick={() => setBurialDateTime({ ...burialDateTime, time })}
+                                className={cn(
+                                  "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
+                                  burialDateTime.time === time
+                                    ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
+                                    : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105",
+                                )}
+                              >
+                                {time}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>

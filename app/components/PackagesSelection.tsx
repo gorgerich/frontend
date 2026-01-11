@@ -39,7 +39,7 @@ export function PackagesSelection({
             )}
           >
             {pkg.popular && (
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg ring-4 ring-white">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg ring-4 ring-white whitespace-nowrap">
                 Популярный выбор
               </div>
             )}
@@ -83,7 +83,7 @@ export function PackagesSelection({
                   : "bg-gray-50 text-gray-900 hover:bg-gray-100 border border-gray-100"
               )}
             >
-              {isSelected ? "Выбран" : "Выбрать"}
+              {isSelected ? "Выбран" : "Настроить"}
             </Button>
           </div>
         );

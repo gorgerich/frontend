@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { Info, Play, Sparkles } from "lucide-react";
@@ -13,6 +13,7 @@ export function TopButtons() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isDeathGuideOpen, setIsDeathGuideOpen] = useState(false);
   const [selectedTariff, setSelectedTariff] = useState<string | null>(null);
+  const shouldReduceMotion = useReducedMotion();
 
   const handleOpenStepper = (tariffName: string) => {
     setSelectedTariff(tariffName);
@@ -36,6 +37,18 @@ export function TopButtons() {
 
         {/* Центральная кнопка: Как начать */}
         <motion.button
+          animate={
+            shouldReduceMotion
+              ? undefined
+              : {
+                  scale: [1, 1.25, 1],
+                }
+          }
+          transition={
+            shouldReduceMotion
+              ? undefined
+              : { duration: 2, repeat: Infinity, ease: "easeInOut" }
+          }
           whileHover={{ scale: 1.1, y: -2 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsDeathGuideOpen(true)}

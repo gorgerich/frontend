@@ -144,11 +144,7 @@ export function SimpleCalendar({
       )}
     >
       <div className="flex justify-between items-center w-full mb-5">
-        <div className="flex items-center gap-3">
-          <div className="text-[#1a1a4d] font-serif italic tracking-tight text-[26px]">
-            Rowi
-          </div>
-          <div className="h-5 w-px bg-gray-300/60" />
+        <div className="flex items-center">
           <span className="text-xl text-[#1a1a4d] tracking-tight font-medium">
             {MONTHS[month]}
           </span>

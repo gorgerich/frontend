@@ -389,7 +389,7 @@ export function PackagesSection({ formData, onUpdateFormData }: PackagesSectionP
                       <div className="p-8 flex-1 flex flex-col">
                         {pkg.popular && (
                           <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-                            <div className="bg-gray-900 text-white text-xs font-medium px-4 py-1.5 rounded-full shadow-lg uppercase tracking-wider">
+                            <div className="bg-gray-900 text-white text-xs font-medium px-4 py-1.5 rounded-full shadow-lg uppercase tracking-wider whitespace-nowrap">
                               Популярный выбор
                             </div>
                           </div>
@@ -433,7 +433,7 @@ export function PackagesSection({ formData, onUpdateFormData }: PackagesSectionP
                               : 'bg-white border-2 border-gray-100 text-gray-900 hover:border-gray-900 hover:bg-gray-50',
                           )}
                         >
-                          {formData.packageType === pkg.id ? 'Выбрано' : 'Выбрать тариф'}
+                          {formData.packageType === pkg.id ? 'Выбрано' : 'Настроить'}
                         </Button>
 
                         {formData.packageType === pkg.id && (
@@ -593,7 +593,7 @@ export function PackagesSection({ formData, onUpdateFormData }: PackagesSectionP
                                 : 'bg-white border-2 border-gray-100 text-gray-900 hover:border-gray-900 hover:bg-gray-50',
                             )}
                           >
-                            {formData.packageType === pkg.id ? 'Выбрано' : 'Выбрать'}
+                            {formData.packageType === pkg.id ? 'Выбрано' : 'Настроить'}
                           </Button>
                         </div>
                       </div>
