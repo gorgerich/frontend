@@ -48,7 +48,7 @@ const [activeTab, setActiveTab] = useState<'coffin' | 'wreath'>('coffin');
 const [selectedWood, setSelectedWood] = useState('pine');
 const [selectedLining, setSelectedLining] = useState('satin-white');
 const [selectedHardware, setSelectedHardware] = useState('brass');
-const [coffinQuantity, setCoffinQuantity] = useState(1);
+const coffinQuantity = 1;
 
 // Состояние для венка
 const [wreathType, setWreathType] = useState('artificial');
@@ -472,33 +472,6 @@ className="w-full h-full object-cover transition-transform duration-700 group-ho
                     </div>
                   </button>
                 ))}
-              </div>
-            </div>
-
-            {/* Quantity */}
-            <div className="space-y-3">
-              <Label className="text-gray-900">Количество</Label>
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setCoffinQuantity(Math.max(1, coffinQuantity - 1))}
-                  className="h-10 w-10 rounded-xl"
-                >
-                  <Minus className="w-4 h-4" />
-                </Button>
-                <div className="flex-1 text-center">
-                  <div className="text-2xl text-gray-900">{coffinQuantity}</div>
-                  <div className="text-xs text-gray-500">шт.</div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setCoffinQuantity(coffinQuantity + 1)}
-                  className="h-10 w-10 rounded-xl"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
               </div>
             </div>
 

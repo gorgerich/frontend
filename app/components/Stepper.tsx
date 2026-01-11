@@ -124,60 +124,62 @@ export function Stepper({
                   top: '50%',
                 }}
               >
-                <div className="flex flex-col items-center -translate-x-1/2 -translate-y-1/2">
+                <button
+                  type="button"
+                  onClick={() => isClickable && onStepClick?.(index)}
+                  disabled={!isClickable}
+                  className={cn(
+                    'group relative flex flex-col items-center -translate-x-1/2 -translate-y-1/2 bg-transparent border-0 p-0 focus-visible:outline-none',
+                    isClickable ? 'cursor-pointer' : 'cursor-default'
+                  )}
+                  style={{ perspective: '1000px' }}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="absolute -inset-x-4 -inset-y-3"
+                  />
                   {/* круг шага */}
-                  <button
-                    type="button"
-                    onClick={() => isClickable && onStepClick?.(index)}
-                    disabled={!isClickable}
+                  <motion.div
+                    animate={{
+                      scale: isCurrent ? 1.15 : 1,
+                    }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 200,
+                      damping: 15,
+                    }}
                     className={cn(
-                      'shrink-0 z-10 relative outline-none',
-                      isClickable ? 'cursor-pointer' : 'cursor-default'
+                      'w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 relative bg-white',
+                      isCompleted && 'bg-gray-900 border-gray-900',
+                      isCurrent &&
+                        'border-gray-900 bg-white shadow-xl ring-4 ring-gray-900/10',
+                      !isCompleted &&
+                        !isCurrent &&
+                        'border-gray-300 bg-white',
+                      isClickable &&
+                        !isCurrent &&
+                        'group-hover:border-gray-700 group-hover:shadow-md group-hover:scale-110'
                     )}
-                    style={{ perspective: '1000px' }}
                   >
-                    <motion.div
-                      animate={{
-                        scale: isCurrent ? 1.15 : 1,
-                      }}
-                      transition={{
-                        type: 'spring',
-                        stiffness: 200,
-                        damping: 15,
-                      }}
-                      className={cn(
-                        'w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 relative bg-white',
-                        isCompleted && 'bg-gray-900 border-gray-900',
-                        isCurrent &&
-                          'border-gray-900 bg-white shadow-xl ring-4 ring-gray-900/10',
-                        !isCompleted &&
-                          !isCurrent &&
-                          'border-gray-300 bg-white',
-                        isClickable &&
-                          !isCurrent &&
-                          'hover:border-gray-700 hover:shadow-md hover:scale-110'
-                      )}
-                    >
-                      {isCompleted && !isCurrent ? (
-                        <Check className="w-6 h-6 text-white" />
-                      ) : (
-                        <span
-                          className={cn(
-                            'text-base transition-colors',
-                            isCurrent && 'text-gray-900',
-                            isCompleted &&
-                              !isCurrent &&
-                              'text-white',
-                            !isCompleted &&
-                              !isCurrent &&
-                              'text-gray-400'
-                          )}
-                        >
-                          {index + 1}
-                        </span>
-                      )}
-                    </motion.div>
-                  </button>
+                    {isCompleted && !isCurrent ? (
+                      <Check className="w-6 h-6 text-white" />
+                    ) : (
+                      <span
+                        className={cn(
+                          'text-base transition-colors',
+                          isCurrent && 'text-gray-900',
+                          isCompleted &&
+                            !isCurrent &&
+                            'text-white',
+                          !isCompleted &&
+                            !isCurrent &&
+                            'text-gray-400'
+                        )}
+                      >
+                        {index + 1}
+                      </span>
+                    )}
+                  </motion.div>
 
                   {/* подпись под кругом */}
                   <motion.div
@@ -193,21 +195,20 @@ export function Stepper({
                     }}
                   >
                     <span
-  className={cn(
-    "text-sm font-medium transition-all duration-300 whitespace-nowrap text-white-900 md:text-white"
-  )}
->
-  {step.label}
-</span>
+                      className={cn(
+                        "text-sm font-medium transition-all duration-300 whitespace-nowrap text-white-900 md:text-white"
+                      )}
+                    >
+                      {step.label}
+                    </span>
 
-{step.description && isCurrent && (
-  <span className="text-xs mt-0.5 whitespace-nowrap text-white-600 md:text-white/70">
-    {step.description}
-  </span>
-)}
-
+                    {step.description && isCurrent && (
+                      <span className="text-xs mt-0.5 whitespace-nowrap text-white-600 md:text-white/70">
+                        {step.description}
+                      </span>
+                    )}
                   </motion.div>
-                </div>
+                </button>
               </motion.div>
             );
           })}
