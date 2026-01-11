@@ -64,6 +64,7 @@ import {
   Clock,
   Church,
   Edit2,
+  Info,
   Search,
   Check,
   Snowflake,
@@ -116,6 +117,18 @@ const PRICES = {
   hearse: 8000,
   familyTransport: { 5: 5000, 10: 8000, 15: 12000 },
   pallbearers: 6000,
+} as const;
+
+const HEARSE_CATEGORY_PRICE = {
+  standard: 8000,
+  comfort: 15000,
+  premium: 35000,
+} as const;
+
+const HEARSE_CATEGORY_LABELS = {
+  standard: "Стандарт",
+  comfort: "Комфорт",
+  premium: "Премиум",
 } as const;
 
 const PACKAGES = [
@@ -844,6 +857,7 @@ splitSchedule?: string;
     pickupDateTime?: { date?: string | Date; time?: string };
 
     needsHearse: boolean;
+    hearseCategory: "standard" | "comfort" | "premium";
     hearseRoute: { morgue: boolean; hall: boolean; church: boolean; cemetery: boolean };
 
     needsFamilyTransport: boolean;
@@ -981,6 +995,13 @@ export function StepperWorkflow({
   const [showPickupDialog, setShowPickupDialog] = useState(false);
   const [showFarewellDialog, setShowFarewellDialog] = useState(false);
   const [showBurialDialog, setShowBurialDialog] = useState(false);
+  const [isHearseInfoOpen, setIsHearseInfoOpen] = useState(false);
+  const [openHearseCategoryInfo, setOpenHearseCategoryInfo] = useState<
+    "standard" | "comfort" | "premium" | null
+  >(null);
+  const [canHoverHearseInfo, setCanHoverHearseInfo] = useState(false);
+  const hearseInfoRef = useRef<HTMLDivElement>(null);
+  const hearseCategoryInfoRef = useRef<HTMLDivElement>(null);
 
   const savedPickupDateTime = normalizePickupDateTime(formData.pickupDateTime);
 
@@ -998,6 +1019,46 @@ export function StepperWorkflow({
     if (!normalized.date && !normalized.time) return;
     setPickupDateTime(normalized);
   }, [currentStep, formData.pickupDateTime, pickupDateTime.date, pickupDateTime.time]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const update = () => setCanHoverHearseInfo(media.matches);
+    update();
+    if (media.addEventListener) {
+      media.addEventListener("change", update);
+      return () => media.removeEventListener("change", update);
+    }
+    media.addListener(update);
+    return () => media.removeListener(update);
+  }, []);
+
+  useEffect(() => {
+    if (!isHearseInfoOpen && !openHearseCategoryInfo) return;
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+      const insideHearseInfo = hearseInfoRef.current?.contains(target);
+      const insideCategoryInfo = hearseCategoryInfoRef.current?.contains(target);
+      if (!insideHearseInfo && !insideCategoryInfo) {
+        setIsHearseInfoOpen(false);
+        setOpenHearseCategoryInfo(null);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsHearseInfoOpen(false);
+        setOpenHearseCategoryInfo(null);
+      }
+    };
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isHearseInfoOpen, openHearseCategoryInfo]);
 
   useEffect(() => {
     const list = formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES_BURIAL;
@@ -1028,11 +1089,46 @@ export function StepperWorkflow({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.hasHall]);
 
-  const calculateTotal = () =>
-    calculateTotalFromUtils(formData as any, selectedCemeteryCategory, STEPPER_CALCULATOR_CONFIG);
+  const buildCalculatorConfig = () => {
+    const category =
+      (formData.hearseCategory as keyof typeof HEARSE_CATEGORY_PRICE) || "standard";
+    const hearsePrice = HEARSE_CATEGORY_PRICE[category] ?? 0;
 
-  const calculateBreakdown = () =>
-    calculateBreakdownFromUtils(formData as any, selectedCemeteryCategory, STEPPER_CALCULATOR_CONFIG);
+    return {
+      ...STEPPER_CALCULATOR_CONFIG,
+      prices: {
+        ...STEPPER_CALCULATOR_CONFIG.prices,
+        hearse: hearsePrice,
+      },
+    };
+  };
+
+  const calculateTotal = () =>
+    calculateTotalFromUtils(formData as any, selectedCemeteryCategory, buildCalculatorConfig());
+
+  const calculateBreakdown = () => {
+    const breakdown = calculateBreakdownFromUtils(
+      formData as any,
+      selectedCemeteryCategory,
+      buildCalculatorConfig(),
+    );
+
+    if (!formData.needsHearse) return breakdown;
+
+    const category =
+      (formData.hearseCategory as keyof typeof HEARSE_CATEGORY_LABELS) || "standard";
+    const categoryLabel = HEARSE_CATEGORY_LABELS[category] || "Стандарт";
+    const hearseLabel =
+      category === "standard" ? "Катафалк" : `Катафалк (${categoryLabel})`;
+
+    return breakdown.map((section) => {
+      if (section.category !== "Логистика" || !section.items?.length) return section;
+      const items = section.items.map((item) =>
+        item.name === "Катафалк" ? { ...item, name: hearseLabel } : item,
+      );
+      return { ...section, items };
+    });
+  };
 
   const handleConfirmBooking = async () => {
     try {
@@ -1839,7 +1935,51 @@ function formatRub(n: number) {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <Label>Нужен катафалк?</Label>
+                  <div className="flex items-center">
+                    <Label>Нужен катафалк?</Label>
+                    <div
+                      ref={hearseInfoRef}
+                      className="relative inline-flex"
+                      onMouseEnter={() => {
+                        if (canHoverHearseInfo) setIsHearseInfoOpen(true);
+                      }}
+                      onMouseLeave={() => {
+                        if (canHoverHearseInfo) setIsHearseInfoOpen(false);
+                      }}
+                    >
+                      <button
+                        type="button"
+                        aria-label="Информация о катафалке"
+                        aria-expanded={isHearseInfoOpen}
+                        onClick={() => setIsHearseInfoOpen((prev) => !prev)}
+                        className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:text-slate-700"
+                      >
+                        <Info className="h-3.5 w-3.5" />
+                      </button>
+                      {isHearseInfoOpen && (
+                        <div className="absolute left-1/2 top-full mt-2 z-50 w-[320px] max-w-[calc(100vw-32px)] -translate-x-1/2 rounded-2xl border border-slate-200 bg-white shadow-xl sm:left-0 sm:translate-x-0">
+                          <div className="h-40 w-full overflow-hidden">
+                            <img
+                              src="/images/hearse-lux.jpg"
+                              alt="Катафалк класса Люкс"
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <div className="p-4">
+                            <div className="text-sm font-semibold text-slate-900">
+                              Катафалк класса Люкс
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              Специализированный автомобиль
+                            </div>
+                            <p className="mt-2 text-sm text-slate-600">
+                              Mercedes-Benz для торжественной церемонии. Оборудован системой кондиционирования и подиумом.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                   <p className="text-xs text-gray-500 mt-1">Специализированный транспорт</p>
                 </div>
                 <Switch
@@ -1884,7 +2024,219 @@ function formatRub(n: number) {
               </AlertDialog>
 
               {formData.needsHearse && (
-                <div className="space-y-3 pl-4 border-l-2 border-gray-200">
+                <div className="space-y-4 pl-4 border-l-2 border-gray-200">
+                  <div ref={hearseCategoryInfoRef}>
+                    <Label className="text-sm mb-3 block">Категория катафалка:</Label>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleInputChange("hearseCategory", "standard");
+                            setOpenHearseCategoryInfo(null);
+                          }}
+                          className={cn(
+                            "w-full h-16 px-3 border-2 rounded-full text-center transition-all flex items-center justify-center",
+                            formData.hearseCategory === "standard"
+                              ? "border-gray-900 bg-gray-50"
+                              : "border-gray-200 hover:border-gray-300",
+                          )}
+                        >
+                          <div className="flex flex-col items-center gap-0.5 leading-tight">
+                            <div className="text-sm">Стандарт</div>
+                            <div className="text-[11px] text-gray-400">
+                              Базовый катафалк
+                            </div>
+                          </div>
+                        </button>
+                        <div
+                          className="absolute -top-1 -right-1 z-10"
+                          onMouseEnter={() => {
+                            if (canHoverHearseInfo) setOpenHearseCategoryInfo("standard");
+                          }}
+                          onMouseLeave={() => {
+                            if (canHoverHearseInfo) setOpenHearseCategoryInfo(null);
+                          }}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 rounded-full text-gray-400 hover:text-gray-600 p-0"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpenHearseCategoryInfo((prev) =>
+                                prev === "standard" ? null : "standard",
+                              );
+                            }}
+                            aria-label="Информация о категории Стандарт"
+                            aria-expanded={openHearseCategoryInfo === "standard"}
+                          >
+                            <Info className="h-4 w-4" />
+                          </Button>
+                          {openHearseCategoryInfo === "standard" && (
+                            <div className="absolute right-0 top-6 z-50 w-80 max-w-[calc(100vw-32px)] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                              <div className="relative h-48 w-full bg-gray-100">
+                                <img
+                                  src="/images/hearse-lux.jpg"
+                                  alt="Стандарт"
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div className="p-4 bg-white">
+                                <h4 className="font-medium mb-1 text-gray-900">
+                                  Стандарт
+                                </h4>
+                                <p className="text-sm text-gray-500 leading-snug">
+                                  Базовый катафалк. Чистый и исправный автомобиль для достойной перевозки усопшего.
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleInputChange("hearseCategory", "comfort");
+                            setOpenHearseCategoryInfo(null);
+                          }}
+                          className={cn(
+                            "w-full h-16 px-3 border-2 rounded-full text-center transition-all flex items-center justify-center",
+                            formData.hearseCategory === "comfort"
+                              ? "border-gray-900 bg-gray-50"
+                              : "border-gray-200 hover:border-gray-300",
+                          )}
+                        >
+                          <div className="flex flex-col items-center gap-0.5 leading-tight">
+                            <div className="text-sm">Комфорт</div>
+                            <div className="text-[11px] text-gray-400">
+                              С кондиционером
+                            </div>
+                            <div className="text-[11px] text-gray-500">
+                              +15 000 ₽
+                            </div>
+                          </div>
+                        </button>
+                        <div
+                          className="absolute -top-1 -right-1 z-10"
+                          onMouseEnter={() => {
+                            if (canHoverHearseInfo) setOpenHearseCategoryInfo("comfort");
+                          }}
+                          onMouseLeave={() => {
+                            if (canHoverHearseInfo) setOpenHearseCategoryInfo(null);
+                          }}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 rounded-full text-gray-400 hover:text-gray-600 p-0"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpenHearseCategoryInfo((prev) =>
+                                prev === "comfort" ? null : "comfort",
+                              );
+                            }}
+                            aria-label="Информация о категории Комфорт"
+                            aria-expanded={openHearseCategoryInfo === "comfort"}
+                          >
+                            <Info className="h-4 w-4" />
+                          </Button>
+                          {openHearseCategoryInfo === "comfort" && (
+                            <div className="absolute right-0 top-6 z-50 w-80 max-w-[calc(100vw-32px)] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                              <div className="relative h-48 w-full bg-gray-100">
+                                <img
+                                  src="/images/hearse-lux.jpg"
+                                  alt="Комфорт"
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div className="p-4 bg-white">
+                                <h4 className="font-medium mb-1 text-gray-900">
+                                  Комфорт
+                                </h4>
+                                <p className="text-sm text-gray-500 leading-snug">
+                                  Улучшенный катафалк с кондиционером и декоративной отделкой салона. Повышенный комфорт для достойной церемонии.
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleInputChange("hearseCategory", "premium");
+                            setOpenHearseCategoryInfo(null);
+                          }}
+                          className={cn(
+                            "w-full h-16 px-3 border-2 rounded-full text-center transition-all flex items-center justify-center",
+                            formData.hearseCategory === "premium"
+                              ? "border-gray-900 bg-gray-50"
+                              : "border-gray-200 hover:border-gray-300",
+                          )}
+                        >
+                          <div className="flex flex-col items-center gap-0.5 leading-tight">
+                            <div className="text-sm">Премиум</div>
+                            <div className="text-[11px] text-gray-400">
+                              Mercedes-Benz
+                            </div>
+                            <div className="text-[11px] text-gray-500">
+                              +35 000 ₽
+                            </div>
+                          </div>
+                        </button>
+                        <div
+                          className="absolute -top-1 -right-1 z-10"
+                          onMouseEnter={() => {
+                            if (canHoverHearseInfo) setOpenHearseCategoryInfo("premium");
+                          }}
+                          onMouseLeave={() => {
+                            if (canHoverHearseInfo) setOpenHearseCategoryInfo(null);
+                          }}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 rounded-full text-gray-400 hover:text-gray-600 p-0"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpenHearseCategoryInfo((prev) =>
+                                prev === "premium" ? null : "premium",
+                              );
+                            }}
+                            aria-label="Информация о категории Премиум"
+                            aria-expanded={openHearseCategoryInfo === "premium"}
+                          >
+                            <Info className="h-4 w-4" />
+                          </Button>
+                          {openHearseCategoryInfo === "premium" && (
+                            <div className="absolute right-0 top-6 z-50 w-80 max-w-[calc(100vw-32px)] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                              <div className="relative h-48 w-full bg-gray-100">
+                                <img
+                                  src="/images/hearse-lux.jpg"
+                                  alt="Премиум"
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div className="p-4 bg-white">
+                                <h4 className="font-medium mb-1 text-gray-900">
+                                  Премиум
+                                </h4>
+                                <p className="text-sm text-gray-500 leading-snug">
+                                  Mercedes-Benz с кондиционером, подиумом и декоративным оформлением. Высший класс для торжественной церемонии.
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <Label className="text-sm">Маршрут:</Label>
 
                   <div className="flex flex-col md:flex-row md:flex-wrap items-stretch md:items-center gap-2">
@@ -2253,14 +2605,6 @@ function formatRub(n: number) {
 
         return (
           <div className="space-y-6">
-            <div className="bg-green-50 border border-green-200 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
-              <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-              <div>
-                <h3 className="text-green-900 mb-2">Все данные заполнены</h3>
-                <p className="text-sm text-green-700">Пожалуйста, проверьте информацию перед бронированием.</p>
-              </div>
-            </div>
-
             {/* КАРТОЧКИ ПРОВЕРКИ */}
             <div className="space-y-4">
               <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
@@ -2423,6 +2767,11 @@ function formatRub(n: number) {
                         className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
                         inputMode="numeric"
                       />
+                      {!cardOk && (
+                        <div className="mt-2 text-xs text-red-600">
+                          Проверьте номер карты.
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -2449,6 +2798,11 @@ function formatRub(n: number) {
                           className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
                           inputMode="numeric"
                         />
+                        {!expOk && (
+                          <div className="mt-2 text-xs text-red-600">
+                            Срок действия должен быть в формате MM/YY.
+                          </div>
+                        )}
                       </div>
 
                       <div>
@@ -2460,6 +2814,11 @@ function formatRub(n: number) {
                           className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
                           inputMode="numeric"
                         />
+                        {!cvcOk && (
+                          <div className="mt-2 text-xs text-red-600">
+                            CVC должен быть 3–4 цифры.
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -2472,20 +2831,17 @@ function formatRub(n: number) {
                         className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
                         inputMode="email"
                       />
+                      {!emailOk && (
+                        <div className="mt-2 text-xs text-red-600">
+                          Проверьте корректность e-mail.
+                        </div>
+                      )}
                       <div className="mt-2 text-xs text-gray-500">
                         На этот адрес придёт подтверждение заказа, детали церемонии и документы.
                       </div>
                     </div>
                   </div>
 
-                  {(!cardOk || !expOk || !cvcOk || !emailOk) && (
-                    <div className="mt-4 text-xs text-red-600 space-y-1">
-                      {!emailOk && <div>Укажи корректный email.</div>}
-                      {!cardOk && <div>Проверь номер карты.</div>}
-                      {!expOk && <div>Срок действия должен быть в формате MM/YY.</div>}
-                      {!cvcOk && <div>CVC должен быть 3–4 цифры.</div>}
-                    </div>
-                  )}
                 </div>
 
                 {/* RIGHT: планы оплаты + итог + кнопка */}
@@ -2615,7 +2971,7 @@ function formatRub(n: number) {
 
   return (
     <div ref={containerRef} className="max-w-5xl mx-auto -translate-y-12 pb-32">
-      <Card className="bg-white/20 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30 relative">
+      <Card className="bg-white/10 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30 relative">
         <CardHeader className="pb-4 pt-8 px-6 sm:px-8">
           <div className="absolute -top-5 right-8 z-50">
             <button
@@ -2629,7 +2985,7 @@ function formatRub(n: number) {
           </div>
 
           <div className="flex justify-center mb-6">
-            <div className="bg-white/20 backdrop-blur-md p-1 rounded-full border border-white/20 inline-flex">
+            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex">
               <button
                 type="button"
                 onClick={() => {
@@ -2658,10 +3014,19 @@ function formatRub(n: number) {
             </div>
           </div>
 
-          <div className="text-center mb-2">
-            <div className="mt-4 w-full">
+          {workflowMode === "wizard" && (
+            <Stepper
+              steps={steps as any}
+              currentStep={currentStep}
+              completedSteps={completedSteps}
+              onStepClick={handleStepClick}
+            />
+          )}
+
+          <div className="text-center mb-2 mt-4">
+            <div className="w-full">
               {workflowMode === "wizard" ? (
-                <div className="relative overflow-hidden rounded-xl border border-white/10 md:border-zinc-200 bg-white/5 md:bg-zinc-50/50 p-5 transition-all md:hover:bg-zinc-50">
+                <div className="relative overflow-hidden rounded-xl border border-white/10 md:border-zinc-200 bg-white/100 md:bg-zinc-55/50 p-5 transition-all md:hover:bg-zinc-55">
                   <div className="flex gap-4 items-start">
                     <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
                       {currentStep === 0 && <Church className="h-5 w-5" />}
@@ -2671,7 +3036,7 @@ function formatRub(n: number) {
                       {currentStep === 4 && <CheckCircle2 className="h-5 w-5" />}
                     </div>
                     <div className="space-y-1.5 text-left">
-                      <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray/70 md:text-zinc-500">
+                      <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
                         <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
                           {currentStep + 1}
                         </span>
@@ -2681,7 +3046,7 @@ function formatRub(n: number) {
                         {currentStep === 3 && "Этап 4: Документы"}
                         {currentStep === 4 && "Этап 5: Итог"}
                       </h4>
-                      <p className="text-[15px] leading-relaxed text-gray md:text-zinc-800 font-normal">
+                      <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
                         {currentStep === 0 && "Настройте формат прощания: выберите тип церемонии (светская или религиозная) и длительность аренды зала."}
                         {currentStep === 1 && "Спланируйте логистику: укажите дату и время прощания, выберите транспорт для усопшего и гостей."}
                         {currentStep === 2 && "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности."}
@@ -2701,15 +3066,6 @@ function formatRub(n: number) {
               )}
             </div>
           </div>
-
-          {workflowMode === "wizard" && (
-  <Stepper
-    steps={steps as any}
-    currentStep={currentStep}
-    completedSteps={completedSteps}
-    onStepClick={handleStepClick}
-  />
-)}
 </CardHeader>
 
 <CardContent className="px-6 sm:px-8 pb-8">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { HeroSection } from './components/HeroSection';
 import { StepperWorkflow } from './components/StepperWorkflow';
 import { PackagesSection } from './components/PackagesSection';
@@ -8,6 +8,69 @@ import { FloatingCalculator } from './components/FloatingCalculator';
 import { Footer } from './components/Footer';
 
 import { calculateTotal, calculateBreakdown } from './components/calculationUtils';
+
+type BreakdownItem = { name: string; price?: number };
+type BreakdownSection = { category: string; price: number; items?: BreakdownItem[] };
+
+const HEARSE_CATEGORY_PRICE = {
+  standard: 8000,
+  comfort: 15000,
+  premium: 35000,
+} as const;
+
+const HEARSE_CATEGORY_LABELS = {
+  standard: 'Стандарт',
+  comfort: 'Комфорт',
+  premium: 'Премиум',
+} as const;
+
+const applyHearseCategoryToCalculator = (
+  total: number,
+  breakdown: BreakdownSection[],
+  formData: { needsHearse?: boolean; hearseCategory?: keyof typeof HEARSE_CATEGORY_PRICE },
+) => {
+  if (!formData.needsHearse) {
+    return { total, breakdown };
+  }
+
+  const category =
+    (formData.hearseCategory as keyof typeof HEARSE_CATEGORY_PRICE) || 'standard';
+  const categoryPrice = HEARSE_CATEGORY_PRICE[category] ?? 0;
+  const categoryLabel = HEARSE_CATEGORY_LABELS[category] || 'Стандарт';
+  const hearseLabel =
+    category === 'standard' ? 'Катафалк' : `Катафалк (${categoryLabel})`;
+
+  let applied = false;
+  let deltaTotal = 0;
+  const nextBreakdown = breakdown.map((section) => {
+    if (section.category !== 'Логистика' || !section.items?.length) return section;
+
+    let hasHearse = false;
+    let sectionDelta = 0;
+    const items = section.items.map((item) => {
+      if (item.name !== 'Катафалк') return item;
+      hasHearse = true;
+      const prevPrice = typeof item.price === 'number' ? item.price : 0;
+      const delta = categoryPrice - prevPrice;
+      sectionDelta += delta;
+      return {
+        ...item,
+        name: hearseLabel,
+        price: categoryPrice,
+      };
+    });
+
+    if (!hasHearse) return section;
+    applied = true;
+    deltaTotal += sectionDelta;
+    return { ...section, price: section.price + sectionDelta, items };
+  });
+
+  return {
+    total: applied ? total + deltaTotal : total,
+    breakdown: nextBreakdown,
+  };
+};
 
 export default function Home() {
 // Глобальный обработчик ошибок для предотвращения краша из-за hls.js и других внешних библиотек
@@ -123,7 +186,8 @@ ceremonyOrder: 'civil-first',
 
 cemetery: '',
 selectedSlot: '',
-needsHearse: true,
+    needsHearse: true,
+    hearseCategory: "standard",
 hearseRoute: {
 morgue: true,
 hall: true,
@@ -155,6 +219,11 @@ const [formData, setFormData] = useState(initialFormData);
 const [currentStep, setCurrentStep] = useState(0);
 const [selectedCemeteryCategory, setSelectedCemeteryCategory] =
 useState<'standard' | 'comfort' | 'premium'>('standard');
+const calculatorSummary = useMemo(() => {
+const baseTotal = calculateTotal(formData, selectedCemeteryCategory);
+const baseBreakdown = calculateBreakdown(formData, selectedCemeteryCategory);
+return applyHearseCategoryToCalculator(baseTotal, baseBreakdown, formData);
+}, [formData, selectedCemeteryCategory]);
 
 useEffect(() => {
 try {
@@ -241,8 +310,8 @@ onCemeteryCategoryChange={handleCemeteryCategoryChange}
 
 {currentStep >= 1 && (
 <FloatingCalculator
-total={calculateTotal(formData, selectedCemeteryCategory)}
-breakdown={calculateBreakdown(formData, selectedCemeteryCategory)}
+total={calculatorSummary.total}
+breakdown={calculatorSummary.breakdown}
 />
 )}
 </div>

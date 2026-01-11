@@ -135,6 +135,7 @@ export default function Home() {
     cemetery: '',
     selectedSlot: '',
     needsHearse: true,
+    hearseCategory: "standard",
     hearseRoute: {
       morgue: true,
       hall: true,

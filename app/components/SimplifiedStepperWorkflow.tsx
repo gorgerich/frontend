@@ -2045,6 +2045,11 @@ placeholder="0000 0000 0000 0000"
 className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
 inputMode="numeric"
 />
+{!cardOk && (
+<div className="mt-2 text-xs text-red-600">
+Проверьте номер карты.
+</div>
+)}
 </div>
 
 <div>
@@ -2071,6 +2076,11 @@ placeholder="MM/YY"
 className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
 inputMode="numeric"
 />
+{!expOk && (
+<div className="mt-2 text-xs text-red-600">
+Срок действия должен быть в формате MM/YY.
+</div>
+)}
 </div>
 
 <div>
@@ -2082,6 +2092,11 @@ placeholder="123"
 className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
 inputMode="numeric"
 />
+{!cvcOk && (
+<div className="mt-2 text-xs text-red-600">
+CVC должен быть 3–4 цифры.
+</div>
+)}
 </div>
 </div>
 
@@ -2094,20 +2109,17 @@ placeholder="name@email.com"
 className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
 inputMode="email"
 />
+{!emailOk && (
+<div className="mt-2 text-xs text-red-600">
+Проверьте корректность e-mail.
+</div>
+)}
 <div className="mt-2 text-xs text-gray-500">
 На этот адрес придёт подтверждение заказа, детали церемонии и документы.
 </div>
 </div>
 </div>
 
-{(!cardOk || !expOk || !cvcOk || !emailOk) && (
-<div className="mt-4 text-xs text-red-600 space-y-1">
-{!emailOk && <div>Укажи корректный email.</div>}
-{!cardOk && <div>Проверь номер карты.</div>}
-{!expOk && <div>Срок действия должен быть в формате MM/YY.</div>}
-{!cvcOk && <div>CVC должен быть 3–4 цифры.</div>}
-</div>
-)}
 </div>
 
 {/* RIGHT: планы оплаты + итог + кнопка */}

@@ -4,23 +4,23 @@ import { X, Heart, Shield, Calculator, Clock } from 'lucide-react';
 const features = [
   {
     icon: Heart,
-    title: 'С заботой о вас',
-    description: 'Помогаем пройти этот путь максимально мягко, снимая организационную нагрузку.'
+    title: 'Пошаговый процесс',
+    description: 'Помогаем пройти процесс шаг за шагом: формат, место, церемония, логистика, атрибутика, оплата.'
   },
   {
     icon: Shield,
     title: 'Честные цены',
-    description: 'Никаких скрытых комиссий и навязанных услуг. Вы платите только за то, что выбрали.'
+    description: 'Никаких скрытых комиссий и навязанных услуг. Вы видите состав и стоимость каждого решения до оплаты.'
   },
   {
     icon: Calculator,
-    title: 'Прозрачный бюджет',
-    description: 'Моментальный расчет стоимости. Вы видите итоговую сумму на каждом этапе выбора.'
+    title: 'Живой расчет стоимости',
+    description: 'Стоимость пересчитывается в реальном времени. Вы всегда видите итоговую сумму на каждом этапе.'
   },
   {
     icon: Clock,
     title: 'В вашем ритме',
-    description: 'Без спешки и давления менеджеров. Принимайте решения тогда, когда будете готовы.'
+    description: 'Без звонков, спешки и давления агентов. Принимайте решения тогда, когда будете готовы.'
   }
 ];
 
@@ -69,11 +69,11 @@ export function AboutServiceModal({ isOpen, onClose }: { isOpen: boolean; onClos
                   className="relative mb-10 md:mb-12 text-center"
                 >
                   <h2 className="text-4xl md:text-6xl lg:text-7xl font-light text-white mb-6 tracking-tight">
-                    Тихая <span className="font-serif italic text-blue-200/90">Память</span>
+                    Тихий <span className="font-serif italic text-blue-200/90">Дом</span>
                   </h2>
                   <p className="text-lg md:text-2xl text-blue-100/80 font-light max-w-3xl mx-auto leading-relaxed tracking-wide">
-                    Цифровой помощник для организации достойного прощания — <br className="hidden md:block" />
-                    без посредников, давления и скрытых комиссий.
+                    Цифровой сервис для самостоятельной организации прощания без давления, посредников и скрытых наценок. <br className="hidden md:block" />
+                  
                   </p>
                 </motion.div>
 
