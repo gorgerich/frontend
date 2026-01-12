@@ -5,10 +5,17 @@ import { useMemo, useState } from "react";
 type PayPlan = "full" | "deposit" | "split";
 
 type Props = {
-  orderId: string;       // publicId, например order_xxx
-  totalAmount: number;   // RUB (целое), например 204000
+  orderId: string; // publicId, например order_xxx
+  totalAmount: number; // RUB (целое), например 204000
   email: string;
 };
+
+declare global {
+  interface Window {
+    dataLayer?: Array<Record<string, any>>;
+    ym?: (...args: any[]) => void;
+  }
+}
 
 function rub(n: number) {
   return n.toLocaleString("ru-RU");
@@ -21,7 +28,39 @@ function addDays(d: Date, days: number) {
 }
 
 function formatDate(d: Date) {
-  return d.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
+  return d.toLocaleDateString("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+/** GTM: dataLayer.push */
+function trackGTM(event: string, params: Record<string, any> = {}) {
+  if (typeof window === "undefined") return;
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event, ...params });
+}
+
+/** Yandex Metrika: ym(ID, 'reachGoal', ...) */
+function trackYM(goal: string, params: Record<string, any> = {}) {
+  if (typeof window === "undefined") return;
+  const idRaw = process.env.NEXT_PUBLIC_YM_ID;
+  const id = idRaw ? Number(idRaw) : NaN;
+  if (!Number.isFinite(id)) return;
+  if (typeof window.ym !== "function") return;
+  window.ym(id, "reachGoal", goal, params);
+}
+
+function trackBoth(eventOrGoal: string, params: Record<string, any> = {}) {
+  trackGTM(eventOrGoal, params);
+  trackYM(eventOrGoal, params);
+}
+
+function maskCard(n: string) {
+  const digits = n.replace(/\D/g, "").slice(0, 16);
+  const parts = digits.match(/.{1,4}/g) ?? [];
+  return parts.join(" ");
 }
 
 export default function InlineMockPayment({ orderId, totalAmount, email }: Props) {
@@ -39,7 +78,10 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
   const [paid, setPaid] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const totalKopeks = useMemo(() => Math.max(0, Math.round(totalAmount * 100)), [totalAmount]);
+  const totalKopeks = useMemo(
+    () => Math.max(0, Math.round(totalAmount * 100)),
+    [totalAmount]
+  );
 
   const payNowKopeks = useMemo(() => {
     if (payPlan === "deposit") return Math.max(1, Math.round(totalKopeks * 0.05));
@@ -73,6 +115,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
     const cardOk = digits.length >= 12;
     const expOk = /^\d{2}\/\d{2}$/.test(exp);
     const cvcOk = /^\d{3,4}$/.test(cvc);
+
     return cardOk && expOk && cvcOk;
   }, [paid, contactEmail, method, cardNumber, exp, cvc]);
 
@@ -113,13 +156,46 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
     setError(null);
     setLoading(true);
 
+    // START event
+    trackBoth("payment_start", {
+      orderId,
+      payPlan,
+      method,
+      amount: payNowRub,
+      totalAmount,
+      email: contactEmail,
+    });
+
     try {
       const created = await createPayment();
       await new Promise((res) => setTimeout(res, 600)); // UX-ожидание
       await confirmPayment(created.providerPaymentId);
       setPaid(true);
+
+      // SUCCESS event
+      trackBoth("payment_success", {
+        orderId,
+        payPlan,
+        method,
+        amount: payNowRub,
+        totalAmount,
+        email: contactEmail,
+        providerPaymentId: created.providerPaymentId,
+      });
     } catch (e: any) {
-      setError(String(e?.message ?? e));
+      const msg = String(e?.message ?? e);
+      setError(msg);
+
+      // ERROR event
+      trackBoth("payment_error", {
+        orderId,
+        payPlan,
+        method,
+        amount: payNowRub,
+        totalAmount,
+        email: contactEmail,
+        message: msg,
+      });
     } finally {
       setLoading(false);
     }
@@ -136,19 +212,40 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
             active={payPlan === "full"}
             title="Оплатить всю сумму"
             subtitle={`Итого ${rub(totalAmount)} ₽`}
-            onClick={() => setPayPlan("full")}
+            onClick={() => {
+              setPayPlan("full");
+              trackBoth("payplan_select", {
+                orderId,
+                payPlan: "full",
+                totalAmount,
+              });
+            }}
           />
           <PlanBtn
             active={payPlan === "deposit"}
             title="Оплатить депозит"
             subtitle={`5% сейчас: ${rub(Math.round(totalAmount * 0.05))} ₽`}
-            onClick={() => setPayPlan("deposit")}
+            onClick={() => {
+              setPayPlan("deposit");
+              trackBoth("payplan_select", {
+                orderId,
+                payPlan: "deposit",
+                totalAmount,
+              });
+            }}
           />
           <PlanBtn
             active={payPlan === "split"}
             title="Оплатить сплитом"
             subtitle="4 платежа без переплат (UX)"
-            onClick={() => setPayPlan("split")}
+            onClick={() => {
+              setPayPlan("split");
+              trackBoth("payplan_select", {
+                orderId,
+                payPlan: "split",
+                totalAmount,
+              });
+            }}
           />
         </div>
 
@@ -170,8 +267,22 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
 
         {/* Способ: карта / СБП */}
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          <MethodBtn active={method === "card"} title="Карта" onClick={() => setMethod("card")} />
-          <MethodBtn active={method === "sbp"} title="СБП" onClick={() => setMethod("sbp")} />
+          <MethodBtn
+            active={method === "card"}
+            title="Карта"
+            onClick={() => {
+              setMethod("card");
+              trackBoth("payment_method_select", { orderId, method: "card" });
+            }}
+          />
+          <MethodBtn
+            active={method === "sbp"}
+            title="СБП"
+            onClick={() => {
+              setMethod("sbp");
+              trackBoth("payment_method_select", { orderId, method: "sbp" });
+            }}
+          />
         </div>
 
         {/* Основная форма */}
@@ -264,9 +375,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
             <div className="text-xs text-white/50">К оплате сейчас</div>
             <div className="text-2xl font-semibold text-white">{rub(payNowRub)} ₽</div>
             {payPlan !== "full" && (
-              <div className="mt-1 text-xs text-white/50">
-                Полная сумма заказа: {rub(totalAmount)} ₽
-              </div>
+              <div className="mt-1 text-xs text-white/50">Полная сумма заказа: {rub(totalAmount)} ₽</div>
             )}
           </div>
 
@@ -321,9 +430,7 @@ function PlanBtn({
       onClick={onClick}
       className={[
         "text-left rounded-2xl border px-4 py-3 transition",
-        active
-          ? "border-white/30 bg-white/10"
-          : "border-white/10 bg-white/5 hover:bg-white/10",
+        active ? "border-white/30 bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10",
       ].join(" ")}
     >
       <div className="text-sm font-semibold text-white">{title}</div>
@@ -347,18 +454,10 @@ function MethodBtn({
       onClick={onClick}
       className={[
         "rounded-2xl border px-4 py-3 text-sm font-medium transition",
-        active
-          ? "border-white/30 bg-white/10 text-white"
-          : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10",
+        active ? "border-white/30 bg-white/10 text-white" : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10",
       ].join(" ")}
     >
       {title}
     </button>
   );
-}
-
-function maskCard(n: string) {
-  const digits = n.replace(/\D/g, "").slice(0, 16);
-  const parts = digits.match(/.{1,4}/g) ?? [];
-  return parts.join(" ");
 }
