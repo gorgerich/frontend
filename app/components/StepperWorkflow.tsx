@@ -35,6 +35,7 @@ import { Switch } from "./ui/switch";
 import { Checkbox } from "./ui/checkbox";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
+import { Calendar } from "./ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -896,20 +897,6 @@ splitSchedule?: string;
     selectedAdditionalServices: string[];
 
     specialRequests: string;
-    coffinConfig?: {
-      coffin?: {
-        wood?: { name?: string };
-        lining?: { name?: string };
-        hardware?: { name?: string };
-        quantity?: number;
-      };
-      wreath?: {
-        type?: string;
-        size?: string;
-        text?: string;
-        quantity?: number;
-      };
-    };
 
     fullName: string;
     birthDate: string;
@@ -1691,7 +1678,7 @@ function formatRub(n: number) {
                       </span>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden !flex !flex-col">
+                  <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
                     <DialogHeader className="shrink-0">
                       <DialogTitle>
                         Выбор даты и времени забора
@@ -1701,7 +1688,7 @@ function formatRub(n: number) {
                         забрать тело
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-6 pt-2 pb-6">
+                    <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-6 py-2">
                       <div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
                         <style>{`
                           .rdp-caption_label { 
@@ -1834,64 +1821,45 @@ function formatRub(n: number) {
                       </Button>
                     </DialogTrigger>
 
-                    <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden !flex !flex-col">
+                    <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
                       <DialogHeader className="shrink-0">
                         <DialogTitle>Выбор даты и времени прощания</DialogTitle>
                         <DialogDescription>Выберите дату и время прощания в зале или церкви</DialogDescription>
                       </DialogHeader>
 
-                      <div className="flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-6 pt-2 pb-6">
+                      <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-6 py-2">
                         <div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
-                          <SimpleCalendar
+                          <Calendar
+                            mode="single"
                             selected={farewellDateTime.date}
                             onSelect={(date) => setFarewellDateTime({ ...farewellDateTime, date })}
-                            className="mx-auto w-full"
+                            disabled={(date) => date < new Date()}
+                            className="rounded-xl border-none mx-auto bg-transparent shadow-none w-full p-0"
                           />
                         </div>
 
                         {farewellDateTime.date && (
-                          <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                            <div className="flex items-center justify-between px-1">
-                              <div className="flex flex-col">
-                                <span className="text-sm font-medium text-gray-900">
-                                  Время
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  Выберите удобный слот
-                                </span>
-                              </div>
-                              {farewellDateTime.time && (
-                                <Badge
-                                  variant="secondary"
-                                  className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-900"
+                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
+                            {Array.from({ length: 24 }, (_, i) => i)
+                              .flatMap((i) => {
+                                const hour = i.toString().padStart(2, "0");
+                                return [`${hour}:00`, `${hour}:30`];
+                              })
+                              .map((time) => (
+                                <button
+                                  key={time}
+                                  type="button"
+                                  onClick={() => setFarewellDateTime({ ...farewellDateTime, time })}
+                                  className={cn(
+                                    "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
+                                    farewellDateTime.time === time
+                                      ? "bg-gray-900 text-white border-gray-900 shadow-md"
+                                      : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50",
+                                  )}
                                 >
-                                  {farewellDateTime.time}
-                                </Badge>
-                              )}
-                            </div>
-
-                            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
-                              {Array.from({ length: 24 }, (_, i) => i)
-                                .flatMap((i) => {
-                                  const hour = i.toString().padStart(2, "0");
-                                  return [`${hour}:00`, `${hour}:30`];
-                                })
-                                .map((time) => (
-                                  <button
-                                    key={time}
-                                    type="button"
-                                    onClick={() => setFarewellDateTime({ ...farewellDateTime, time })}
-                                    className={cn(
-                                      "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
-                                      farewellDateTime.time === time
-                                        ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
-                                        : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105",
-                                    )}
-                                  >
-                                    {time}
-                                  </button>
-                                ))}
-                            </div>
+                                  {time}
+                                </button>
+                              ))}
                           </div>
                         )}
 
@@ -1927,7 +1895,7 @@ function formatRub(n: number) {
                     </Button>
                   </DialogTrigger>
 
-                  <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden !flex !flex-col">
+                  <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col">
                     <DialogHeader className="shrink-0">
                       <DialogTitle>
                         Выбор даты и времени {formData.serviceType === "cremation" ? "кремации" : "захоронения"}
@@ -1935,53 +1903,34 @@ function formatRub(n: number) {
                       <DialogDescription>Укажите удобные дату и время церемонии.</DialogDescription>
                     </DialogHeader>
 
-                    <div className="flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-6 pt-2 pb-6">
+                    <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-6 py-2">
                       <div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
-                        <SimpleCalendar
+                        <Calendar
+                          mode="single"
                           selected={burialDateTime.date}
                           onSelect={(date) => setBurialDateTime({ ...burialDateTime, date })}
-                          className="mx-auto w-full"
+                          disabled={(date) => date < new Date()}
+                          className="rounded-xl border-none mx-auto bg-transparent shadow-none w-full p-0"
                         />
                       </div>
 
                       {burialDateTime.date && (
-                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                          <div className="flex items-center justify-between px-1">
-                            <div className="flex flex-col">
-                              <span className="text-sm font-medium text-gray-900">
-                                Время {formData.serviceType === "cremation" ? "кремации" : "захоронения"}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                Выберите удобный слот
-                              </span>
-                            </div>
-                            {burialDateTime.time && (
-                              <Badge
-                                variant="secondary"
-                                className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-900"
-                              >
-                                {burialDateTime.time}
-                              </Badge>
-                            )}
-                          </div>
-
-                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
-                            {PICKUP_TIME_SLOTS.map((time) => (
-                              <button
-                                key={time}
-                                type="button"
-                                onClick={() => setBurialDateTime({ ...burialDateTime, time })}
-                                className={cn(
-                                  "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
-                                  burialDateTime.time === time
-                                    ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
-                                    : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105",
-                                )}
-                              >
-                                {time}
-                              </button>
-                            ))}
-                          </div>
+                        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1">
+                          {PICKUP_TIME_SLOTS.map((time) => (
+                            <button
+                              key={time}
+                              type="button"
+                              onClick={() => setBurialDateTime({ ...burialDateTime, time })}
+                              className={cn(
+                                "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
+                                burialDateTime.time === time
+                                  ? "bg-gray-900 text-white border-gray-900 shadow-md"
+                                  : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50",
+                              )}
+                            >
+                              {time}
+                            </button>
+                          ))}
                         </div>
                       )}
                     </div>
@@ -2698,58 +2647,31 @@ function formatRub(n: number) {
                 </div>
 
                 <div className="space-y-2 text-sm">
-                  {(() => {
-                    const coffin = formData.coffinConfig?.coffin;
-                    const wreath = formData.coffinConfig?.wreath;
-
-                    const typeLabels: Record<string, string> = {
-                      artificial: "Искусственные цветы",
-                      composition: "Живая композиция",
-                    };
-                    const sizeLabels: Record<string, string> = {
-                      S: "Малый",
-                      M: "Средний",
-                      L: "Большой",
-                    };
-
-                    const items: string[] = [];
-                    if (coffin?.wood?.name) {
-                      const qty = Math.max(1, Number(coffin.quantity || 1));
-                      const qtySuffix = qty > 1 ? ` ×${qty}` : "";
-                      items.push(`Гроб: ${coffin.wood.name}${qtySuffix}`);
-                    }
-                    if (coffin?.lining?.name) {
-                      items.push(`Обивка: ${coffin.lining.name}`);
-                    }
-                    if (coffin?.hardware?.name) {
-                      items.push(`Фурнитура: ${coffin.hardware.name}`);
-                    }
-                    if (wreath) {
-                      const typeLabel = typeLabels[wreath.type || ""] || wreath.type || "";
-                      const sizeLabel = sizeLabels[wreath.size || ""] || wreath.size || "";
-                      const details = [typeLabel, sizeLabel].filter(Boolean).join(", ");
-                      const text = (wreath.text || "").trim();
-                      const qty = Math.max(1, Number(wreath.quantity || 1));
-                      let wreathLabel = details ? `Венок: ${details}` : "Венок";
-                      if (text) wreathLabel += `, "${text}"`;
-                      if (qty > 1) wreathLabel += ` ×${qty}`;
-                      items.push(wreathLabel);
-                    }
-
-                    if (!items.length) {
-                      return <span className="text-xs text-gray-500">Услуги не выбраны</span>;
-                    }
-
-                    return (
-                      <div className="space-y-1">
-                        {items.map((item) => (
-                          <div key={item} className="text-xs text-gray-900">
-                            • {item}
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
+                  {formData.packageType && formData.packageType !== "custom" ? (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Пакет:</span>
+                      <span className="text-gray-900">{PACKAGES.find((p) => p.id === formData.packageType)?.name || "—"}</span>
+                    </div>
+                  ) : (
+                    <div>
+                      <span className="text-gray-600 block mb-2">Индивидуальный пакет</span>
+                      {formData.selectedAdditionalServices?.length ? (
+                        <div className="space-y-1">
+                          {formData.selectedAdditionalServices.map((serviceId: string) => {
+                            const s = additionalServices.find((x) => x.id === serviceId);
+                            if (!s) return null;
+                            return (
+                              <div key={serviceId} className="text-xs text-gray-900">
+                                • {s.name}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-500">Услуги не выбраны</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -2984,7 +2906,7 @@ function formatRub(n: number) {
                           ))}
                         </div>
                         <div className="mt-3 text-xs text-gray-600">
-                          Остаток будет списываться автоматически по графику. Это UX-режим; позже подключим реальный BNPL.
+                          Остаток будет списываться автоматически по графику.
                         </div>
                       </div>
                     )}
