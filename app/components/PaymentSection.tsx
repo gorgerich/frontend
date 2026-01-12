@@ -1,11 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from './ui/utils';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 
 type PaymentMethod = 'card' | 'sbp' | 'installment';
+type PaymentOption = 'full' | 'deposit_5' | 'split';
 
 type CardData = {
 number: string;
@@ -17,6 +18,24 @@ cvc: string;
 // Эти типы совпадают с твоими calculationUtils
 export type CalculatorItem = { name: string; price?: number };
 export type CalculatorSection = { category: string; price: number; items?: CalculatorItem[] };
+
+const YM_COUNTER_ID = 106219376;
+
+function reachMetrikaGoal(goal: string, params?: Record<string, any>, attempt = 0) {
+if (typeof window === 'undefined') return;
+const ymFn = (window as any).ym;
+
+if (typeof ymFn === 'function') {
+// 4-й аргумент (params) поддерживается Метрикой
+ymFn(YM_COUNTER_ID, 'reachGoal', goal, params);
+return;
+}
+
+// если метрика грузится через GTM и ещё не успела появиться
+if (attempt < 6) {
+window.setTimeout(() => reachMetrikaGoal(goal, params, attempt + 1), 500);
+}
+}
 
 export function PaymentSection({
 total = 47000,
@@ -30,6 +49,40 @@ onEmailChange: (v: string) => void;
 breakdown?: CalculatorSection[];
 }) {
 const [method, setMethod] = useState<PaymentMethod>('card');
+
+// === Вариант оплаты: full / deposit_5 / split ===
+const [paymentOption, setPaymentOption] = useState<PaymentOption>('full');
+
+const optionGoalMap: Record<PaymentOption, string> = {
+full: 'payment_option_full',
+deposit_5: 'payment_option_deposit_5',
+split: 'payment_option_split',
+};
+
+const lastSentOptionRef = useRef<PaymentOption | null>(null);
+
+const depositAmount = useMemo(() => Math.round(total * 0.05), [total]);
+const splitParts = 4;
+const splitPartAmount = useMemo(() => Math.ceil(total / splitParts), [total]);
+
+const payNow = useMemo(() => {
+if (paymentOption === 'deposit_5') return depositAmount;
+if (paymentOption === 'split') return splitPartAmount;
+return total;
+}, [paymentOption, depositAmount, splitPartAmount, total]);
+
+useEffect(() => {
+// отправляем цель при первом появлении блока и при изменении варианта
+if (lastSentOptionRef.current === paymentOption) return;
+
+reachMetrikaGoal(optionGoalMap[paymentOption], {
+option: paymentOption,
+pay_now: payNow,
+total,
+});
+
+lastSentOptionRef.current = paymentOption;
+}, [paymentOption, payNow, total]);
 
 const [cardData, setCardData] = useState<CardData>({
 number: '',
@@ -217,6 +270,90 @@ className="mt-2 h-11 rounded-xl bg-white text-black placeholder:text-black/40"
 </div>
 </div>
 )}
+
+{/* === ВАРИАНТ ОПЛАТЫ (3 варианта) === */}
+<div className="mt-6">
+<p className="text-white/50 text-sm mb-3">Вариант оплаты</p>
+
+<div className="space-y-3">
+<button
+type="button"
+onClick={() => setPaymentOption('full')}
+className={cn(
+'w-full rounded-[22px] border p-4 text-left transition flex items-center justify-between gap-4',
+paymentOption === 'full'
+? 'border-white/40 bg-white/10'
+: 'border-white/10 bg-white/5 hover:bg-white/10',
+)}
+>
+<div className="flex items-center gap-3 min-w-0">
+<div
+className={cn(
+'h-4 w-4 rounded-full border flex-shrink-0',
+paymentOption === 'full' ? 'border-white bg-white' : 'border-white/40',
+)}
+/>
+<span className="text-sm text-white/90 truncate">Оплатить всю сумму</span>
+</div>
+<span className="text-sm text-white/90 whitespace-nowrap">{formattedTotal} ₽</span>
+</button>
+
+<button
+type="button"
+onClick={() => setPaymentOption('deposit_5')}
+className={cn(
+'w-full rounded-[22px] border p-4 text-left transition flex items-center justify-between gap-4',
+paymentOption === 'deposit_5'
+? 'border-white/40 bg-white/10'
+: 'border-white/10 bg-white/5 hover:bg-white/10',
+)}
+>
+<div className="flex items-center gap-3 min-w-0">
+<div
+className={cn(
+'h-4 w-4 rounded-full border flex-shrink-0',
+paymentOption === 'deposit_5' ? 'border-white bg-white' : 'border-white/40',
+)}
+/>
+<span className="text-sm text-white/90 truncate">Оплатить депозит (5%)</span>
+</div>
+<span className="text-sm text-white/90 whitespace-nowrap">
+{depositAmount.toLocaleString('ru-RU')} ₽
+</span>
+</button>
+
+<button
+type="button"
+onClick={() => setPaymentOption('split')}
+className={cn(
+'w-full rounded-[22px] border p-4 text-left transition flex items-center justify-between gap-4',
+paymentOption === 'split'
+? 'border-white/40 bg-white/10'
+: 'border-white/10 bg-white/5 hover:bg-white/10',
+)}
+>
+<div className="flex items-center gap-3 min-w-0">
+<div
+className={cn(
+'h-4 w-4 rounded-full border flex-shrink-0',
+paymentOption === 'split' ? 'border-white bg-white' : 'border-white/40',
+)}
+/>
+<span className="text-sm text-white/90 truncate">Оплатить сплитом</span>
+</div>
+<span className="text-sm text-white/90 whitespace-nowrap">
+{splitParts}× {splitPartAmount.toLocaleString('ru-RU')} ₽
+</span>
+</button>
+
+<div className="rounded-[22px] border border-white/10 bg-white/5 p-4 flex items-center justify-between">
+<span className="text-sm text-white/60">К оплате сейчас</span>
+<span className="text-lg text-white/90 whitespace-nowrap">
+{payNow.toLocaleString('ru-RU')} ₽
+</span>
+</div>
+</div>
+</div>
 
 {/* Bottom row: alternatives + secure */}
 <div className="mt-6 grid grid-cols-1 gap-6 min-[1024px]:grid-cols-12">
