@@ -41,6 +41,8 @@ type CalculatorConfig,
 type FormData as CalculatorFormData,
 PRICES,
 ADDITIONAL_SERVICES,
+trackEvent,
+getTrackingSessionId,
 } from "./calculationUtils";
 
 import type { ImgHTMLAttributes } from "react";
@@ -78,21 +80,35 @@ type SimplifiedBreakdownSection = {
 type SimplifiedFloatingCalculatorProps = {
   total: number;
   breakdown: SimplifiedBreakdownSection[];
+  flow: "package";
+  trackingSessionId: string;
 };
 
 function SimplifiedFloatingCalculator({
   total,
   breakdown,
+  flow,
+  trackingSessionId,
 }: SimplifiedFloatingCalculatorProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const portalRoot = typeof document !== "undefined" ? document.body : null;
 
   const handleDownloadPDF = () => {
     console.log("Downloading PDF...");
+    trackEvent(
+      "calculator_shared",
+      { method: "pdf", flow },
+      `${trackingSessionId}:${flow}:calculator_shared:pdf`,
+    );
   };
 
   const handleShare = () => {
     console.log("Sharing...");
+    trackEvent(
+      "calculator_shared",
+      { method: "messenger", flow },
+      `${trackingSessionId}:${flow}:calculator_shared:messenger`,
+    );
   };
 
   if (!portalRoot) return null;
@@ -518,38 +534,14 @@ const [showConsentError, setShowConsentError] = useState(false);
 
 const isInitialMountRef = useRef(true);
 const previousStepRef = useRef(0);
-const lastTrackedOrderIdRef = useRef<string | null>(null);
-
-const trackOrderCreated = (orderId?: string, value?: number) => {
-  if (!orderId) return;
-  if (typeof window === "undefined") return;
-  if (lastTrackedOrderIdRef.current === orderId) return;
-  lastTrackedOrderIdRef.current = orderId;
-
-  const w = window as unknown as {
-    dataLayer?: Array<Record<string, any>>;
-    ym?: (...args: any[]) => void;
-  };
-
-  w.dataLayer = w.dataLayer || [];
-  w.dataLayer.push({
-    event: "order_created",
-    order_id: orderId,
-    value,
-    currency: "RUB",
-  });
-
-  // TODO: set NEXT_PUBLIC_YM_ID to enable Yandex Metrika goals.
-  const ymIdRaw = process.env.NEXT_PUBLIC_YM_ID;
-  const ymId = ymIdRaw ? Number(ymIdRaw) : NaN;
-  if (Number.isFinite(ymId) && typeof w.ym === "function") {
-    w.ym(ymId, "reachGoal", "order_created", { order_id: orderId, value });
-  }
-
-  if (process.env.NODE_ENV !== "production") {
-    console.info("[tracking] order_created", { order_id: orderId, value });
-  }
-};
+const wizardStartedRef = useRef(false);
+const attributesStartedRef = useRef(false);
+const logisticsStartedRef = useRef(false);
+const documentsStartedRef = useRef(false);
+const calculatorViewedRef = useRef(false);
+const contactsStartedRef = useRef(false);
+const trackingSessionId = getTrackingSessionId();
+const trackingFlow: "package" = "package";
 
 const [localFormData, setLocalFormData] = useState<FormDataShape>(() => {
   if (typeof window === "undefined") return DEFAULT_FORM_DATA;
@@ -655,119 +647,6 @@ const [showBurialDialog, setShowBurialDialog] = useState(false);
 const [cardData, setCardData] = useState({ number: "", expiry: "", cvc: "", holder: "" });
 const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
 
-const handleInputChange = (field: keyof FormDataShape | "hearseRoute", value: any) => {
-setLocalFormData((prev) => ({
-  ...prev,
-  [field]: value,
-}));
-};
-
-const handleSkipField = (field: "birthDate" | "deathDate" | "deathCertificate") => {
-handleInputChange(field, "—");
-};
-
-// Инициализация внутренней отделки по умолчанию
-useEffect(() => {
-if (!safeFormData.liningColor) {
-handleInputChange("liningColor", "satin-white");
-}
-// eslint-disable-next-line react-hooks/exhaustive-deps
-}, [safeFormData.liningColor]);
-
-// Сохранение состояния simplified в отдельный ключ
-useEffect(() => {
-  if (typeof window === "undefined") return;
-  try {
-    const draft = { formData: localFormData, savedAt: new Date().toISOString() };
-    const draftString = JSON.stringify(draft);
-    if (draftString.length > 500000) return;
-    localStorage.setItem(SIMPLIFIED_FORM_STORAGE_KEY, draftString);
-  } catch {
-    // ignore
-  }
-}, [localFormData]);
-
-// Автоматический скролл вверх при смене шага
-useEffect(() => {
-if (!isInitialMountRef.current && previousStepRef.current !== currentStep) {
-window.scrollTo({ top: 0, behavior: "smooth" });
-}
-if (isInitialMountRef.current) isInitialMountRef.current = false;
-previousStepRef.current = currentStep;
-}, [currentStep]);
-
-// Скрываем глобальный floating-калькулятор, чтобы остался только simplified.
-useEffect(() => {
-  if (typeof document === "undefined") return;
-  const hidden = new Set<HTMLElement>();
-
-  const hideGlobalFloating = () => {
-    const candidates = Array.from(document.querySelectorAll("div"));
-    for (const el of candidates) {
-      if (!(el instanceof HTMLElement)) continue;
-      const classList = el.classList;
-      if (
-        !classList.contains("fixed") ||
-        !classList.contains("bottom-6") ||
-        !classList.contains("left-1/2") ||
-        !classList.contains("-translate-x-1/2") ||
-        !classList.contains("max-w-md")
-      ) {
-        continue;
-      }
-      if (el.dataset.simplifiedFloating === "true") continue;
-      if (hidden.has(el)) continue;
-      el.style.display = "none";
-      hidden.add(el);
-    }
-  };
-
-  hideGlobalFloating();
-  const observer = new MutationObserver(hideGlobalFloating);
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  return () => {
-    observer.disconnect();
-    hidden.forEach((el) => {
-      el.style.display = "";
-    });
-  };
-}, []);
-
-const handleNext = () => {
-// Проверка согласия на шаге документов
-if (currentStep === 3 && !safeFormData.dataConsent) {
-setShowConsentError(true);
-setTimeout(() => {
-const consentElement = document.getElementById("data-consent");
-consentElement?.scrollIntoView({ behavior: "smooth", block: "center" });
-}, 100);
-return;
-}
-
-if (currentStep < simplifiedSteps.length - 1 && !isTransitioning) {
-setIsTransitioning(true);
-setShowConsentError(false);
-
-if (!completedSteps.includes(currentStep)) {
-setCompletedSteps((prev) => [...prev, currentStep]);
-}
-
-setTimeout(() => {
-setCurrentStep((prev) => prev + 1);
-setIsTransitioning(false);
-window.scrollTo({ top: 0, behavior: "smooth" });
-}, 200);
-}
-};
-
-const handlePrev = () => {
-if (currentStep > 0) {
-setCurrentStep((prev) => prev - 1);
-window.scrollTo({ top: 0, behavior: "smooth" });
-}
-};
-
 const simplifiedCalculatorConfig = useMemo<CalculatorConfig>(() => {
   const packages = selectedPackage
     ? [
@@ -859,13 +738,326 @@ const tariffSection =
 const simplifiedSections = tariffSection ? [tariffSection] : [];
 const totalRub = Math.max(0, Math.round(tariffSection?.total || 0));
 const floatingBreakdown = simplifiedSections.map((section) => ({
-category: section.title,
-price: Math.round(section.total || 0),
-items: section.items?.map((item) => ({
-name: item.label,
-price: typeof item.price === "number" ? Math.round(item.price) : undefined,
-})),
+  category: section.title,
+  price: Math.round(section.total || 0),
+  items: section.items?.map((item) => ({
+    name: item.label,
+    price: typeof item.price === "number" ? Math.round(item.price) : undefined,
+  })),
 }));
+
+const handleInputChange = (field: keyof FormDataShape | "hearseRoute", value: any) => {
+setLocalFormData((prev) => ({
+  ...prev,
+  [field]: value,
+}));
+};
+
+const handleSkipField = (field: "birthDate" | "deathDate" | "deathCertificate") => {
+handleInputChange(field, "—");
+};
+
+// Инициализация внутренней отделки по умолчанию
+useEffect(() => {
+if (!safeFormData.liningColor) {
+handleInputChange("liningColor", "satin-white");
+}
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [safeFormData.liningColor]);
+
+// Сохранение состояния simplified в отдельный ключ
+useEffect(() => {
+  if (typeof window === "undefined") return;
+  try {
+    const draft = { formData: localFormData, savedAt: new Date().toISOString() };
+    const draftString = JSON.stringify(draft);
+    if (draftString.length > 500000) return;
+    localStorage.setItem(SIMPLIFIED_FORM_STORAGE_KEY, draftString);
+  } catch {
+    // ignore
+  }
+}, [localFormData]);
+
+// Автоматический скролл вверх при смене шага
+useEffect(() => {
+if (!isInitialMountRef.current && previousStepRef.current !== currentStep) {
+window.scrollTo({ top: 0, behavior: "smooth" });
+}
+if (isInitialMountRef.current) isInitialMountRef.current = false;
+previousStepRef.current = currentStep;
+}, [currentStep]);
+
+useEffect(() => {
+  if (currentStep !== 0) return;
+  if (wizardStartedRef.current) return;
+  wizardStartedRef.current = true;
+  trackEvent(
+    "wizard_started",
+    { entry_mode: "package", flow: trackingFlow },
+    `${trackingSessionId}:${trackingFlow}:step1`,
+  );
+}, [currentStep]);
+
+useEffect(() => {
+  if (currentStep !== 0) return;
+  if (attributesStartedRef.current) return;
+  attributesStartedRef.current = true;
+  trackEvent(
+    "attributes_started",
+    { flow: trackingFlow },
+    `${trackingSessionId}:${trackingFlow}:step1`,
+  );
+}, [currentStep]);
+
+useEffect(() => {
+  if (currentStep !== 0) return;
+  const liningName = liningOptions.find((l) => l.id === currentLiningId)?.name;
+  const wishesFilled = Boolean((safeFormData.specialRequests || "").trim());
+  trackEvent(
+    "attributes_selected",
+    {
+      coffin_type: packageWoodId,
+      lining: liningName,
+      has_flowers: false,
+      has_cross: false,
+      wishes_filled: wishesFilled,
+      value: totalRub,
+      currency: "RUB",
+      flow: trackingFlow,
+    },
+    `${trackingSessionId}:${trackingFlow}:attributes:${packageWoodId}:${liningName || ""}:${wishesFilled}`,
+  );
+}, [currentStep, packageWoodId, currentLiningId, safeFormData.specialRequests]);
+
+useEffect(() => {
+  if (currentStep !== 1) return;
+  if (!safeFormData.serviceType) return;
+  trackEvent(
+    "ceremony_type_selected",
+    {
+      burial_type: safeFormData.serviceType,
+      has_hall: !!safeFormData.hasHall,
+      value: totalRub,
+      currency: "RUB",
+      flow: trackingFlow,
+    },
+    `${trackingSessionId}:${trackingFlow}:ceremony_type:${safeFormData.serviceType}:${safeFormData.hasHall}`,
+  );
+}, [currentStep, safeFormData.serviceType, safeFormData.hasHall]);
+
+useEffect(() => {
+  if (currentStep !== 1) return;
+  if (!safeFormData.hasHall) return;
+  const ceremonyFormat =
+    safeFormData.ceremonyType === "civil"
+      ? "secular"
+      : safeFormData.ceremonyType === "religious"
+        ? "religious"
+        : safeFormData.ceremonyType === "combined"
+          ? "combined"
+          : undefined;
+  const hallDuration = Number(safeFormData.hallDuration || 0);
+  if (!ceremonyFormat || !hallDuration) return;
+  trackEvent(
+    "ceremony_format_selected",
+    {
+      ceremony_format: ceremonyFormat,
+      hall_duration: hallDuration,
+      value: totalRub,
+      currency: "RUB",
+      flow: trackingFlow,
+    },
+    `${trackingSessionId}:${trackingFlow}:ceremony_format:${ceremonyFormat}:${hallDuration}`,
+  );
+}, [currentStep, safeFormData.hasHall, safeFormData.ceremonyType, safeFormData.hallDuration]);
+
+useEffect(() => {
+  if (currentStep !== 2) return;
+  if (logisticsStartedRef.current) return;
+  logisticsStartedRef.current = true;
+  trackEvent(
+    "logistics_started",
+    { flow: trackingFlow },
+    `${trackingSessionId}:${trackingFlow}:step3`,
+  );
+}, [currentStep]);
+
+useEffect(() => {
+  if (currentStep !== 3) return;
+  if (documentsStartedRef.current) return;
+  documentsStartedRef.current = true;
+  trackEvent(
+    "documents_started",
+    { flow: trackingFlow },
+    `${trackingSessionId}:${trackingFlow}:step4`,
+  );
+}, [currentStep]);
+
+useEffect(() => {
+  if (currentStep !== 4) return;
+  if (!calculatorViewedRef.current) {
+    const itemsCount = floatingBreakdown.reduce(
+      (acc, section) => acc + (section.items?.length || 0),
+      0,
+    );
+    calculatorViewedRef.current = true;
+    trackEvent(
+      "calculator_viewed",
+      {
+        value: totalRub,
+        currency: "RUB",
+        burial_type: safeFormData.serviceType,
+        items_count: itemsCount,
+        flow: trackingFlow,
+      },
+      `${trackingSessionId}:${trackingFlow}:step5`,
+    );
+  }
+
+  if (!contactsStartedRef.current) {
+    contactsStartedRef.current = true;
+    trackEvent(
+      "contacts_started",
+      { flow: trackingFlow },
+      `${trackingSessionId}:${trackingFlow}:contacts`,
+    );
+  }
+}, [currentStep, totalRub, floatingBreakdown, safeFormData.serviceType]);
+
+// Скрываем глобальный floating-калькулятор, чтобы остался только simplified.
+useEffect(() => {
+  if (typeof document === "undefined") return;
+  const hidden = new Set<HTMLElement>();
+
+  const hideGlobalFloating = () => {
+    const candidates = Array.from(document.querySelectorAll("div"));
+    for (const el of candidates) {
+      if (!(el instanceof HTMLElement)) continue;
+      const classList = el.classList;
+      if (
+        !classList.contains("fixed") ||
+        !classList.contains("bottom-6") ||
+        !classList.contains("left-1/2") ||
+        !classList.contains("-translate-x-1/2") ||
+        !classList.contains("max-w-md")
+      ) {
+        continue;
+      }
+      if (el.dataset.simplifiedFloating === "true") continue;
+      if (hidden.has(el)) continue;
+      el.style.display = "none";
+      hidden.add(el);
+    }
+  };
+
+  hideGlobalFloating();
+  const observer = new MutationObserver(hideGlobalFloating);
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  return () => {
+    observer.disconnect();
+    hidden.forEach((el) => {
+      el.style.display = "";
+    });
+  };
+}, []);
+
+const handleNext = () => {
+// Проверка согласия на шаге документов
+if (currentStep === 3 && !safeFormData.dataConsent) {
+setShowConsentError(true);
+setTimeout(() => {
+const consentElement = document.getElementById("data-consent");
+consentElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+}, 100);
+return;
+}
+
+if (currentStep < simplifiedSteps.length - 1 && !isTransitioning) {
+setIsTransitioning(true);
+setShowConsentError(false);
+
+if (currentStep === 1) {
+  const ceremonyFormat =
+    safeFormData.ceremonyType === "civil"
+      ? "secular"
+      : safeFormData.ceremonyType === "religious"
+        ? "religious"
+        : safeFormData.ceremonyType === "combined"
+          ? "combined"
+          : undefined;
+  const hallDuration = Number(safeFormData.hallDuration || 0);
+  trackEvent(
+    "format_step_completed",
+    {
+      final_burial_type: safeFormData.serviceType,
+      final_has_hall: !!safeFormData.hasHall,
+      ceremony_format: ceremonyFormat,
+      hall_duration: hallDuration,
+      value: totalRub,
+      currency: "RUB",
+      flow: trackingFlow,
+    },
+    `${trackingSessionId}:${trackingFlow}:step2`,
+  );
+}
+
+if (currentStep === 2) {
+  const hasLocation = Boolean(safeFormData.cemetery);
+  const hasPickup = Boolean(pickupDateTime.date && pickupDateTime.time);
+  const hasBurial = Boolean(burialDateTime.date && burialDateTime.time);
+  const hasFarewell = !safeFormData.hasHall
+    || Boolean(farewellDateTime.date && farewellDateTime.time);
+  const hasTimes = hasPickup && hasBurial && hasFarewell;
+  const routePoints = Object.values(safeFormData.hearseRoute || {}).filter(Boolean).length;
+  if (hasLocation && hasTimes) {
+    trackEvent(
+      "logistics_filled",
+      {
+        has_location: hasLocation,
+        has_times: hasTimes,
+        route_points: routePoints,
+        value: totalRub,
+        currency: "RUB",
+        flow: trackingFlow,
+      },
+      `${trackingSessionId}:${trackingFlow}:step3:filled`,
+    );
+  }
+}
+
+if (currentStep === 3) {
+  trackEvent(
+    "documents_completed",
+    {
+      consent_checked: !!safeFormData.dataConsent,
+      kinship: safeFormData.relationship || undefined,
+      value: totalRub,
+      currency: "RUB",
+      flow: trackingFlow,
+    },
+    `${trackingSessionId}:${trackingFlow}:step4:completed`,
+  );
+}
+
+if (!completedSteps.includes(currentStep)) {
+setCompletedSteps((prev) => [...prev, currentStep]);
+}
+
+setTimeout(() => {
+setCurrentStep((prev) => prev + 1);
+setIsTransitioning(false);
+window.scrollTo({ top: 0, behavior: "smooth" });
+}, 200);
+}
+};
+
+const handlePrev = () => {
+if (currentStep > 0) {
+setCurrentStep((prev) => prev - 1);
+window.scrollTo({ top: 0, behavior: "smooth" });
+}
+};
 
 const handleStepClick = (stepIndex: number) => {
 setCurrentStep(stepIndex);
@@ -1856,6 +2048,12 @@ alert("Укажите email для получения договора и дет
 return;
 }
 
+trackEvent(
+  "contacts_filled",
+  { has_phone: false, has_email: true, flow: trackingFlow },
+  `${trackingSessionId}:${trackingFlow}:contacts_filled:${emailValue}`,
+);
+
 const packageInfo = selectedPackage
 ? {
     id: selectedPackage.id,
@@ -1911,7 +2109,16 @@ return;
 
 const data = await res.json();
 console.log("Order created:", data);
-trackOrderCreated(data?.orderId, data?.totalRub ?? totalRub);
+trackEvent(
+  "order_created",
+  {
+    order_id: data?.orderId,
+    value: data?.totalRub ?? totalRub,
+    currency: "RUB",
+    flow: trackingFlow,
+  },
+  data?.orderId,
+);
 
 alert("Бронирование оформлено! Детали и договор отправлены на указанную электронную почту. К сожалению оплата не прошла, агент свяжется с вами в скором времени");
 } catch (e) {
@@ -2340,7 +2547,12 @@ type="button"
 </div>
 </CardContent>
 </Card>
-<SimplifiedFloatingCalculator total={totalRub} breakdown={floatingBreakdown} />
+<SimplifiedFloatingCalculator
+  total={totalRub}
+  breakdown={floatingBreakdown}
+  flow={trackingFlow}
+  trackingSessionId={trackingSessionId}
+/>
 </div>
 );
 }

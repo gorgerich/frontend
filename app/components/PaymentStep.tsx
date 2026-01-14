@@ -6,6 +6,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { cn } from "./ui/utils";
 import { Download, Share2, RubleSign, CheckCircle2, Search } from "./Icons";
+import { getTrackingSessionId, trackEvent } from "./calculationUtils";
 import {
 Select,
 SelectContent,
@@ -64,6 +65,16 @@ onConfirm,
 }: PaymentStepProps) {
 const [offerAccepted, setOfferAccepted] = useState(false);
 const [isSubmitting, setIsSubmitting] = useState(false);
+const trackingSessionId = getTrackingSessionId();
+const trackingFlow: "wizard" = "wizard";
+const checkoutSessionIdRef = useRef<string>("");
+
+const getCheckoutSessionId = () => {
+if (!checkoutSessionIdRef.current) {
+checkoutSessionIdRef.current = `${trackingSessionId}-wizard-checkout`;
+}
+return checkoutSessionIdRef.current;
+};
 
 // === Вариант оплаты: full / deposit_5 / split ===
 const [paymentOption, setPaymentOption] = useState<PaymentOption>("full");
@@ -135,6 +146,18 @@ const handleConfirmClick = async () => {
 if (!canConfirm) return;
 try {
 setIsSubmitting(true);
+const checkoutSessionId = getCheckoutSessionId();
+trackEvent(
+  "payment_started",
+  {
+    value: payNow,
+    currency: "RUB",
+    payment_method: paymentMethod || "unknown",
+    checkout_session_id: checkoutSessionId,
+    flow: trackingFlow,
+  },
+  checkoutSessionId,
+);
 await onConfirm();
 } finally {
 setIsSubmitting(false);

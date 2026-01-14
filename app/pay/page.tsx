@@ -1,41 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { trackEvent } from "../components/calculationUtils";
 
 export default function PayPage() {
   const [loading, setLoading] = useState<null | "card" | "sbp">(null);
-  const lastTrackedOrderIdRef = useRef<string | null>(null);
-
-  const trackOrderCreated = (orderId?: string, value?: number) => {
-    if (!orderId) return;
-    if (typeof window === "undefined") return;
-    if (lastTrackedOrderIdRef.current === orderId) return;
-    lastTrackedOrderIdRef.current = orderId;
-
-    const w = window as unknown as {
-      dataLayer?: Array<Record<string, any>>;
-      ym?: (...args: any[]) => void;
-    };
-
-    w.dataLayer = w.dataLayer || [];
-    w.dataLayer.push({
-      event: "order_created",
-      order_id: orderId,
-      value,
-      currency: "RUB",
-    });
-
-    // TODO: set NEXT_PUBLIC_YM_ID to enable Yandex Metrika goals.
-    const ymIdRaw = process.env.NEXT_PUBLIC_YM_ID;
-    const ymId = ymIdRaw ? Number(ymIdRaw) : NaN;
-    if (Number.isFinite(ymId) && typeof w.ym === "function") {
-      w.ym(ymId, "reachGoal", "order_created", { order_id: orderId, value });
-    }
-
-    if (process.env.NODE_ENV !== "production") {
-      console.info("[tracking] order_created", { order_id: orderId, value });
-    }
-  };
 
   async function startPayment(method: "card" | "sbp") {
     setLoading(method);
@@ -62,7 +31,16 @@ export default function PayPage() {
 
     const orderId: string = orderData.orderId;
     const amount: number = orderData.totalAmount; // копейки
-    trackOrderCreated(orderId, orderData.totalRub ?? Math.round(amount / 100));
+    trackEvent(
+      "order_created",
+      {
+        order_id: orderId,
+        value: orderData.totalRub ?? Math.round(amount / 100),
+        currency: "RUB",
+        flow: "wizard",
+      },
+      orderId,
+    );
 
     // 2) создаём платёж
     const payRes = await fetch("/api/payments/create", {

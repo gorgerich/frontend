@@ -879,3 +879,54 @@ export function calculateBreakdown(
     })),
   }));
 }
+
+type TrackerWindow = Window & {
+  dataLayer?: Array<Record<string, any>>;
+  gtag?: (...args: any[]) => void;
+  ym?: (...args: any[]) => void;
+  __tdTracked?: Set<string>;
+  __tdSessionId?: string;
+};
+
+export function getTrackingSessionId() {
+  if (typeof window === "undefined") return "server";
+  const w = window as TrackerWindow;
+  if (!w.__tdSessionId) {
+    w.__tdSessionId = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+  }
+  return w.__tdSessionId;
+}
+
+export function trackEvent(
+  name: string,
+  params: Record<string, any> = {},
+  dedupeKey?: string,
+) {
+  if (typeof window === "undefined") return;
+  const w = window as TrackerWindow;
+
+  const store = w.__tdTracked ?? new Set<string>();
+  if (!w.__tdTracked) w.__tdTracked = store;
+
+  const key = dedupeKey ?? JSON.stringify(params ?? {});
+  const fullKey = `${name}:${key}`;
+  if (store.has(fullKey)) return;
+  store.add(fullKey);
+
+  w.dataLayer = w.dataLayer || [];
+  w.dataLayer.push({ event: name, ...params });
+
+  if (typeof w.gtag === "function") {
+    w.gtag("event", name, params);
+  }
+
+  const ymIdRaw = process.env.NEXT_PUBLIC_YM_ID;
+  const ymId = ymIdRaw ? Number(ymIdRaw) : NaN;
+  if (Number.isFinite(ymId) && typeof w.ym === "function") {
+    w.ym(ymId, "reachGoal", name, params);
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    console.info("[tracking]", name, params);
+  }
+}

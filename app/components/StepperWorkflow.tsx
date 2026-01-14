@@ -96,6 +96,8 @@ import {
   calculateBreakdown as calculateBreakdownFromUtils,
   calculateTotal as calculateTotalFromUtils,
   type CalculatorConfig,
+  trackEvent,
+  getTrackingSessionId,
 } from "./calculationUtils";
 
 
@@ -922,6 +924,7 @@ splitSchedule?: string;
   onUpdateFormData: (field: string, value: any) => void;
   onStepChange?: (step: number) => void;
   onCemeteryCategoryChange?: (category: "standard" | "comfort" | "premium") => void;
+  onModeChange?: (mode: "wizard" | "package") => void;
 }
 
 export function StepperWorkflow({
@@ -929,6 +932,7 @@ export function StepperWorkflow({
   onUpdateFormData,
   onStepChange,
   onCemeteryCategoryChange,
+  onModeChange,
 }: StepperWorkflowProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -944,6 +948,9 @@ export function StepperWorkflow({
   const [workflowMode, setWorkflowMode] = useState<"wizard" | "packages">("wizard");
   const [selectedPackageForSimplified, setSelectedPackageForSimplified] =
     useState<SimplifiedPackage | null>(null);
+
+  const trackingSessionId = getTrackingSessionId();
+  const trackingFlow: "wizard" = "wizard";
 
 
   const [isAccountOpen, setIsAccountOpen] = useState(false);
@@ -995,6 +1002,168 @@ export function StepperWorkflow({
     if (onCemeteryCategoryChange) onCemeteryCategoryChange(selectedCemeteryCategory);
   }, [selectedCemeteryCategory, onCemeteryCategoryChange]);
 
+  useEffect(() => {
+    if (workflowMode !== "wizard") return;
+    if (currentStep !== 0) return;
+    if (wizardStartedRef.current) return;
+    wizardStartedRef.current = true;
+    trackEvent(
+      "wizard_started",
+      { entry_mode: "wizard", flow: trackingFlow },
+      `${trackingSessionId}:${trackingFlow}:step1`,
+    );
+  }, [workflowMode, currentStep]);
+
+  useEffect(() => {
+    if (workflowMode !== "wizard" || currentStep !== 0) return;
+    if (!formData.serviceType) return;
+    const totalRub = Math.max(0, Math.round(calculateTotal() || 0));
+    trackEvent(
+      "ceremony_type_selected",
+      {
+        burial_type: formData.serviceType,
+        has_hall: !!formData.hasHall,
+        value: totalRub,
+        currency: "RUB",
+        flow: trackingFlow,
+      },
+      `${trackingSessionId}:${trackingFlow}:ceremony_type:${formData.serviceType}:${formData.hasHall}`,
+    );
+  }, [workflowMode, currentStep, formData.serviceType, formData.hasHall]);
+
+  useEffect(() => {
+    if (workflowMode !== "wizard" || currentStep !== 0) return;
+    if (!formData.hasHall) return;
+    const ceremonyFormat =
+      formData.ceremonyType === "civil"
+        ? "secular"
+        : formData.ceremonyType === "religious"
+          ? "religious"
+          : formData.ceremonyType === "combined"
+            ? "combined"
+            : undefined;
+    const hallDuration = Number(formData.hallDuration || 0);
+    if (!ceremonyFormat || !hallDuration) return;
+    const totalRub = Math.max(0, Math.round(calculateTotal() || 0));
+    trackEvent(
+      "ceremony_format_selected",
+      {
+        ceremony_format: ceremonyFormat,
+        hall_duration: hallDuration,
+        value: totalRub,
+        currency: "RUB",
+        flow: trackingFlow,
+      },
+      `${trackingSessionId}:${trackingFlow}:ceremony_format:${ceremonyFormat}:${hallDuration}`,
+    );
+  }, [workflowMode, currentStep, formData.hasHall, formData.ceremonyType, formData.hallDuration]);
+
+  useEffect(() => {
+    if (workflowMode !== "wizard") return;
+    if (currentStep !== 2) return;
+    if (attributesStartedRef.current) return;
+    attributesStartedRef.current = true;
+    trackEvent(
+      "attributes_started",
+      { flow: trackingFlow },
+      `${trackingSessionId}:${trackingFlow}:step2`,
+    );
+  }, [workflowMode, currentStep]);
+
+  useEffect(() => {
+    if (workflowMode !== "wizard" || currentStep !== 2) return;
+    const coffinType = formData.coffinConfig?.coffin?.wood?.name;
+    const lining = formData.coffinConfig?.coffin?.lining?.name;
+    const hasFlowers = Boolean(
+      formData.coffinConfig?.wreath?.type
+        || formData.selectedAdditionalServices?.includes("fresh-flowers"),
+    );
+    const hasCross = Boolean(
+      formData.selectedAdditionalServices?.includes("memorial-cross"),
+    );
+    const wishesFilled = Boolean((formData.specialRequests || "").trim());
+    if (!coffinType && !lining && !hasFlowers && !hasCross && !wishesFilled) return;
+    const totalRub = Math.max(0, Math.round(calculateTotal() || 0));
+    trackEvent(
+      "attributes_selected",
+      {
+        coffin_type: coffinType,
+        lining,
+        has_flowers: hasFlowers,
+        has_cross: hasCross,
+        wishes_filled: wishesFilled,
+        value: totalRub,
+        currency: "RUB",
+        flow: trackingFlow,
+      },
+      `${trackingSessionId}:${trackingFlow}:attributes:${coffinType || ""}:${lining || ""}:${hasFlowers}:${hasCross}:${wishesFilled}`,
+    );
+  }, [
+    workflowMode,
+    currentStep,
+    formData.coffinConfig,
+    formData.selectedAdditionalServices,
+    formData.specialRequests,
+  ]);
+
+  useEffect(() => {
+    if (workflowMode !== "wizard") return;
+    if (currentStep !== 1) return;
+    if (logisticsStartedRef.current) return;
+    logisticsStartedRef.current = true;
+    trackEvent(
+      "logistics_started",
+      { flow: trackingFlow },
+      `${trackingSessionId}:${trackingFlow}:step4`,
+    );
+  }, [workflowMode, currentStep]);
+
+  useEffect(() => {
+    if (workflowMode !== "wizard") return;
+    if (currentStep !== 3) return;
+    if (documentsStartedRef.current) return;
+    documentsStartedRef.current = true;
+    trackEvent(
+      "documents_started",
+      { flow: trackingFlow },
+      `${trackingSessionId}:${trackingFlow}:step5`,
+    );
+  }, [workflowMode, currentStep]);
+
+  useEffect(() => {
+    if (workflowMode !== "wizard") return;
+    if (currentStep !== 4) return;
+    if (!calculatorViewedRef.current) {
+      const totalRub = Math.max(0, Math.round(calculateTotal() || 0));
+      const breakdown = calculateBreakdown();
+      const itemsCount = breakdown.reduce(
+        (acc, section) => acc + (section.items?.length || 0),
+        0,
+      );
+      calculatorViewedRef.current = true;
+      trackEvent(
+        "calculator_viewed",
+        {
+          value: totalRub,
+          currency: "RUB",
+          burial_type: formData.serviceType,
+          items_count: itemsCount,
+          flow: trackingFlow,
+        },
+        `${trackingSessionId}:${trackingFlow}:step6`,
+      );
+    }
+
+    if (!contactsStartedRef.current) {
+      contactsStartedRef.current = true;
+      trackEvent(
+        "contacts_started",
+        { flow: trackingFlow },
+        `${trackingSessionId}:${trackingFlow}:contacts`,
+      );
+    }
+  }, [workflowMode, currentStep, formData.serviceType]);
+
   // ✅ закрытие результатов поиска при клике вне
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1036,38 +1205,12 @@ export function StepperWorkflow({
   const [canHoverHearseInfo, setCanHoverHearseInfo] = useState(false);
   const hearseInfoRef = useRef<HTMLDivElement>(null);
   const hearseCategoryInfoRef = useRef<HTMLDivElement>(null);
-  const lastTrackedOrderIdRef = useRef<string | null>(null);
-
-  const trackOrderCreated = (orderId?: string, value?: number) => {
-    if (!orderId) return;
-    if (typeof window === "undefined") return;
-    if (lastTrackedOrderIdRef.current === orderId) return;
-    lastTrackedOrderIdRef.current = orderId;
-
-    const w = window as unknown as {
-      dataLayer?: Array<Record<string, any>>;
-      ym?: (...args: any[]) => void;
-    };
-
-    w.dataLayer = w.dataLayer || [];
-    w.dataLayer.push({
-      event: "order_created",
-      order_id: orderId,
-      value,
-      currency: "RUB",
-    });
-
-    // TODO: set NEXT_PUBLIC_YM_ID to enable Yandex Metrika goals.
-    const ymIdRaw = process.env.NEXT_PUBLIC_YM_ID;
-    const ymId = ymIdRaw ? Number(ymIdRaw) : NaN;
-    if (Number.isFinite(ymId) && typeof w.ym === "function") {
-      w.ym(ymId, "reachGoal", "order_created", { order_id: orderId, value });
-    }
-
-    if (process.env.NODE_ENV !== "production") {
-      console.info("[tracking] order_created", { order_id: orderId, value });
-    }
-  };
+  const wizardStartedRef = useRef(false);
+  const attributesStartedRef = useRef(false);
+  const logisticsStartedRef = useRef(false);
+  const documentsStartedRef = useRef(false);
+  const calculatorViewedRef = useRef(false);
+  const contactsStartedRef = useRef(false);
 
   const savedPickupDateTime = normalizePickupDateTime(formData.pickupDateTime);
   const activeHearseInfo = openHearseCategoryInfo
@@ -1207,6 +1350,12 @@ export function StepperWorkflow({
         return;
       }
 
+      trackEvent(
+        "contacts_filled",
+        { has_phone: false, has_email: true, flow: trackingFlow },
+        `${trackingSessionId}:${trackingFlow}:contacts_filled:${orderEmail}`,
+      );
+
       const total = calculateTotal();
       const breakdown = calculateBreakdown();
 
@@ -1247,7 +1396,16 @@ if (!res.ok || orderData?.success !== true) {
   return;
 }
 
-trackOrderCreated(orderData.orderId, orderData.totalRub ?? total);
+trackEvent(
+  "order_created",
+  {
+    order_id: orderData.orderId,
+    value: orderData.totalRub ?? total,
+    currency: "RUB",
+    flow: trackingFlow,
+  },
+  orderData.orderId,
+);
 
 // 2) Создаём платёж (эмулятор)
 const payRes = await fetch("/api/payments/create", {
@@ -1269,6 +1427,8 @@ if (!payRes.ok || payData?.ok === false) {
   alert("Не удалось создать платеж. Попробуйте ещё раз.");
   return;
 }
+
+// TODO: fire payment_success only after a real payment confirmation callback.
 
 // 3) Редирект на страницу эмулятора оплаты
 alert("Оплата принята. Подтверждение отправлено на почту.");
@@ -1293,6 +1453,73 @@ return;
     }
 
     if (currentStep >= steps.length - 1 || isTransitioning) return;
+
+    const totalRub = Math.max(0, Math.round(calculateTotal() || 0));
+
+    if (workflowMode === "wizard") {
+      if (currentStep === 1) {
+        const hasLocation = Boolean(formData.cemetery);
+        const hasPickup = Boolean(pickupDateTime.date && pickupDateTime.time);
+        const hasBurial = Boolean(burialDateTime.date && burialDateTime.time);
+        const hasFarewell = !formData.hasHall
+          || Boolean(farewellDateTime.date && farewellDateTime.time);
+        const hasTimes = hasPickup && hasBurial && hasFarewell;
+        const routePoints = Object.values(formData.hearseRoute || {}).filter(Boolean).length;
+        if (hasLocation && hasTimes) {
+          trackEvent(
+            "logistics_filled",
+            {
+              has_location: hasLocation,
+              has_times: hasTimes,
+              route_points: routePoints,
+              value: totalRub,
+              currency: "RUB",
+              flow: trackingFlow,
+            },
+            `${trackingSessionId}:${trackingFlow}:step4:filled`,
+          );
+        }
+      }
+
+      if (currentStep === 2) {
+        const ceremonyFormat =
+          formData.ceremonyType === "civil"
+            ? "secular"
+            : formData.ceremonyType === "religious"
+              ? "religious"
+              : formData.ceremonyType === "combined"
+                ? "combined"
+                : undefined;
+        const hallDuration = Number(formData.hallDuration || 0);
+        trackEvent(
+          "format_step_completed",
+          {
+            final_burial_type: formData.serviceType,
+            final_has_hall: !!formData.hasHall,
+            ceremony_format: ceremonyFormat,
+            hall_duration: hallDuration,
+            value: totalRub,
+            currency: "RUB",
+            flow: trackingFlow,
+          },
+          `${trackingSessionId}:${trackingFlow}:step3`,
+        );
+      }
+
+      if (currentStep === 3) {
+        trackEvent(
+          "documents_completed",
+          {
+            consent_checked: !!formData.dataConsent,
+            kinship: formData.relationship || undefined,
+            value: totalRub,
+            currency: "RUB",
+            flow: trackingFlow,
+          },
+          `${trackingSessionId}:${trackingFlow}:step5:completed`,
+        );
+      }
+    }
 
     setIsTransitioning(true);
     setShowConsentError(false);
@@ -3094,6 +3321,7 @@ function formatRub(n: number) {
                 onClick={() => {
                   setWorkflowMode("wizard");
                   setSelectedPackageForSimplified(null);
+                  onModeChange?.("wizard");
                 }}
                 className={cn(
                   "px-6 py-2 rounded-full text-sm font-medium transition-all duration-200",
@@ -3106,6 +3334,7 @@ function formatRub(n: number) {
                 type="button"
                 onClick={() => {
                   openPackagesMode();
+                  onModeChange?.("package");
                 }}
                 className={cn(
                   "px-6 py-2 rounded-full text-sm font-medium transition-all duration-200",

@@ -7,7 +7,12 @@ import { PackagesSection } from './components/PackagesSection';
 import { FloatingCalculator } from './components/FloatingCalculator';
 import { Footer } from './components/Footer';
 
-import { calculateTotal, calculateBreakdown } from './components/calculationUtils';
+import {
+  calculateTotal,
+  calculateBreakdown,
+  getTrackingSessionId,
+  trackEvent,
+} from './components/calculationUtils';
 
 type BreakdownItem = { name: string; price?: number };
 type BreakdownSection = { category: string; price: number; items?: BreakdownItem[] };
@@ -219,6 +224,7 @@ const [formData, setFormData] = useState(initialFormData);
 const [currentStep, setCurrentStep] = useState(0);
 const [selectedCemeteryCategory, setSelectedCemeteryCategory] =
 useState<'standard' | 'comfort' | 'premium'>('standard');
+const trackingSessionId = getTrackingSessionId();
 const calculatorSummary = useMemo(() => {
 const baseTotal = calculateTotal(formData, selectedCemeteryCategory);
 const baseBreakdown = calculateBreakdown(formData, selectedCemeteryCategory);
@@ -286,6 +292,13 @@ setFormData((prev) => ({ ...prev, [field]: value }));
 };
 
 const handleStepChange = (step: number) => setCurrentStep(step);
+const handleModeChange = (mode: 'wizard' | 'package') => {
+trackEvent(
+  'mode_selected',
+  { mode, flow: mode },
+  `${trackingSessionId}:${mode}:mode_selected`,
+);
+};
 const handleCemeteryCategoryChange = (category: 'standard' | 'comfort' | 'premium') =>
 setSelectedCemeteryCategory(category);
 
@@ -301,6 +314,7 @@ formData={formData}
 onUpdateFormData={handleUpdateFormData}
 onStepChange={handleStepChange}
 onCemeteryCategoryChange={handleCemeteryCategoryChange}
+onModeChange={handleModeChange}
 />
 </div>
 

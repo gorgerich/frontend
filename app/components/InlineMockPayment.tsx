@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { trackEvent } from "./calculationUtils";
 
 type PayPlan = "full" | "deposit" | "split";
 
@@ -66,6 +67,7 @@ function maskCard(n: string) {
 export default function InlineMockPayment({ orderId, totalAmount, email }: Props) {
   const [payPlan, setPayPlan] = useState<PayPlan>("full");
   const [method, setMethod] = useState<"card" | "sbp">("card");
+  const trackingFlow: "wizard" = "wizard";
 
   const [cardNumber, setCardNumber] = useState("");
   const [holder, setHolder] = useState("IVAN IVANOV");
@@ -156,6 +158,18 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
     setError(null);
     setLoading(true);
 
+    trackEvent(
+      "payment_started",
+      {
+        order_id: orderId,
+        value: payNowRub,
+        currency: "RUB",
+        payment_method: method,
+        flow: trackingFlow,
+      },
+      `${orderId}:${method}:${payNowRub}`,
+    );
+
     // START event
     trackBoth("payment_start", {
       orderId,
@@ -171,6 +185,18 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
       await new Promise((res) => setTimeout(res, 600)); // UX-ожидание
       await confirmPayment(created.providerPaymentId);
       setPaid(true);
+
+      trackEvent(
+        "payment_success",
+        {
+          order_id: orderId,
+          value: payNowRub,
+          currency: "RUB",
+          payment_method: method,
+          flow: trackingFlow,
+        },
+        created.providerPaymentId,
+      );
 
       // SUCCESS event
       trackBoth("payment_success", {
