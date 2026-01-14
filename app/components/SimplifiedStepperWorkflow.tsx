@@ -518,6 +518,38 @@ const [showConsentError, setShowConsentError] = useState(false);
 
 const isInitialMountRef = useRef(true);
 const previousStepRef = useRef(0);
+const lastTrackedOrderIdRef = useRef<string | null>(null);
+
+const trackOrderCreated = (orderId?: string, value?: number) => {
+  if (!orderId) return;
+  if (typeof window === "undefined") return;
+  if (lastTrackedOrderIdRef.current === orderId) return;
+  lastTrackedOrderIdRef.current = orderId;
+
+  const w = window as unknown as {
+    dataLayer?: Array<Record<string, any>>;
+    ym?: (...args: any[]) => void;
+  };
+
+  w.dataLayer = w.dataLayer || [];
+  w.dataLayer.push({
+    event: "order_created",
+    order_id: orderId,
+    value,
+    currency: "RUB",
+  });
+
+  // TODO: set NEXT_PUBLIC_YM_ID to enable Yandex Metrika goals.
+  const ymIdRaw = process.env.NEXT_PUBLIC_YM_ID;
+  const ymId = ymIdRaw ? Number(ymIdRaw) : NaN;
+  if (Number.isFinite(ymId) && typeof w.ym === "function") {
+    w.ym(ymId, "reachGoal", "order_created", { order_id: orderId, value });
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    console.info("[tracking] order_created", { order_id: orderId, value });
+  }
+};
 
 const [localFormData, setLocalFormData] = useState<FormDataShape>(() => {
   if (typeof window === "undefined") return DEFAULT_FORM_DATA;
@@ -1879,6 +1911,7 @@ return;
 
 const data = await res.json();
 console.log("Order created:", data);
+trackOrderCreated(data?.orderId, data?.totalRub ?? totalRub);
 
 alert("Бронирование оформлено! Детали и договор отправлены на указанную электронную почту. К сожалению оплата не прошла, агент свяжется с вами в скором времени");
 } catch (e) {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, User, Package, LogOut, Save } from "lucide-react";
@@ -104,6 +104,38 @@ export function PersonalAccountModal({ open, onOpenChange }: PersonalAccountModa
   const [currentDraft, setCurrentDraft] = useState<DraftFromStorage | null>(null);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  const lastTrackedOrderIdRef = useRef<string | null>(null);
+
+  const trackOrderCreated = (orderId?: string, value?: number) => {
+    if (!orderId) return;
+    if (typeof window === "undefined") return;
+    if (lastTrackedOrderIdRef.current === orderId) return;
+    lastTrackedOrderIdRef.current = orderId;
+
+    const w = window as unknown as {
+      dataLayer?: Array<Record<string, any>>;
+      ym?: (...args: any[]) => void;
+    };
+
+    w.dataLayer = w.dataLayer || [];
+    w.dataLayer.push({
+      event: "order_created",
+      order_id: orderId,
+      value,
+      currency: "RUB",
+    });
+
+    // TODO: set NEXT_PUBLIC_YM_ID to enable Yandex Metrika goals.
+    const ymIdRaw = process.env.NEXT_PUBLIC_YM_ID;
+    const ymId = ymIdRaw ? Number(ymIdRaw) : NaN;
+    if (Number.isFinite(ymId) && typeof w.ym === "function") {
+      w.ym(ymId, "reachGoal", "order_created", { order_id: orderId, value });
+    }
+
+    if (process.env.NODE_ENV !== "production") {
+      console.info("[tracking] order_created", { order_id: orderId, value });
+    }
+  };
 
   const isLoggedIn = !!user;
 
@@ -247,6 +279,7 @@ export function PersonalAccountModal({ open, onOpenChange }: PersonalAccountModa
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "ORDER_CREATE_FAILED");
 
+      trackOrderCreated(data.orderId, data.totalRub ?? total);
       toast.success("Заказ сохранён в личном кабинете");
       await fetchOrdersFromApi(user.email);
     } catch (e) {
