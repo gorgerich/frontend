@@ -21,14 +21,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ru">
       <head>
         <Script
+          id="td-runtime-guards"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var p=window.onerror;window.onerror=function(message,source,lineno,colno,error){try{console.error('[td-runtime] window.onerror',{message:message,source:source,lineno:lineno,colno:colno,error:error});}catch(_){}if(typeof p==='function'){return p.apply(this,arguments);}return false;};var u=window.onunhandledrejection;window.onunhandledrejection=function(event){try{console.error('[td-runtime] unhandledrejection',event&&event.reason?event.reason:event);}catch(_){}if(typeof u==='function'){return u.apply(this,arguments);}};}catch(e){try{console.error('[td-runtime] guard failed',e);}catch(_){}}})();`,
+          }}
+        />
+        <Script
           id="gtm-script"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
-            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            __html: `try{(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','${GTM_ID}');`,
+})(window,document,'script','dataLayer','${GTM_ID}');}catch(e){try{console.error('[td-gtm] init failed',e);}catch(_){}}`,
           }}
         />
       </head>

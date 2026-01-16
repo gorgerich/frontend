@@ -968,6 +968,7 @@ export function StepperWorkflow({
   const [cardData, setCardData] = useState({ number: "", holder: "", expiry: "", cvc: "" });
 
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+  const lastPaymentSnapshotRef = useRef<string>("");
   const lastPayPlanRef = useRef<"full" | "deposit" | "split">(
     (formData.paymentPlan || "full") as "full" | "deposit" | "split",
   );
@@ -979,6 +980,19 @@ export function StepperWorkflow({
     if (plan === "split") return Math.floor(normalized / 4);
     return normalized;
   };
+  const getPaymentSnapshot = (
+    plan: "full" | "deposit" | "split",
+    email: string,
+    card: { number: string; holder: string; expiry: string; cvc: string },
+  ) =>
+    JSON.stringify({
+      plan,
+      email: email.trim(),
+      number: card.number,
+      holder: card.holder,
+      expiry: card.expiry,
+      cvc: card.cvc,
+    });
 
   const scrollToWizardTop = () => {
     if (!containerRef.current) return;
@@ -1195,6 +1209,27 @@ export function StepperWorkflow({
       `${trackingSessionId}:${trackingFlow}:pay_plan:${selectedPayPlan}:${payPlanSelectionSeqRef.current}`,
     );
   }, [workflowMode, currentStep, selectedPayPlan]);
+
+  useEffect(() => {
+    if (!isSubmittingOrder) return;
+    if (!lastPaymentSnapshotRef.current) return;
+    const currentSnapshot = getPaymentSnapshot(
+      (formData.paymentPlan || "full") as "full" | "deposit" | "split",
+      formData.userEmail || "",
+      cardData,
+    );
+    if (currentSnapshot !== lastPaymentSnapshotRef.current) {
+      setIsSubmittingOrder(false);
+    }
+  }, [
+    isSubmittingOrder,
+    formData.paymentPlan,
+    formData.userEmail,
+    cardData.number,
+    cardData.holder,
+    cardData.expiry,
+    cardData.cvc,
+  ]);
 
   // ✅ закрытие результатов поиска при клике вне
   useEffect(() => {
@@ -2905,37 +2940,38 @@ function formatRub(n: number) {
         const breakdown = calculateBreakdown();
 
         const onPayClick = async () => {
-  if (isSubmittingOrder) return;
+          if (isSubmittingOrder) return;
 
-  try {
-    setIsSubmittingOrder(true);
+          try {
+            lastPaymentSnapshotRef.current = getPaymentSnapshot(payPlan, emailValue, cardData);
+            setIsSubmittingOrder(true);
 
-    // сохраняем план (если нужно писать в БД/письмо)
-    handleInputChange("paymentPlan", payPlan);
-    handleInputChange("paidNowRub", String(payNowRub));
+            // сохраняем план (если нужно писать в БД/письмо)
+            handleInputChange("paymentPlan", payPlan);
+            handleInputChange("paidNowRub", String(payNowRub));
 
-    if (payPlan === "split") {
-      handleInputChange("splitSchedule", JSON.stringify(splitSchedule));
-    } else {
-      handleInputChange("splitSchedule", "");
-    }
+            if (payPlan === "split") {
+              handleInputChange("splitSchedule", JSON.stringify(splitSchedule));
+            } else {
+              handleInputChange("splitSchedule", "");
+            }
 
-    // UX-эмуляция процессинга
-    await new Promise((r) => setTimeout(r, 400));
+            // UX-эмуляция процессинга
+            await new Promise((r) => setTimeout(r, 400));
 
-    // ВАЖНО:
-    // "пока письмо не улетит" в реальности невозможно гарантировать на фронте.
-    // Но мы держим "Оформление..." ДО момента, пока /api/orders не вернёт success.
-    // handleConfirmBooking делает fetch /api/orders и ждёт ответ — это и есть наш триггер.
-    await handleConfirmBooking();
+            // ВАЖНО:
+            // "пока письмо не улетит" в реальности невозможно гарантировать на фронте.
+            // Но мы держим "Оформление..." ДО момента, пока /api/orders не вернёт success.
+            // handleConfirmBooking делает fetch /api/orders и ждёт ответ — это и есть наш триггер.
+            await handleConfirmBooking();
 
-    // если внутри handleConfirmBooking у тебя происходит redirect — сюда код уже не вернётся (и это ок)
-  } catch (e) {
-    console.error(e);
-    setIsSubmittingOrder(false);
-    alert("Сетевая ошибка. Проверьте интернет и попробуйте ещё раз.");
-  }
-};
+            // если внутри handleConfirmBooking у тебя происходит redirect — сюда код уже не вернётся (и это ок)
+          } catch (e) {
+            console.error(e);
+            setIsSubmittingOrder(false);
+            alert("Сетевая ошибка. Проверьте интернет и попробуйте ещё раз.");
+          }
+        };
 
 
         return (
@@ -3292,7 +3328,7 @@ function formatRub(n: number) {
                         type="button"
                         onClick={onPayClick}
                         disabled={!canPay || isSubmittingOrder}
-                        className="rounded-2xl bg-white text-gray-900 hover:bg-gray-100 px-5 py-3 text-sm font-semibold disabled:opacity-60"
+                        className="rounded-2xl !bg-white !text-gray-900 hover:!bg-gray-100 hover:!text-gray-900 px-5 py-3 text-sm font-semibold disabled:opacity-60 disabled:!text-gray-400"
                       >
                         {isSubmittingOrder ? "Оформление..." : "Оплатить"}
                       </Button>
