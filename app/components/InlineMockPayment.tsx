@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { trackEvent } from "./calculationUtils";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { getTrackingSessionId, trackEvent } from "./calculationUtils";
 
 type PayPlan = "full" | "deposit" | "split";
 
@@ -68,6 +68,9 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
   const [payPlan, setPayPlan] = useState<PayPlan>("full");
   const [method, setMethod] = useState<"card" | "sbp">("card");
   const trackingFlow: "wizard" = "wizard";
+  const trackingSessionId = getTrackingSessionId();
+  const lastPayPlanRef = useRef<PayPlan>(payPlan);
+  const payPlanSelectionSeqRef = useRef(0);
 
   const [cardNumber, setCardNumber] = useState("");
   const [holder, setHolder] = useState("IVAN IVANOV");
@@ -121,6 +124,23 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
     return cardOk && expOk && cvcOk;
   }, [paid, contactEmail, method, cardNumber, exp, cvc]);
 
+  useEffect(() => {
+    if (lastPayPlanRef.current === payPlan) return;
+    lastPayPlanRef.current = payPlan;
+    payPlanSelectionSeqRef.current += 1;
+    trackEvent(
+      "pay_plan_selected",
+      {
+        pay_plan: payPlan,
+        payment_method: "card",
+        flow: trackingFlow,
+        value: payNowRub,
+        currency: "RUB",
+      },
+      `${trackingSessionId}:${trackingFlow}:pay_plan:${payPlan}:${payPlanSelectionSeqRef.current}`,
+    );
+  }, [payPlan, payNowRub, trackingSessionId]);
+
   async function createPayment() {
     const r = await fetch("/api/payments/create", {
       method: "POST",
@@ -162,12 +182,13 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
       "payment_started",
       {
         order_id: orderId,
+        pay_plan: payPlan,
         value: payNowRub,
         currency: "RUB",
-        payment_method: method,
+        payment_method: "card",
         flow: trackingFlow,
       },
-      `${orderId}:${method}:${payNowRub}`,
+      orderId,
     );
 
     // START event
@@ -190,10 +211,12 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
         "payment_success",
         {
           order_id: orderId,
+          pay_plan: payPlan,
           value: payNowRub,
           currency: "RUB",
-          payment_method: method,
+          payment_method: "card",
           flow: trackingFlow,
+          providerPaymentId: created.providerPaymentId,
         },
         created.providerPaymentId,
       );

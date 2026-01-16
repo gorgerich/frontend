@@ -78,6 +78,8 @@ return checkoutSessionIdRef.current;
 
 // === Вариант оплаты: full / deposit_5 / split ===
 const [paymentOption, setPaymentOption] = useState<PaymentOption>("full");
+const lastPayPlanRef = useRef<PaymentOption>(paymentOption);
+const payPlanSelectionSeqRef = useRef(0);
 
 const optionGoalMap: Record<PaymentOption, string> = {
 full: "payment_option_full",
@@ -88,6 +90,8 @@ split: "payment_option_split",
 const depositAmount = useMemo(() => Math.round(total * 0.05), [total]);
 const splitParts = 4;
 const splitPartAmount = useMemo(() => Math.ceil(total / splitParts), [total]);
+
+const payPlanForTracking = paymentOption === "deposit_5" ? "deposit" : paymentOption;
 
 const payNow = useMemo(() => {
 if (paymentOption === "deposit_5") return depositAmount;
@@ -107,6 +111,21 @@ total,
 });
 
 lastSentOptionRef.current = paymentOption;
+
+if (lastPayPlanRef.current === paymentOption) return;
+lastPayPlanRef.current = paymentOption;
+payPlanSelectionSeqRef.current += 1;
+trackEvent(
+  "pay_plan_selected",
+  {
+    pay_plan: payPlanForTracking,
+    payment_method: "card",
+    flow: trackingFlow,
+    value: payNow,
+    currency: "RUB",
+  },
+  `${trackingSessionId}:${trackingFlow}:pay_plan:${payPlanForTracking}:${payPlanSelectionSeqRef.current}`,
+);
 }, [paymentOption, payNow, total]);
 
 // payment_start — один раз при входе на шаг оплаты
@@ -150,9 +169,10 @@ const checkoutSessionId = getCheckoutSessionId();
 trackEvent(
   "payment_started",
   {
+    pay_plan: payPlanForTracking,
+    payment_method: "card",
     value: payNow,
     currency: "RUB",
-    payment_method: paymentMethod || "unknown",
     checkout_session_id: checkoutSessionId,
     flow: trackingFlow,
   },

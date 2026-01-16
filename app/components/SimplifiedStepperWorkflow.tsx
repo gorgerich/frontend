@@ -565,6 +565,10 @@ const [localFormData, setLocalFormData] = useState<FormDataShape>(() => {
 
 // ВСЕГДА безопасный объект для рендера (главное исправление: ВСЕГДА использовать его в JSX)
 const safeFormData: FormDataShape = localFormData;
+const lastPayPlanRef = useRef<"full" | "deposit" | "split">(
+  (safeFormData.paymentPlan || "full") as "full" | "deposit" | "split",
+);
+const payPlanSelectionSeqRef = useRef(0);
 
 
 // 1) Маппинг пакета -> дерево (исправляем: базовый = дуб, премиум = элитное)
@@ -745,6 +749,13 @@ const floatingBreakdown = simplifiedSections.map((section) => ({
     price: typeof item.price === "number" ? Math.round(item.price) : undefined,
   })),
 }));
+const selectedPayPlan = (safeFormData.paymentPlan || "full") as "full" | "deposit" | "split";
+const getPayNowRub = (plan: "full" | "deposit" | "split", total: number) => {
+  const normalized = Math.max(0, Math.round(total || 0));
+  if (plan === "deposit") return Math.max(0, Math.round(normalized * 0.05));
+  if (plan === "split") return Math.floor(normalized / 4);
+  return normalized;
+};
 
 const handleInputChange = (field: keyof FormDataShape | "hearseRoute", value: any) => {
 setLocalFormData((prev) => ({
@@ -923,6 +934,25 @@ useEffect(() => {
     );
   }
 }, [currentStep, totalRub, floatingBreakdown, safeFormData.serviceType]);
+
+useEffect(() => {
+  if (currentStep !== 4) return;
+  if (lastPayPlanRef.current === selectedPayPlan) return;
+  lastPayPlanRef.current = selectedPayPlan;
+  payPlanSelectionSeqRef.current += 1;
+  const payNowRub = getPayNowRub(selectedPayPlan, totalRub);
+  trackEvent(
+    "pay_plan_selected",
+    {
+      pay_plan: selectedPayPlan,
+      payment_method: "card",
+      flow: trackingFlow,
+      value: payNowRub,
+      currency: "RUB",
+    },
+    `${trackingSessionId}:${trackingFlow}:pay_plan:${selectedPayPlan}:${payPlanSelectionSeqRef.current}`,
+  );
+}, [currentStep, selectedPayPlan, totalRub]);
 
 // Скрываем глобальный floating-калькулятор, чтобы остался только simplified.
 useEffect(() => {
@@ -2005,7 +2035,7 @@ return [
 const depositRub = Math.max(0, Math.round(totalRub * 0.05));
 const splitSchedule = calcSplitSchedule(totalRub);
 
-const payPlan = (safeFormData.paymentPlan || "full") as "full" | "deposit" | "split";
+const payPlan = selectedPayPlan;
 
 const payNowRub =
 payPlan === "deposit"

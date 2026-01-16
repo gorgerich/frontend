@@ -44,7 +44,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe>`,
         {/* ВАЖНО: одна общая колонка на всю страницу */}
         <div className="min-h-screen flex flex-col">
           <div className="flex-1">{children}</div>
-          <Footer />
+          <div className="hidden">
+            <Footer />
+          </div>
         </div>
       </body>
     </html>

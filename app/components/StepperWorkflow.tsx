@@ -968,6 +968,17 @@ export function StepperWorkflow({
   const [cardData, setCardData] = useState({ number: "", holder: "", expiry: "", cvc: "" });
 
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+  const lastPayPlanRef = useRef<"full" | "deposit" | "split">(
+    (formData.paymentPlan || "full") as "full" | "deposit" | "split",
+  );
+  const payPlanSelectionSeqRef = useRef(0);
+  const selectedPayPlan = (formData.paymentPlan || "full") as "full" | "deposit" | "split";
+  const getPayNowRub = (plan: "full" | "deposit" | "split", total: number) => {
+    const normalized = Math.max(0, Math.round(total || 0));
+    if (plan === "deposit") return Math.max(0, Math.round(normalized * 0.05));
+    if (plan === "split") return Math.floor(normalized / 4);
+    return normalized;
+  };
 
   const scrollToWizardTop = () => {
     if (!containerRef.current) return;
@@ -1163,6 +1174,27 @@ export function StepperWorkflow({
       );
     }
   }, [workflowMode, currentStep, formData.serviceType]);
+
+  useEffect(() => {
+    if (workflowMode !== "wizard") return;
+    if (currentStep !== 4) return;
+    if (lastPayPlanRef.current === selectedPayPlan) return;
+    lastPayPlanRef.current = selectedPayPlan;
+    payPlanSelectionSeqRef.current += 1;
+    const totalRub = Math.max(0, Math.round(calculateTotal() || 0));
+    const payNowRub = getPayNowRub(selectedPayPlan, totalRub);
+    trackEvent(
+      "pay_plan_selected",
+      {
+        pay_plan: selectedPayPlan,
+        payment_method: "card",
+        flow: trackingFlow,
+        value: payNowRub,
+        currency: "RUB",
+      },
+      `${trackingSessionId}:${trackingFlow}:pay_plan:${selectedPayPlan}:${payPlanSelectionSeqRef.current}`,
+    );
+  }, [workflowMode, currentStep, selectedPayPlan]);
 
   // ✅ закрытие результатов поиска при клике вне
   useEffect(() => {
