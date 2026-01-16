@@ -913,17 +913,29 @@ export function trackEvent(
   if (store.has(fullKey)) return;
   store.add(fullKey);
 
-  w.dataLayer = w.dataLayer || [];
-  w.dataLayer.push({ event: name, ...params });
+  try {
+    w.dataLayer = Array.isArray(w.dataLayer) ? w.dataLayer : [];
+    w.dataLayer.push({ event: name, ...params });
+  } catch (_) {
+    // best-effort analytics: ignore failures
+  }
 
   if (typeof w.gtag === "function") {
-    w.gtag("event", name, params);
+    try {
+      w.gtag("event", name, params);
+    } catch (_) {
+      // best-effort analytics: ignore failures
+    }
   }
 
   const ymIdRaw = process.env.NEXT_PUBLIC_YM_ID;
   const ymId = ymIdRaw ? Number(ymIdRaw) : NaN;
   if (Number.isFinite(ymId) && typeof w.ym === "function") {
-    w.ym(ymId, "reachGoal", name, params);
+    try {
+      w.ym(ymId, "reachGoal", name, params);
+    } catch (_) {
+      // best-effort analytics: ignore failures
+    }
   }
 
   if (process.env.NODE_ENV !== "production") {

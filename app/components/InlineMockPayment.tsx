@@ -39,8 +39,12 @@ function formatDate(d: Date) {
 /** GTM: dataLayer.push */
 function trackGTM(event: string, params: Record<string, any> = {}) {
   if (typeof window === "undefined") return;
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({ event, ...params });
+  try {
+    window.dataLayer = Array.isArray(window.dataLayer) ? window.dataLayer : [];
+    window.dataLayer.push({ event, ...params });
+  } catch (_) {
+    // best-effort analytics: ignore failures
+  }
 }
 
 /** Yandex Metrika: ym(ID, 'reachGoal', ...) */
@@ -50,7 +54,11 @@ function trackYM(goal: string, params: Record<string, any> = {}) {
   const id = idRaw ? Number(idRaw) : NaN;
   if (!Number.isFinite(id)) return;
   if (typeof window.ym !== "function") return;
-  window.ym(id, "reachGoal", goal, params);
+  try {
+    window.ym(id, "reachGoal", goal, params);
+  } catch (_) {
+    // best-effort analytics: ignore failures
+  }
 }
 
 function trackBoth(eventOrGoal: string, params: Record<string, any> = {}) {

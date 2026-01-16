@@ -5,6 +5,7 @@ import Script from "next/script";
 import "./globals.css";
 
 import { Footer } from "./components/Footer";
+import { ClientErrorBoundary } from "./components/ClientErrorBoundary";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -49,12 +50,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe>`,
         />
 
         {/* ВАЖНО: одна общая колонка на всю страницу */}
-        <div className="min-h-screen flex flex-col">
-          <div className="flex-1">{children}</div>
-          <div className="hidden">
-            <Footer />
+        <ClientErrorBoundary>
+          <div className="min-h-screen flex flex-col">
+            <div className="flex-1">{children}</div>
+            <div className="hidden">
+              <Footer />
+            </div>
           </div>
-        </div>
+        </ClientErrorBoundary>
       </body>
     </html>
   );
