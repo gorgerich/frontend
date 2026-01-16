@@ -564,7 +564,7 @@ const [localFormData, setLocalFormData] = useState<FormDataShape>(() => {
 });
 
 // ВСЕГДА безопасный объект для рендера (главное исправление: ВСЕГДА использовать его в JSX)
-const safeFormData: FormDataShape = localFormData;
+const safeFormData: FormDataShape = localFormData ?? DEFAULT_FORM_DATA;
 const lastPayPlanRef = useRef<"full" | "deposit" | "split">(
   (safeFormData.paymentPlan || "full") as "full" | "deposit" | "split",
 );
