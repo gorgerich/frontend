@@ -11,8 +11,48 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Тихий дом",
-  description: "Цифровой помощник по самостоятельной организации прощания",
+  metadataBase: new URL("https://tihiydom.com"),
+  title: "Тихий дом — организация похорон онлайн",
+  description:
+    "Тихий дом — цифровой помощник для самостоятельной организации похорон без агентств и давления онлайн. Понятные шаги и прозрачная цена.",
+  alternates: {
+    canonical: "https://tihiydom.com",
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", type: "image/png", sizes: "180x180" }],
+  },
+  openGraph: {
+    type: "website",
+    url: "https://tihiydom.com",
+    title: "Тихий дом — организация похорон онлайн",
+    description:
+      "Тихий дом — цифровой помощник для самостоятельной организации похорон без агентств и давления онлайн. Понятные шаги и прозрачная цена.",
+    siteName: "Тихий дом",
+    locale: "ru_RU",
+    images: [
+      {
+        url: "/og.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Тихий дом",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Тихий дом — организация похорон онлайн",
+    description:
+      "Тихий дом — цифровой помощник для самостоятельной организации похорон без агентств и давления онлайн. Понятные шаги и прозрачная цена.",
+    images: ["/og.jpg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 const GTM_ID = "GTM-MTM57TP6";

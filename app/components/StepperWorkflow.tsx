@@ -157,7 +157,7 @@ const PACKAGES = [
   {
     id: "basic",
     name: "Базовый",
-    price: 45000,
+    price: 200000,
     description: "Необходимый минимум",
     features: ["Гроб сосна", "Венок искусственный", "Базовая отделка", "Катафалк", "Носильщики"],
     popular: false,
@@ -165,7 +165,7 @@ const PACKAGES = [
   {
     id: "standard",
     name: "Стандарт",
-    price: 85000,
+    price: 400000,
     description: "Оптимальный вариант",
     features: [
       "Гроб дуб",
@@ -181,7 +181,7 @@ const PACKAGES = [
   {
     id: "premium",
     name: "Премиум",
-    price: 150000,
+    price: 600000,
     description: "Максимальный комфорт",
     features: [
       "Гроб красное дерево",
