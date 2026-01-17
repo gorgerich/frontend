@@ -465,13 +465,11 @@ export async function POST(req: NextRequest) {
         console.log("Email breakdown sections:", breakdownSections);
       }
 
-      const orderSummaryHtml = isSimplified
-        ? buildOrderSummaryHtml(breakdownSections, totalRub)
-        : "";
+      const orderSummaryHtml = buildOrderSummaryHtml(breakdownSections, totalRub);
 
       const html = buildEmailHtml(bodyForEmail, services, totalRub, {
         orderSummaryHtml,
-        showServicesTable: !isSimplified || !orderSummaryHtml,
+        showServicesTable: !orderSummaryHtml,
       });
 
       await sendOrderEmail({

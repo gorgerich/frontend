@@ -95,7 +95,7 @@ const PACKAGES_BURIAL = [
   {
     id: 'standard',
     name: 'Стандарт',
-    price: 45000,
+    price: 200000,
     description: 'Базовый комплект услуг для достойного прощания',
     features: [
       'Оформление документов',
@@ -109,7 +109,7 @@ const PACKAGES_BURIAL = [
   {
     id: 'comfort',
     name: 'Комфорт',
-    price: 85000,
+    price: 400000,
     description: 'Расширенный набор услуг с улучшенными материалами',
     features: [
       'Оформление документов',
@@ -127,7 +127,7 @@ const PACKAGES_BURIAL = [
   {
     id: 'premium',
     name: 'Премиум',
-    price: 150000,
+    price: 600000,
     description: 'Полный спектр услуг премиум класса',
     features: [
       'Оформление документов',
