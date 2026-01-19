@@ -2,7 +2,7 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@tihiydom.com";
+const FROM_EMAIL = process.env.FROM_EMAIL;
 
 type SendOrderEmailOptions = {
   to: string | string[];
@@ -15,11 +15,21 @@ type SendOrderEmailOptions = {
 
 export async function sendOrderEmail(options: SendOrderEmailOptions) {
   if (!process.env.RESEND_API_KEY) {
-    console.error("RESEND_API_KEY is missing");
-    return;
+    console.error("CRITICAL: RESEND_API_KEY is missing");
+    throw new Error("RESEND_API_KEY is missing");
+  }
+  if (!FROM_EMAIL) {
+    console.error("CRITICAL: FROM_EMAIL is missing");
+    throw new Error("FROM_EMAIL is missing");
+  }
+  if (FROM_EMAIL.includes("resend.dev")) {
+    console.error("CRITICAL: FROM_EMAIL must not use resend.dev domain");
+    throw new Error("Invalid FROM_EMAIL domain");
   }
 
   const { to, subject, html, text, attachments, orderId } = options;
+
+  console.info("email_from", { from: FROM_EMAIL, orderId });
 
   const basePayload = {
     from: FROM_EMAIL,
