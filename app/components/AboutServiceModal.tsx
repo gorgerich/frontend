@@ -69,7 +69,7 @@ export function AboutServiceModal({ isOpen, onClose }: { isOpen: boolean; onClos
                   className="relative mb-10 md:mb-12 text-center"
                 >
                   <h2 className="text-4xl md:text-6xl lg:text-7xl font-light text-white mb-6 tracking-tight">
-                    Тихий <span className="font-serif italic text-blue-200/90">Дом</span>
+                  Как это <span className="font-serif italic text-blue-200/90">работает?</span>
                   </h2>
                   <p className="text-lg md:text-2xl text-blue-100/80 font-light max-w-3xl mx-auto leading-relaxed tracking-wide">
                     Цифровой сервис для самостоятельной организации прощания без давления, посредников и скрытых наценок. <br className="hidden md:block" />
