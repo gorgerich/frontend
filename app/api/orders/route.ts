@@ -429,7 +429,6 @@ function buildEmailHtml(
     <h2 style="font-size:16px; margin:18px 0 8px;">3. Данные церемонии</h2>
     <p style="margin:0 0 8px;">
       Тип: ${escapeHtml(ceremony.type ?? body.formData?.ceremonyType ?? "не указан")}<br/>
-      Формат / пакет: ${escapeHtml(ceremony.order ?? "не указан")}<br/>
       Кладбище: ${escapeHtml(ceremony.cemetery ?? body.formData?.cemetery ?? "не указано")}<br/>
       Дата: ${escapeHtml(ceremonyDateLabel ?? "не указана")}<br/>
       Время: ${escapeHtml(ceremonyTimeLabel ?? "не указано")}<br/>

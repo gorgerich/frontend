@@ -205,7 +205,6 @@ export function buildOrderSummary(
   const ceremonyTypeLabel = CEREMONY_TYPE_LABELS[data.ceremonyType] || data.ceremonyType;
   pushItem(formatItems, "Тип церемонии", ceremonyTypeLabel);
   pushItem(formatItems, "Конфессия", data.confession);
-  pushItem(formatItems, "Порядок церемонии", data.ceremonyOrder);
   pushItem(formatItems, "Слот церемонии", data.selectedSlot);
   addSection("Формат церемонии", formatItems);
 
