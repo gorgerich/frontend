@@ -9,12 +9,21 @@ export default function PayPage() {
   async function startPayment(method: "card" | "sbp") {
     setLoading(method);
 
+    const emailParam = new URLSearchParams(window.location.search).get("email") || "";
+    const customerEmail = emailParam.trim();
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail);
+    if (!emailOk) {
+      setLoading(null);
+      alert("Укажите корректный email через параметр ?email=...");
+      return;
+    }
+
     // 1) создаём заказ через существующий /api/orders
     const orderRes = await fetch("/api/orders", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        customer: { email: "test@example.com", name: "Test" },
+        customer: { email: customerEmail, name: "Test" },
         ceremony: { type: method === "sbp" ? "BURIAL" : "BURIAL" },
         services: [
           { name: "Организация церемонии", price: 120000, quantity: 1 }, // рубли

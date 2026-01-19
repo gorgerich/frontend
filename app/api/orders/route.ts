@@ -416,9 +416,10 @@ export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as OrderPayload;
 
-    const customerEmail = body.customer?.email ?? body.userEmail;
-    if (!customerEmail) {
-      return NextResponse.json({ error: "Поле customer.email обязательно" }, { status: 400 });
+    const customerEmail = String(body.customer?.email ?? body.userEmail ?? "").trim();
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail);
+    if (!emailOk) {
+      return NextResponse.json({ error: "Некорректный email" }, { status: 400 });
     }
 
     const services = normalizeServices(body);
@@ -447,38 +448,37 @@ export async function POST(req: NextRequest) {
     });
 
     // email
+    const bodyForEmail: OrderPayload = {
+      ...body,
+      customer: {
+        email: customerEmail,
+        name: body.customer?.name ?? body.userName,
+        phone: body.customer?.phone,
+      },
+    };
+
+    const breakdownSections = normalizeBreakdownSections(bodyForEmail);
+    const isSimplified = bodyForEmail.orderFlow === "simplified";
+    if (isSimplified) {
+      console.log("Email breakdown sections:", breakdownSections);
+    }
+
+    const orderSummaryHtml = buildOrderSummaryHtml(breakdownSections, totalRub);
+
+    const html = buildEmailHtml(bodyForEmail, services, totalRub, {
+      orderSummaryHtml,
+      showServicesTable: !orderSummaryHtml,
+    });
+
     try {
-      const managerEmail = process.env.ORDER_TARGET_EMAIL || "gorgerichig@gmail.com";
-
-      const bodyForEmail: OrderPayload = {
-        ...body,
-        customer: {
-          email: customerEmail,
-          name: body.customer?.name ?? body.userName,
-          phone: body.customer?.phone,
-        },
-      };
-
-      const breakdownSections = normalizeBreakdownSections(bodyForEmail);
-      const isSimplified = bodyForEmail.orderFlow === "simplified";
-      if (isSimplified) {
-        console.log("Email breakdown sections:", breakdownSections);
-      }
-
-      const orderSummaryHtml = buildOrderSummaryHtml(breakdownSections, totalRub);
-
-      const html = buildEmailHtml(bodyForEmail, services, totalRub, {
-        orderSummaryHtml,
-        showServicesTable: !orderSummaryHtml,
-      });
-
       await sendOrderEmail({
-        to: [customerEmail, managerEmail],
+        to: customerEmail,
         subject: "Договор и детали заказа",
         html,
+        orderId: publicId,
       });
-    } catch (e) {
-      console.error("Email failed (ignored):", e);
+    } catch (e: any) {
+      return NextResponse.json({ error: "Email send failed" }, { status: 500 });
     }
 
     return NextResponse.json(
