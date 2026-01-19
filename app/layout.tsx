@@ -93,9 +93,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe>`,
         <ClientErrorBoundary>
           <div className="min-h-screen flex flex-col">
             <div className="flex-1">{children}</div>
-            <div className="hidden">
-              <Footer />
-            </div>
+            <Footer />
           </div>
         </ClientErrorBoundary>
       </body>

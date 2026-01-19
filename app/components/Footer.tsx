@@ -41,7 +41,7 @@ export function Footer() {
                 >
                   <div className="flex items-center gap-2 text-neutral-900 group-hover:text-neutral-600 transition-colors">
                     <Mail className="w-4 h-4" />
-                    <span className="text-sm font-medium">info@tikhaya-pamyat.ru</span>
+                    <span className="text-sm font-medium">info@tihiydom.com</span>
                   </div>
                   <span className="text-xs text-neutral-400 ml-6">Отдел заботы</span>
                 </a>
@@ -65,11 +65,10 @@ export function Footer() {
             <div className="space-y-4">
               <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-neutral-400">Данные</h3>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-neutral-900">ООО «Тихий дом</p>
+                <p className="text-sm font-medium text-neutral-900">ИП Пачулия Ричард Гарегинович</p>
                 <div className="font-mono text-xs text-neutral-500 space-y-1">
-                  <p>ИНН: 1111111111</p>
-                  <p>ОГРН: 1234567890123</p>
-                  <p>Лицензия № 2384-РБ</p>
+                  <p>ИНН: 773438344967</p>
+                  <p>ОГРН/ОГРНИП: 323774600033021</p>
                 </div>
               </div>
             </div>

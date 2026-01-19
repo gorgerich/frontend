@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { Info, Play, Sparkles } from "lucide-react";
+import { Info, Sparkles } from "lucide-react";
 import { AIChatModal } from "./AIChatModal";
 import { AboutServiceModal } from "./AboutServiceModal";
 import { DeathActionGuideModal } from "./DeathActionGuideModal";
@@ -56,7 +56,12 @@ export function TopButtons() {
           aria-label="Первые действия"
         >
           <div className="absolute inset-0 rounded-full bg-white/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <Play className="relative w-8 h-8 md:w-11 md:h-11 text-white fill-white/80 ml-0.5 group-hover:text-white group-hover:fill-white transition-colors" />
+          <span
+            className="relative text-white/90 group-hover:text-white transition-colors text-[34px] md:text-[48px] font-black leading-none"
+            aria-hidden="true"
+          >
+            ?
+          </span>
         </motion.button>
 
         {/* Правая кнопка: Создать с ИИ */}
