@@ -65,7 +65,7 @@ export function Footer() {
             <div className="space-y-4">
               <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-neutral-400">Данные</h3>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-neutral-900">ИП Пачулия Ричард Гарегинович</p>
+                <p className="text-sm font-medium text-neutral-900">ИП ПАЧУЛИЯ РИЧАРД ГАРЕГИНОВИЧ</p>
                 <div className="font-mono text-xs text-neutral-500 space-y-1">
                   <p>ИНН: 773438344967</p>
                   <p>ОГРН/ОГРНИП: 323774600033021</p>
