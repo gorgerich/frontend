@@ -9,12 +9,11 @@ export default function PayPage() {
   async function startPayment(method: "card" | "sbp") {
     setLoading(method);
 
-    const emailParam = new URLSearchParams(window.location.search).get("email") || "";
-    const customerEmail = emailParam.trim();
+    const customerEmail = (window.prompt("Введите email для получения подтверждения") || "").trim();
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail);
     if (!emailOk) {
       setLoading(null);
-      alert("Укажите корректный email через параметр ?email=...");
+      alert("Укажите корректный email.");
       return;
     }
 

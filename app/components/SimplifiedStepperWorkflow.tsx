@@ -2160,8 +2160,9 @@ handleInputChange("splitSchedule", "");
 
 await new Promise((r) => setTimeout(r, 400));
 
-if (!emailValue) {
-alert("Укажите email для получения договора и деталей заказа.");
+const emailOkLocal = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue);
+if (!emailOkLocal) {
+alert("Укажите корректный email для получения договора и деталей заказа.");
 return;
 }
 
@@ -2228,10 +2229,14 @@ body: JSON.stringify(payload),
 if (!res.ok) {
 const data = await res.json().catch(() => ({}));
 console.error("Order error:", data);
+if (res.status === 400) {
+alert("Укажите корректный email.");
+} else {
 alert(
 (data as any)?.error ||
-"Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой."
+"Ошибка отправки письма или создания заказа. Попробуйте ещё раз."
 );
+}
 return;
 }
 

@@ -1458,8 +1458,10 @@ export function StepperWorkflow({
   const handleConfirmBooking = async () => {
     try {
       const orderEmail = (formData.userEmail || "").trim();
-      if (!orderEmail) {
-        alert("Укажите email для получения подтверждения.");
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(orderEmail);
+      if (!emailOk) {
+        alert("Укажите корректный email для получения подтверждения.");
+        setIsSubmittingOrder(false);
         return;
       }
 
@@ -1518,7 +1520,12 @@ const orderData = await res.json().catch(() => ({} as any));
 
 if (!res.ok || orderData?.success !== true) {
   console.error("Ошибка при создании заказа", orderData);
-  alert("Не удалось оформить бронирование. Попробуйте ещё раз.");
+  if (res.status === 400) {
+    alert("Укажите корректный email.");
+  } else {
+    alert("Ошибка отправки письма или создания заказа. Попробуйте ещё раз.");
+  }
+  setIsSubmittingOrder(false);
   return;
 }
 

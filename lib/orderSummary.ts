@@ -170,6 +170,9 @@ const formatDateTimeSlot = (value?: {
   return "";
 };
 
+const isValidEmail = (value?: string) =>
+  !!value && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
 const pushItem = (items: OrderSummaryItem[], label: string, value?: string) => {
   if (!value) return;
   const trimmed = String(value).trim();
@@ -305,28 +308,13 @@ export function buildOrderSummary(
     pushItem(documentItems, "Согласие на обработку данных", "Да");
   }
   pushItem(documentItems, "Контактное лицо", data.clientName);
-  pushItem(documentItems, "Email клиента", data.clientEmail);
-  pushItem(documentItems, "Email для уведомлений", data.userEmail);
+  if (isValidEmail(data.clientEmail)) {
+    pushItem(documentItems, "Email клиента", data.clientEmail);
+  }
+  if (isValidEmail(data.userEmail)) {
+    pushItem(documentItems, "Email для уведомлений", data.userEmail);
+  }
   addSection("Документы", documentItems);
-
-  const totalItems: OrderSummaryItem[] = [];
-  if (typeof options.totalRub === "number") {
-    pushItem(totalItems, "Итого", formatRub(options.totalRub));
-  }
-  if (options.paymentPlan) {
-    const planLabel = PAYMENT_PLAN_LABELS[options.paymentPlan] || options.paymentPlan;
-    pushItem(totalItems, "План оплаты", planLabel);
-  }
-  if (typeof options.payNowRub === "number") {
-    pushItem(totalItems, "К оплате сейчас", formatRub(options.payNowRub));
-  }
-  if (options.splitSchedule && options.splitSchedule.length) {
-    const scheduleText = options.splitSchedule
-      .map((entry) => `${entry.title} — ${formatRub(entry.amountRub)}`)
-      .join("\n");
-    pushItem(totalItems, "График платежей", scheduleText);
-  }
-  addSection("Итоги", totalItems);
 
   const htmlFragment = sections
     .map((section) => {
