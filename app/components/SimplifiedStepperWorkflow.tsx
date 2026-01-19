@@ -35,6 +35,7 @@ Clock,
 import { cn } from "./ui/utils";
 import { SimpleCalendar } from "./SimpleCalendar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { buildOrderSummary } from "@/lib/orderSummary";
 import {
 calculateOrder,
 type CalculatorConfig,
@@ -2086,22 +2087,6 @@ className="mt-1"
 
 case 4: {
 // Шаг 5: Подтверждение и оплата
-const selectedLining = liningOptions.find(
-(option) => option.id === (safeFormData.liningColor || "satin-white")
-);
-
-const formatDateTime = (dt: { date?: Date; timeSlot?: TimeSlot }) =>
-formatDateTimeSlot(dt);
-
-const routeParts: string[] = [];
-if (safeFormData.hearseRoute?.morgue) routeParts.push("Морг");
-if (safeFormData.hearseRoute?.hall) routeParts.push("Зал прощания");
-if (safeFormData.hearseRoute?.church) routeParts.push("Церковь");
-if (safeFormData.hearseRoute?.cemetery) {
-routeParts.push(safeFormData.serviceType === "burial" ? "Кладбище" : "Крематорий");
-}
-const routeText = routeParts.length ? routeParts.join(" → ") : "Не выбран";
-
 const calcSplitSchedule = (total: number) => {
 const t = Math.max(0, Math.round(total || 0));
 const base = Math.floor(t / 4);
@@ -2140,6 +2125,23 @@ const emailOk = emailValue.includes("@");
 const canPay = totalRub > 0 && emailOk && cardOk && expOk && cvcOk;
 
 const breakdown = simplifiedSections;
+const cemeteryCategoryLabel =
+selectedCemeteryCategory === "standard"
+? "Стандарт"
+: selectedCemeteryCategory === "comfort"
+? "Комфорт"
+: selectedCemeteryCategory === "premium"
+? "Премиум"
+: undefined;
+const orderSummary = buildOrderSummary(safeFormData, {
+totalRub,
+paymentPlan: payPlan,
+payNowRub,
+splitSchedule,
+packageLabel: selectedPackage?.name,
+cemeteryCategoryLabel,
+});
+const summarySections = orderSummary.sections;
 
 const onPayClick = async () => {
 if (isSubmittingOrder || !canPay) return;
@@ -2266,98 +2268,19 @@ return (
 </div>
 
 {/* Формат */}
-<div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-<h4 className="text-sm text-gray-500 mb-3">Формат церемонии</h4>
+{summarySections.map((section) => (
+<div key={section.title} className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+<h4 className="text-sm text-gray-500 mb-3">{section.title}</h4>
 <div className="space-y-2 text-sm">
-<div className="flex justify-between">
-<span className="text-gray-600">Формат:</span>
-<span className="text-gray-900">
-{safeFormData.serviceType === "burial" ? "Захоронение" : "Кремация"}
-</span>
+{section.items.map((item, idx) => (
+<div key={`${section.title}-${idx}`} className="flex items-start justify-between gap-3">
+<span className="text-gray-600">{item.label}:</span>
+<span className="text-gray-900 text-right whitespace-pre-line">{item.value}</span>
 </div>
-<div className="flex justify-between">
-<span className="text-gray-600">Зал прощания:</span>
-<span className="text-gray-900">{safeFormData.hasHall ? "Да" : "Нет"}</span>
-</div>
-{safeFormData.hasHall && (
-<div className="flex justify-between">
-<span className="text-gray-600">Тип церемонии:</span>
-<span className="text-gray-900">
-{safeFormData.ceremonyType === "civil" && "Светская"}
-{safeFormData.ceremonyType === "religious" && "Религиозная"}
-{safeFormData.ceremonyType === "combined" && "Комбинированная"}
-</span>
-</div>
-)}
+))}
 </div>
 </div>
-
-{/* Логистика */}
-<div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-<h4 className="text-sm text-gray-500 mb-3">Логистика</h4>
-<div className="space-y-2 text-sm">
-<div className="flex justify-between">
-<span className="text-gray-600">
-{safeFormData.serviceType === "burial" ? "Кладбище:" : "Крематорий:"}
-</span>
-<span className="text-gray-900">{safeFormData.cemetery || "—"}</span>
-</div>
-<div className="flex justify-between">
-<span className="text-gray-600">Маршрут катафалка:</span>
-<span className="text-gray-900 text-right">{routeText}</span>
-</div>
-<div className="flex justify-between">
-<span className="text-gray-600">Забор тела:</span>
-<span className="text-gray-900">{formatDateTime(pickupDateTime)}</span>
-</div>
-<div className="flex justify-between">
-<span className="text-gray-600">Прощание:</span>
-<span className="text-gray-900">{formatDateTime(farewellDateTime)}</span>
-</div>
-<div className="flex justify-between">
-<span className="text-gray-600">
-{safeFormData.serviceType === "burial" ? "Захоронение:" : "Кремация:"}
-</span>
-<span className="text-gray-900">{formatDateTime(burialDateTime)}</span>
-</div>
-</div>
-</div>
-
-{/* Персонализация */}
-<div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-<h4 className="text-sm text-gray-500 mb-3">Персонализация</h4>
-<div className="space-y-2 text-sm">
-<div className="flex justify-between">
-<span className="text-gray-600">Цвет отделки:</span>
-<span className="text-gray-900">{selectedLining?.name || "—"}</span>
-</div>
-<div className="flex flex-col">
-<span className="text-gray-600 mb-1">Особые пожелания:</span>
-<span className="text-gray-900 whitespace-pre-line">
-{safeFormData.specialRequests || "—"}
-</span>
-</div>
-</div>
-</div>
-
-{/* Усопший */}
-<div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-<h4 className="text-sm text-gray-500 mb-3">Усопший</h4>
-<div className="space-y-2 text-sm">
-<div className="flex justify-between">
-<span className="text-gray-600">ФИО:</span>
-<span className="text-gray-900">{safeFormData.fullName || "—"}</span>
-</div>
-<div className="flex justify-between">
-<span className="text-gray-600">Дата рождения:</span>
-<span className="text-gray-900">{safeFormData.birthDate || "—"}</span>
-</div>
-<div className="flex justify-between">
-<span className="text-gray-600">Дата смерти:</span>
-<span className="text-gray-900">{safeFormData.deathDate || "—"}</span>
-</div>
-</div>
-</div>
+))}
 
 {/* СОСТАВ ЗАКАЗА */}
 <div className="bg-white border border-gray-200 rounded-[30px] p-5 shadow-sm">

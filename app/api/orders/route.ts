@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sendOrderEmail } from "@/lib/mailer";
+import { buildOrderSummary } from "@/lib/orderSummary";
 
 export const runtime = "nodejs";
 
@@ -371,9 +372,10 @@ function buildEmailHtml(
       `
     : "";
 
+  const servicesHeadingIndex = orderSummaryHtml ? 5 : 4;
   const servicesTableHtml = showServicesTable
     ? `
-    <h2 style="font-size:16px; margin:18px 0 8px;">4. Перечень услуг и стоимость</h2>
+    <h2 style="font-size:16px; margin:18px 0 8px;">${servicesHeadingIndex}. Перечень услуг и стоимость</h2>
 
     <table style="border-collapse:collapse; width:100%; font-size:14px; margin:0 0 16px;">
       <thead>
@@ -503,18 +505,76 @@ export async function POST(req: NextRequest) {
       console.log("Email breakdown sections:", breakdownSections);
     }
 
-    const orderSummaryHtml = buildOrderSummaryHtml(breakdownSections, totalRub);
+    const paymentPlan = bodyForEmail.formData?.paymentPlan;
+    const paidNowRaw = Number(bodyForEmail.formData?.paidNowRub);
+    const payNowRub = Number.isFinite(paidNowRaw) ? paidNowRaw : undefined;
+    let splitSchedule: Array<{ title: string; amountRub: number }> | undefined;
+    if (bodyForEmail.formData?.splitSchedule) {
+      try {
+        const parsed = JSON.parse(String(bodyForEmail.formData.splitSchedule));
+        if (Array.isArray(parsed)) {
+          splitSchedule = parsed
+            .map((entry) => ({
+              title: String(entry?.title || "").trim(),
+              amountRub: Number(entry?.amountRub || 0),
+            }))
+            .filter((entry) => entry.title && Number.isFinite(entry.amountRub));
+        }
+      } catch {
+        splitSchedule = undefined;
+      }
+    }
+
+    const packageLabel =
+      bodyForEmail.package?.name ??
+      (bodyForEmail.formData?.packageType && bodyForEmail.formData?.packageType !== "custom"
+        ? bodyForEmail.formData.packageType
+        : undefined);
+
+    const summary = buildOrderSummary(bodyForEmail.formData || {}, {
+      totalRub,
+      paymentPlan,
+      payNowRub,
+      splitSchedule,
+      packageLabel,
+    });
+
+    const orderSummaryHtml = summary.htmlFragment
+      ? `<h2 style="font-size:16px; margin:18px 0 8px;">4. Состав заказа</h2>${summary.htmlFragment}`
+      : "";
 
     const html = buildEmailHtml(bodyForEmail, services, totalRub, {
       orderSummaryHtml,
-      showServicesTable: !orderSummaryHtml,
+      showServicesTable: true,
     });
+
+    const notes = bodyForEmail.notes ?? bodyForEmail.formData?.specialRequests;
+    const textParts = [
+      "Договор-оферта и детали заказа",
+      "",
+      "Данные заказчика",
+      `Имя: ${bodyForEmail.customer?.name ?? bodyForEmail.userName ?? "не указано"}`,
+      `Email: ${bodyForEmail.customer?.email ?? bodyForEmail.userEmail ?? "не указан"}`,
+      `Телефон: ${bodyForEmail.customer?.phone ?? "не указан"}`,
+      "",
+      "Данные усопшего",
+      `Имя: ${bodyForEmail.deceased?.name ?? "не указано"}`,
+      `Дата рождения: ${bodyForEmail.deceased?.birthDate ?? "не указана"}`,
+      `Дата смерти: ${bodyForEmail.deceased?.deathDate ?? "не указана"}`,
+      `Степень родства: ${bodyForEmail.deceased?.relationship ?? "не указана"}`,
+      "",
+      "Состав заказа",
+      summary.plainText || "Данные не заполнены",
+      notes ? `\nДополнительные пожелания:\n${notes}` : "",
+    ];
+    const text = textParts.filter(Boolean).join("\n");
 
     try {
       await sendOrderEmail({
         to: customerEmail,
         subject: "Договор и детали заказа",
         html,
+        text,
         orderId: publicId,
       });
     } catch (e: any) {

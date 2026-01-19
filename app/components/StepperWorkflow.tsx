@@ -10,6 +10,7 @@ import { PersonalAccountModal } from "./PersonalAccountModal";
 import { SimpleCalendar } from "./SimpleCalendar";
 import { SimplifiedStepperWorkflow } from "./SimplifiedStepperWorkflow";
 import PaymentStep from "./PaymentStep";
+import { buildOrderSummary } from "@/lib/orderSummary";
 
 import { Stepper } from "./Stepper";
 import {
@@ -1556,7 +1557,7 @@ if (!payRes.ok || payData?.ok === false) {
 // TODO: fire payment_success only after a real payment confirmation callback.
 
 // 3) Редирект на страницу эмулятора оплаты
-alert("Оплата принята. Подтверждение отправлено на почту.");
+alert("Бронирование оформлено! Детали и договор отправлены на указанную электронную почту. К сожалению оплата не прошла, агент свяжется с вами в скором времени");
 return;
 
 
@@ -3007,6 +3008,35 @@ function formatRub(n: number) {
         const canPay = totalRub > 0 && emailOk && cardOk && expOk && cvcOk;
 
         const breakdown = calculateBreakdown();
+        const packageLabel = (() => {
+          if (!formData.packageType || formData.packageType === "custom") return undefined;
+          const list = formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES;
+          const pkg = list.find((item) => item.id === formData.packageType);
+          return pkg?.name || formData.packageType;
+        })();
+        const cemeteryCategoryLabel =
+          selectedCemeteryCategory === "standard"
+            ? "Стандарт"
+            : selectedCemeteryCategory === "comfort"
+              ? "Комфорт"
+              : selectedCemeteryCategory === "premium"
+                ? "Премиум"
+                : undefined;
+        const orderSummary = buildOrderSummary(formData, {
+          totalRub,
+          paymentPlan: payPlan,
+          payNowRub,
+          splitSchedule,
+          packageLabel,
+          cemeteryCategoryLabel,
+        });
+        const summarySections = orderSummary.sections;
+        const summaryEditStepMap: Record<string, number> = {
+          "Формат церемонии": 0,
+          "Логистика": 1,
+          "Атрибутика": 2,
+          "Документы": 3,
+        };
 
         const onPayClick = async () => {
           if (isSubmittingOrder) return;
@@ -3047,133 +3077,36 @@ function formatRub(n: number) {
           <div className="space-y-6">
             {/* КАРТОЧКИ ПРОВЕРКИ */}
             <div className="space-y-4">
-              <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm text-gray-500">Формат церемонии</h4>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => handleEditStep(0)} className="h-8 w-8 p-0">
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                </div>
+              {summarySections.map((section) => {
+                const editStep = summaryEditStepMap[section.title];
+                return (
+                  <div key={section.title} className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm text-gray-500">{section.title}</h4>
+                      {typeof editStep === "number" && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditStep(editStep)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
 
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Формат:</span>
-                    <span className="text-gray-900">{formData.serviceType === "burial" ? "Захоронение" : "Кремация"}</span>
+                    <div className="space-y-2 text-sm">
+                      {section.items.map((item, idx) => (
+                        <div key={`${section.title}-${idx}`} className="flex items-start justify-between gap-3">
+                          <span className="text-gray-600">{item.label}:</span>
+                          <span className="text-gray-900 text-right whitespace-pre-line">{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Зал прощания:</span>
-                    <span className="text-gray-900">{formData.hasHall ? "Да" : "Нет"}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm text-gray-500">Логистика</h4>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => handleEditStep(1)} className="h-8 w-8 p-0">
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">{formData.serviceType === "burial" ? "Кладбище:" : "Крематорий:"}</span>
-                    <span className="text-gray-900">{formData.cemetery || "—"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Катафалк:</span>
-                    <span className="text-gray-900">{formData.needsHearse ? "Да" : "Нет"}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm text-gray-500">Атрибутика</h4>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => handleEditStep(2)} className="h-8 w-8 p-0">
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <div className="space-y-2 text-sm">
-                  {(() => {
-                    const coffin = formData.coffinConfig?.coffin;
-                    const wreath = formData.coffinConfig?.wreath;
-
-                    const typeLabels: Record<string, string> = {
-                      artificial: "Искусственные цветы",
-                      composition: "Живая композиция",
-                    };
-                    const sizeLabels: Record<string, string> = {
-                      S: "Малый",
-                      M: "Средний",
-                      L: "Большой",
-                    };
-
-                    const items: string[] = [];
-                    if (coffin?.wood?.name) {
-                      const qty = Math.max(1, Number(coffin.quantity || 1));
-                      const qtySuffix = qty > 1 ? ` ×${qty}` : "";
-                      items.push(`Гроб: ${coffin.wood.name}${qtySuffix}`);
-                    }
-                    if (coffin?.lining?.name) {
-                      items.push(`Обивка: ${coffin.lining.name}`);
-                    }
-                    if (coffin?.hardware?.name) {
-                      items.push(`Фурнитура: ${coffin.hardware.name}`);
-                    }
-                    if (wreath) {
-                      const typeLabel = typeLabels[wreath.type || ""] || wreath.type || "";
-                      const sizeLabel = sizeLabels[wreath.size || ""] || wreath.size || "";
-                      const details = [typeLabel, sizeLabel].filter(Boolean).join(", ");
-                      const text = (wreath.text || "").trim();
-                      const qty = Math.max(1, Number(wreath.quantity || 1));
-                      let wreathLabel = details ? `Венок: ${details}` : "Венок";
-                      if (text) wreathLabel += `, "${text}"`;
-                      if (qty > 1) wreathLabel += ` ×${qty}`;
-                      items.push(wreathLabel);
-                    }
-
-                    if (!items.length) {
-                      return <span className="text-xs text-gray-500">Услуги не выбраны</span>;
-                    }
-
-                    return (
-                      <div className="space-y-1">
-                        {items.map((item) => (
-                          <div key={item} className="text-xs text-gray-900">
-                            • {item}
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-
-              <div className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm text-gray-500">Документы</h4>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => handleEditStep(3)} className="h-8 w-8 p-0">
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">ФИО:</span>
-                    <span className="text-gray-900">{formData.fullName || "—"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Дата рождения:</span>
-                    <span className="text-gray-900">{formData.birthDate || "—"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Дата смерти:</span>
-                    <span className="text-gray-900">{formData.deathDate || "—"}</span>
-                  </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
 
             {/* СОСТАВ ЗАКАЗА */}
