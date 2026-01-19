@@ -28,7 +28,16 @@ type BreakdownSection = {
 type OrderPayload = {
   customer?: { email?: string; name?: string; phone?: string };
   deceased?: { name?: string; age?: number; birthDate?: string; deathDate?: string; relationship?: string };
-  ceremony?: { type?: string; order?: string; date?: string; time?: string; place?: string; cemetery?: string; serviceType?: string };
+  ceremony?: {
+    type?: string;
+    order?: string;
+    date?: string;
+    time?: string;
+    timeSlot?: string;
+    place?: string;
+    cemetery?: string;
+    serviceType?: string;
+  };
   services?: ServiceItem[];
   notes?: string;
   breakdown?: Array<{
@@ -71,6 +80,30 @@ function toNumber(v: unknown): number | null {
 
 function formatRub(value: number) {
   return `${value.toLocaleString("ru-RU")} ₽`;
+}
+
+const TIME_SLOT_LABELS: Record<string, string> = {
+  morning: "Первая половина дня",
+  afternoon: "Вторая половина дня",
+  evening: "Вечер",
+  night: "Ночь",
+};
+
+function formatDateValue(value?: string | Date) {
+  if (!value) return undefined;
+  if (value instanceof Date) return value.toLocaleDateString("ru-RU");
+  const parsed = new Date(value);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed.toLocaleDateString("ru-RU");
+  }
+  return String(value);
+}
+
+function formatTimeSlotLabel(timeSlot?: string, time?: string) {
+  if (timeSlot && TIME_SLOT_LABELS[timeSlot]) return TIME_SLOT_LABELS[timeSlot];
+  if (timeSlot) return timeSlot;
+  if (time) return time;
+  return undefined;
 }
 
 function normalizeBreakdownSections(body: OrderPayload): BreakdownSection[] {
@@ -298,6 +331,13 @@ function buildEmailHtml(
 
   const ceremony = body.ceremony ?? {};
   const deceased = body.deceased ?? {};
+  const ceremonyDateLabel = formatDateValue(
+    ceremony.date ?? body.formData?.farewellDateTime?.date,
+  );
+  const ceremonyTimeLabel = formatTimeSlotLabel(
+    ceremony.timeSlot ?? body.formData?.farewellDateTime?.timeSlot,
+    ceremony.time ?? body.formData?.farewellDateTime?.time,
+  );
 
   const orderSummaryHtml = options?.orderSummaryHtml ?? "";
   const showServicesTable = options?.showServicesTable !== false;
@@ -389,8 +429,8 @@ function buildEmailHtml(
       Тип: ${escapeHtml(ceremony.type ?? body.formData?.ceremonyType ?? "не указан")}<br/>
       Формат / пакет: ${escapeHtml(ceremony.order ?? "не указан")}<br/>
       Кладбище: ${escapeHtml(ceremony.cemetery ?? body.formData?.cemetery ?? "не указано")}<br/>
-      Дата: ${escapeHtml(ceremony.date ?? "не указана")}<br/>
-      Время: ${escapeHtml(ceremony.time ?? "не указано")}<br/>
+      Дата: ${escapeHtml(ceremonyDateLabel ?? "не указана")}<br/>
+      Время: ${escapeHtml(ceremonyTimeLabel ?? "не указано")}<br/>
       Место: ${escapeHtml(ceremony.place ?? "не указано")}
     </p>
 

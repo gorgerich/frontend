@@ -265,30 +265,55 @@ const PACKAGES_CREMATION = [
   },
 ] as const;
 
-const PICKUP_TIME_SLOTS = [
-  ...Array.from({ length: 8 }, (_, i) => {
-    const hour = String(8 + i).padStart(2, "0");
-    return [`${hour}:00`, `${hour}:30`];
-  }).flat(),
-  "16:00",
+type TimeSlot = "morning" | "afternoon" | "evening" | "night";
+
+const TIME_SLOT_OPTIONS: Array<{ id: TimeSlot; label: string; range: string }> = [
+  { id: "morning", label: "Первая половина дня", range: "09:00–13:00" },
+  { id: "afternoon", label: "Вторая половина дня", range: "13:00–17:00" },
+  { id: "evening", label: "Вечер", range: "17:00–21:00" },
+  { id: "night", label: "Ночь", range: "21:00–09:00" },
 ];
 
-const PICKUP_TIME_SLOTS_SET = new Set(PICKUP_TIME_SLOTS);
+const TIME_SLOT_LABELS: Record<TimeSlot, string> = {
+  morning: "Первая половина дня",
+  afternoon: "Вторая половина дня",
+  evening: "Вечер",
+  night: "Ночь",
+};
 
-const normalizePickupDateTime = (
-  value?: { date?: string | Date; time?: string },
+const TIME_SLOT_IDS = new Set<TimeSlot>(TIME_SLOT_OPTIONS.map((slot) => slot.id));
+
+const inferTimeSlotFromTime = (time?: string): TimeSlot | undefined => {
+  if (!time) return undefined;
+  const [h] = time.split(":");
+  const hour = Number(h);
+  if (!Number.isFinite(hour)) return undefined;
+  if (hour >= 21 || hour < 9) return "night";
+  if (hour >= 17) return "evening";
+  if (hour >= 13) return "afternoon";
+  if (hour >= 9) return "morning";
+  return "night";
+};
+
+const normalizeDateTimeSlot = (
+  value?: { date?: string | Date; timeSlot?: TimeSlot; time?: string },
 ) => {
   const rawDate = value?.date;
   const parsedDate =
     rawDate instanceof Date ? rawDate : rawDate ? new Date(rawDate) : undefined;
   const date =
     parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate : undefined;
-  const time =
-    value?.time && PICKUP_TIME_SLOTS_SET.has(value.time)
-      ? value.time
-      : undefined;
-  return { date, time };
+  const timeSlot =
+    value?.timeSlot && TIME_SLOT_IDS.has(value.timeSlot)
+      ? value.timeSlot
+      : inferTimeSlotFromTime(value?.time);
+  return { date, timeSlot };
 };
+
+const formatDateTimeSlot = (value: { date?: Date; timeSlot?: TimeSlot }) =>
+  value.date && value.timeSlot
+    ? `${value.date.toLocaleDateString("ru-RU")} — ${TIME_SLOT_LABELS[value.timeSlot]}`
+    : "—";
 
 
 const additionalServices: AdditionalService[] = [
@@ -876,7 +901,9 @@ splitSchedule?: string;
 
     cemetery: string;
     selectedSlot: string;
-    pickupDateTime?: { date?: string | Date; time?: string };
+    pickupDateTime?: { date?: string | Date; timeSlot?: TimeSlot; time?: string };
+    farewellDateTime?: { date?: string | Date; timeSlot?: TimeSlot; time?: string };
+    burialDateTime?: { date?: string | Date; timeSlot?: TimeSlot; time?: string };
 
     needsHearse: boolean;
     hearseCategory: "standard" | "comfort" | "premium";
@@ -1258,9 +1285,9 @@ export function StepperWorkflow({
   };
 
   // ✅ КЛЮЧЕВОЕ: если выключили зал — чистим маршрут и время
-  const [farewellDateTime, setFarewellDateTime] = useState<{ date?: Date; time?: string }>({});
-  const [pickupDateTime, setPickupDateTime] = useState<{ date?: Date; time?: string }>({});
-  const [burialDateTime, setBurialDateTime] = useState<{ date?: Date; time?: string }>({});
+  const [farewellDateTime, setFarewellDateTime] = useState<{ date?: Date; timeSlot?: TimeSlot }>({});
+  const [pickupDateTime, setPickupDateTime] = useState<{ date?: Date; timeSlot?: TimeSlot }>({});
+  const [burialDateTime, setBurialDateTime] = useState<{ date?: Date; timeSlot?: TimeSlot }>({});
 
   const [showPickupDialog, setShowPickupDialog] = useState(false);
   const [showFarewellDialog, setShowFarewellDialog] = useState(false);
@@ -1279,7 +1306,9 @@ export function StepperWorkflow({
   const calculatorViewedRef = useRef(false);
   const contactsStartedRef = useRef(false);
 
-  const savedPickupDateTime = normalizePickupDateTime(formData.pickupDateTime);
+  const savedPickupDateTime = normalizeDateTimeSlot(formData.pickupDateTime);
+  const savedFarewellDateTime = normalizeDateTimeSlot(formData.farewellDateTime);
+  const savedBurialDateTime = normalizeDateTimeSlot(formData.burialDateTime);
   const activeHearseInfo = openHearseCategoryInfo
     ? HEARSE_CATEGORY_INFO[openHearseCategoryInfo]
     : null;
@@ -1293,11 +1322,27 @@ export function StepperWorkflow({
 
   useEffect(() => {
     if (currentStep !== 1) return;
-    if (pickupDateTime.date || pickupDateTime.time) return;
-    const normalized = normalizePickupDateTime(formData.pickupDateTime);
-    if (!normalized.date && !normalized.time) return;
+    if (pickupDateTime.date || pickupDateTime.timeSlot) return;
+    const normalized = normalizeDateTimeSlot(formData.pickupDateTime);
+    if (!normalized.date && !normalized.timeSlot) return;
     setPickupDateTime(normalized);
-  }, [currentStep, formData.pickupDateTime, pickupDateTime.date, pickupDateTime.time]);
+  }, [currentStep, formData.pickupDateTime, pickupDateTime.date, pickupDateTime.timeSlot]);
+
+  useEffect(() => {
+    if (currentStep !== 1) return;
+    if (farewellDateTime.date || farewellDateTime.timeSlot) return;
+    const normalized = normalizeDateTimeSlot(formData.farewellDateTime);
+    if (!normalized.date && !normalized.timeSlot) return;
+    setFarewellDateTime(normalized);
+  }, [currentStep, formData.farewellDateTime, farewellDateTime.date, farewellDateTime.timeSlot]);
+
+  useEffect(() => {
+    if (currentStep !== 1) return;
+    if (burialDateTime.date || burialDateTime.timeSlot) return;
+    const normalized = normalizeDateTimeSlot(formData.burialDateTime);
+    if (!normalized.date && !normalized.timeSlot) return;
+    setBurialDateTime(normalized);
+  }, [currentStep, formData.burialDateTime, burialDateTime.date, burialDateTime.timeSlot]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1426,10 +1471,19 @@ export function StepperWorkflow({
       const total = calculateTotal();
       const breakdown = calculateBreakdown();
 
+      const payloadFormData = {
+        ...formData,
+        pickupDateTime,
+        farewellDateTime,
+        burialDateTime,
+      };
+
+      const ceremonyDateTime = formData.hasHall ? farewellDateTime : burialDateTime;
+
       const payload = {
         userEmail: orderEmail,
         userName: (formData.clientName || formData.fullName || "").trim() || undefined,
-        formData,
+        formData: payloadFormData,
         total,
         breakdown,
         paymentMethod,
@@ -1445,6 +1499,10 @@ export function StepperWorkflow({
           order: formData.ceremonyOrder || undefined,
           serviceType: formData.serviceType || undefined,
           cemetery: formData.cemetery || undefined,
+          date: ceremonyDateTime.date
+            ? ceremonyDateTime.date.toLocaleDateString("ru-RU")
+            : undefined,
+          timeSlot: ceremonyDateTime.timeSlot,
         },
         notes: formData.specialRequests || undefined,
       };
@@ -1526,10 +1584,10 @@ return;
     if (workflowMode === "wizard") {
       if (currentStep === 1) {
         const hasLocation = Boolean(formData.cemetery);
-        const hasPickup = Boolean(pickupDateTime.date && pickupDateTime.time);
-        const hasBurial = Boolean(burialDateTime.date && burialDateTime.time);
+        const hasPickup = Boolean(pickupDateTime.date && pickupDateTime.timeSlot);
+        const hasBurial = Boolean(burialDateTime.date && burialDateTime.timeSlot);
         const hasFarewell = !formData.hasHall
-          || Boolean(farewellDateTime.date && farewellDateTime.time);
+          || Boolean(farewellDateTime.date && farewellDateTime.timeSlot);
         const hasTimes = hasPickup && hasBurial && hasFarewell;
         const routePoints = Object.values(formData.hearseRoute || {}).filter(Boolean).length;
         if (hasLocation && hasTimes) {
@@ -2007,14 +2065,14 @@ function formatRub(n: number) {
                       <span
                         className={cn(
                           pickupDateTime.date &&
-                            pickupDateTime.time
+                            pickupDateTime.timeSlot
                             ? "text-gray-900"
                             : "text-gray-600",
                         )}
                       >
                         {pickupDateTime.date &&
-                        pickupDateTime.time
-                          ? `${pickupDateTime.date.toLocaleDateString("ru-RU")} в ${pickupDateTime.time}`
+                        pickupDateTime.timeSlot
+                          ? formatDateTimeSlot(pickupDateTime)
                           : "Выбрать время забора"}
                       </span>
                     </Button>
@@ -2062,6 +2120,7 @@ function formatRub(n: number) {
                             setPickupDateTime({
                               ...pickupDateTime,
                               date,
+                              timeSlot: undefined,
                             })
                           }
                           
@@ -2080,49 +2139,38 @@ function formatRub(n: number) {
                                 Выберите удобный слот
                               </span>
                             </div>
-                            {pickupDateTime.time && (
+                            {pickupDateTime.timeSlot && (
                               <Badge
                                 variant="secondary"
                                 className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-900"
                               >
-                                {pickupDateTime.time}
+                                {TIME_SLOT_LABELS[pickupDateTime.timeSlot]}
                               </Badge>
                             )}
                           </div>
 
-                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
-                            {Array.from(
-                              { length: 24 },
-                              (_, i) => {
-                                const hour = i
-                                  .toString()
-                                  .padStart(2, "0");
-                                const times = [
-                                  `${hour}:00`,
-                                  `${hour}:30`,
-                                ];
-                                return times.map((time) => (
-                                  <button
-                                    key={time}
-                                    onClick={() =>
-                                      setPickupDateTime({
-                                        ...pickupDateTime,
-                                        time,
-                                      })
-                                    }
-                                    className={cn(
-                                      "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
-                                      pickupDateTime.time ===
-                                        time
-                                        ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
-                                        : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105",
-                                    )}
-                                  >
-                                    {time}
-                                  </button>
-                                ));
-                              },
-                            ).flat()}
+                          <div className="grid grid-cols-2 sm:grid-cols-2 gap-2">
+                            {TIME_SLOT_OPTIONS.map((slot) => (
+                              <button
+                                key={slot.id}
+                                type="button"
+                                onClick={() =>
+                                  setPickupDateTime({
+                                    ...pickupDateTime,
+                                    timeSlot: slot.id,
+                                  })
+                                }
+                                className={cn(
+                                  "px-3 py-3 rounded-xl text-left text-xs font-medium transition-all duration-200 border",
+                                  pickupDateTime.timeSlot === slot.id
+                                    ? "bg-gray-900 text-white border-gray-900 shadow-md scale-[1.02]"
+                                    : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50",
+                                )}
+                              >
+                                <div className="text-sm font-semibold">{slot.label}</div>
+                                <div className="text-[11px] opacity-70 mt-1">{slot.range}</div>
+                              </button>
+                            ))}
                           </div>
                         </div>
                       )}
@@ -2130,13 +2178,14 @@ function formatRub(n: number) {
                     </div>
                     <div className="shrink-0 pt-4 border-t border-gray-100 bg-white">
                       <Button
-                        onClick={() =>
-                          setShowPickupDialog(false)
-                        }
+                        onClick={() => {
+                          handleInputChange("pickupDateTime", pickupDateTime);
+                          setShowPickupDialog(false);
+                        }}
                         className="w-full h-12 rounded-full text-base bg-gray-900 hover:bg-gray-800 shadow-lg shadow-gray-900/20 transition-all active:scale-[0.98]"
                         disabled={
                           !pickupDateTime.date ||
-                          !pickupDateTime.time
+                          !pickupDateTime.timeSlot
                         }
                       >
                         Подтвердить
@@ -2154,9 +2203,9 @@ function formatRub(n: number) {
                     <DialogTrigger asChild>
                       <Button variant="outline" className="w-full justify-start h-12 bg-white border-gray-200 hover:bg-gray-50 shadow-sm">
                         <Church className="h-4 w-4 mr-3 text-gray-500" />
-                        <span className={cn(farewellDateTime.date && farewellDateTime.time ? "text-gray-900" : "text-gray-600")}>
-                          {farewellDateTime.date && farewellDateTime.time
-                            ? `${farewellDateTime.date.toLocaleDateString("ru-RU")} в ${farewellDateTime.time}`
+                        <span className={cn(farewellDateTime.date && farewellDateTime.timeSlot ? "text-gray-900" : "text-gray-600")}>
+                          {farewellDateTime.date && farewellDateTime.timeSlot
+                            ? formatDateTimeSlot(farewellDateTime)
                             : "Выбрать время прощания"}
                         </span>
                       </Button>
@@ -2172,7 +2221,13 @@ function formatRub(n: number) {
                         <div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
                           <SimpleCalendar
                             selected={farewellDateTime.date}
-                            onSelect={(date) => setFarewellDateTime({ ...farewellDateTime, date })}
+                            onSelect={(date) =>
+                              setFarewellDateTime({
+                                ...farewellDateTime,
+                                date,
+                                timeSlot: undefined,
+                              })
+                            }
                             className="mx-auto w-full"
                           />
                         </div>
@@ -2188,37 +2243,38 @@ function formatRub(n: number) {
                                   Выберите удобный слот
                                 </span>
                               </div>
-                              {farewellDateTime.time && (
+                              {farewellDateTime.timeSlot && (
                                 <Badge
                                   variant="secondary"
                                   className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-900"
                                 >
-                                  {farewellDateTime.time}
+                                  {TIME_SLOT_LABELS[farewellDateTime.timeSlot]}
                                 </Badge>
                               )}
                             </div>
 
-                            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
-                              {Array.from({ length: 24 }, (_, i) => i)
-                                .flatMap((i) => {
-                                  const hour = i.toString().padStart(2, "0");
-                                  return [`${hour}:00`, `${hour}:30`];
-                                })
-                                .map((time) => (
-                                  <button
-                                    key={time}
-                                    type="button"
-                                    onClick={() => setFarewellDateTime({ ...farewellDateTime, time })}
-                                    className={cn(
-                                      "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
-                                      farewellDateTime.time === time
-                                        ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
-                                        : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105",
-                                    )}
-                                  >
-                                    {time}
-                                  </button>
-                                ))}
+                            <div className="grid grid-cols-2 sm:grid-cols-2 gap-2">
+                              {TIME_SLOT_OPTIONS.map((slot) => (
+                                <button
+                                  key={slot.id}
+                                  type="button"
+                                  onClick={() =>
+                                    setFarewellDateTime({
+                                      ...farewellDateTime,
+                                      timeSlot: slot.id,
+                                    })
+                                  }
+                                  className={cn(
+                                    "px-3 py-3 rounded-xl text-left text-xs font-medium transition-all duration-200 border",
+                                    farewellDateTime.timeSlot === slot.id
+                                      ? "bg-gray-900 text-white border-gray-900 shadow-md scale-[1.02]"
+                                      : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50",
+                                  )}
+                                >
+                                  <div className="text-sm font-semibold">{slot.label}</div>
+                                  <div className="text-[11px] opacity-70 mt-1">{slot.range}</div>
+                                </button>
+                              ))}
                             </div>
                           </div>
                         )}
@@ -2227,9 +2283,12 @@ function formatRub(n: number) {
                       <div className="shrink-0 pt-4 border-t border-gray-100 bg-white">
                         <Button
                           type="button"
-                          onClick={() => setShowFarewellDialog(false)}
+                          onClick={() => {
+                            handleInputChange("farewellDateTime", farewellDateTime);
+                            setShowFarewellDialog(false);
+                          }}
                           className="w-full h-12 rounded-full text-base bg-gray-900 hover:bg-gray-800"
-                          disabled={!farewellDateTime.date || !farewellDateTime.time}
+                          disabled={!farewellDateTime.date || !farewellDateTime.timeSlot}
                         >
                           <Check className="h-4 w-4 mr-2" />
                           Подтвердить выбор
@@ -2247,9 +2306,9 @@ function formatRub(n: number) {
                   <DialogTrigger asChild>
                     <Button variant="outline" className="w-full justify-start h-12 bg-white border-gray-200 hover:bg-gray-50 shadow-sm">
                       <Clock className="h-4 w-4 mr-3 text-gray-500" />
-                      <span className={cn(burialDateTime.date && burialDateTime.time ? "text-gray-900" : "text-gray-600")}>
-                        {burialDateTime.date && burialDateTime.time
-                          ? `${burialDateTime.date.toLocaleDateString("ru-RU")} в ${burialDateTime.time}`
+                      <span className={cn(burialDateTime.date && burialDateTime.timeSlot ? "text-gray-900" : "text-gray-600")}>
+                        {burialDateTime.date && burialDateTime.timeSlot
+                          ? formatDateTimeSlot(burialDateTime)
                           : "Выбрать время"}
                       </span>
                     </Button>
@@ -2267,7 +2326,13 @@ function formatRub(n: number) {
                       <div className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
                         <SimpleCalendar
                           selected={burialDateTime.date}
-                          onSelect={(date) => setBurialDateTime({ ...burialDateTime, date })}
+                          onSelect={(date) =>
+                            setBurialDateTime({
+                              ...burialDateTime,
+                              date,
+                              timeSlot: undefined,
+                            })
+                          }
                           className="mx-auto w-full"
                         />
                       </div>
@@ -2283,30 +2348,31 @@ function formatRub(n: number) {
                                 Выберите удобный слот
                               </span>
                             </div>
-                            {burialDateTime.time && (
+                            {burialDateTime.timeSlot && (
                               <Badge
                                 variant="secondary"
                                 className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-900"
                               >
-                                {burialDateTime.time}
+                                {TIME_SLOT_LABELS[burialDateTime.timeSlot]}
                               </Badge>
                             )}
                           </div>
 
-                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
-                            {PICKUP_TIME_SLOTS.map((time) => (
+                          <div className="grid grid-cols-2 sm:grid-cols-2 gap-2">
+                            {TIME_SLOT_OPTIONS.map((slot) => (
                               <button
-                                key={time}
+                                key={slot.id}
                                 type="button"
-                                onClick={() => setBurialDateTime({ ...burialDateTime, time })}
+                                onClick={() => setBurialDateTime({ ...burialDateTime, timeSlot: slot.id })}
                                 className={cn(
-                                  "px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
-                                  burialDateTime.time === time
-                                    ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
-                                    : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50 hover:scale-105",
+                                  "px-3 py-3 rounded-xl text-left text-xs font-medium transition-all duration-200 border",
+                                  burialDateTime.timeSlot === slot.id
+                                    ? "bg-gray-900 text-white border-gray-900 shadow-md scale-[1.02]"
+                                    : "bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50",
                                 )}
                               >
-                                {time}
+                                <div className="text-sm font-semibold">{slot.label}</div>
+                                <div className="text-[11px] opacity-70 mt-1">{slot.range}</div>
                               </button>
                             ))}
                           </div>
@@ -2316,9 +2382,12 @@ function formatRub(n: number) {
                     <div className="shrink-0 pt-4 border-t border-gray-100 bg-white">
                       <Button
                         type="button"
-                        onClick={() => setShowBurialDialog(false)}
+                        onClick={() => {
+                          handleInputChange("burialDateTime", burialDateTime);
+                          setShowBurialDialog(false);
+                        }}
                         className="w-full h-12 rounded-full text-base bg-gray-900 hover:bg-gray-800"
-                        disabled={!burialDateTime.date || !burialDateTime.time}
+                        disabled={!burialDateTime.date || !burialDateTime.timeSlot}
                       >
                         Подтвердить
                       </Button>
