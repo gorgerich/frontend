@@ -40,7 +40,7 @@ export default function MockCheckoutUI({
   function onPay() {
     setLoading(true);
     setTimeout(() => {
-      alert("Оплата прошла успешно");
+      alert("Бронирование оформлено! Детали и договор отправлены на указанную электронную почту. К сожалению оплата не прошла, агент свяжется с вами в скором времени");
       router.push("/");
     }, 800);
   }

@@ -48,8 +48,9 @@ export function PackagesSelection({
               <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
                 {pkg.name}
               </h3>
-              <div className="flex items-start justify-center gap-1 text-gray-900">
-                <span className="text-5xl font-light tracking-tighter">
+              <div className="flex items-start justify-center gap-1 text-gray-900 whitespace-nowrap">
+                <span className="text-5xl font-light tracking-tighter whitespace-nowrap">
+                  <span className="text-2xl font-medium align-baseline">от</span>{" "}
                   {pkg.price.toLocaleString("ru-RU")}
                 </span>
                 <span className="text-xl font-light mt-1">₽</span>

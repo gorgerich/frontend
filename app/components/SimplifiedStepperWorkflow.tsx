@@ -30,6 +30,9 @@ ChevronDown,
 ChevronLeft,
 ChevronRight,
 Church,
+Car,
+FileText,
+Package,
 Clock,
 } from "lucide-react";
 import { cn } from "./ui/utils";
@@ -47,6 +50,19 @@ getTrackingSessionId,
 } from "./calculationUtils";
 
 import type { ImgHTMLAttributes } from "react";
+
+const YM_COUNTER_ID = 106219376;
+
+const reachMetrikaGoal = (goal: string, params?: Record<string, any>) => {
+  if (typeof window === "undefined") return;
+  const ymFn = (window as any).ym;
+  if (typeof ymFn !== "function") return;
+  try {
+    ymFn(YM_COUNTER_ID, "reachGoal", goal, params);
+  } catch (_) {
+    // best-effort: ignore analytics failures
+  }
+};
 
 function SafeImg(
   props: ImgHTMLAttributes<HTMLImageElement> & { fallbackSrc?: string }
@@ -965,6 +981,7 @@ useEffect(() => {
     { flow: trackingFlow },
     `${trackingSessionId}:${trackingFlow}:step3`,
   );
+  reachMetrikaGoal("logistics_started");
 }, [currentStep]);
 
 useEffect(() => {
@@ -2127,11 +2144,11 @@ const canPay = totalRub > 0 && emailOk && cardOk && expOk && cvcOk;
 const breakdown = simplifiedSections;
 const cemeteryCategoryLabel =
 selectedCemeteryCategory === "standard"
-? "Стандарт"
+? "Тихая церемония"
 : selectedCemeteryCategory === "comfort"
-? "Комфорт"
+? "Традиционное прощание"
 : selectedCemeteryCategory === "premium"
-? "Премиум"
+? "Особое внимание"
 : undefined;
 const orderSummary = buildOrderSummary(safeFormData, {
 totalRub,
@@ -2264,13 +2281,6 @@ setIsSubmittingOrder(false);
 
 return (
 <div className="space-y-6">
-<div className="bg-green-50 border border-green-200 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
-<CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-<div>
-<h3 className="text-green-900 mb-2">Все данные заполнены</h3>
-<p className="text-sm text-green-700">Пожалуйста, проверьте информацию перед бронированием.</p>
-</div>
-</div>
 
 {/* Формат */}
 {summarySections.map((section) => (
@@ -2559,6 +2569,39 @@ currentStep={currentStep}
 completedSteps={completedSteps}
 onStepClick={handleStepClick}
 />
+
+<div className="text-center mb-2 mt-4">
+  <div className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55">
+    <div className="flex gap-4 items-start">
+      <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
+        {currentStep === 0 && <Package className="h-5 w-5" />}
+        {currentStep === 1 && <Church className="h-5 w-5" />}
+        {currentStep === 2 && <Car className="h-5 w-5" />}
+        {currentStep === 3 && <FileText className="h-5 w-5" />}
+        {currentStep === 4 && <CheckCircle2 className="h-5 w-5" />}
+      </div>
+      <div className="space-y-1.5 text-left">
+        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
+          <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
+            {currentStep + 1}
+          </span>
+          {currentStep === 0 && "Этап 1: Атрибутика"}
+          {currentStep === 1 && "Этап 2: Формат"}
+          {currentStep === 2 && "Этап 3: Логистика"}
+          {currentStep === 3 && "Этап 4: Документы"}
+          {currentStep === 4 && "Этап 5: Итог"}
+        </h4>
+        <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
+          {currentStep === 0 && "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности."}
+          {currentStep === 1 && "Настройте формат прощания: выберите тип церемонии (светская или религиозная) и длительность аренды зала."}
+          {currentStep === 2 && "Спланируйте логистику: укажите дату и время прощания, выберите транспорт для усопшего и гостей."}
+          {currentStep === 3 && "Заполните документы: укажите паспортные данные заявителя и информацию об усопшем для оформления."}
+          {currentStep === 4 && "Проверьте и подтвердите: внимательно ознакомьтесь со всеми деталями заказа перед финальным оформлением."}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
 </CardHeader>
 
 <CardContent className="px-6 sm:px-8 pb-8">

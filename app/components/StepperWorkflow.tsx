@@ -104,6 +104,18 @@ import {
 
 type PaymentMethod = "card" | "sbp" | "installment";
 
+const YM_COUNTER_ID = 106219376;
+
+const reachMetrikaGoal = (goal: string, params?: Record<string, any>) => {
+  if (typeof window === "undefined") return;
+  const ymFn = (window as any).ym;
+  if (typeof ymFn !== "function") return;
+  try {
+    ymFn(YM_COUNTER_ID, "reachGoal", goal, params);
+  } catch (_) {
+    // best-effort: ignore analytics failures
+  }
+};
 
 const steps = [
   { id: "format", label: "Формат", description: "Выбор церемонии" },
@@ -157,43 +169,62 @@ const HEARSE_CATEGORY_INFO = {
 const PACKAGES = [
   {
     id: "basic",
-    name: "Базовый",
+    name: "Тихая церемония",
     price: 200000,
     description: "Необходимый минимум",
-    features: ["Гроб сосна", "Венок искусственный", "Базовая отделка", "Катафалк", "Носильщики"],
+    features: ["Оформление документов",
+      "Помощь в оформлении захоронения",
+      "Базовая подготовка тела",
+      "Перевозка к месту прощания/захоронения",
+      "Носильщики",
+      "Катафалк (стандарт)",
+      "Гроб для захоронения (сосна)",
+      "Венок (искусственный)",
+      "Базовая отделка (обивка)",
+      "Зал прощания",
+      "Транспорт для близких (до 5 человек)",
+      "Координатор в день церемонии"],
     popular: false,
   },
   {
     id: "standard",
-    name: "Стандарт",
+    name: "Традиционное прощание",
     price: 400000,
     description: "Оптимальный вариант",
     features: [
-      "Гроб дуб",
-      "Живые цветы",
-      "Бархатная отделка",
-      "Катафалк",
+      "Оформление документов",
+      "Помощь в оформлении захоронения",
+      "Базовая подготовка тела",
+      "Перевозка к месту прощания/захоронения",
       "Носильщики",
-      "Зал прощания 60 мин",
-      "Транспорт для близких",
+      "Катафалк (комфорт)",
+      "Гроб для захоронения (дуб)",
+      "Венок (искусственный/живая композиция)",
+      "Улучшенная отделка (обивка)",
+      "Зал прощания",
+      "Транспорт для близких (до 10 человек)",
+      "Координатор в день церемонии",
     ],
     popular: true,
   },
   {
     id: "premium",
-    name: "Премиум",
+    name: "Особое внимание",
     price: 600000,
     description: "Максимальный комфорт",
     features: [
-      "Гроб красное дерево",
-      "Премиум композиция",
-      "Шелковая отделка",
-      "Катафалк премиум",
+      "Оформление документов",
+      "Помощь в оформлении захоронения",
+      "Базовая подготовка тела",
+      "Перевозка к месту прощания/захоронения,",
       "Носильщики",
-      "Зал прощания 90 мин",
-      "Транспорт для близких",
-      "Координатор церемонии",
-      "Музыкальное сопровождение",
+      "Катафалк (премиальный)",
+      "Гроб для захоронения (ценное дерево)",
+      "Венок (премиальная флористика)",
+      "Премиальная отделка (обивка)",
+      "Зал прощания",
+      "Транспорт для близких повышенного комфорта (до 15 человек)",
+      "Старший координатор церемонии",
     ],
     popular: false,
   },
@@ -212,7 +243,7 @@ const PACKAGES_BURIAL = PACKAGES;
 const PACKAGES_CREMATION = [
   {
     id: "cremation-standard",
-    name: "Стандарт",
+    name: "Тихая церемония",
     price: 35000,
     description: "Базовый комплект услуг для кремации",
     features: [
@@ -227,7 +258,7 @@ const PACKAGES_CREMATION = [
   },
   {
     id: "cremation-comfort",
-    name: "Комфорт",
+    name: "Традиционное прощание",
     price: 75000,
     description: "Расширенный набор услуг для кремации",
     features: [
@@ -245,7 +276,7 @@ const PACKAGES_CREMATION = [
   },
   {
     id: "cremation-premium",
-    name: "Премиум",
+    name: "Особое внимание",
     price: 120000,
     description: "Полный спектр услуг премиум класса",
     features: [
@@ -1251,6 +1282,7 @@ export function StepperWorkflow({
       { flow: trackingFlow },
       `${trackingSessionId}:${trackingFlow}:step4`,
     );
+    reachMetrikaGoal("logistics_started");
   }, [workflowMode, currentStep]);
 
   useEffect(() => {
@@ -3615,7 +3647,7 @@ function formatRub(n: number) {
                           ))}
                         </div>
                         <div className="mt-3 text-xs text-gray-600">
-                          Остаток будет списываться автоматически по графику. Это UX-режим; позже подключим реальный BNPL.
+                          Остаток будет списываться автоматически по графику.
                         </div>
                       </div>
                     )}
@@ -3762,12 +3794,24 @@ function formatRub(n: number) {
                   </div>
                 </div>
               ) : (
-                <CardDescription
-                  style={{ color: "rgba(255, 255, 255, 1)" }}
-                  className="text-[15px] font-sans max-w-xl mx-auto leading-relaxed text-left md:!text-white"
-                >
-                  Выберите оптимальный пакет услуг под ваши задачи
-                </CardDescription>
+                <div className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55">
+                  <div className="flex gap-4 items-start">
+                    <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
+                      <Package className="h-5 w-5" />
+                    </div>
+                    <div className="space-y-1.5 text-left">
+                      <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
+                        <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
+                          1
+                        </span>
+                        Выбор сценария
+                      </h4>
+                      <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
+                        Выберите сценарий: сдержанный, традиционный или расширенный. Вы всегда можете изменить детали позже
+                      </p>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </div>

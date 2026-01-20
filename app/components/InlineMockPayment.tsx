@@ -18,6 +18,8 @@ declare global {
   }
 }
 
+const YM_COUNTER_ID = 106219376;
+
 function rub(n: number) {
   return n.toLocaleString("ru-RU");
 }
@@ -51,7 +53,7 @@ function trackGTM(event: string, params: Record<string, any> = {}) {
 function trackYM(goal: string, params: Record<string, any> = {}) {
   if (typeof window === "undefined") return;
   const idRaw = process.env.NEXT_PUBLIC_YM_ID;
-  const id = idRaw ? Number(idRaw) : NaN;
+  const id = Number.isFinite(Number(idRaw)) ? Number(idRaw) : YM_COUNTER_ID;
   if (!Number.isFinite(id)) return;
   if (typeof window.ym !== "function") return;
   try {
@@ -79,6 +81,11 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
   const trackingSessionId = getTrackingSessionId();
   const lastPayPlanRef = useRef<PayPlan>(payPlan);
   const payPlanSelectionSeqRef = useRef(0);
+  const payPlanGoalMap: Record<PayPlan, string> = {
+    full: "payment_option_full",
+    deposit: "payment_option_deposit_5",
+    split: "payment_option_split",
+  };
 
   const [cardNumber, setCardNumber] = useState("");
   const [holder, setHolder] = useState("IVAN IVANOV");
@@ -136,6 +143,11 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
     if (lastPayPlanRef.current === payPlan) return;
     lastPayPlanRef.current = payPlan;
     payPlanSelectionSeqRef.current += 1;
+    trackYM(payPlanGoalMap[payPlan], {
+      option: payPlan,
+      pay_now: payNowRub,
+      total: totalAmount,
+    });
     trackEvent(
       "pay_plan_selected",
       {
