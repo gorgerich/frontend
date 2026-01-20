@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -20,6 +20,15 @@ price?: number;
 interface UnifiedCoffinConfiguratorProps {
 onConfirm?: (data: any) => void;
 onChange?: (data: any) => void;
+initialSelection?: {
+  woodId?: string;
+  liningId?: string;
+  hardwareId?: string;
+  wreathType?: string;
+  wreathSize?: string;
+  wreathText?: string;
+  wreathQuantity?: number;
+};
 }
 
 /**
@@ -41,7 +50,7 @@ if (target.src !== fallbackSrc) target.src = fallbackSrc;
 );
 }
 
-export function UnifiedCoffinConfigurator({ onConfirm, onChange }: UnifiedCoffinConfiguratorProps) {
+export function UnifiedCoffinConfigurator({ onConfirm, onChange, initialSelection }: UnifiedCoffinConfiguratorProps) {
 const [activeTab, setActiveTab] = useState<'coffin' | 'wreath'>('coffin');
 
 // Состояние для гроба
@@ -55,6 +64,8 @@ const [wreathType, setWreathType] = useState('artificial');
 const [wreathSize, setWreathSize] = useState('M');
 const [wreathText, setWreathText] = useState('');
 const [wreathQuantity, setWreathQuantity] = useState(1);
+const didInitSelectionRef = useRef(false);
+const onChangeRef = useRef(onChange);
 
 // Опции материалов гроба
 const woodOptions = [
@@ -213,6 +224,45 @@ const wreathSizes = [
 { id: 'L', name: 'Большой', price: 2500 },
 ];
 
+useEffect(() => {
+if (didInitSelectionRef.current) return;
+if (!initialSelection) return;
+
+if (initialSelection.woodId && woodOptions.some((item) => item.id === initialSelection.woodId)) {
+  setSelectedWood(initialSelection.woodId);
+}
+if (
+  initialSelection.liningId &&
+  liningOptions.some((item) => item.id === initialSelection.liningId)
+) {
+  setSelectedLining(initialSelection.liningId);
+}
+if (
+  initialSelection.hardwareId &&
+  hardwareOptions.some((item) => item.id === initialSelection.hardwareId)
+) {
+  setSelectedHardware(initialSelection.hardwareId);
+}
+if (initialSelection.wreathType && wreathOptions.some((item) => item.id === initialSelection.wreathType)) {
+  setWreathType(initialSelection.wreathType);
+}
+if (initialSelection.wreathSize && wreathSizes.some((item) => item.id === initialSelection.wreathSize)) {
+  setWreathSize(initialSelection.wreathSize);
+}
+if (typeof initialSelection.wreathText === 'string') {
+  setWreathText(initialSelection.wreathText);
+}
+if (typeof initialSelection.wreathQuantity === 'number') {
+  setWreathQuantity(Math.max(1, Math.round(initialSelection.wreathQuantity)));
+}
+
+didInitSelectionRef.current = true;
+}, [initialSelection, woodOptions, liningOptions, hardwareOptions, wreathOptions, wreathSizes]);
+
+useEffect(() => {
+  onChangeRef.current = onChange;
+}, [onChange]);
+
 // Расчет цены
 const getCoffinPrice = () => {
 const basePrice = 15000;
@@ -272,9 +322,9 @@ wreathQuantity,
 );
 
 useEffect(() => {
-if (!onChange) return;
-onChange(configData);
-}, [configData, onChange]);
+if (!onChangeRef.current) return;
+onChangeRef.current(configData);
+}, [configData]);
 
 const handleConfirm = () => {
 onConfirm?.(configData);

@@ -284,6 +284,88 @@ const TIME_SLOT_LABELS: Record<TimeSlot, string> = {
 
 const TIME_SLOT_IDS = new Set<TimeSlot>(TIME_SLOT_OPTIONS.map((slot) => slot.id));
 
+type AttributesPresetId = "minimal" | "recommended" | "extended";
+
+const WOOD_ID_BY_NAME: Record<string, string> = {
+  "Сосна": "pine",
+  "Дуб": "oak",
+  "Элитное дерево": "elite",
+};
+
+const LINING_ID_BY_NAME: Record<string, string> = {
+  "Атлас белый": "satin-white",
+  "Шелк кремовый": "silk-cream",
+  "Бархат бордовый": "velvet-burgundy",
+};
+
+const HARDWARE_ID_BY_NAME: Record<string, string> = {
+  "Латунь": "brass",
+  "Серебро": "silver",
+  "Золото": "gold",
+};
+
+const DEFAULT_WREATH_PRESET = {
+  type: "artificial",
+  size: "M",
+  text: "",
+  quantity: 1,
+  price: 4500,
+};
+
+const ATTRIBUTES_PRESETS: Array<{
+  id: AttributesPresetId;
+  badge: string;
+  title: string;
+  priceText: string;
+  imageSrc: string;
+  bullets: string[];
+  coffin: {
+    wood: { id: string; name: string; price: number };
+    lining: { id: string; name: string; price: number };
+    hardware: { id: string; name: string; price: number };
+  };
+}> = [
+  {
+    id: "minimal",
+    badge: "Самый доступный",
+    title: "Минимальный набор",
+    priceText: "25 000 ₽",
+    imageSrc: "/images/coffin/previews/pine-atlas.jpg",
+    bullets: ["Гроб из сосны", "Атлас белый", "Фурнитура латунь"],
+    coffin: {
+      wood: { id: "pine", name: "Сосна", price: 0 },
+      lining: { id: "satin-white", name: "Атлас белый", price: 0 },
+      hardware: { id: "brass", name: "Латунь", price: 0 },
+    },
+  },
+  {
+    id: "recommended",
+    badge: "Самый популярный",
+    title: "Рекомендуемый набор",
+    priceText: "45 000 ₽",
+    imageSrc: "/images/coffin/previews/oak-silk-cream.jpg",
+    bullets: ["Гроб из дуба", "Шелк кремовый", "Фурнитура серебро"],
+    coffin: {
+      wood: { id: "oak", name: "Дуб", price: 20000 },
+      lining: { id: "silk-cream", name: "Шелк кремовый", price: 5000 },
+      hardware: { id: "silver", name: "Серебро", price: 8000 },
+    },
+  },
+  {
+    id: "extended",
+    badge: "Долговечный материал",
+    title: "Расширенный набор",
+    priceText: "95 000 ₽",
+    imageSrc: "/images/coffin/previews/elite-velvet-burgundy.jpg",
+    bullets: ["Элитное дерево", "Бархат бордовый", "Фурнитура золото"],
+    coffin: {
+      wood: { id: "elite", name: "Элитное дерево", price: 50000 },
+      lining: { id: "velvet-burgundy", name: "Бархат бордовый", price: 7500 },
+      hardware: { id: "gold", name: "Золото", price: 15000 },
+    },
+  },
+];
+
 const inferTimeSlotFromTime = (time?: string): TimeSlot | undefined => {
   if (!time) return undefined;
   const [h] = time.split(":");
@@ -1293,6 +1375,11 @@ export function StepperWorkflow({
   const [showPickupDialog, setShowPickupDialog] = useState(false);
   const [showFarewellDialog, setShowFarewellDialog] = useState(false);
   const [showBurialDialog, setShowBurialDialog] = useState(false);
+
+  const [attributesMode, setAttributesMode] = useState<"preset" | "custom">("preset");
+  const [selectedAttributesPreset, setSelectedAttributesPreset] =
+    useState<AttributesPresetId>("recommended");
+  const presetInitializedRef = useRef(false);
   const [isHearseInfoOpen, setIsHearseInfoOpen] = useState(false);
   const [openHearseCategoryInfo, setOpenHearseCategoryInfo] = useState<
     "standard" | "comfort" | "premium" | null
@@ -1344,6 +1431,120 @@ export function StepperWorkflow({
     if (!normalized.date && !normalized.timeSlot) return;
     setBurialDateTime(normalized);
   }, [currentStep, formData.burialDateTime, burialDateTime.date, burialDateTime.timeSlot]);
+
+  const getPresetCoffinConfig = (presetId: AttributesPresetId) => {
+    const preset = ATTRIBUTES_PRESETS.find((item) => item.id === presetId);
+    if (!preset) return undefined;
+    const basePrice = 15000;
+    const coffinPrice =
+      basePrice +
+      preset.coffin.wood.price +
+      preset.coffin.lining.price +
+      preset.coffin.hardware.price;
+
+    const existingWreath = formData.coffinConfig?.wreath;
+    const wreath =
+      existingWreath && typeof existingWreath === "object"
+        ? existingWreath
+        : DEFAULT_WREATH_PRESET;
+
+    return {
+      coffin: {
+        wood: preset.coffin.wood,
+        lining: preset.coffin.lining,
+        hardware: preset.coffin.hardware,
+        quantity: 1,
+        price: coffinPrice,
+      },
+      wreath,
+    };
+  };
+
+  const applyAttributesPreset = (presetId: AttributesPresetId) => {
+    const config = getPresetCoffinConfig(presetId);
+    if (!config) return;
+    setSelectedAttributesPreset(presetId);
+    handleInputChange("coffinConfig", config);
+  };
+
+  const detectPresetIdFromConfig = () => {
+    const coffin = formData.coffinConfig?.coffin as
+      | {
+          wood?: { id?: string; name?: string };
+          lining?: { id?: string; name?: string };
+          hardware?: { id?: string; name?: string };
+        }
+      | undefined;
+    if (!coffin) return undefined;
+
+    const woodId = coffin.wood?.id || WOOD_ID_BY_NAME[coffin.wood?.name || ""];
+    const liningId =
+      coffin.lining?.id || LINING_ID_BY_NAME[coffin.lining?.name || ""];
+    const hardwareId =
+      coffin.hardware?.id ||
+      HARDWARE_ID_BY_NAME[coffin.hardware?.name || ""];
+
+    if (!woodId || !liningId || !hardwareId) return undefined;
+
+    return ATTRIBUTES_PRESETS.find(
+      (preset) =>
+        preset.coffin.wood.id === woodId &&
+        preset.coffin.lining.id === liningId &&
+        preset.coffin.hardware.id === hardwareId,
+    )?.id;
+  };
+
+  const attributesInitialSelection = (() => {
+    const coffin = formData.coffinConfig?.coffin as
+      | {
+          wood?: { id?: string; name?: string };
+          lining?: { id?: string; name?: string };
+          hardware?: { id?: string; name?: string };
+        }
+      | undefined;
+    const wreath = formData.coffinConfig?.wreath as
+      | { type?: string; size?: string; text?: string; quantity?: number }
+      | undefined;
+
+    if (!coffin && !wreath) return undefined;
+
+    const woodId = coffin?.wood?.id || WOOD_ID_BY_NAME[coffin?.wood?.name || ""];
+    const liningId =
+      coffin?.lining?.id || LINING_ID_BY_NAME[coffin?.lining?.name || ""];
+    const hardwareId =
+      coffin?.hardware?.id ||
+      HARDWARE_ID_BY_NAME[coffin?.hardware?.name || ""];
+
+    return {
+      woodId,
+      liningId,
+      hardwareId,
+      wreathType: wreath?.type,
+      wreathSize: wreath?.size,
+      wreathText: wreath?.text,
+      wreathQuantity: wreath?.quantity,
+    };
+  })();
+
+  useEffect(() => {
+    if (currentStep !== 2) return;
+    if (presetInitializedRef.current) return;
+
+    const hasCoffinPreset =
+      formData.coffinConfig?.coffin?.wood ||
+      formData.coffinConfig?.coffin?.lining ||
+      formData.coffinConfig?.coffin?.hardware;
+
+    if (hasCoffinPreset) {
+      const detected = detectPresetIdFromConfig();
+      if (detected) setSelectedAttributesPreset(detected);
+      presetInitializedRef.current = true;
+      return;
+    }
+
+    applyAttributesPreset("recommended");
+    presetInitializedRef.current = true;
+  }, [currentStep, formData.coffinConfig]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -2828,14 +3029,106 @@ function formatRub(n: number) {
       case 2: {
         return (
           <div className="space-y-6">
-            <UnifiedCoffinConfigurator
-              onConfirm={(data) => {
-                handleInputChange("coffinConfig", data);
-              }}
-              onChange={(data) => {
-                handleInputChange("coffinConfig", data);
-              }}
-            />
+            {attributesMode === "preset" ? (
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {ATTRIBUTES_PRESETS.map((preset) => {
+                    const isSelected = selectedAttributesPreset === preset.id;
+
+                    return (
+                      <div
+                        key={preset.id}
+                        className={cn(
+                          "overflow-hidden rounded-3xl border bg-white shadow-sm transition-all",
+                          isSelected ? "border-gray-900 shadow-lg" : "border-gray-200 hover:shadow-md",
+                        )}
+                      >
+                        <div className="relative">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={preset.imageSrc}
+                            alt={preset.title}
+                            className="h-40 w-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                          <span className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-gray-700">
+                            {preset.badge}
+                          </span>
+                          <div className="absolute bottom-3 left-4 text-xl font-semibold text-white">
+                            {preset.priceText}
+                          </div>
+                        </div>
+
+                        <div className="space-y-3 p-4">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="text-base font-semibold text-gray-900">{preset.title}</div>
+                            {isSelected && (
+                              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-900 text-white">
+                                <Check className="h-3.5 w-3.5" />
+                              </div>
+                            )}
+                          </div>
+
+                          <ul className="space-y-1 text-sm text-gray-600">
+                            {preset.bullets.map((bullet) => (
+                              <li key={bullet} className="flex items-start gap-2">
+                                <span className="text-gray-400">•</span>
+                                <span>{bullet}</span>
+                              </li>
+                            ))}
+                          </ul>
+
+                          <Button
+                            type="button"
+                            onClick={() => applyAttributesPreset(preset.id)}
+                            className={cn(
+                              "w-full rounded-full",
+                              isSelected ? "bg-gray-900 text-white hover:bg-gray-800" : "bg-gray-100 text-gray-900 hover:bg-gray-200",
+                            )}
+                          >
+                            {isSelected ? "Выбрано" : "Выбрать"}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setAttributesMode("custom")}
+                    className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-800 shadow-sm transition-colors hover:bg-gray-200"
+                  >
+                    <Edit2 className="h-4 w-4 text-gray-500" />
+                    Выбрать атрибутику самостоятельно
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setAttributesMode("preset")}
+                    className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-800 shadow-sm transition-colors hover:bg-gray-200"
+                  >
+                    <ChevronLeft className="h-4 w-4 text-gray-500" />
+                    Вернуться к готовым наборам
+                  </button>
+                </div>
+
+                <UnifiedCoffinConfigurator
+                  initialSelection={attributesInitialSelection}
+                  onConfirm={(data) => {
+                    handleInputChange("coffinConfig", data);
+                  }}
+                  onChange={(data) => {
+                    handleInputChange("coffinConfig", data);
+                  }}
+                />
+              </div>
+            )}
 
             <Separator />
 
@@ -3458,7 +3751,10 @@ function formatRub(n: number) {
                       <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
                         {currentStep === 0 && "Настройте формат прощания: выберите тип церемонии (светская или религиозная) и длительность аренды зала."}
                         {currentStep === 1 && "Спланируйте логистику: укажите дату и время прощания, выберите транспорт для усопшего и гостей."}
-                        {currentStep === 2 && "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности."}
+                        {currentStep === 2 &&
+                          (attributesMode === "preset"
+                            ? "Выберите готовый комплект атрибутики или соберите свой вариант. В наборах включено всё необходимое для достойной церемонии."
+                            : "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности.")}
                         {currentStep === 3 && "Заполните документы: укажите паспортные данные заявителя и информацию об усопшем для оформления."}
                         {currentStep === 4 && "Проверьте и подтвердите: внимательно ознакомьтесь со всеми деталями заказа перед финальным оформлением."}
                       </p>
