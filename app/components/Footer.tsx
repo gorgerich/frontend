@@ -1,7 +1,13 @@
+ "use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { Phone, Mail, Shield, Clock } from "./Icons";
+import { HelpModal } from "./HelpModal";
 
 export function Footer() {
+  const [helpOpen, setHelpOpen] = useState(false);
+
   return (
     <footer className="w-full bg-neutral-50 border-t border-neutral-200 mt-20">
       <div className="max-w-7xl mx-auto px-6 py-16">
@@ -96,10 +102,18 @@ export function Footer() {
               <Link href="/docs/refund" className="hover:text-neutral-900 transition-colors">
                 Политика возврата средств
               </Link>
+              <button
+                type="button"
+                onClick={() => setHelpOpen(true)}
+                className="hover:text-neutral-900 transition-colors"
+              >
+                Справка
+              </button>
             </div>
           </div>
         </div>
       </div>
+      <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
     </footer>
   );
 }
