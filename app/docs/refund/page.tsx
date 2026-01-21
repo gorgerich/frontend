@@ -105,7 +105,7 @@ export default function RefundPage() {
               <p>Адрес: г. Москва, вн.тер.г. муниципальный округ Хорошево-Мневники</p>
               <p>Сайт: tihiydom.com</p>
               <p>Email: info@tihiydom.com</p>
-              <p>Банковские реквизиты: TODO</p>
+              
             </>
           ),
         },

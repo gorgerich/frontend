@@ -86,8 +86,8 @@ export function Footer() {
         <div className="mt-16 pt-8 border-t border-neutral-200">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="text-xs text-neutral-400 max-w-xl">
-              <p className="mb-2">© 2024 Тихий дом. Все права защищены.</p>
-              <p>Информация на сайте не является публичной офертой. Цены фиксируются в договоре.</p>
+              <p className="mb-2">© 2025 Тихий дом. Все права защищены.</p>
+              
             </div>
             <div className="flex flex-wrap gap-6 text-xs font-medium text-neutral-500">
               <Link href="/info" className="hover:text-neutral-900 transition-colors">

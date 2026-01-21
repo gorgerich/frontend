@@ -83,30 +83,6 @@ function formatRub(value: number) {
   return `${value.toLocaleString("ru-RU")} ₽`;
 }
 
-const TIME_SLOT_LABELS: Record<string, string> = {
-  morning: "Первая половина дня",
-  afternoon: "Вторая половина дня",
-  evening: "Вечер",
-  night: "Ночь",
-};
-
-function formatDateValue(value?: string | Date) {
-  if (!value) return undefined;
-  if (value instanceof Date) return value.toLocaleDateString("ru-RU");
-  const parsed = new Date(value);
-  if (!Number.isNaN(parsed.getTime())) {
-    return parsed.toLocaleDateString("ru-RU");
-  }
-  return String(value);
-}
-
-function formatTimeSlotLabel(timeSlot?: string, time?: string) {
-  if (timeSlot && TIME_SLOT_LABELS[timeSlot]) return TIME_SLOT_LABELS[timeSlot];
-  if (timeSlot) return timeSlot;
-  if (time) return time;
-  return undefined;
-}
-
 function normalizeBreakdownSections(body: OrderPayload): BreakdownSection[] {
   if (Array.isArray(body.breakdown) && body.breakdown.length) {
     return body.breakdown
@@ -333,20 +309,6 @@ function buildEmailHtml(
     createdAtLabel?: string;
   },
 ) {
-  const customerName = body.customer?.name ?? body.userName ?? "клиент";
-  const customerEmail = body.customer?.email ?? body.userEmail ?? "";
-  const customerPhone = body.customer?.phone ?? "";
-
-  const ceremony = body.ceremony ?? {};
-  const deceased = body.deceased ?? {};
-  const ceremonyDateLabel = formatDateValue(
-    ceremony.date ?? body.formData?.farewellDateTime?.date,
-  );
-  const ceremonyTimeLabel = formatTimeSlotLabel(
-    ceremony.timeSlot ?? body.formData?.farewellDateTime?.timeSlot,
-    ceremony.time ?? body.formData?.farewellDateTime?.time,
-  );
-
   const orderSummaryHtml = options?.orderSummaryHtml ?? "";
   const showServicesTable = options?.showServicesTable !== false;
 
@@ -358,47 +320,46 @@ function buildEmailHtml(
             const sum = s.price * qty;
             return `
               <tr>
-                <td style="padding: 6px 10px; border: 1px solid #ddd;">${idx + 1}</td>
-                <td style="padding: 6px 10px; border: 1px solid #ddd;">
+                <td style="padding:8px 10px; border:1px solid #e5e7eb; word-break:break-word;">${idx + 1}</td>
+                <td style="padding:8px 10px; border:1px solid #e5e7eb; word-break:break-word;">
                   <div style="font-weight:600;">${escapeHtml(s.name)}</div>
                   ${s.description ? `<div style="color:#555; font-size:12px; margin-top:2px;">${escapeHtml(s.description)}</div>` : ""}
                 </td>
-                <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${qty}</td>
-                <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${s.price.toLocaleString("ru-RU")} ₽</td>
-                <td style="padding: 6px 10px; border: 1px solid #ddd; text-align:right;">${sum.toLocaleString("ru-RU")} ₽</td>
+                <td style="padding:8px 10px; border:1px solid #e5e7eb; text-align:right; word-break:break-word;">${qty}</td>
+                <td style="padding:8px 10px; border:1px solid #e5e7eb; text-align:right; word-break:break-word;">${s.price.toLocaleString("ru-RU")} ₽</td>
+                <td style="padding:8px 10px; border:1px solid #e5e7eb; text-align:right; word-break:break-word;">${sum.toLocaleString("ru-RU")} ₽</td>
               </tr>
             `;
           })
           .join("")
       : `
         <tr>
-          <td colspan="5" style="padding: 10px; border: 1px solid #ddd; text-align:center;">
+          <td colspan="5" style="padding:10px; border:1px solid #e5e7eb; text-align:center;">
             Перечень услуг не заполнен
           </td>
         </tr>
       `
     : "";
 
-  const servicesHeadingIndex = orderSummaryHtml ? 5 : 4;
   const servicesTableHtml = showServicesTable
     ? `
-    <h2 style="font-size:16px; margin:18px 0 8px;">${servicesHeadingIndex}. Перечень услуг и стоимость</h2>
+    <h3 style="font-size:15px; margin:14px 0 8px; font-weight:700; color:#111;">Перечень услуг и стоимость</h3>
 
-    <table style="border-collapse:collapse; width:100%; font-size:14px; margin:0 0 16px;">
+    <table style="border-collapse:collapse; width:100%; font-size:13px; margin:0 0 14px; table-layout:fixed;">
       <thead>
         <tr>
-          <th style="padding:6px 10px; border:1px solid #ddd; text-align:left;">№</th>
-          <th style="padding:6px 10px; border:1px solid #ddd; text-align:left;">Услуга</th>
-          <th style="padding:6px 10px; border:1px solid #ddd; text-align:right;">Кол-во</th>
-          <th style="padding:6px 10px; border:1px solid #ddd; text-align:right;">Цена</th>
-          <th style="padding:6px 10px; border:1px solid #ddd; text-align:right;">Сумма</th>
+          <th style="padding:8px 10px; border:1px solid #e5e7eb; text-align:left; width:36px;">№</th>
+          <th style="padding:8px 10px; border:1px solid #e5e7eb; text-align:left;">Услуга</th>
+          <th style="padding:8px 10px; border:1px solid #e5e7eb; text-align:right; width:72px;">Кол-во</th>
+          <th style="padding:8px 10px; border:1px solid #e5e7eb; text-align:right; width:90px;">Цена</th>
+          <th style="padding:8px 10px; border:1px solid #e5e7eb; text-align:right; width:90px;">Сумма</th>
         </tr>
       </thead>
       <tbody>
         ${servicesRows}
         <tr>
-          <td colspan="4" style="padding:10px; border:1px solid #ddd; text-align:right; font-weight:700;">Итого:</td>
-          <td style="padding:10px; border:1px solid #ddd; text-align:right; font-weight:700;">
+          <td colspan="4" style="padding:10px; border:1px solid #e5e7eb; text-align:right; font-weight:700;">Итого:</td>
+          <td style="padding:10px; border:1px solid #e5e7eb; text-align:right; font-weight:700;">
             ${totalRub.toLocaleString("ru-RU")} ₽
           </td>
         </tr>
@@ -412,90 +373,15 @@ function buildEmailHtml(
   const paymentLink = options?.paymentLink;
   const orderId = options?.orderId ?? "";
   const createdAtLabel = options?.createdAtLabel ?? new Date().toLocaleDateString("ru-RU");
-
-  const line = (label: string, value?: string) => {
-    if (!value) return "";
-    const trimmed = String(value).trim();
-    if (!trimmed) return "";
-    return `${escapeHtml(label)}: ${escapeHtml(trimmed)}`;
-  };
-
-  const customerLines = [
-    line("Имя", customerName && customerName !== "клиент" ? customerName : ""),
-    line("Email", customerEmail),
-    line("Телефон", customerPhone),
-  ].filter(Boolean);
-  const deceasedLines = [
-    line("Имя", deceased.name),
-    line("Дата рождения", deceased.birthDate),
-    line("Дата смерти", deceased.deathDate),
-    line("Степень родства", deceased.relationship),
-  ].filter(Boolean);
-  const ceremonyLines = [
-    line("Тип", ceremony.type ?? body.formData?.ceremonyType),
-    line("Кладбище", ceremony.cemetery ?? body.formData?.cemetery),
-    line("Дата", ceremonyDateLabel),
-    line("Время", ceremonyTimeLabel),
-    line("Место", ceremony.place),
-  ].filter(Boolean);
-
-  const customerBlock = customerLines.length
-    ? `
-      <div style="margin:0 0 12px;">
-        <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:6px;">Данные заказчика</div>
-        <div style="font-size:14px;line-height:1.7;color:#374151;">${customerLines.join("<br/>")}</div>
-      </div>
-    `
-    : "";
-  const deceasedBlock = deceasedLines.length
-    ? `
-      <div style="margin:0 0 12px;">
-        <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:6px;">Данные усопшего</div>
-        <div style="font-size:14px;line-height:1.7;color:#374151;">${deceasedLines.join("<br/>")}</div>
-      </div>
-    `
-    : "";
-  const ceremonyBlock = ceremonyLines.length
-    ? `
-      <div style="margin:0 0 12px;">
-        <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:6px;">Данные церемонии</div>
-        <div style="font-size:14px;line-height:1.7;color:#374151;">${ceremonyLines.join("<br/>")}</div>
-      </div>
-    `
-    : "";
-
-  const detailsHtml = [customerBlock, deceasedBlock, ceremonyBlock, orderSummaryHtml, servicesTableHtml]
-    .filter(Boolean)
-    .join("");
+  const summaryBlock = orderSummaryHtml
+    ? orderSummaryHtml
+    : `<div style="font-size:14px;line-height:1.7;color:#374151;">Данные заказа не заполнены.</div>`;
 
   const paymentText = paymentLink
     ? `Ссылка на оплату: <a href="${escapeHtml(paymentLink)}" target="_blank" rel="noreferrer">${escapeHtml(
         paymentLink,
       )}</a>`
     : "Ссылка на оплату будет направлена отдельным письмом.";
-
-  const paymentBlock = paymentMethodLabel
-    ? `
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-        style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;">
-        <tr>
-          <td style="padding:16px;">
-            <div style="font-size:14px;font-weight:700;color:#111;">Оплата</div>
-            <div style="margin-top:8px;font-size:14px;line-height:1.7;color:#374151;">
-              Способ оплаты: <b>${escapeHtml(paymentMethodLabel)}</b><br/>
-              ${paymentText}
-            </div>
-            <div style="margin-top:12px;padding:12px 12px;border-radius:12px;background:#f3f4f6;border:1px solid #e5e7eb;">
-              <div style="font-size:13px;line-height:1.7;color:#111;">
-                Важно: мы никогда не просим номер карты и CVC. Оплата проводится только на защищённой странице банка/провайдера.
-                Если есть сомнения — напишите на <a href="mailto:info@tihiydom.com" style="color:#111;text-decoration:underline;">info@tihiydom.com</a>.
-              </div>
-            </div>
-          </td>
-        </tr>
-      </table>
-    `
-    : "";
 
   return `
 <!doctype html>
@@ -515,44 +401,51 @@ function buildEmailHtml(
         <td align="center">
           <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="width:600px;max-width:600px;">
             <tr>
-              <td style="padding:18px 18px 10px 18px;">
-                <div style="font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;">
-                  Тихий дом
-                </div>
-                <div style="margin-top:10px;font-size:26px;line-height:1.2;font-weight:700;color:#111;">
-                  Примите наши соболезнования.
-                </div>
-                <div style="margin-top:10px;font-size:15px;line-height:1.6;color:#374151;">
-                  Мы получили вашу заявку и уже зафиксировали выбранные услуги и стоимость.
-                  Ниже — договор-оферта, детали заказа и итоговая сумма.
-                </div>
-              </td>
-            </tr>
-
-            <tr>
-              <td style="padding:0 18px 18px 18px;">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                  style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;">
+              <td style="padding:0 18px 24px 18px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:16px;">
                   <tr>
-                    <td style="padding:16px 16px 6px 16px;">
-                      <div style="font-size:14px;color:#6b7280;">Номер заявки</div>
-                      <div style="margin-top:2px;font-size:18px;font-weight:700;color:#111;">№ ${escapeHtml(
-                        orderId,
-                      )}</div>
-                      <div style="margin-top:6px;font-size:13px;line-height:1.6;color:#6b7280;">
-                        Дата: ${escapeHtml(createdAtLabel)}
+                    <td style="padding:20px 22px 10px 22px;">
+                      <div style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;">
+                        Тихий дом
+                      </div>
+                      <div style="margin-top:10px;font-size:26px;line-height:1.2;font-weight:700;color:#111;">
+                        Примите наши соболезнования.
+                      </div>
+                      <div style="margin-top:10px;font-size:15px;line-height:1.6;color:#374151;">
+                        Мы получили вашу заявку и зафиксировали выбранные услуги и стоимость. Ниже — договор-оферта, детали заказа и итоговая сумма.
                       </div>
                     </td>
                   </tr>
 
                   <tr>
-                    <td style="padding:0 16px 14px 16px;">
+                    <td style="padding:0 22px 10px 22px;">
                       <div style="height:1px;background:#e5e7eb;"></div>
                     </td>
                   </tr>
 
                   <tr>
-                    <td style="padding:0 16px 14px 16px;">
+                    <td style="padding:0 22px 14px 22px;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                        <tr>
+                          <td style="font-size:12px;color:#6b7280;">Номер заявки</td>
+                          <td align="right" style="font-size:12px;color:#6b7280;">Дата</td>
+                        </tr>
+                        <tr>
+                          <td style="font-size:16px;font-weight:700;color:#111;">№ ${escapeHtml(orderId)}</td>
+                          <td align="right" style="font-size:14px;color:#111;">${escapeHtml(createdAtLabel)}</td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td style="padding:0 22px 10px 22px;">
+                      <div style="height:1px;background:#e5e7eb;"></div>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td style="padding:0 22px 14px 22px;">
                       <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:8px;">Что будет дальше</div>
                       <ol style="margin:0;padding-left:18px;color:#374151;font-size:14px;line-height:1.7;">
                         <li>Мы проверим детали заявки и при необходимости уточним важные моменты.</li>
@@ -563,78 +456,94 @@ function buildEmailHtml(
                   </tr>
 
                   <tr>
-                    <td style="padding:0 16px 14px 16px;">
+                    <td style="padding:0 22px 10px 22px;">
                       <div style="height:1px;background:#e5e7eb;"></div>
                     </td>
                   </tr>
 
                   <tr>
-                    <td style="padding:0 16px 14px 16px;">
-                      <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:8px;">Детали заказа</div>
-                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                        style="background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;">
-                        <tr>
-                          <td style="padding:14px;">
-                            ${detailsHtml || "<div style=\"font-size:14px;color:#6b7280;\">Данные заказа не заполнены.</div>"}
-                          </td>
-                        </tr>
-                      </table>
+                    <td style="padding:0 22px 14px 22px;">
+                      <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:8px;">Состав заказа</div>
+                      <div style="font-size:14px;line-height:1.7;color:#374151;">
+                        ${summaryBlock}
+                      </div>
                     </td>
                   </tr>
 
                   <tr>
-                    <td style="padding:0 16px 14px 16px;">
+                    <td style="padding:0 22px 10px 22px;">
                       <div style="height:1px;background:#e5e7eb;"></div>
                     </td>
                   </tr>
 
                   <tr>
-                    <td style="padding:0 16px 16px 16px;">
-                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                        <tr>
-                          <td style="font-size:14px;color:#6b7280;">Итого</td>
-                          <td align="right" style="font-size:18px;font-weight:800;color:#111;">${formatRub(
-                            totalRub,
-                          )}</td>
-                        </tr>
-                      </table>
+                    <td style="padding:0 22px 14px 22px;">
+                      ${servicesTableHtml}
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td style="padding:0 22px 10px 22px;">
+                      <div style="height:1px;background:#e5e7eb;"></div>
+                    </td>
+                  </tr>
+
+                  ${
+                    paymentMethodLabel
+                      ? `
+                  <tr>
+                    <td style="padding:0 22px 14px 22px;">
+                      <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:8px;">Оплата</div>
+                      <div style="font-size:14px;line-height:1.7;color:#374151;">
+                        Способ оплаты: <b>${escapeHtml(paymentMethodLabel)}</b><br/>
+                        ${paymentText}
+                      </div>
+                      <div style="margin-top:12px;padding:12px;border-radius:12px;background:#f3f4f6;border:1px solid #e5e7eb;">
+                        <div style="font-size:13px;line-height:1.7;color:#111;">
+                          Важно: мы никогда не просим номер карты и CVC. Оплата проводится только на защищённой странице банка/провайдера.
+                          Если есть сомнения — напишите на <a href="mailto:info@tihiydom.com" style="color:#111;text-decoration:underline;">info@tihiydom.com</a>.
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 22px 10px 22px;">
+                      <div style="height:1px;background:#e5e7eb;"></div>
+                    </td>
+                  </tr>
+                  `
+                      : ""
+                  }
+
+                  ${
+                    notes
+                      ? `
+                  <tr>
+                    <td style="padding:0 22px 14px 22px;">
+                      <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:6px;">Дополнительные пожелания</div>
+                      <div style="font-size:14px;line-height:1.7;color:#374151;">${escapeHtml(String(notes))}</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 22px 10px 22px;">
+                      <div style="height:1px;background:#e5e7eb;"></div>
+                    </td>
+                  </tr>
+                  `
+                      : ""
+                  }
+
+                  <tr>
+                    <td style="padding:0 22px 18px 22px;color:#6b7280;font-size:12px;line-height:1.6;">
+                      Если вы хотите уточнить детали — просто ответьте на это письмо или напишите на
+                      <a href="mailto:info@tihiydom.com" style="color:#6b7280;text-decoration:underline;">info@tihiydom.com</a>.
+                      <br/><br/>
+                      © ${new Date().getFullYear()} Тихий дом
                     </td>
                   </tr>
                 </table>
               </td>
             </tr>
-
-            ${
-              paymentBlock
-                ? `<tr><td style="padding:0 18px 18px 18px;">${paymentBlock}</td></tr>`
-                : ""
-            }
-
-            ${
-              notes
-                ? `<tr><td style="padding:0 18px 18px 18px;">
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                      style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;">
-                      <tr>
-                        <td style="padding:16px;">
-                          <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:8px;">Дополнительные пожелания</div>
-                          <div style="font-size:14px;line-height:1.7;color:#374151;">${escapeHtml(notes)}</div>
-                        </td>
-                      </tr>
-                    </table>
-                  </td></tr>`
-                : ""
-            }
-
-            <tr>
-              <td style="padding:0 18px 24px 18px;color:#6b7280;font-size:12px;line-height:1.6;">
-                Если вы хотите уточнить детали — просто ответьте на это письмо или напишите на
-                <a href="mailto:info@tihiydom.com" style="color:#6b7280;text-decoration:underline;">info@tihiydom.com</a>.
-                <br/><br/>
-                © ${new Date().getFullYear()} Тихий дом
-              </td>
-            </tr>
-
           </table>
         </td>
       </tr>
@@ -754,9 +663,7 @@ export async function POST(req: NextRequest) {
       packageLabel,
     });
 
-    const orderSummaryHtml = summary.htmlFragment
-      ? `<h2 style="font-size:16px; margin:18px 0 8px;">4. Состав заказа</h2>${summary.htmlFragment}`
-      : "";
+    const orderSummaryHtml = summary.htmlFragment || "";
 
     const createdAtLabel = createdOrder?.createdAt
       ? new Date(createdOrder.createdAt).toLocaleDateString("ru-RU")
@@ -772,53 +679,33 @@ export async function POST(req: NextRequest) {
     });
 
     const notes = bodyForEmail.notes ?? bodyForEmail.formData?.specialRequests;
-    const textLine = (label: string, value?: string) => {
-      if (!value) return "";
-      const trimmed = String(value).trim();
-      if (!trimmed) return "";
-      return `${label}: ${trimmed}`;
-    };
-    const customerTextLines = [
-      textLine("Имя", bodyForEmail.customer?.name ?? bodyForEmail.userName),
-      textLine("Email", bodyForEmail.customer?.email ?? bodyForEmail.userEmail),
-      textLine("Телефон", bodyForEmail.customer?.phone),
-    ].filter(Boolean);
-    const deceasedTextLines = [
-      textLine("Имя", bodyForEmail.deceased?.name),
-      textLine("Дата рождения", bodyForEmail.deceased?.birthDate),
-      textLine("Дата смерти", bodyForEmail.deceased?.deathDate),
-      textLine("Степень родства", bodyForEmail.deceased?.relationship),
-    ].filter(Boolean);
-    const ceremonyTextLines = [
-      textLine("Тип", bodyForEmail.ceremony?.type ?? bodyForEmail.formData?.ceremonyType),
-      textLine("Кладбище", bodyForEmail.ceremony?.cemetery ?? bodyForEmail.formData?.cemetery),
-      textLine(
-        "Дата",
-        formatDateValue(bodyForEmail.ceremony?.date ?? bodyForEmail.formData?.farewellDateTime?.date),
-      ),
-      textLine(
-        "Время",
-        formatTimeSlotLabel(
-          bodyForEmail.ceremony?.timeSlot ?? bodyForEmail.formData?.farewellDateTime?.timeSlot,
-          bodyForEmail.ceremony?.time ?? bodyForEmail.formData?.farewellDateTime?.time,
-        ),
-      ),
-      textLine("Место", bodyForEmail.ceremony?.place),
-    ].filter(Boolean);
+    const servicesTextLines = services.length
+      ? services.map((service, index) => {
+          const qty = service.quantity ?? 1;
+          const sum = service.price * qty;
+          return `${index + 1}. ${service.name} ×${qty} — ${sum.toLocaleString("ru-RU")} ₽`;
+        })
+      : ["Перечень услуг не заполнен"];
 
-    const textParts: string[] = ["Договор-оферта и детали заказа"];
-    if (customerTextLines.length) {
-      textParts.push("", "Данные заказчика", ...customerTextLines);
-    }
-    if (deceasedTextLines.length) {
-      textParts.push("", "Данные усопшего", ...deceasedTextLines);
-    }
-    if (ceremonyTextLines.length) {
-      textParts.push("", "Данные церемонии", ...ceremonyTextLines);
-    }
-    textParts.push("", "Состав заказа", summary.plainText || "Данные не заполнены");
+    const textParts: string[] = [
+      "Договор-оферта и детали заказа",
+      `Номер заявки: № ${publicId}`,
+      `Дата: ${createdAtLabel}`,
+      "",
+      "Что будет дальше",
+      "1. Мы проверим детали заявки и при необходимости уточним важные моменты.",
+      "2. Если вы выбрали оплату по защищённой ссылке — отправим ссылку отдельным письмом.",
+      "3. После подтверждения — передадим заказ партнёрам и будем держать в курсе статуса.",
+      "",
+      "Состав заказа",
+      summary.plainText || "Данные не заполнены",
+      "",
+      "Перечень услуг и стоимость",
+      ...servicesTextLines,
+      `Итого: ${totalRub.toLocaleString("ru-RU")} ₽`,
+    ];
     if (paymentMethodLabel) {
-      textParts.push("", "Оплата:", `Способ оплаты: ${paymentMethodLabel}`);
+      textParts.push("", "Оплата", `Способ оплаты: ${paymentMethodLabel}`);
       if (paymentLink) {
         textParts.push(`Ссылка на оплату: ${paymentLink}`);
       } else {
