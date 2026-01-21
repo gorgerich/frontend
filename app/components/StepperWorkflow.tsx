@@ -3632,7 +3632,7 @@ function formatRub(n: number) {
                   </div>
                 </div>
               ) : (
-                <div className="relative overflow-visible rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55">
+                <div className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55">
                   <div className="flex gap-4 items-start">
                     <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
                       <Package className="h-5 w-5" />
@@ -3647,51 +3647,6 @@ function formatRub(n: number) {
                       <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
                         Выберите сценарий: сдержанный, традиционный или расширенный. Вы всегда можете изменить детали позже
                       </p>
-                    </div>
-                  </div>
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-[60%] z-10">
-                    <div className="inline-flex items-center p-1.5 rounded-full bg-zinc-100/90 border border-zinc-200/60 backdrop-blur-sm shadow-[0_10px_24px_rgba(15,23,42,0.18)]">
-                      <button
-                        type="button"
-                        onClick={() => handleInputChange("serviceType", "burial")}
-                        className={cn(
-                          "px-8 py-2.5 rounded-full text-sm font-medium transition-all duration-300 relative overflow-hidden",
-                          formData.serviceType === "burial"
-                            ? "bg-white text-gray-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-black/5"
-                            : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
-                        )}
-                      >
-                        <span className="relative z-10 flex items-center gap-2">
-                          <Church
-                            className={cn(
-                              "w-4 h-4",
-                              formData.serviceType === "burial" ? "text-gray-900" : "text-gray-400",
-                            )}
-                          />
-                          Захоронение
-                        </span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleInputChange("serviceType", "cremation")}
-                        className={cn(
-                          "px-8 py-2.5 rounded-full text-sm font-medium transition-all duration-300 relative overflow-hidden",
-                          formData.serviceType === "cremation"
-                            ? "bg-white text-gray-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-black/5"
-                            : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
-                        )}
-                      >
-                        <span className="relative z-10 flex items-center gap-2">
-                          <Flame
-                            className={cn(
-                              "w-4 h-4",
-                              formData.serviceType === "cremation" ? "text-gray-900" : "text-gray-400",
-                            )}
-                          />
-                          Кремация
-                        </span>
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -3740,7 +3695,53 @@ function formatRub(n: number) {
       </div>
     </>
   ) : (
-    <div className="pt-10">
+    <div className="space-y-8">
+      <div className="flex justify-center">
+        <div className="inline-flex items-center p-1.5 rounded-full bg-zinc-100/80 border border-zinc-200/50 backdrop-blur-sm shadow-inner">
+          <button
+            type="button"
+            onClick={() => handleInputChange("serviceType", "burial")}
+            className={cn(
+              "px-8 py-2.5 rounded-full text-sm font-medium transition-all duration-300 relative overflow-hidden",
+              formData.serviceType === "burial"
+                ? "bg-white text-gray-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-black/5"
+                : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
+            )}
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              <Church
+                className={cn(
+                  "w-4 h-4",
+                  formData.serviceType === "burial" ? "text-gray-900" : "text-gray-400",
+                )}
+              />
+              Захоронение
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleInputChange("serviceType", "cremation")}
+            className={cn(
+              "px-8 py-2.5 rounded-full text-sm font-medium transition-all duration-300 relative overflow-hidden",
+              formData.serviceType === "cremation"
+                ? "bg-white text-gray-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-black/5"
+                : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
+            )}
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              <Flame
+                className={cn(
+                  "w-4 h-4",
+                  formData.serviceType === "cremation" ? "text-gray-900" : "text-gray-400",
+                )}
+              />
+              Кремация
+            </span>
+          </button>
+        </div>
+      </div>
+
       <PackagesSelection
         selectedPackageId=""
         packages={formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES_BURIAL}
