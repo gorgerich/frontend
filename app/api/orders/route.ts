@@ -329,6 +329,8 @@ function buildEmailHtml(
     showServicesTable?: boolean;
     paymentMethodLabel?: string;
     paymentLink?: string | null;
+    orderId?: string;
+    createdAtLabel?: string;
   },
 ) {
   const customerName = body.customer?.name ?? body.userName ?? "клиент";
@@ -408,75 +410,237 @@ function buildEmailHtml(
   const notes = body.notes ?? body.formData?.specialRequests;
   const paymentMethodLabel = options?.paymentMethodLabel;
   const paymentLink = options?.paymentLink;
+  const orderId = options?.orderId ?? "";
+  const createdAtLabel = options?.createdAtLabel ?? new Date().toLocaleDateString("ru-RU");
+
+  const line = (label: string, value?: string) => {
+    if (!value) return "";
+    const trimmed = String(value).trim();
+    if (!trimmed) return "";
+    return `${escapeHtml(label)}: ${escapeHtml(trimmed)}`;
+  };
+
+  const customerLines = [
+    line("Имя", customerName && customerName !== "клиент" ? customerName : ""),
+    line("Email", customerEmail),
+    line("Телефон", customerPhone),
+  ].filter(Boolean);
+  const deceasedLines = [
+    line("Имя", deceased.name),
+    line("Дата рождения", deceased.birthDate),
+    line("Дата смерти", deceased.deathDate),
+    line("Степень родства", deceased.relationship),
+  ].filter(Boolean);
+  const ceremonyLines = [
+    line("Тип", ceremony.type ?? body.formData?.ceremonyType),
+    line("Кладбище", ceremony.cemetery ?? body.formData?.cemetery),
+    line("Дата", ceremonyDateLabel),
+    line("Время", ceremonyTimeLabel),
+    line("Место", ceremony.place),
+  ].filter(Boolean);
+
+  const customerBlock = customerLines.length
+    ? `
+      <div style="margin:0 0 12px;">
+        <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:6px;">Данные заказчика</div>
+        <div style="font-size:14px;line-height:1.7;color:#374151;">${customerLines.join("<br/>")}</div>
+      </div>
+    `
+    : "";
+  const deceasedBlock = deceasedLines.length
+    ? `
+      <div style="margin:0 0 12px;">
+        <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:6px;">Данные усопшего</div>
+        <div style="font-size:14px;line-height:1.7;color:#374151;">${deceasedLines.join("<br/>")}</div>
+      </div>
+    `
+    : "";
+  const ceremonyBlock = ceremonyLines.length
+    ? `
+      <div style="margin:0 0 12px;">
+        <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:6px;">Данные церемонии</div>
+        <div style="font-size:14px;line-height:1.7;color:#374151;">${ceremonyLines.join("<br/>")}</div>
+      </div>
+    `
+    : "";
+
+  const detailsHtml = [customerBlock, deceasedBlock, ceremonyBlock, orderSummaryHtml, servicesTableHtml]
+    .filter(Boolean)
+    .join("");
+
+  const paymentText = paymentLink
+    ? `Ссылка на оплату: <a href="${escapeHtml(paymentLink)}" target="_blank" rel="noreferrer">${escapeHtml(
+        paymentLink,
+      )}</a>`
+    : "Ссылка на оплату будет направлена отдельным письмом.";
+
   const paymentBlock = paymentMethodLabel
     ? `
-    <h2 style="font-size:16px; margin:18px 0 8px;">${servicesHeadingIndex + 1}. Оплата</h2>
-    <p style="margin:0 0 8px;">
-      Способ оплаты: ${escapeHtml(paymentMethodLabel)}
-    </p>
-    ${
-      paymentLink
-        ? `<p style="margin:0 0 8px;">Ссылка на оплату: <a href="${escapeHtml(
-            paymentLink,
-          )}" target="_blank" rel="noreferrer">${escapeHtml(paymentLink)}</a></p>`
-        : `<p style="margin:0 0 8px;">Ссылка на оплату будет направлена отдельным письмом.</p>`
-    }
-    <div style="margin:12px 0; padding:12px; border:1px solid #e5e7eb; border-radius:12px; background:#f9fafb; font-size:12px; color:#374151;">
-      <strong>Важно:</strong> Мы не просим номер карты и CVC. Оплата только на защищённой странице банка/провайдера.
-      Если сомневаетесь — напишите на info@tihiydom.com
-    </div>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+        style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;">
+        <tr>
+          <td style="padding:16px;">
+            <div style="font-size:14px;font-weight:700;color:#111;">Оплата</div>
+            <div style="margin-top:8px;font-size:14px;line-height:1.7;color:#374151;">
+              Способ оплаты: <b>${escapeHtml(paymentMethodLabel)}</b><br/>
+              ${paymentText}
+            </div>
+            <div style="margin-top:12px;padding:12px 12px;border-radius:12px;background:#f3f4f6;border:1px solid #e5e7eb;">
+              <div style="font-size:13px;line-height:1.7;color:#111;">
+                Важно: мы никогда не просим номер карты и CVC. Оплата проводится только на защищённой странице банка/провайдера.
+                Если есть сомнения — напишите на <a href="mailto:info@tihiydom.com" style="color:#111;text-decoration:underline;">info@tihiydom.com</a>.
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
     `
     : "";
 
   return `
-  <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color:#111; line-height:1.4;">
-    <h1 style="font-size:20px; margin:0 0 12px;">Договор-оферта и детали заказа</h1>
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Договор-оферта и детали заказа</title>
+  </head>
+  <body style="margin:0;padding:0;background:#f6f7f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#111;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
+      Заявка №${escapeHtml(orderId)} принята. Договор и детали заказа внутри.
+    </div>
 
-    <p style="margin:0 0 12px;">Уважаемый(ая) ${escapeHtml(customerName)},</p>
-    <p style="margin:0 0 16px;">
-      Мы получили ваш запрос на организацию церемонии. Ниже — данные заказа и итоговая стоимость.
-    </p>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7f9;padding:24px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="width:600px;max-width:600px;">
+            <tr>
+              <td style="padding:18px 18px 10px 18px;">
+                <div style="font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;">
+                  Тихий дом
+                </div>
+                <div style="margin-top:10px;font-size:26px;line-height:1.2;font-weight:700;color:#111;">
+                  Примите наши соболезнования.
+                </div>
+                <div style="margin-top:10px;font-size:15px;line-height:1.6;color:#374151;">
+                  Мы получили вашу заявку и уже зафиксировали выбранные услуги и стоимость.
+                  Ниже — договор-оферта, детали заказа и итоговая сумма.
+                </div>
+              </td>
+            </tr>
 
-    <h2 style="font-size:16px; margin:18px 0 8px;">1. Данные заказчика</h2>
-    <p style="margin:0 0 8px;">
-      Имя: ${escapeHtml(customerName)}<br/>
-      Email: ${escapeHtml(customerEmail)}<br/>
-      Телефон: ${escapeHtml(customerPhone || "не указан")}
-    </p>
+            <tr>
+              <td style="padding:0 18px 18px 18px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                  style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;">
+                  <tr>
+                    <td style="padding:16px 16px 6px 16px;">
+                      <div style="font-size:14px;color:#6b7280;">Номер заявки</div>
+                      <div style="margin-top:2px;font-size:18px;font-weight:700;color:#111;">№ ${escapeHtml(
+                        orderId,
+                      )}</div>
+                      <div style="margin-top:6px;font-size:13px;line-height:1.6;color:#6b7280;">
+                        Дата: ${escapeHtml(createdAtLabel)}
+                      </div>
+                    </td>
+                  </tr>
 
-    <h2 style="font-size:16px; margin:18px 0 8px;">2. Данные усопшего</h2>
-    <p style="margin:0 0 8px;">
-      Имя: ${escapeHtml(deceased.name ?? "не указано")}<br/>
-      Дата рождения: ${escapeHtml(deceased.birthDate ?? "не указана")}<br/>
-      Дата смерти: ${escapeHtml(deceased.deathDate ?? "не указана")}<br/>
-      Степень родства: ${escapeHtml(deceased.relationship ?? "не указана")}
-    </p>
+                  <tr>
+                    <td style="padding:0 16px 14px 16px;">
+                      <div style="height:1px;background:#e5e7eb;"></div>
+                    </td>
+                  </tr>
 
-    <h2 style="font-size:16px; margin:18px 0 8px;">3. Данные церемонии</h2>
-    <p style="margin:0 0 8px;">
-      Тип: ${escapeHtml(ceremony.type ?? body.formData?.ceremonyType ?? "не указан")}<br/>
-      Кладбище: ${escapeHtml(ceremony.cemetery ?? body.formData?.cemetery ?? "не указано")}<br/>
-      Дата: ${escapeHtml(ceremonyDateLabel ?? "не указана")}<br/>
-      Время: ${escapeHtml(ceremonyTimeLabel ?? "не указано")}<br/>
-      Место: ${escapeHtml(ceremony.place ?? "не указано")}
-    </p>
+                  <tr>
+                    <td style="padding:0 16px 14px 16px;">
+                      <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:8px;">Что будет дальше</div>
+                      <ol style="margin:0;padding-left:18px;color:#374151;font-size:14px;line-height:1.7;">
+                        <li>Мы проверим детали заявки и при необходимости уточним важные моменты.</li>
+                        <li>Если вы выбрали оплату по защищённой ссылке — отправим ссылку отдельным письмом.</li>
+                        <li>После подтверждения — передадим заказ партнёрам и будем держать в курсе статуса.</li>
+                      </ol>
+                    </td>
+                  </tr>
 
-    ${orderSummaryHtml}
-    ${servicesTableHtml}
-    ${paymentBlock}
+                  <tr>
+                    <td style="padding:0 16px 14px 16px;">
+                      <div style="height:1px;background:#e5e7eb;"></div>
+                    </td>
+                  </tr>
 
-    ${
-      notes
-        ? `<h2 style="font-size:16px; margin:18px 0 8px;">5. Дополнительные пожелания</h2>
-           <p style="margin:0 0 8px;">${escapeHtml(notes)}</p>`
-        : ""
-    }
+                  <tr>
+                    <td style="padding:0 16px 14px 16px;">
+                      <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:8px;">Детали заказа</div>
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                        style="background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;">
+                        <tr>
+                          <td style="padding:14px;">
+                            ${detailsHtml || "<div style=\"font-size:14px;color:#6b7280;\">Данные заказа не заполнены.</div>"}
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
 
-    <p style="margin-top:18px; font-size:12px; color:#555;">
-      Это письмо подтверждает получение заявки и содержит детали заказа.
-      Финальные условия и состав услуг фиксируются в договоре.
-    </p>
-  </div>
+                  <tr>
+                    <td style="padding:0 16px 14px 16px;">
+                      <div style="height:1px;background:#e5e7eb;"></div>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td style="padding:0 16px 16px 16px;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                        <tr>
+                          <td style="font-size:14px;color:#6b7280;">Итого</td>
+                          <td align="right" style="font-size:18px;font-weight:800;color:#111;">${formatRub(
+                            totalRub,
+                          )}</td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            ${
+              paymentBlock
+                ? `<tr><td style="padding:0 18px 18px 18px;">${paymentBlock}</td></tr>`
+                : ""
+            }
+
+            ${
+              notes
+                ? `<tr><td style="padding:0 18px 18px 18px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                      style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;">
+                      <tr>
+                        <td style="padding:16px;">
+                          <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:8px;">Дополнительные пожелания</div>
+                          <div style="font-size:14px;line-height:1.7;color:#374151;">${escapeHtml(notes)}</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td></tr>`
+                : ""
+            }
+
+            <tr>
+              <td style="padding:0 18px 24px 18px;color:#6b7280;font-size:12px;line-height:1.6;">
+                Если вы хотите уточнить детали — просто ответьте на это письмо или напишите на
+                <a href="mailto:info@tihiydom.com" style="color:#6b7280;text-decoration:underline;">info@tihiydom.com</a>.
+                <br/><br/>
+                © ${new Date().getFullYear()} Тихий дом
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
   `;
 }
 
@@ -525,7 +689,7 @@ export async function POST(req: NextRequest) {
 
     const serviceType = String(body.ceremony?.serviceType ?? body.formData?.serviceType ?? "burial");
 
-    await prisma.order.create({
+    const createdOrder = await prisma.order.create({
       data: {
         publicId,
         userId: user.id,
@@ -594,39 +758,80 @@ export async function POST(req: NextRequest) {
       ? `<h2 style="font-size:16px; margin:18px 0 8px;">4. Состав заказа</h2>${summary.htmlFragment}`
       : "";
 
+    const createdAtLabel = createdOrder?.createdAt
+      ? new Date(createdOrder.createdAt).toLocaleDateString("ru-RU")
+      : new Date().toLocaleDateString("ru-RU");
+
     const html = buildEmailHtml(bodyForEmail, services, totalRub, {
       orderSummaryHtml,
       showServicesTable: true,
       paymentMethodLabel,
       paymentLink,
+      orderId: publicId,
+      createdAtLabel,
     });
 
     const notes = bodyForEmail.notes ?? bodyForEmail.formData?.specialRequests;
-    const textParts = [
-      "Договор-оферта и детали заказа",
-      "",
-      "Данные заказчика",
-      `Имя: ${bodyForEmail.customer?.name ?? bodyForEmail.userName ?? "не указано"}`,
-      `Email: ${bodyForEmail.customer?.email ?? bodyForEmail.userEmail ?? "не указан"}`,
-      `Телефон: ${bodyForEmail.customer?.phone ?? "не указан"}`,
-      "",
-      "Данные усопшего",
-      `Имя: ${bodyForEmail.deceased?.name ?? "не указано"}`,
-      `Дата рождения: ${bodyForEmail.deceased?.birthDate ?? "не указана"}`,
-      `Дата смерти: ${bodyForEmail.deceased?.deathDate ?? "не указана"}`,
-      `Степень родства: ${bodyForEmail.deceased?.relationship ?? "не указана"}`,
-      "",
-      "Состав заказа",
-      summary.plainText || "Данные не заполнены",
-      paymentMethodLabel ? `\nОплата:\nСпособ оплаты: ${paymentMethodLabel}` : "",
-      paymentLink ? `Ссылка на оплату: ${paymentLink}` : "",
-      paymentMethodLabel && !paymentLink ? "Ссылка на оплату будет направлена отдельным письмом." : "",
-      paymentMethodLabel
-        ? "\nВажно: мы не просим номер карты и CVC. Оплата только на защищённой странице банка/провайдера. Если сомневаетесь — напишите на info@tihiydom.com"
-        : "",
-      notes ? `\nДополнительные пожелания:\n${notes}` : "",
-    ];
-    const text = textParts.filter(Boolean).join("\n");
+    const textLine = (label: string, value?: string) => {
+      if (!value) return "";
+      const trimmed = String(value).trim();
+      if (!trimmed) return "";
+      return `${label}: ${trimmed}`;
+    };
+    const customerTextLines = [
+      textLine("Имя", bodyForEmail.customer?.name ?? bodyForEmail.userName),
+      textLine("Email", bodyForEmail.customer?.email ?? bodyForEmail.userEmail),
+      textLine("Телефон", bodyForEmail.customer?.phone),
+    ].filter(Boolean);
+    const deceasedTextLines = [
+      textLine("Имя", bodyForEmail.deceased?.name),
+      textLine("Дата рождения", bodyForEmail.deceased?.birthDate),
+      textLine("Дата смерти", bodyForEmail.deceased?.deathDate),
+      textLine("Степень родства", bodyForEmail.deceased?.relationship),
+    ].filter(Boolean);
+    const ceremonyTextLines = [
+      textLine("Тип", bodyForEmail.ceremony?.type ?? bodyForEmail.formData?.ceremonyType),
+      textLine("Кладбище", bodyForEmail.ceremony?.cemetery ?? bodyForEmail.formData?.cemetery),
+      textLine(
+        "Дата",
+        formatDateValue(bodyForEmail.ceremony?.date ?? bodyForEmail.formData?.farewellDateTime?.date),
+      ),
+      textLine(
+        "Время",
+        formatTimeSlotLabel(
+          bodyForEmail.ceremony?.timeSlot ?? bodyForEmail.formData?.farewellDateTime?.timeSlot,
+          bodyForEmail.ceremony?.time ?? bodyForEmail.formData?.farewellDateTime?.time,
+        ),
+      ),
+      textLine("Место", bodyForEmail.ceremony?.place),
+    ].filter(Boolean);
+
+    const textParts: string[] = ["Договор-оферта и детали заказа"];
+    if (customerTextLines.length) {
+      textParts.push("", "Данные заказчика", ...customerTextLines);
+    }
+    if (deceasedTextLines.length) {
+      textParts.push("", "Данные усопшего", ...deceasedTextLines);
+    }
+    if (ceremonyTextLines.length) {
+      textParts.push("", "Данные церемонии", ...ceremonyTextLines);
+    }
+    textParts.push("", "Состав заказа", summary.plainText || "Данные не заполнены");
+    if (paymentMethodLabel) {
+      textParts.push("", "Оплата:", `Способ оплаты: ${paymentMethodLabel}`);
+      if (paymentLink) {
+        textParts.push(`Ссылка на оплату: ${paymentLink}`);
+      } else {
+        textParts.push("Ссылка на оплату будет направлена отдельным письмом.");
+      }
+      textParts.push(
+        "Важно: мы не просим номер карты и CVC. Оплата только на защищённой странице банка/провайдера. Если сомневаетесь — напишите на info@tihiydom.com",
+      );
+    }
+    if (notes) {
+      textParts.push("", "Дополнительные пожелания:", String(notes));
+    }
+    const text = textParts.join("\n");
 
     try {
       await sendOrderEmail({
