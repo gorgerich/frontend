@@ -75,6 +75,8 @@ function maskCard(n: string) {
 }
 
 export default function InlineMockPayment({ orderId, totalAmount, email }: Props) {
+  const paymentMode = process.env.NEXT_PUBLIC_PAYMENT_MODE ?? "EMAIL_LINK_ONLY";
+  const isEmailOnlyPayment = paymentMode === "EMAIL_LINK_ONLY";
   const [payPlan, setPayPlan] = useState<PayPlan>("full");
   const [method, setMethod] = useState<"card" | "sbp">("card");
   const trackingFlow: "wizard" = "wizard";
@@ -130,6 +132,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
     if (paid) return false;
     if (!contactEmail || !contactEmail.includes("@")) return false;
 
+    if (isEmailOnlyPayment) return true;
     if (method === "sbp") return true;
 
     const digits = cardNumber.replace(/\D/g, "");
@@ -138,7 +141,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
     const cvcOk = /^\d{3,4}$/.test(cvc);
 
     return cardOk && expOk && cvcOk;
-  }, [paid, contactEmail, method, cardNumber, exp, cvc]);
+  }, [paid, contactEmail, method, cardNumber, exp, cvc, isEmailOnlyPayment]);
 
   useEffect(() => {
     if (!didMountRef.current) {
@@ -365,7 +368,11 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
           <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
             <div className="text-sm font-medium text-white/80">Данные карты</div>
 
-            {method === "card" ? (
+            {isEmailOnlyPayment ? (
+              <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/70">
+                Оплата проходит по защищённой ссылке. Данные карты вводятся на стороне банка.
+              </div>
+            ) : method === "card" ? (
               <div className="mt-4 grid gap-4">
                 <Field label="Номер карты">
                   <input
@@ -411,20 +418,22 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
 
           {/* RIGHT */}
           <div className="grid gap-4">
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-              <div className="text-sm font-medium text-white/80">CVC/CVV</div>
-              <div className="mt-3">
-                <input
-                  value={cvc}
-                  onChange={(e) => setCvc(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                  placeholder="***"
-                  className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none focus:border-white/25"
-                  inputMode="numeric"
-                  disabled={method !== "card"}
-                />
+            {!isEmailOnlyPayment && (
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+                <div className="text-sm font-medium text-white/80">CVC/CVV</div>
+                <div className="mt-3">
+                  <input
+                    value={cvc}
+                    onChange={(e) => setCvc(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                    placeholder="***"
+                    className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none focus:border-white/25"
+                    inputMode="numeric"
+                    disabled={method !== "card"}
+                  />
+                </div>
+                <div className="mt-2 text-xs text-white/50">3 цифры на обратной стороне карты</div>
               </div>
-              <div className="mt-2 text-xs text-white/50">3 цифры на обратной стороне карты</div>
-            </div>
+            )}
 
             <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
               <div className="text-sm font-medium text-white/80">Email для получения информации</div>

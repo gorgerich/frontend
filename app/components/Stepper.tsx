@@ -150,7 +150,7 @@ export function Stepper({
                     }}
                     className={cn(
                       'w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 relative bg-white',
-                      isCompleted && 'bg-gray-900 border-gray-900',
+                      isCompleted && !isCurrent && 'border-gray-900 bg-white',
                       isCurrent &&
                         'border-gray-900 bg-white shadow-xl ring-4 ring-gray-900/10',
                       !isCompleted &&
@@ -161,24 +161,20 @@ export function Stepper({
                         'group-hover:border-gray-700 group-hover:shadow-md group-hover:scale-110'
                     )}
                   >
-                    {isCompleted && !isCurrent ? (
-                      <Check className="w-6 h-6 text-white" />
-                    ) : (
-                      <span
-                        className={cn(
-                          'text-base transition-colors',
-                          isCurrent && 'text-gray-900',
-                          isCompleted &&
-                            !isCurrent &&
-                            'text-white',
-                          !isCompleted &&
-                            !isCurrent &&
-                            'text-gray-400'
-                        )}
-                      >
-                        {index + 1}
-                      </span>
-                    )}
+                    <span
+                      className={cn(
+                        'text-base transition-colors',
+                        isCurrent && 'text-gray-900',
+                        isCompleted &&
+                          !isCurrent &&
+                          'text-gray-900',
+                        !isCompleted &&
+                          !isCurrent &&
+                          'text-gray-400'
+                      )}
+                    >
+                      {index + 1}
+                    </span>
                   </motion.div>
 
                   {/* подпись под кругом */}

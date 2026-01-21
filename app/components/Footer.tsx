@@ -87,11 +87,14 @@ export function Footer() {
               <Link href="/info" className="hover:text-neutral-900 transition-colors">
                 Политика конфиденциальности
               </Link>
-              <Link href="/info/offer" className="hover:text-neutral-900 transition-colors">
-                Оферта
+              <Link href="/docs/oferta" className="hover:text-neutral-900 transition-colors">
+                Публичная оферта
               </Link>
-              <Link href="/sitemap" className="hover:text-neutral-900 transition-colors">
-                Карта сайта
+              <Link href="/docs/payment-rules" className="hover:text-neutral-900 transition-colors">
+                Порядок оплаты по ссылке
+              </Link>
+              <Link href="/docs/refund" className="hover:text-neutral-900 transition-colors">
+                Политика возврата средств
               </Link>
             </div>
           </div>

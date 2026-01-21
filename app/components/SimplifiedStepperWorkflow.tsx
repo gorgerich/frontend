@@ -494,6 +494,8 @@ farewellDateTime?: { date?: string | Date; timeSlot?: TimeSlot; time?: string };
 burialDateTime?: { date?: string | Date; timeSlot?: TimeSlot; time?: string };
 };
 
+type PaymentMethod = "card" | "sbp" | "transfer";
+
 interface SimplifiedStepperWorkflowProps {
 selectedPackage: {
 id: string;
@@ -738,8 +740,12 @@ setBurialDateTime(savedBurialDateTime);
 }, [burialDateTime.date, burialDateTime.timeSlot, savedBurialDateTime.date, savedBurialDateTime.timeSlot]);
 
 // Состояния для оплаты
-const [cardData, setCardData] = useState({ number: "", expiry: "", cvc: "", holder: "" });
+const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
 const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+const [orderConfirmation, setOrderConfirmation] = useState<{
+  emailSent: boolean;
+  paymentLink?: string | null;
+} | null>(null);
 
 const simplifiedCalculatorConfig = useMemo<CalculatorConfig>(() => {
   const packages = selectedPackage
@@ -2140,42 +2146,9 @@ className="mt-1"
 
 case 4: {
 // Шаг 5: Подтверждение и оплата
-const calcSplitSchedule = (total: number) => {
-const t = Math.max(0, Math.round(total || 0));
-const base = Math.floor(t / 4);
-const p1 = base;
-const p2 = base;
-const p3 = base;
-const p4 = t - (p1 + p2 + p3);
-return [
-{ title: "Сегодня", amountRub: p1 },
-{ title: "Через 2 недели", amountRub: p2 },
-{ title: "Через 4 недели", amountRub: p3 },
-{ title: "Через 6 недель", amountRub: p4 },
-];
-};
-
-const depositRub = Math.max(0, Math.round(totalRub * 0.05));
-const splitSchedule = calcSplitSchedule(totalRub);
-
-const payPlan = selectedPayPlan;
-
-const payNowRub =
-payPlan === "deposit"
-? depositRub
-: payPlan === "split"
-? splitSchedule[0].amountRub
-: totalRub;
-
 const emailValue = (safeFormData.userEmail || "").trim();
-
-const cardNumberDigits = (cardData?.number || "").replace(/\D/g, "");
-const expOk = /^\d{2}\/\d{2}$/.test(cardData?.expiry || "");
-const cvcOk = /^\d{3,4}$/.test(cardData?.cvc || "");
-const cardOk = cardNumberDigits.length >= 12;
-const emailOk = emailValue.includes("@");
-
-const canPay = totalRub > 0 && emailOk && cardOk && expOk && cvcOk;
+const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue);
+const canSubmit = totalRub > 0 && emailOk;
 
 const breakdown = simplifiedSections;
 const cemeteryCategoryLabel =
@@ -2188,28 +2161,16 @@ selectedCemeteryCategory === "standard"
 : undefined;
 const orderSummary = buildOrderSummary(safeFormData, {
 totalRub,
-paymentPlan: payPlan,
-payNowRub,
-splitSchedule,
 packageLabel: selectedPackage?.name,
 cemeteryCategoryLabel,
 });
 const summarySections = orderSummary.sections;
 
 const onPayClick = async () => {
-if (isSubmittingOrder || !canPay) return;
+if (isSubmittingOrder || !canSubmit) return;
 
 try {
 setIsSubmittingOrder(true);
-
-handleInputChange("paymentPlan", payPlan);
-handleInputChange("paidNowRub", String(payNowRub));
-
-if (payPlan === "split") {
-handleInputChange("splitSchedule", JSON.stringify(splitSchedule));
-} else {
-handleInputChange("splitSchedule", "");
-}
 
 await new Promise((r) => setTimeout(r, 400));
 
@@ -2256,6 +2217,7 @@ breakdown: floatingBreakdown,
 package: packageInfo,
 addons: [],
 formData: payloadFormData,
+paymentMethod,
 deceased: {
 name: safeFormData.fullName || undefined,
 birthDate: safeFormData.birthDate || undefined,
@@ -2305,8 +2267,10 @@ trackEvent(
   },
   data?.orderId,
 );
-
-alert("Бронирование оформлено! Детали и договор отправлены на указанную электронную почту. К сожалению оплата не прошла, агент свяжется с вами в скором времени");
+setOrderConfirmation({
+  emailSent: Boolean(data?.emailSent),
+  paymentLink: data?.paymentLink ?? null,
+});
 } catch (e) {
 console.error("Order request failed:", e);
 alert("Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой.");
@@ -2374,198 +2338,90 @@ return (
 <div className="pt-2">
 <div className="text-sm font-semibold text-gray-900 mb-3">Оплата</div>
 
-<div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
-{/* LEFT: поля карты + email */}
-<div className="bg-white border border-gray-200 rounded-[30px] p-6 shadow-sm">
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div className="md:col-span-2">
-<div className="text-sm text-gray-700 mb-2">Номер карты</div>
-<input
-value={cardData.number}
-onChange={(e) => {
-const digits = e.target.value.replace(/\D/g, "").slice(0, 16);
-const parts = digits.match(/.{1,4}/g) ?? [];
-setCardData({ ...cardData, number: parts.join(" ") });
-}}
-placeholder="0000 0000 0000 0000"
-className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
-inputMode="numeric"
-/>
-{!cardOk && (
-<div className="mt-2 text-xs text-red-600">
-Проверьте номер карты.
-</div>
+{orderConfirmation?.emailSent ? (
+  <div className="bg-white border border-gray-200 rounded-[30px] p-6 shadow-sm">
+    <div className="text-sm font-semibold text-gray-900">Бронирование оформлено</div>
+    <p className="mt-2 text-sm text-gray-600">
+      {orderConfirmation.paymentLink
+        ? "Бронирование оформлено. Договор, детали заказа и ссылка на оплату отправлены вам на почту."
+        : "Бронирование оформлено. Договор и детали заказа отправлены вам на почту. Ссылку на оплату пришлём отдельным письмом."}
+    </p>
+  </div>
+) : (
+  <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
+    <div className="bg-white border border-gray-200 rounded-[30px] p-6 shadow-sm">
+      <div className="text-sm font-semibold text-gray-900 mb-2">Email для получения информации</div>
+      <input
+        value={emailValue}
+        onChange={(e) => handleInputChange("userEmail", e.target.value)}
+        placeholder="name@email.com"
+        className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
+        inputMode="email"
+      />
+      {!emailOk && (
+        <div className="mt-2 text-xs text-red-600">
+          Проверьте корректность e-mail.
+        </div>
+      )}
+      <div className="mt-2 text-xs text-gray-500">
+        На этот адрес придёт подтверждение заказа, детали церемонии и документы.
+      </div>
+
+      <div className="mt-6">
+        <div className="text-sm font-semibold text-gray-900 mb-3">Способ оплаты</div>
+        <div className="space-y-2">
+          {[
+          { id: "card", title: "Картой по защищённой ссылке", subtitle: "Онлайн-оплата через банк" },
+          { id: "transfer", title: "Оплата по банковским реквизитам", subtitle: "Реквизиты в письме" },
+          { id: "sbp", title: "СБП по QR", subtitle: "Перевод по СБП" },
+        ].map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => setPaymentMethod(option.id as PaymentMethod)}
+              className={[
+                "w-full rounded-2xl border px-4 py-3 text-left transition-all",
+                paymentMethod === option.id ? "border-gray-900 bg-gray-50" : "border-gray-200 hover:border-gray-300",
+              ].join(" ")}
+            >
+              <div className="flex items-start gap-3">
+                <div className={paymentMethod === option.id ? "mt-1 h-4 w-4 rounded-full bg-gray-900" : "mt-1 h-4 w-4 rounded-full border border-gray-400"} />
+                <div>
+                  <div className="text-sm font-medium text-gray-900">{option.title}</div>
+                  <div className="text-xs text-gray-500">{option.subtitle}</div>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div className="space-y-4">
+      <div className="bg-white border border-gray-200 rounded-[30px] p-5 shadow-sm">
+        <div className="mt-1 flex items-center justify-between rounded-2xl bg-gray-900 text-white px-4 py-4">
+          <div>
+            <div className="text-[11px] text-white/70">К оплате</div>
+            <div className="text-xl font-semibold">{formatRubLocal(totalRub)} ₽</div>
+          </div>
+
+          <Button
+            type="button"
+            onClick={onPayClick}
+            disabled={!canSubmit || isSubmittingOrder}
+            className="rounded-2xl bg-white text-gray-900 hover:bg-gray-100 px-5 py-3 text-sm font-semibold disabled:opacity-60"
+          >
+            {isSubmittingOrder ? "Оформление..." : "Оформить"}
+          </Button>
+        </div>
+
+        <div className="mt-3 text-xs text-gray-500">
+          После оформления мы отправим договор и детали заказа на email. Ссылку на оплату пришлём, если она доступна.
+        </div>
+      </div>
+    </div>
+  </div>
 )}
-</div>
-
-<div>
-<div className="text-sm text-gray-700 mb-2">Держатель карты</div>
-<input
-value={cardData.holder}
-onChange={(e) => setCardData({ ...cardData, holder: e.target.value.slice(0, 26) })}
-placeholder="IVAN IVANOV"
-className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
-/>
-</div>
-
-<div className="grid grid-cols-2 gap-4">
-<div>
-<div className="text-sm text-gray-700 mb-2">Срок</div>
-<input
-value={cardData.expiry}
-onChange={(e) => {
-const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
-const v = digits.length <= 2 ? digits : `${digits.slice(0, 2)}/${digits.slice(2)}`;
-setCardData({ ...cardData, expiry: v });
-}}
-placeholder="MM/YY"
-className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
-inputMode="numeric"
-/>
-{!expOk && (
-<div className="mt-2 text-xs text-red-600">
-Срок действия должен быть в формате MM/YY.
-</div>
-)}
-</div>
-
-<div>
-<div className="text-sm text-gray-700 mb-2">CVC</div>
-<input
-value={cardData.cvc}
-onChange={(e) => setCardData({ ...cardData, cvc: e.target.value.replace(/\D/g, "").slice(0, 4) })}
-placeholder="123"
-className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
-inputMode="numeric"
-/>
-{!cvcOk && (
-<div className="mt-2 text-xs text-red-600">
-CVC должен быть 3–4 цифры.
-</div>
-)}
-</div>
-</div>
-
-<div className="md:col-span-2">
-<div className="text-sm font-semibold text-gray-900 mt-2 mb-2">Email для получения информации</div>
-<input
-value={emailValue}
-onChange={(e) => handleInputChange("userEmail", e.target.value)}
-placeholder="name@email.com"
-className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
-inputMode="email"
-/>
-{!emailOk && (
-<div className="mt-2 text-xs text-red-600">
-Проверьте корректность e-mail.
-</div>
-)}
-<div className="mt-2 text-xs text-gray-500">
-На этот адрес придёт подтверждение заказа, детали церемонии и документы.
-</div>
-</div>
-</div>
-
-</div>
-
-{/* RIGHT: планы оплаты + итог + кнопка */}
-<div className="space-y-4">
-<div className="bg-white border border-gray-200 rounded-[30px] p-5 shadow-sm">
-<div className="text-sm font-semibold text-gray-900 mb-3">Вариант оплаты</div>
-
-<div className="space-y-2">
-<button
-type="button"
-onClick={() => handleInputChange("paymentPlan", "full")}
-className={[
-"w-full rounded-2xl border px-4 py-3 text-left flex items-center justify-between",
-payPlan === "full" ? "border-gray-900" : "border-gray-200 hover:border-gray-300",
-].join(" ")}
->
-<div className="flex items-center gap-3">
-<div className={payPlan === "full" ? "h-4 w-4 rounded-full bg-gray-900" : "h-4 w-4 rounded-full border border-gray-400"} />
-<div className="text-sm text-gray-900">Оплатить всю сумму</div>
-</div>
-<div className="text-sm font-semibold text-gray-900">{formatRubLocal(totalRub)} ₽</div>
-</button>
-
-<button
-type="button"
-onClick={() => handleInputChange("paymentPlan", "deposit")}
-className={[
-"w-full rounded-2xl border px-4 py-3 text-left flex items-center justify-between",
-payPlan === "deposit" ? "border-gray-900" : "border-gray-200 hover:border-gray-300",
-].join(" ")}
->
-<div className="flex items-center gap-3">
-<div className={payPlan === "deposit" ? "h-4 w-4 rounded-full bg-gray-900" : "h-4 w-4 rounded-full border border-gray-400"} />
-<div className="text-sm text-gray-900">Оплатить депозит (5%)</div>
-</div>
-<div className="text-sm font-semibold text-gray-900">{formatRubLocal(depositRub)} ₽</div>
-</button>
-
-{payPlan === "deposit" && (
-<div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-xs text-gray-600">
-Депозит фиксирует бронь времени и ключевых ресурсов: слот церемонии, зал прощания (если выбран),
-логистику и подготовку. Депозит входит в общую сумму; остаток оплачивается позже.
-</div>
-)}
-
-<button
-type="button"
-onClick={() => handleInputChange("paymentPlan", "split")}
-className={[
-"w-full rounded-2xl border px-4 py-3 text-left flex items-center justify-between",
-payPlan === "split" ? "border-gray-900" : "border-gray-200 hover:border-gray-300",
-].join(" ")}
->
-<div className="flex items-center gap-3">
-<div className={payPlan === "split" ? "h-4 w-4 rounded-full bg-gray-900" : "h-4 w-4 rounded-full border border-gray-400"} />
-<div className="text-sm text-gray-900">Оплатить сплитом</div>
-</div>
-<div className="text-sm font-semibold text-gray-900">4× {formatRubLocal(splitSchedule[0].amountRub)} ₽</div>
-</button>
-</div>
-
-{payPlan === "split" && (
-<div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
-<div className="text-xs font-semibold text-gray-700 mb-2">График платежей</div>
-<div className="space-y-1">
-{splitSchedule.map((p) => (
-<div key={p.title} className="flex justify-between text-sm text-gray-700">
-<span>{p.title}</span>
-<span className="font-medium">{formatRubLocal(p.amountRub)} ₽</span>
-</div>
-))}
-</div>
-<div className="mt-3 text-xs text-gray-600">
-Остаток будет списываться автоматически по графику. 
-</div>
-</div>
-)}
-
-<div className="mt-5 flex items-center justify-between rounded-2xl bg-gray-900 text-white px-4 py-4">
-<div>
-<div className="text-[11px] text-white/70">К оплате сейчас</div>
-<div className="text-xl font-semibold">{formatRubLocal(payNowRub)} ₽</div>
-</div>
-
-<Button
-type="button"
-onClick={onPayClick}
-disabled={!canPay || isSubmittingOrder}
-className="rounded-2xl bg-white text-gray-900 hover:bg-gray-100 px-5 py-3 text-sm font-semibold disabled:opacity-60"
->
-{isSubmittingOrder ? "Оформление..." : "Оплатить"}
-</Button>
-</div>
-
-<div className="mt-3 text-xs text-gray-500">
-После оплаты вы получите подтверждение и детали на email.
-</div>
-</div>
-</div>
-</div>
 </div>
 </div>
 );

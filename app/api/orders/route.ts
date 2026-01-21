@@ -324,7 +324,12 @@ function buildEmailHtml(
   body: OrderPayload,
   services: ServiceItem[],
   totalRub: number,
-  options?: { orderSummaryHtml?: string; showServicesTable?: boolean },
+  options?: {
+    orderSummaryHtml?: string;
+    showServicesTable?: boolean;
+    paymentMethodLabel?: string;
+    paymentLink?: string | null;
+  },
 ) {
   const customerName = body.customer?.name ?? body.userName ?? "клиент";
   const customerEmail = body.customer?.email ?? body.userEmail ?? "";
@@ -401,6 +406,27 @@ function buildEmailHtml(
     : "";
 
   const notes = body.notes ?? body.formData?.specialRequests;
+  const paymentMethodLabel = options?.paymentMethodLabel;
+  const paymentLink = options?.paymentLink;
+  const paymentBlock = paymentMethodLabel
+    ? `
+    <h2 style="font-size:16px; margin:18px 0 8px;">${servicesHeadingIndex + 1}. Оплата</h2>
+    <p style="margin:0 0 8px;">
+      Способ оплаты: ${escapeHtml(paymentMethodLabel)}
+    </p>
+    ${
+      paymentLink
+        ? `<p style="margin:0 0 8px;">Ссылка на оплату: <a href="${escapeHtml(
+            paymentLink,
+          )}" target="_blank" rel="noreferrer">${escapeHtml(paymentLink)}</a></p>`
+        : `<p style="margin:0 0 8px;">Ссылка на оплату будет направлена отдельным письмом.</p>`
+    }
+    <div style="margin:12px 0; padding:12px; border:1px solid #e5e7eb; border-radius:12px; background:#f9fafb; font-size:12px; color:#374151;">
+      <strong>Важно:</strong> Мы не просим номер карты и CVC. Оплата только на защищённой странице банка/провайдера.
+      Если сомневаетесь — напишите на info@tihiydom.com
+    </div>
+    `
+    : "";
 
   return `
   <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color:#111; line-height:1.4;">
@@ -437,6 +463,7 @@ function buildEmailHtml(
 
     ${orderSummaryHtml}
     ${servicesTableHtml}
+    ${paymentBlock}
 
     ${
       notes
@@ -468,6 +495,27 @@ export async function POST(req: NextRequest) {
     const totalAmount = Math.round(totalRub * 100);
 
     const publicId = "order_" + crypto.randomBytes(6).toString("hex");
+    const paymentMethodRaw = String(body.paymentMethod ?? body.formData?.paymentMethod ?? "").trim();
+    const paymentMethod =
+      paymentMethodRaw === "card" || paymentMethodRaw === "sbp" || paymentMethodRaw === "transfer"
+        ? paymentMethodRaw
+        : undefined;
+    const paymentMethodLabel =
+      paymentMethod === "card"
+        ? "Картой по защищённой ссылке"
+        : paymentMethod === "sbp"
+          ? "СБП по QR"
+          : paymentMethod === "transfer"
+            ? "Оплата по банковским реквизитам"
+            : undefined;
+    const paymentLink =
+      paymentMethod === "card"
+        ? process.env.PAYMENT_LINK_CARD || null
+        : paymentMethod === "sbp"
+          ? process.env.PAYMENT_LINK_SBP || null
+          : paymentMethod === "transfer"
+            ? process.env.PAYMENT_LINK_TRANSFER || null
+            : null;
 
     const user = await prisma.user.upsert({
       where: { email: customerEmail },
@@ -484,9 +532,13 @@ export async function POST(req: NextRequest) {
         status: "PENDING",
         serviceType,
         totalAmount,
+        customerEmail,
+        paymentMethod: paymentMethod ?? null,
+        paymentLink,
         meta: JSON.stringify({ ...body, services }),
       },
     });
+    console.info("order_created", { orderId: publicId });
 
     // email
     const bodyForEmail: OrderPayload = {
@@ -545,6 +597,8 @@ export async function POST(req: NextRequest) {
     const html = buildEmailHtml(bodyForEmail, services, totalRub, {
       orderSummaryHtml,
       showServicesTable: true,
+      paymentMethodLabel,
+      paymentLink,
     });
 
     const notes = bodyForEmail.notes ?? bodyForEmail.formData?.specialRequests;
@@ -564,6 +618,12 @@ export async function POST(req: NextRequest) {
       "",
       "Состав заказа",
       summary.plainText || "Данные не заполнены",
+      paymentMethodLabel ? `\nОплата:\nСпособ оплаты: ${paymentMethodLabel}` : "",
+      paymentLink ? `Ссылка на оплату: ${paymentLink}` : "",
+      paymentMethodLabel && !paymentLink ? "Ссылка на оплату будет направлена отдельным письмом." : "",
+      paymentMethodLabel
+        ? "\nВажно: мы не просим номер карты и CVC. Оплата только на защищённой странице банка/провайдера. Если сомневаетесь — напишите на info@tihiydom.com"
+        : "",
       notes ? `\nДополнительные пожелания:\n${notes}` : "",
     ];
     const text = textParts.filter(Boolean).join("\n");
@@ -571,12 +631,14 @@ export async function POST(req: NextRequest) {
     try {
       await sendOrderEmail({
         to: customerEmail,
-        subject: "Договор и детали заказа",
+        subject: "Договор, детали заказа и оплата",
         html,
         text,
         orderId: publicId,
       });
+      console.info("email_sent_success", { orderId: publicId });
     } catch (e: any) {
+      console.error("email_sent_failed", { orderId: publicId, error: e?.message || String(e) });
       return NextResponse.json({ error: "Email send failed" }, { status: 500 });
     }
 
@@ -586,6 +648,8 @@ export async function POST(req: NextRequest) {
         orderId: publicId, // фронт ждёт строку
         totalAmount,
         totalRub,
+        emailSent: true,
+        paymentLink,
       },
       { status: 201 }
     );

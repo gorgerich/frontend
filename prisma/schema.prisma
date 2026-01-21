@@ -29,6 +29,9 @@ model Order {
   status      String   @default("PENDING") // PENDING|paid|canceled...
   serviceType String
   totalAmount Int      // копейки
+  customerEmail String?
+  paymentMethod String?
+  paymentLink  String?
   meta        String
 
   payments    Payment[]
