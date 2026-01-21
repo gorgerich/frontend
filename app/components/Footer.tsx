@@ -9,7 +9,7 @@ export function Footer() {
   const [helpOpen, setHelpOpen] = useState(false);
 
   return (
-    <footer className="w-full bg-neutral-50 border-t border-neutral-200 mt-20">
+    <footer className="w-full bg-neutral-50 border-t border-neutral-200 mt-8">
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-16">
           {/* Brand Column */}

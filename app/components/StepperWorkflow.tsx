@@ -3525,7 +3525,7 @@ function formatRub(n: number) {
   // simplified workflow
   if (selectedPackageForSimplified) {
     return (
-      <div ref={containerRef} className="max-w-5xl mx-auto -translate-y-12 pb-32">
+      <div ref={containerRef} className="max-w-5xl mx-auto -translate-y-12 pb-12">
         <SimplifiedStepperWorkflow
           selectedPackage={selectedPackageForSimplified as any}
           onBack={() => {
@@ -3540,7 +3540,7 @@ function formatRub(n: number) {
   }
 
   return (
-    <div ref={containerRef} className="max-w-5xl mx-auto -translate-y-12 pb-32">
+    <div ref={containerRef} className="max-w-5xl mx-auto -translate-y-12 pb-12">
       <Card className="bg-white/10 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30 relative">
         <CardHeader className="pb-4 pt-8 px-6 sm:px-8">
           <div className="absolute -top-5 right-8 z-50">
