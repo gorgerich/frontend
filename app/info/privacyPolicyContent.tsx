@@ -13,21 +13,12 @@ const sections = [
   { id: "section-10", title: "10. Как мы используем файлы cookie и другие подобные технологии" },
   { id: "section-11", title: "11. Обновление настоящей Политики" },
   { id: "section-12", title: "12. Вопросы и предложения" },
+  { id: "section-13", title: "13. Сведения об операторе" },
 ];
 
 export function PrivacyPolicyContent() {
   return (
     <div className="space-y-10">
-      <div className="space-y-3 text-sm leading-relaxed text-neutral-700">
-        <p>Оператор: Индивидуальный предприниматель Пачулия Ричард Гарегинович</p>
-        <p>ИНН: 773438344967</p>
-        <p>ОГРНИП: 323774600033021</p>
-        <p>Дата регистрации: 20.01.2023</p>
-        <p>Адрес регистрации: г. Москва, вн.тер.г. муниципальный округ Хорошево-Мневники</p>
-        <p>Сайт: tihiydom.com</p>
-        <p>Email: info@tihiydom.com</p>
-      </div>
-
       <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-600 mb-3">
           Содержание
@@ -83,15 +74,9 @@ export function PrivacyPolicyContent() {
           Для обеспечения использования Вами Сайтов и Сервисов Ваша Персональная информация собирается и используется
           Оператором, а именно:
         </p>
-        <div className="text-sm leading-relaxed text-neutral-700 space-y-1">
-          <p>Оператор: Индивидуальный предприниматель Пачулия Ричард Гарегинович</p>
-          <p>ИНН: 773438344967</p>
-          <p>ОГРНИП: 323774600033021</p>
-          <p>Дата регистрации: 20.01.2023</p>
-          <p>Адрес регистрации: г. Москва, вн.тер.г. муниципальный округ Хорошево-Мневники</p>
-          <p>Сайт: tihiydom.com</p>
-          <p>Email: info@tihiydom.com</p>
-        </div>
+        <p className="text-sm leading-relaxed text-neutral-700">
+          Сведения об Операторе приведены в разделе 13 настоящей Политики.
+        </p>
         <p className="text-sm leading-relaxed text-neutral-700">
           Направить обращение лицу, ответственному за организацию обработки персональных данных
           (Data Protection Officer/ответственное лицо), можно по адресу электронной почты: info@tihiydom.com.
@@ -363,6 +348,19 @@ export function PrivacyPolicyContent() {
           Оператор приветствует Ваши вопросы и предложения, касающиеся исполнения или изменения настоящей Политики.
           Пожалуйста, направьте запрос по адресу электронной почты: info@tihiydom.com
         </p>
+      </section>
+
+      <section id="section-13" className="space-y-4">
+        <h2 className="text-lg font-semibold text-neutral-900">13. Сведения об операторе</h2>
+        <div className="text-sm leading-relaxed text-neutral-700 space-y-1">
+          <p>Оператор: Индивидуальный предприниматель Пачулия Ричард Гарегинович</p>
+          <p>ИНН: 773438344967</p>
+          <p>ОГРНИП: 323774600033021</p>
+          <p>Дата регистрации: 20.01.2023</p>
+          <p>Адрес регистрации: г. Москва, вн.тер.г. муниципальный округ Хорошево-Мневники</p>
+          <p>Сайт: tihiydom.com</p>
+          <p>Email: info@tihiydom.com</p>
+        </div>
       </section>
     </div>
   );
