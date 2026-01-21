@@ -509,13 +509,13 @@ onUpdateFormData: (field: string, value: any) => void;
 
 const DEFAULT_FORM_DATA: FormDataShape = {
 serviceType: "",
-hasHall: false,
+hasHall: true,
 hallDuration: 60,
 ceremonyType: "",
 confession: "",
 ceremonyOrder: "",
 cemetery: "",
-hearseRoute: { morgue: false, hall: false, church: false, cemetery: false },
+hearseRoute: { morgue: true, hall: true, church: true, cemetery: true },
 needsPallbearers: false,
 specialRequests: "",
 fullName: "",
@@ -976,13 +976,14 @@ useEffect(() => {
   if (currentStep !== 2) return;
   if (logisticsStartedRef.current) return;
   logisticsStartedRef.current = true;
+  const dedupeKey = `${trackingSessionId}:${trackingFlow}:step3`;
   trackEvent(
     "logistics_started",
     { flow: trackingFlow },
-    `${trackingSessionId}:${trackingFlow}:step3`,
+    dedupeKey,
   );
   reachMetrikaGoal("logistics_started");
-}, [currentStep]);
+}, [currentStep, trackingFlow, trackingSessionId]);
 
 useEffect(() => {
   if (currentStep !== 3) return;
@@ -1450,6 +1451,33 @@ safeFormData.ceremonyType === "combined" && "border-black bg-gray-50"
 </Select>
 </div>
 )}
+
+<Separator />
+
+<div>
+<Label className="mb-3 block">Длительность</Label>
+<p className="text-xs text-gray-500 mb-3">Рекомендуем 60–90 мин</p>
+<div className="grid grid-cols-3 gap-3">
+{[30, 60, 90].map((duration) => (
+<button
+key={duration}
+type="button"
+onClick={() => handleInputChange("hallDuration", duration)}
+className={cn(
+"p-4 border-2 rounded-full text-center transition-all",
+safeFormData.hallDuration === duration
+? "border-gray-900 bg-gray-50"
+: "border-gray-200 hover:border-gray-300"
+)}
+>
+<div className="text-sm mb-1">{duration} мин</div>
+<div className="text-xs text-gray-500">
+{(PRICES.hallDuration as any)[duration].toLocaleString("ru-RU")} ₽
+</div>
+</button>
+))}
+</div>
+</div>
 </>
 )}
 </div>

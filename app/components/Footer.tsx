@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Phone, Mail, Shield, Clock } from "./Icons";
 
 export function Footer() {
@@ -26,12 +27,12 @@ export function Footer() {
               <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-neutral-400">Связь</h3>
               <div className="space-y-3">
                 <a 
-                  href="tel:+74951234567" 
+                  href="tel:+79852489425" 
                   className="block group"
                 >
                   <div className="flex items-center gap-2 text-neutral-900 group-hover:text-neutral-600 transition-colors">
                     <Phone className="w-4 h-4" />
-                    <span className="font-mono text-lg">+7 (495) 123-45-67</span>
+                    <span className="font-mono text-lg">+7 (985) 248-94-25</span>
                   </div>
                   <span className="text-xs text-neutral-400 ml-6">Круглосуточно</span>
                 </a>
@@ -83,9 +84,15 @@ export function Footer() {
               <p>Информация на сайте не является публичной офертой. Цены фиксируются в договоре.</p>
             </div>
             <div className="flex flex-wrap gap-6 text-xs font-medium text-neutral-500">
-              <a href="#" className="hover:text-neutral-900 transition-colors">Конфиденциальность</a>
-              <a href="#" className="hover:text-neutral-900 transition-colors">Оферта</a>
-              <a href="#" className="hover:text-neutral-900 transition-colors">Карта сайта</a>
+              <Link href="/info" className="hover:text-neutral-900 transition-colors">
+                Конфиденциальность
+              </Link>
+              <Link href="/info/offer" className="hover:text-neutral-900 transition-colors">
+                Оферта
+              </Link>
+              <Link href="/sitemap" className="hover:text-neutral-900 transition-colors">
+                Карта сайта
+              </Link>
             </div>
           </div>
         </div>

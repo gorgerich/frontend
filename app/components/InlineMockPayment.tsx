@@ -81,6 +81,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
   const trackingSessionId = getTrackingSessionId();
   const lastPayPlanRef = useRef<PayPlan>(payPlan);
   const payPlanSelectionSeqRef = useRef(0);
+  const didMountRef = useRef(false);
   const payPlanGoalMap: Record<PayPlan, string> = {
     full: "payment_option_full",
     deposit: "payment_option_deposit_5",
@@ -140,6 +141,10 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
   }, [paid, contactEmail, method, cardNumber, exp, cvc]);
 
   useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
     if (lastPayPlanRef.current === payPlan) return;
     lastPayPlanRef.current = payPlan;
     payPlanSelectionSeqRef.current += 1;

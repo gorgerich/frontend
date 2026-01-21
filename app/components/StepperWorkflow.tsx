@@ -1178,7 +1178,7 @@ export function StepperWorkflow({
       { entry_mode: "wizard", flow: trackingFlow },
       `${trackingSessionId}:${trackingFlow}:step1`,
     );
-  }, [workflowMode, currentStep]);
+  }, [workflowMode, currentStep, trackingFlow, trackingSessionId]);
 
   useEffect(() => {
     if (workflowMode !== "wizard" || currentStep !== 0) return;
@@ -1277,13 +1277,14 @@ export function StepperWorkflow({
     if (currentStep !== 1) return;
     if (logisticsStartedRef.current) return;
     logisticsStartedRef.current = true;
+    const dedupeKey = `${trackingSessionId}:${trackingFlow}:step4`;
     trackEvent(
       "logistics_started",
       { flow: trackingFlow },
-      `${trackingSessionId}:${trackingFlow}:step4`,
+      dedupeKey,
     );
     reachMetrikaGoal("logistics_started");
-  }, [workflowMode, currentStep]);
+  }, [workflowMode, currentStep, trackingFlow, trackingSessionId]);
 
   useEffect(() => {
     if (workflowMode !== "wizard") return;
