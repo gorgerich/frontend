@@ -3283,7 +3283,12 @@ function formatRub(n: number) {
               />
               <Label htmlFor="privacy" className="text-xs md:text-sm cursor-pointer leading-snug">
                 Я согласен на обработку персональных данных и подтверждаю, что ознакомлен с{" "}
-                <a href="#" className="underline text-blue-600">
+                <a
+                  href="/info"
+                  className="underline text-blue-600"
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   политикой конфиденциальности
                 </a>
               </Label>

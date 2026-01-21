@@ -85,7 +85,7 @@ export function Footer() {
             </div>
             <div className="flex flex-wrap gap-6 text-xs font-medium text-neutral-500">
               <Link href="/info" className="hover:text-neutral-900 transition-colors">
-                Конфиденциальность
+                Политика конфиденциальности
               </Link>
               <Link href="/info/offer" className="hover:text-neutral-900 transition-colors">
                 Оферта

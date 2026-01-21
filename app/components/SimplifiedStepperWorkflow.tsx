@@ -2119,7 +2119,15 @@ className="mt-1"
 />
 <div className="flex-1">
 <Label htmlFor="consent" className="cursor-pointer text-sm">
-Я согласен(а) на обработку персональных данных и подтверждаю, что ознакомлен(а) с политикой конфиденциальности
+Я согласен(а) на обработку персональных данных и подтверждаю, что ознакомлен(а) с{" "}
+<a
+  href="/info"
+  className="underline text-blue-600"
+  target="_blank"
+  rel="noreferrer"
+>
+политикой конфиденциальности
+</a>
 </Label>
 {showConsentError && (
 <p className="text-xs text-red-600 mt-2">Необходимо дать согласие для продолжения</p>
