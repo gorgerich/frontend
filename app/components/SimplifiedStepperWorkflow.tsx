@@ -45,8 +45,8 @@ type CalculatorConfig,
 type FormData as CalculatorFormData,
 PRICES,
 ADDITIONAL_SERVICES,
-trackEvent,
-getTrackingSessionId,
+  trackEvent,
+  getTrackingSessionId,
 } from "./calculationUtils";
 
 import type { ImgHTMLAttributes } from "react";
@@ -589,6 +589,8 @@ formData,
 onUpdateFormData,
 }: SimplifiedStepperWorkflowProps) {
 const containerRef = useRef<HTMLDivElement>(null);
+const topRef = useRef<HTMLDivElement | null>(null);
+const didInitialScrollRef = useRef(false);
 
 const [currentStep, setCurrentStep] = useState(0);
 const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -596,8 +598,7 @@ const [isTransitioning, setIsTransitioning] = useState(false);
 
 const [showConsentError, setShowConsentError] = useState(false);
 
-const isInitialMountRef = useRef(true);
-const previousStepRef = useRef(0);
+const didStepScrollMountRef = useRef(false);
 const wizardStartedRef = useRef(false);
 const attributesStartedRef = useRef(false);
 const logisticsStartedRef = useRef(false);
@@ -626,6 +627,29 @@ const [localFormData, setLocalFormData] = useState<FormDataShape>(() => {
     return DEFAULT_FORM_DATA;
   }
 });
+
+const scrollToTop = () => {
+  if (typeof window === "undefined") return;
+  if (topRef.current) {
+    topRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+// Скроллим к верху при первом открытии simplified после выбора тарифа
+useEffect(() => {
+  if (typeof window === "undefined") return;
+  if (!selectedPackage?.id) {
+    didInitialScrollRef.current = false;
+    return;
+  }
+  if (!topRef.current || didInitialScrollRef.current) return;
+  didInitialScrollRef.current = true;
+  requestAnimationFrame(() => {
+    scrollToTop();
+  });
+}, [selectedPackage?.id]);
 
 // ВСЕГДА безопасный объект для рендера (главное исправление: ВСЕГДА использовать его в JSX)
 const safeFormData: FormDataShape = localFormData ?? DEFAULT_FORM_DATA;
@@ -747,6 +771,11 @@ const [orderConfirmation, setOrderConfirmation] = useState<{
   paymentLink?: string | null;
 } | null>(null);
 
+const resetOrderConfirmation = () => {
+  if (!orderConfirmation) return;
+  setOrderConfirmation(null);
+};
+
 const simplifiedCalculatorConfig = useMemo<CalculatorConfig>(() => {
   const packages = selectedPackage
     ? [
@@ -807,8 +836,8 @@ const simplifiedCalculatorConfig = useMemo<CalculatorConfig>(() => {
 
 const calculatorFormData: CalculatorFormData = {
   serviceType: safeFormData.serviceType,
-  hasHall: false,
-  hallDuration: 0,
+  hasHall: true,
+  hallDuration: Number(safeFormData.hallDuration || 0),
   ceremonyType: "",
   packageType: selectedPackage?.id ?? "",
   needsHearse: false,
@@ -835,8 +864,12 @@ const fallbackTariffSection =
     : null;
 const tariffSection =
   order.sections.find((section) => section.title.startsWith('Пакет "')) ?? fallbackTariffSection;
-const simplifiedSections = tariffSection ? [tariffSection] : [];
-const totalRub = Math.max(0, Math.round(tariffSection?.total || 0));
+const formatSection = order.sections.find((section) => section.title === "Формат");
+const simplifiedSections = [
+  ...(tariffSection ? [tariffSection] : []),
+  ...(formatSection?.items?.length ? [formatSection] : []),
+];
+const totalRub = Math.max(0, Math.round(order.total || 0));
 const floatingBreakdown = simplifiedSections.map((section) => ({
   category: section.title,
   price: Math.round(section.total || 0),
@@ -885,13 +918,15 @@ useEffect(() => {
   }
 }, [localFormData]);
 
-// Автоматический скролл вверх при смене шага
+// Автоматический скролл к началу simplified-stepper при смене шага
 useEffect(() => {
-if (!isInitialMountRef.current && previousStepRef.current !== currentStep) {
-window.scrollTo({ top: 0, behavior: "smooth" });
-}
-if (isInitialMountRef.current) isInitialMountRef.current = false;
-previousStepRef.current = currentStep;
+  if (!didStepScrollMountRef.current) {
+    didStepScrollMountRef.current = true;
+    return;
+  }
+  requestAnimationFrame(() => {
+    scrollToTop();
+  });
 }, [currentStep]);
 
 useEffect(() => {
@@ -1175,21 +1210,20 @@ setCompletedSteps((prev) => [...prev, currentStep]);
 setTimeout(() => {
 setCurrentStep((prev) => prev + 1);
 setIsTransitioning(false);
-window.scrollTo({ top: 0, behavior: "smooth" });
 }, 200);
 }
 };
 
 const handlePrev = () => {
 if (currentStep > 0) {
+resetOrderConfirmation();
 setCurrentStep((prev) => prev - 1);
-window.scrollTo({ top: 0, behavior: "smooth" });
 }
 };
 
 const handleStepClick = (stepIndex: number) => {
+resetOrderConfirmation();
 setCurrentStep(stepIndex);
-window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 // Фильтрация кладбищ по поисковому запросу
@@ -2434,6 +2468,7 @@ return null;
 
 return (
 <div ref={containerRef} className="w-full">
+  <div ref={topRef} className="scroll-mt-16" />
 <Card className="bg-white/20 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30 relative">
 <CardHeader className="space-y-6 pb-6">
 <Button
@@ -2445,15 +2480,6 @@ type="button"
 <ArrowLeft className="h-4 w-4" />
 Назад к пакетам
 </Button>
-
-<div className="text-center">
-<CardTitle className="text-2xl sm:text-3xl mb-2 text-white md:text-gray-900">
-Настройка пакета
-</CardTitle>
-<CardDescription className="text-base text-white md:text-gray-900">
-Персонализируйте выбранное решение под ваши потребности
-</CardDescription>
-</div>
 
 <Stepper
 steps={simplifiedSteps}
@@ -2536,12 +2562,14 @@ type="button"
 </div>
 </CardContent>
 </Card>
-<SimplifiedFloatingCalculator
-  total={totalRub}
-  breakdown={floatingBreakdown}
-  flow={trackingFlow}
-  trackingSessionId={trackingSessionId}
-/>
+{!orderConfirmation?.emailSent && (
+  <SimplifiedFloatingCalculator
+    total={totalRub}
+    breakdown={floatingBreakdown}
+    flow={trackingFlow}
+    trackingSessionId={trackingSessionId}
+  />
+)}
 </div>
 );
 }

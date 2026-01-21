@@ -242,7 +242,7 @@ const PACKAGES_CREMATION = [
   {
     id: "cremation-standard",
     name: "Тихая церемония",
-    price: 35000,
+    price: 200000,
     description: "Базовый комплект услуг для кремации",
     features: [
       "Оформление документов",
@@ -257,7 +257,7 @@ const PACKAGES_CREMATION = [
   {
     id: "cremation-comfort",
     name: "Традиционное прощание",
-    price: 75000,
+    price: 400000,
     description: "Расширенный набор услуг для кремации",
     features: [
       "Оформление документов",
@@ -275,7 +275,7 @@ const PACKAGES_CREMATION = [
   {
     id: "cremation-premium",
     name: "Особое внимание",
-    price: 120000,
+    price: 600000,
     description: "Полный спектр услуг премиум класса",
     features: [
       "Оформление документов",
@@ -1064,6 +1064,7 @@ splitSchedule?: string;
   onStepChange?: (step: number) => void;
   onCemeteryCategoryChange?: (category: "standard" | "comfort" | "premium") => void;
   onModeChange?: (mode: "wizard" | "package") => void;
+  onOrderConfirmed?: (confirmed: boolean) => void;
 }
 
 export function StepperWorkflow({
@@ -1072,6 +1073,7 @@ export function StepperWorkflow({
   onStepChange,
   onCemeteryCategoryChange,
   onModeChange,
+  onOrderConfirmed,
 }: StepperWorkflowProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -1084,7 +1086,7 @@ export function StepperWorkflow({
   const isInitialMountRef = useRef(true);
   const previousStepRef = useRef(0);
 
-  const [workflowMode, setWorkflowMode] = useState<"wizard" | "packages">("wizard");
+  const [workflowMode, setWorkflowMode] = useState<"wizard" | "packages">("packages");
   const [selectedPackageForSimplified, setSelectedPackageForSimplified] =
     useState<SimplifiedPackage | null>(null);
 
@@ -1132,6 +1134,11 @@ export function StepperWorkflow({
       method,
     });
 
+  const resetOrderConfirmation = () => {
+    if (!orderConfirmation) return;
+    setOrderConfirmation(null);
+  };
+
   const scrollToWizardTop = () => {
     if (!containerRef.current) return;
     containerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1149,6 +1156,11 @@ export function StepperWorkflow({
   useEffect(() => {
     if (!isInitialMountRef.current && onStepChange) onStepChange(currentStep);
   }, [currentStep, onStepChange]);
+
+  useEffect(() => {
+    if (!onOrderConfirmed) return;
+    onOrderConfirmed(Boolean(orderConfirmation?.emailSent));
+  }, [orderConfirmation, onOrderConfirmed]);
 
   // ✅ скролл-триггер: только по флагу (т.е. "Далее")
   useEffect(() => {
@@ -1879,18 +1891,21 @@ export function StepperWorkflow({
     if (currentStep <= 0) return;
     // Назад — без скролла (как шаг-клик)
     shouldScrollOnStepChangeRef.current = false;
+    resetOrderConfirmation();
     setCurrentStep((s) => s - 1);
   };
 
   const handleStepClick = (stepIndex: number) => {
     // ✅ круги — НЕ скроллят
     shouldScrollOnStepChangeRef.current = false;
+    resetOrderConfirmation();
     setCurrentStep(stepIndex);
   };
 
   const handleEditStep = (stepIndex: number) => {
     // ✅ редактирование — тоже без скролла
     shouldScrollOnStepChangeRef.current = false;
+    resetOrderConfirmation();
     setCurrentStep(stepIndex);
   };
 
@@ -3559,6 +3574,19 @@ function formatRub(n: number) {
               <button
                 type="button"
                 onClick={() => {
+                  openPackagesMode();
+                  onModeChange?.("package");
+                }}
+                className={cn(
+                  "px-6 py-2 rounded-full text-sm font-medium transition-all duration-200",
+                  workflowMode === "packages" ? "bg-white text-black shadow-lg" : "text-white hover:bg-white/10",
+                )}
+              >
+                Готовые решения
+              </button>
+              <button
+                type="button"
+                onClick={() => {
                   setWorkflowMode("wizard");
                   setSelectedPackageForSimplified(null);
                   onModeChange?.("wizard");
@@ -3569,19 +3597,6 @@ function formatRub(n: number) {
                 )}
               >
                 Пошаговый мастер
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  openPackagesMode();
-                  onModeChange?.("package");
-                }}
-                className={cn(
-                  "px-6 py-2 rounded-full text-sm font-medium transition-all duration-200",
-                  workflowMode === "packages" ? "bg-white text-black shadow-lg" : "text-white hover:bg-white/10",
-                )}
-              >
-                Готовые решения
               </button>
             </div>
           </div>

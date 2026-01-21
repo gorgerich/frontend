@@ -98,7 +98,7 @@ export const PACKAGES = [
   {
     id: "cremation-standard",
     name: "Стандарт",
-    price: 35000,
+    price: 200000,
     description: "Базовый комплект услуг для кремации",
     features: [
       "Оформление документов",
@@ -112,7 +112,7 @@ export const PACKAGES = [
   {
     id: "cremation-comfort",
     name: "Комфорт",
-    price: 75000,
+    price: 400000,
     description: "Расширенный набор услуг для кремации",
     features: [
       "Оформление документов",
@@ -129,7 +129,7 @@ export const PACKAGES = [
   {
     id: "cremation-premium",
     name: "Премиум",
-    price: 120000,
+    price: 600000,
     description: "Полный спектр услуг премиум класса",
     features: [
       "Оформление документов",
@@ -147,6 +147,15 @@ export const PACKAGES = [
     ],
   },
 ];
+
+export const SIMPLIFIED_HALL_INCLUDED_MINUTES_BY_PACKAGE: Record<string, number> = {
+  basic: 30,
+  standard: 60,
+  premium: 90,
+  "cremation-standard": 30,
+  "cremation-comfort": 60,
+  "cremation-premium": 90,
+};
 
 // Дополнительные услуги
 export const ADDITIONAL_SERVICES = [
@@ -604,6 +613,7 @@ export type CalculatorConfig = {
   includeAdditionalWithPackage: boolean;
   includeBaseWithPackage: boolean;
   packageSectionMinPrice: number;
+  hallIncludedMinutesByPackage?: Record<string, number>;
 };
 
 export interface FormData {
@@ -689,12 +699,34 @@ export function calculateOrder(
   let formatTotal = 0;
   const hallDuration = Number(formData.hallDuration || 0);
   if (formData.hasHall) {
-    const hallPrice = config.prices.hallDuration[hallDuration as keyof typeof config.prices.hallDuration] || 0;
-    formatItems.push({
-      label: hallDuration ? `Зал прощания (${hallDuration} мин)` : "Зал прощания",
-      price: hallPrice,
-    });
-    formatTotal += hallPrice;
+    const includedMinutes =
+      hasPackage && packageType && config.hallIncludedMinutesByPackage
+        ? config.hallIncludedMinutesByPackage[packageType]
+        : undefined;
+    if (includedMinutes && hallDuration) {
+      const selectedPrice =
+        config.prices.hallDuration[hallDuration as keyof typeof config.prices.hallDuration] || 0;
+      const includedPrice =
+        config.prices.hallDuration[includedMinutes as keyof typeof config.prices.hallDuration] || 0;
+      const extraCost = Math.max(0, selectedPrice - includedPrice);
+      if (extraCost > 0) {
+        const extraBlocks = Math.ceil((hallDuration - includedMinutes) / 30);
+        const blocksLabel = extraBlocks > 0 ? ` (${extraBlocks} × 30 мин)` : "";
+        formatItems.push({
+          label: `Дополнительное время зала${blocksLabel}`,
+          price: extraCost,
+        });
+        formatTotal += extraCost;
+      }
+    } else {
+      const hallPrice =
+        config.prices.hallDuration[hallDuration as keyof typeof config.prices.hallDuration] || 0;
+      formatItems.push({
+        label: hallDuration ? `Зал прощания (${hallDuration} мин)` : "Зал прощания",
+        price: hallPrice,
+      });
+      formatTotal += hallPrice;
+    }
   }
 
   const ceremonyPrice =

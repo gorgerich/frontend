@@ -222,8 +222,9 @@ userEmail: '',
 
 const [formData, setFormData] = useState(initialFormData);
 const [currentStep, setCurrentStep] = useState(0);
+const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
 const [selectedCemeteryCategory, setSelectedCemeteryCategory] =
-useState<'standard' | 'comfort' | 'premium'>('standard');
+  useState<'standard' | 'comfort' | 'premium'>('standard');
 const trackingSessionId = getTrackingSessionId();
 const calculatorSummary = useMemo(() => {
 const baseTotal = calculateTotal(formData, selectedCemeteryCategory);
@@ -315,6 +316,7 @@ onUpdateFormData={handleUpdateFormData}
 onStepChange={handleStepChange}
 onCemeteryCategoryChange={handleCemeteryCategoryChange}
 onModeChange={handleModeChange}
+onOrderConfirmed={setIsOrderConfirmed}
 />
 </div>
 
@@ -322,7 +324,7 @@ onModeChange={handleModeChange}
 <PackagesSection formData={formData} onUpdateFormData={handleUpdateFormData} />
 )}
 
-{currentStep >= 1 && (
+{currentStep >= 1 && !isOrderConfirmed && (
 <FloatingCalculator
 total={calculatorSummary.total}
 breakdown={calculatorSummary.breakdown}
