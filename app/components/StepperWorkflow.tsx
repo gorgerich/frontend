@@ -3667,17 +3667,17 @@ function formatRub(n: number) {
                 ].map((item, index) => (
                   <div
                     key={item.title}
-                    className="w-[calc(100vw-32px)] max-w-full flex-shrink-0 snap-start rounded-2xl border border-white/20 md:border-white/15 bg-white/12 md:bg-white/5 p-4 backdrop-blur-xl md:backdrop-blur-md sm:w-[420px]"
+                    className="w-[calc(100vw-32px)] max-w-full flex-shrink-0 snap-start rounded-2xl border border-white/20 md:border-white/15 bg-white/12 md:bg-white/5 p-3 sm:p-4 backdrop-blur-xl md:backdrop-blur-md sm:w-[460px] md:w-[520px]"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xs font-semibold text-white/90">
+                    <div className="flex items-start gap-2">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-white/10 text-[10px] font-semibold text-white/90">
                         {index + 1}
                       </span>
                       <div>
-                        <div className="text-sm font-semibold text-white/90">
+                        <div className="text-[13px] font-semibold text-white/90 md:text-sm">
                           {item.title}
                         </div>
-                        <div className="space-y-1 text-xs leading-relaxed text-white/75 md:text-white/60">
+                        <div className="space-y-0.5 text-[11px] leading-snug text-white/75 md:text-xs md:leading-snug md:text-white/60">
                           {(Array.isArray(item.text) ? item.text : [item.text]).map((line) => (
                             <p key={line}>{line}</p>
                           ))}
