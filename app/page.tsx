@@ -184,7 +184,7 @@ window.scrollTo(0, 0);
 const initialFormData = {
 serviceType: 'burial' as 'burial' | 'cremation',
 hasHall: true,
-hallDuration: 60,
+hallDuration: 30,
 ceremonyType: 'civil',
 confession: '',
 ceremonyOrder: 'civil-first',

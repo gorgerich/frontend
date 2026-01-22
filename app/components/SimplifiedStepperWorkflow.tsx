@@ -43,8 +43,8 @@ import {
 calculateOrder,
 type CalculatorConfig,
 type FormData as CalculatorFormData,
-PRICES,
-ADDITIONAL_SERVICES,
+  PRICES,
+  ADDITIONAL_SERVICES,
   trackEvent,
   getTrackingSessionId,
 } from "./calculationUtils";
@@ -510,12 +510,12 @@ onUpdateFormData: (field: string, value: any) => void;
 }
 
 const DEFAULT_FORM_DATA: FormDataShape = {
-serviceType: "",
+serviceType: "burial",
 hasHall: true,
-hallDuration: 60,
-ceremonyType: "",
+hallDuration: 30,
+ceremonyType: "civil",
 confession: "",
-ceremonyOrder: "",
+ceremonyOrder: "civil-first",
 cemetery: "",
 hearseRoute: { morgue: true, hall: true, church: true, cemetery: true },
 needsPallbearers: false,
@@ -628,6 +628,8 @@ const [localFormData, setLocalFormData] = useState<FormDataShape>(() => {
   }
 });
 
+const didInitDefaultsRef = useRef(false);
+
 const scrollToTop = () => {
   if (typeof window === "undefined") return;
   if (topRef.current) {
@@ -653,6 +655,22 @@ useEffect(() => {
 
 // ВСЕГДА безопасный объект для рендера (главное исправление: ВСЕГДА использовать его в JSX)
 const safeFormData: FormDataShape = localFormData ?? DEFAULT_FORM_DATA;
+
+useEffect(() => {
+  if (didInitDefaultsRef.current) return;
+  setLocalFormData((prev) => {
+    const next = { ...prev };
+    if (!next.serviceType) next.serviceType = "burial";
+    if (next.hasHall == null) next.hasHall = true;
+    if (!next.hallDuration) next.hallDuration = 30;
+    if (!next.ceremonyType) next.ceremonyType = "civil";
+    if (!next.ceremonyOrder) next.ceremonyOrder = "civil-first";
+    if (!next.paymentPlan) next.paymentPlan = "full";
+    if (!next.liningColor) next.liningColor = "satin-white";
+    return next;
+  });
+  didInitDefaultsRef.current = true;
+}, []);
 const lastPayPlanRef = useRef<"full" | "deposit" | "split">(
   (safeFormData.paymentPlan || "full") as "full" | "deposit" | "split",
 );
@@ -836,7 +854,7 @@ const simplifiedCalculatorConfig = useMemo<CalculatorConfig>(() => {
 
 const calculatorFormData: CalculatorFormData = {
   serviceType: safeFormData.serviceType,
-  hasHall: true,
+  hasHall: !!safeFormData.hasHall,
   hallDuration: Number(safeFormData.hallDuration || 0),
   ceremonyType: "",
   packageType: selectedPackage?.id ?? "",

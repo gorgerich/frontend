@@ -1105,6 +1105,7 @@ export function StepperWorkflow({
   const [showHearseDialog, setShowHearseDialog] = useState(false);
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
+  const didInitDefaultsRef = useRef(false);
 
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [orderConfirmation, setOrderConfirmation] = useState<{
@@ -1138,6 +1139,35 @@ export function StepperWorkflow({
     if (!orderConfirmation) return;
     setOrderConfirmation(null);
   };
+
+  useEffect(() => {
+    if (didInitDefaultsRef.current) return;
+    const updates: Array<[string, any]> = [];
+
+    if (!formData.serviceType) updates.push(["serviceType", "burial"]);
+    if (formData.hasHall == null) updates.push(["hasHall", true]);
+    if (!formData.hallDuration) updates.push(["hallDuration", 30]);
+    if (!formData.ceremonyType) updates.push(["ceremonyType", "civil"]);
+    if (!formData.ceremonyOrder) updates.push(["ceremonyOrder", "civil-first"]);
+    if (!formData.paymentPlan) updates.push(["paymentPlan", "full"]);
+    if (!formData.hearseCategory) updates.push(["hearseCategory", "standard"]);
+    if (formData.needsHearse == null) updates.push(["needsHearse", true]);
+    if (formData.needsFamilyTransport == null) updates.push(["needsFamilyTransport", false]);
+    if (!formData.familyTransportSeats) updates.push(["familyTransportSeats", 5]);
+    if (formData.needsPallbearers == null) updates.push(["needsPallbearers", true]);
+    if (!formData.hearseRoute) {
+      updates.push([
+        "hearseRoute",
+        { morgue: true, hall: true, church: true, cemetery: true },
+      ]);
+    }
+    if (!Array.isArray(formData.selectedAdditionalServices)) {
+      updates.push(["selectedAdditionalServices", []]);
+    }
+
+    updates.forEach(([field, value]) => onUpdateFormData(field, value));
+    didInitDefaultsRef.current = true;
+  }, [formData, onUpdateFormData]);
 
   const scrollToWizardTop = () => {
     if (!containerRef.current) return;
@@ -3569,7 +3599,98 @@ function formatRub(n: number) {
             </button>
           </div>
 
-          <div className="flex justify-center mb-6">
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-white/80 md:text-white/60">
+                  Как это работает
+                </p>
+                <p className="mt-1 text-sm text-white/80 md:text-white/70">
+                  6 шагов — чтобы вы понимали, что будет дальше.
+                </p>
+              </div>
+            </div>
+
+            <div className="relative mt-4">
+              <div className="pointer-events-none absolute left-0 top-0 hidden h-full w-10 bg-gradient-to-r from-white/10 to-transparent md:block" />
+              <div className="pointer-events-none absolute right-0 top-0 hidden h-full w-10 bg-gradient-to-l from-white/10 to-transparent md:block" />
+              <div className="-mx-2 flex gap-3 overflow-x-auto px-2 pb-2 pt-1 scrollbar-hide snap-x snap-mandatory">
+                {[
+                  {
+                    title: "Старт",
+                    text: [
+                      "Готовый сценарий — если нужно быстро.",
+                      "Пошаговый мастер — если хотите настроить всё детально.",
+                      "Вы можете изменить любые решения позже.",
+                    ],
+                  },
+                  {
+                    title: "Формат",
+                    text: [
+                      "Выбираете тип церемонии, атрибутику, логистику и предпочтительное время.",
+                      "Система сразу показывает структуру и ориентиры по стоимости.",
+                      "Без звонков. Без давления.",
+                    ],
+                  },
+                  {
+                    title: "Проверка",
+                    text: [
+                      "Указываете необходимые данные.",
+                      "Видите полную детализацию: что включено, как всё будет происходить и итоговую сумму.",
+                      "Никаких скрытых пунктов.",
+                    ],
+                  },
+                  {
+                    title: "Оплата",
+                    text: [
+                      "Вы выбираете способ оплаты и указываете email для договора.",
+                      "Мы отправляем вам подтверждение и документы на почту.",
+                      "Вы ничего не оплачиваете, пока всё не проверите.",
+                    ],
+                  },
+                  {
+                    title: "Координатор",
+                    text: [
+                      "Ваш заказ передаётся специалисту с полной детализацией.",
+                      "Он связывается с вами только для уточнений и подтверждений.",
+                      "Без навязывания услуг.",
+                    ],
+                  },
+                  {
+                    title: "Церемония",
+                    text: [
+                      "Координатор приезжает в назначенное время и место.",
+                      "Он сопровождает весь процесс и отвечает за выполнение всех договорённостей.",
+                      "Вы можете сосредоточиться на прощании, а не на организации.",
+                    ],
+                  },
+                ].map((item, index) => (
+                  <div
+                    key={item.title}
+                    className="min-w-[240px] flex-shrink-0 snap-start rounded-2xl border border-white/20 md:border-white/15 bg-white/12 md:bg-white/5 p-4 backdrop-blur-xl md:backdrop-blur-md sm:min-w-[260px]"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xs font-semibold text-white/90">
+                        {index + 1}
+                      </span>
+                      <div>
+                        <div className="text-sm font-semibold text-white/90">
+                          {item.title}
+                        </div>
+                        <div className="space-y-1 text-xs leading-relaxed text-white/75 md:text-white/60">
+                          {(Array.isArray(item.text) ? item.text : [item.text]).map((line) => (
+                            <p key={line}>{line}</p>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-center mb-6 mt-2">
             <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex">
               <button
                 type="button"

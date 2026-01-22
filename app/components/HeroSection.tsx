@@ -24,15 +24,16 @@ export function HeroSection() {
     <section className="relative w-full px-4 pt-8 pb-16 md:pb-20 lg:pb-24">
       <div className="mx-auto max-w-7xl">
         <div className="relative h-[60vh] w-full overflow-visible rounded-3xl md:h-[70vh] lg:h-[75vh] md:rounded-[40px]">
-          {/* Background */}
-          <img
-            src={heroImage}
-            alt="Тихая Память"
-            className="absolute inset-0 h-full w-full rounded-3xl object-cover md:rounded-[40px]"
-          />
-
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/70 via-black/60 to-black/75 md:rounded-[40px]" />
+          {/* Background (extended only on mobile) */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[calc(100%+240px)] md:h-full z-0">
+            <img
+              src={heroImage}
+              alt="Тихая Память"
+              className="absolute inset-0 h-full w-full rounded-3xl object-cover md:rounded-[40px]"
+            />
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/70 via-black/60 to-black/75 md:rounded-[40px]" />
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/50 via-black/25 to-black/10 md:hidden" />
+          </div>
 
           {/* Top buttons */}
           <div className="pointer-events-none absolute -top-10 left-0 right-0 z-20 flex justify-center md:-top-14">
@@ -44,9 +45,9 @@ export function HeroSection() {
           {/* TEXT LAYER */}
           <div className="absolute inset-0 z-10">
             {/* MOBILE */}
-            <div className="flex h-full items-center justify-center px-6 text-center md:hidden">
+            <div className="flex h-full items-center justify-center px-6 pb-24 text-center sm:pb-32 md:hidden">
               <h1
-                className="mx-auto mb-4 max-w-3xl tracking-tight text-white drop-shadow-2xl"
+                className="mx-auto mb-4 max-w-[28rem] tracking-tight text-white drop-shadow-2xl sm:max-w-[32rem]"
                 style={{
                   fontFamily: "var(--font-family-serif)",
                   textShadow:
