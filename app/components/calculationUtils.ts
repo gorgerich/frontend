@@ -944,6 +944,42 @@ export function getTrackingSessionId() {
   return w.__tdSessionId;
 }
 
+const YM_FALLBACK_ID = 106219376;
+const YM_ALLOWED_GOALS = new Set<string>([
+  "logistics_started",
+  "payment_option_full",
+  "payment_option_deposit_5",
+  "payment_option_split",
+  "order_created",
+  "payment_start",
+  "payment_success",
+  "wizard_started",
+  "attributes_started",
+  "documents_started",
+  "contacts_filled",
+]);
+
+export function reachMetrikaGoal(
+  name: string,
+  params: Record<string, any> = {},
+) {
+  if (!YM_ALLOWED_GOALS.has(name)) return;
+  if (typeof window === "undefined") return;
+  const w = window as TrackerWindow;
+  const ymIdRaw = process.env.NEXT_PUBLIC_YM_ID;
+  const ymId = Number.isFinite(Number(ymIdRaw)) ? Number(ymIdRaw) : YM_FALLBACK_ID;
+  if (!Number.isFinite(ymId)) return;
+  if (typeof w.ym !== "function") return;
+  try {
+    w.ym(ymId, "reachGoal", name, params);
+    if (process.env.NEXT_PUBLIC_YM_DEBUG === "true") {
+      console.debug("[ym]", name, params);
+    }
+  } catch (_) {
+    // best-effort analytics: ignore failures
+  }
+}
+
 export function trackEvent(
   name: string,
   params: Record<string, any> = {},
@@ -975,15 +1011,7 @@ export function trackEvent(
     }
   }
 
-  const ymIdRaw = process.env.NEXT_PUBLIC_YM_ID;
-  const ymId = ymIdRaw ? Number(ymIdRaw) : NaN;
-  if (Number.isFinite(ymId) && typeof w.ym === "function") {
-    try {
-      w.ym(ymId, "reachGoal", name, params);
-    } catch (_) {
-      // best-effort analytics: ignore failures
-    }
-  }
+  reachMetrikaGoal(name, params);
 
   if (process.env.NODE_ENV !== "production") {
     console.info("[tracking]", name, params);

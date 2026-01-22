@@ -51,18 +51,7 @@ type FormData as CalculatorFormData,
 
 import type { ImgHTMLAttributes } from "react";
 
-const YM_COUNTER_ID = 106219376;
-
-const reachMetrikaGoal = (goal: string, params?: Record<string, any>) => {
-  if (typeof window === "undefined") return;
-  const ymFn = (window as any).ym;
-  if (typeof ymFn !== "function") return;
-  try {
-    ymFn(YM_COUNTER_ID, "reachGoal", goal, params);
-  } catch (_) {
-    // best-effort: ignore analytics failures
-  }
-};
+const SIMPLIFIED_LOGISTICS_STEP_INDEX = 2;
 
 function SafeImg(
   props: ImgHTMLAttributes<HTMLImageElement> & { fallbackSrc?: string }
@@ -591,6 +580,8 @@ onUpdateFormData,
 const containerRef = useRef<HTMLDivElement>(null);
 const topRef = useRef<HTMLDivElement | null>(null);
 const didInitialScrollRef = useRef(false);
+const trackingSessionId = getTrackingSessionId();
+const trackingFlow: "package" = "package";
 
 const [currentStep, setCurrentStep] = useState(0);
 const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -602,11 +593,10 @@ const didStepScrollMountRef = useRef(false);
 const wizardStartedRef = useRef(false);
 const attributesStartedRef = useRef(false);
 const logisticsStartedRef = useRef(false);
+const logisticsSessionRef = useRef(trackingSessionId);
 const documentsStartedRef = useRef(false);
 const calculatorViewedRef = useRef(false);
 const contactsStartedRef = useRef(false);
-const trackingSessionId = getTrackingSessionId();
-const trackingFlow: "package" = "package";
 
 const [localFormData, setLocalFormData] = useState<FormDataShape>(() => {
   if (typeof window === "undefined") return DEFAULT_FORM_DATA;
@@ -948,6 +938,12 @@ useEffect(() => {
 }, [currentStep]);
 
 useEffect(() => {
+  if (logisticsSessionRef.current === trackingSessionId) return;
+  logisticsSessionRef.current = trackingSessionId;
+  logisticsStartedRef.current = false;
+}, [trackingSessionId]);
+
+useEffect(() => {
   if (currentStep !== 0) return;
   if (wizardStartedRef.current) return;
   wizardStartedRef.current = true;
@@ -1032,7 +1028,7 @@ useEffect(() => {
 }, [currentStep, safeFormData.hasHall, safeFormData.ceremonyType, safeFormData.hallDuration]);
 
 useEffect(() => {
-  if (currentStep !== 2) return;
+  if (currentStep !== SIMPLIFIED_LOGISTICS_STEP_INDEX) return;
   if (logisticsStartedRef.current) return;
   logisticsStartedRef.current = true;
   const dedupeKey = `${trackingSessionId}:${trackingFlow}:step3`;
@@ -1041,7 +1037,6 @@ useEffect(() => {
     { flow: trackingFlow },
     dedupeKey,
   );
-  reachMetrikaGoal("logistics_started");
 }, [currentStep, trackingFlow, trackingSessionId]);
 
 useEffect(() => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { getTrackingSessionId, trackEvent } from "./calculationUtils";
+import { getTrackingSessionId, reachMetrikaGoal, trackEvent } from "./calculationUtils";
 
 type PayPlan = "full" | "deposit" | "split";
 
@@ -17,8 +17,6 @@ declare global {
     ym?: (...args: any[]) => void;
   }
 }
-
-const YM_COUNTER_ID = 106219376;
 
 function rub(n: number) {
   return n.toLocaleString("ru-RU");
@@ -36,36 +34,6 @@ function formatDate(d: Date) {
     month: "2-digit",
     year: "numeric",
   });
-}
-
-/** GTM: dataLayer.push */
-function trackGTM(event: string, params: Record<string, any> = {}) {
-  if (typeof window === "undefined") return;
-  try {
-    window.dataLayer = Array.isArray(window.dataLayer) ? window.dataLayer : [];
-    window.dataLayer.push({ event, ...params });
-  } catch (_) {
-    // best-effort analytics: ignore failures
-  }
-}
-
-/** Yandex Metrika: ym(ID, 'reachGoal', ...) */
-function trackYM(goal: string, params: Record<string, any> = {}) {
-  if (typeof window === "undefined") return;
-  const idRaw = process.env.NEXT_PUBLIC_YM_ID;
-  const id = Number.isFinite(Number(idRaw)) ? Number(idRaw) : YM_COUNTER_ID;
-  if (!Number.isFinite(id)) return;
-  if (typeof window.ym !== "function") return;
-  try {
-    window.ym(id, "reachGoal", goal, params);
-  } catch (_) {
-    // best-effort analytics: ignore failures
-  }
-}
-
-function trackBoth(eventOrGoal: string, params: Record<string, any> = {}) {
-  trackGTM(eventOrGoal, params);
-  trackYM(eventOrGoal, params);
 }
 
 function maskCard(n: string) {
@@ -151,7 +119,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
     if (lastPayPlanRef.current === payPlan) return;
     lastPayPlanRef.current = payPlan;
     payPlanSelectionSeqRef.current += 1;
-    trackYM(payPlanGoalMap[payPlan], {
+    reachMetrikaGoal(payPlanGoalMap[payPlan], {
       option: payPlan,
       pay_now: payNowRub,
       total: totalAmount,
@@ -207,27 +175,17 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
     setLoading(true);
 
     trackEvent(
-      "payment_started",
+      "payment_start",
       {
         order_id: orderId,
         pay_plan: payPlan,
+        payment_method: "card",
         value: payNowRub,
         currency: "RUB",
-        payment_method: "card",
         flow: trackingFlow,
       },
       orderId,
     );
-
-    // START event
-    trackBoth("payment_start", {
-      orderId,
-      payPlan,
-      method,
-      amount: payNowRub,
-      totalAmount,
-      email: contactEmail,
-    });
 
     try {
       const created = await createPayment();
@@ -248,31 +206,9 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
         },
         created.providerPaymentId,
       );
-
-      // SUCCESS event
-      trackBoth("payment_success", {
-        orderId,
-        payPlan,
-        method,
-        amount: payNowRub,
-        totalAmount,
-        email: contactEmail,
-        providerPaymentId: created.providerPaymentId,
-      });
     } catch (e: any) {
       const msg = String(e?.message ?? e);
       setError(msg);
-
-      // ERROR event
-      trackBoth("payment_error", {
-        orderId,
-        payPlan,
-        method,
-        amount: payNowRub,
-        totalAmount,
-        email: contactEmail,
-        message: msg,
-      });
     } finally {
       setLoading(false);
     }
@@ -291,7 +227,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
             subtitle={`Итого ${rub(totalAmount)} ₽`}
             onClick={() => {
               setPayPlan("full");
-              trackBoth("payplan_select", {
+              trackEvent("payplan_select", {
                 orderId,
                 payPlan: "full",
                 totalAmount,
@@ -304,7 +240,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
             subtitle={`5% сейчас: ${rub(Math.round(totalAmount * 0.05))} ₽`}
             onClick={() => {
               setPayPlan("deposit");
-              trackBoth("payplan_select", {
+              trackEvent("payplan_select", {
                 orderId,
                 payPlan: "deposit",
                 totalAmount,
@@ -317,7 +253,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
             subtitle="4 платежа без переплат (UX)"
             onClick={() => {
               setPayPlan("split");
-              trackBoth("payplan_select", {
+              trackEvent("payplan_select", {
                 orderId,
                 payPlan: "split",
                 totalAmount,
@@ -349,7 +285,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
             title="Карта"
             onClick={() => {
               setMethod("card");
-              trackBoth("payment_method_select", { orderId, method: "card" });
+              trackEvent("payment_method_select", { orderId, method: "card" });
             }}
           />
           <MethodBtn
@@ -357,7 +293,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
             title="СБП"
             onClick={() => {
               setMethod("sbp");
-              trackBoth("payment_method_select", { orderId, method: "sbp" });
+              trackEvent("payment_method_select", { orderId, method: "sbp" });
             }}
           />
         </div>

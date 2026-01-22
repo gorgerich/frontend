@@ -6,7 +6,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { cn } from "./ui/utils";
 import { Download, Share2, RubleSign, CheckCircle2, Search } from "./Icons";
-import { getTrackingSessionId, trackEvent } from "./calculationUtils";
+import { getTrackingSessionId, reachMetrikaGoal, trackEvent } from "./calculationUtils";
 import {
 Select,
 SelectContent,
@@ -25,22 +25,6 @@ cvc: string;
 };
 
 type PaymentOption = "full" | "deposit_5" | "split";
-
-const YM_COUNTER_ID = 106219376;
-
-function reachMetrikaGoal(goal: string, params?: Record<string, any>, attempt = 0) {
-if (typeof window === "undefined") return;
-const ymFn = (window as any).ym;
-
-if (typeof ymFn === "function") {
-ymFn(YM_COUNTER_ID, "reachGoal", goal, params);
-return;
-}
-
-if (attempt < 6) {
-window.setTimeout(() => reachMetrikaGoal(goal, params, attempt + 1), 500);
-}
-}
 
 export type PaymentStepProps = {
 total: number;
@@ -100,8 +84,14 @@ return total;
 }, [paymentOption, depositAmount, splitPartAmount, total]);
 
 const lastSentOptionRef = useRef<PaymentOption | null>(null);
+const didMountRef = useRef(false);
 
 useEffect(() => {
+if (!didMountRef.current) {
+  didMountRef.current = true;
+  lastSentOptionRef.current = paymentOption;
+  return;
+}
 if (lastSentOptionRef.current === paymentOption) return;
 
 reachMetrikaGoal(optionGoalMap[paymentOption], {
@@ -127,14 +117,6 @@ trackEvent(
   `${trackingSessionId}:${trackingFlow}:pay_plan:${payPlanForTracking}:${payPlanSelectionSeqRef.current}`,
 );
 }, [paymentOption, payNow, total]);
-
-// payment_start — один раз при входе на шаг оплаты
-const sentPaymentStartRef = useRef(false);
-useEffect(() => {
-if (sentPaymentStartRef.current) return;
-sentPaymentStartRef.current = true;
-reachMetrikaGoal("payment_start");
-}, []);
 
 const monthly = useMemo(() => Math.ceil(total / 6), [total]);
 
@@ -167,7 +149,7 @@ try {
 setIsSubmitting(true);
 const checkoutSessionId = getCheckoutSessionId();
 trackEvent(
-  "payment_started",
+  "payment_start",
   {
     pay_plan: payPlanForTracking,
     payment_method: "card",

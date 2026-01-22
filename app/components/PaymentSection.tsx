@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from './ui/utils';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { reachMetrikaGoal } from './calculationUtils';
 
 type PaymentMethod = 'card' | 'sbp' | 'installment';
 type PaymentOption = 'full' | 'deposit_5' | 'split';
@@ -18,24 +19,6 @@ cvc: string;
 // Эти типы совпадают с твоими calculationUtils
 export type CalculatorItem = { name: string; price?: number };
 export type CalculatorSection = { category: string; price: number; items?: CalculatorItem[] };
-
-const YM_COUNTER_ID = 106219376;
-
-function reachMetrikaGoal(goal: string, params?: Record<string, any>, attempt = 0) {
-if (typeof window === 'undefined') return;
-const ymFn = (window as any).ym;
-
-if (typeof ymFn === 'function') {
-// 4-й аргумент (params) поддерживается Метрикой
-ymFn(YM_COUNTER_ID, 'reachGoal', goal, params);
-return;
-}
-
-// если метрика грузится через GTM и ещё не успела появиться
-if (attempt < 6) {
-window.setTimeout(() => reachMetrikaGoal(goal, params, attempt + 1), 500);
-}
-}
 
 export function PaymentSection({
 total = 47000,
@@ -60,6 +43,7 @@ split: 'payment_option_split',
 };
 
 const lastSentOptionRef = useRef<PaymentOption | null>(null);
+const didMountRef = useRef(false);
 
 const depositAmount = useMemo(() => Math.round(total * 0.05), [total]);
 const splitParts = 4;
@@ -72,7 +56,11 @@ return total;
 }, [paymentOption, depositAmount, splitPartAmount, total]);
 
 useEffect(() => {
-// отправляем цель при первом появлении блока и при изменении варианта
+if (!didMountRef.current) {
+  didMountRef.current = true;
+  lastSentOptionRef.current = paymentOption;
+  return;
+}
 if (lastSentOptionRef.current === paymentOption) return;
 
 reachMetrikaGoal(optionGoalMap[paymentOption], {
