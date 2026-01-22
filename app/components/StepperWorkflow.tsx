@@ -3614,7 +3614,7 @@ function formatRub(n: number) {
             <div className="relative mt-4">
               <div className="pointer-events-none absolute left-0 top-0 hidden h-full w-10 bg-gradient-to-r from-white/10 to-transparent md:block" />
               <div className="pointer-events-none absolute right-0 top-0 hidden h-full w-10 bg-gradient-to-l from-white/10 to-transparent md:block" />
-              <div className="-mx-2 flex gap-3 overflow-x-auto px-2 pb-2 pt-1 scrollbar-hide snap-x snap-mandatory">
+              <div className="flex w-full gap-4 overflow-x-auto overflow-y-visible px-4 pb-2 pt-1 scrollbar-hide snap-x snap-mandatory">
                 {[
                   {
                     title: "Старт",
@@ -3667,7 +3667,7 @@ function formatRub(n: number) {
                 ].map((item, index) => (
                   <div
                     key={item.title}
-                    className="min-w-[240px] flex-shrink-0 snap-start rounded-2xl border border-white/20 md:border-white/15 bg-white/12 md:bg-white/5 p-4 backdrop-blur-xl md:backdrop-blur-md sm:min-w-[260px]"
+                    className="w-[calc(100vw-32px)] max-w-full flex-shrink-0 snap-start rounded-2xl border border-white/20 md:border-white/15 bg-white/12 md:bg-white/5 p-4 backdrop-blur-xl md:backdrop-blur-md sm:w-[420px]"
                   >
                     <div className="flex items-center gap-3">
                       <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xs font-semibold text-white/90">
