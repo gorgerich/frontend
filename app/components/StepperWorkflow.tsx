@@ -1106,10 +1106,6 @@ export function StepperWorkflow({
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
   const didInitDefaultsRef = useRef(false);
-  const howItWorksScrollRef = useRef<HTMLDivElement | null>(null);
-  const howItWorksCardRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const [activeHowItWorksIndex, setActiveHowItWorksIndex] = useState(0);
-  const activeHowItWorksRef = useRef(0);
 
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [orderConfirmation, setOrderConfirmation] = useState<{
@@ -1142,110 +1138,6 @@ export function StepperWorkflow({
   const resetOrderConfirmation = () => {
     if (!orderConfirmation) return;
     setOrderConfirmation(null);
-  };
-
-  const howItWorksSteps = [
-    {
-      title: "Старт",
-      subtitle: "Вы выбираете удобный способ начала",
-      text: [
-        "Готовый сценарий — если нужно быстро.",
-        "Пошаговый мастер — если хотите настроить всё детально.",
-        "Вы можете изменить любые решения позже.",
-      ],
-      icon: Sparkles,
-    },
-    {
-      title: "Формат",
-      subtitle: "Формируете формат прощания",
-      text: [
-        "Выбираете тип церемонии, атрибутику, логистику и предпочтительное время.",
-        "Система сразу показывает структуру и ориентиры по стоимости.",
-        "Без звонков. Без давления.",
-      ],
-      icon: Church,
-    },
-    {
-      title: "Проверка",
-      subtitle: "Уточняете детали и проверяете итог",
-      text: [
-        "Указываете необходимые данные.",
-        "Видите полную детализацию: что включено, как всё будет происходить и итоговую сумму.",
-        "Никаких скрытых пунктов.",
-      ],
-      icon: CheckCircle2,
-    },
-    {
-      title: "Оплата",
-      subtitle: "Подтверждаете и выбираете способ оплаты",
-      text: [
-        "Вы выбираете способ оплаты и указываете email для договора.",
-        "Мы отправляем вам подтверждение и документы на почту.",
-        "Вы ничего не оплачиваете, пока всё не проверите.",
-      ],
-      icon: FileText,
-    },
-    {
-      title: "Координатор",
-      subtitle: "Мы закрепляем за вами координатора",
-      text: [
-        "Ваш заказ передаётся специалисту с полной детализацией.",
-        "Он связывается с вами только для уточнений и подтверждений.",
-        "Без навязывания услуг.",
-      ],
-      icon: UserCheck,
-    },
-    {
-      title: "Церемония",
-      subtitle: "Проведение церемонии",
-      text: [
-        "Координатор приезжает в назначенное время и место.",
-        "Он сопровождает весь процесс и отвечает за выполнение всех договорённостей.",
-        "Вы можете сосредоточиться на прощании, а не на организации.",
-      ],
-      icon: Users,
-    },
-  ];
-
-  useEffect(() => {
-    activeHowItWorksRef.current = activeHowItWorksIndex;
-  }, [activeHowItWorksIndex]);
-
-  useEffect(() => {
-    const root = howItWorksScrollRef.current;
-    if (!root) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        let nextIndex = activeHowItWorksRef.current;
-        let maxRatio = 0;
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          const idx = Number((entry.target as HTMLElement).dataset.index || 0);
-          if (entry.intersectionRatio >= maxRatio) {
-            maxRatio = entry.intersectionRatio;
-            nextIndex = idx;
-          }
-        });
-        if (nextIndex !== activeHowItWorksRef.current) {
-          setActiveHowItWorksIndex(nextIndex);
-        }
-      },
-      { root, threshold: [0.6, 0.75, 0.9] },
-    );
-
-    howItWorksCardRefs.current.forEach((card) => {
-      if (card) observer.observe(card);
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  const handleHowItWorksSelect = (index: number) => {
-    setActiveHowItWorksIndex(index);
-    const target = howItWorksCardRefs.current[index];
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-    }
   };
 
   useEffect(() => {
@@ -3719,80 +3611,81 @@ function formatRub(n: number) {
               </div>
             </div>
 
-            <div className="mt-4">
-              <div className="grid w-full grid-cols-6 gap-1 text-xs">
-                {howItWorksSteps.map((_, index) => (
-                  <button
-                    key={`how-it-works-${index}`}
-                    type="button"
-                    onClick={() => handleHowItWorksSelect(index)}
-                    className={cn(
-                      "text-center font-medium transition-colors",
-                      activeHowItWorksIndex === index
-                        ? "text-white"
-                        : "text-white/45 hover:text-white/70",
-                    )}
+            <div className="relative mt-4">
+              <div className="pointer-events-none absolute left-0 top-0 hidden h-full w-10 bg-gradient-to-r from-white/10 to-transparent md:block" />
+              <div className="pointer-events-none absolute right-0 top-0 hidden h-full w-10 bg-gradient-to-l from-white/10 to-transparent md:block" />
+              <div className="flex w-full gap-4 overflow-x-auto overflow-y-visible px-4 pb-2 pt-1 scrollbar-hide snap-x snap-mandatory">
+                {[
+                  {
+                    title: "Старт",
+                    text: [
+                      "Готовые решения — если нужно быстро.",
+                      "Пошаговый мастер — если хотите настроить всё детально.",
+                      "Вы можете изменить любые решения позже.",
+                    ],
+                  },
+                  {
+                    title: "Формат",
+                    text: [
+                      "Выбираете тип церемонии, атрибутику, логистику и предпочтительное время.",
+                      "Система сразу показывает структуру и ориентиры по стоимости.",
+                      "Без звонков. Без давления.",
+                    ],
+                  },
+                  {
+                    title: "Проверка",
+                    text: [
+                      "Указываете необходимые данные.",
+                      "Видите полную детализацию: что включено, как всё будет происходить и итоговую сумму.",
+                      "Никаких скрытых пунктов.",
+                    ],
+                  },
+                  {
+                    title: "Оплата",
+                    text: [
+                      "Вы выбираете способ оплаты и указываете email для договора.",
+                      "Мы отправляем вам подтверждение и документы на почту.",
+                      "Вы ничего не оплачиваете, пока всё не проверите.",
+                    ],
+                  },
+                  {
+                    title: "Координатор",
+                    text: [
+                      "Ваш заказ передаётся специалисту с полной детализацией.",
+                      "Он связывается с вами только для уточнений и подтверждений.",
+                      "Без навязывания услуг.",
+                    ],
+                  },
+                  {
+                    title: "Церемония",
+                    text: [
+                      "Координатор приезжает в назначенное время и место.",
+                      "Он сопровождает весь процесс и отвечает за выполнение всех договорённостей.",
+                      "Вы можете сосредоточиться на прощании, а не на организации.",
+                    ],
+                  },
+                ].map((item, index) => (
+                  <div
+                    key={item.title}
+                    className="w-[calc(100vw-32px)] max-w-full flex-shrink-0 snap-start rounded-2xl border border-white/20 md:border-white/15 bg-white/12 md:bg-white/5 p-3 sm:p-4 backdrop-blur-xl md:backdrop-blur-md sm:w-[460px] md:w-[520px]"
                   >
-                    {String(index + 1).padStart(2, "0")}
-                  </button>
-                ))}
-              </div>
-              <div className="relative mt-2 h-px w-full bg-white/10">
-                <span
-                  className="absolute top-0 h-px bg-white/70 transition-transform duration-300"
-                  style={{
-                    width: `calc(100% / ${howItWorksSteps.length})`,
-                    transform: `translateX(${activeHowItWorksIndex * 100}%)`,
-                  }}
-                />
-              </div>
-
-              <div
-                ref={howItWorksScrollRef}
-                className="mt-5 flex w-full gap-4 overflow-x-auto overflow-y-visible px-4 pb-2 pt-1 scrollbar-hide snap-x snap-mandatory scroll-smooth"
-              >
-                {howItWorksSteps.map((item, index) => {
-                  const Icon = item.icon;
-                  const textLines = Array.isArray(item.text)
-                    ? item.text
-                    : item.text
-                      ? [item.text]
-                      : [];
-                  return (
-                    <div
-                      key={item.title}
-                      ref={(el) => {
-                        howItWorksCardRefs.current[index] = el;
-                      }}
-                      data-index={index}
-                      className="w-[calc(100vw-32px)] max-w-full flex-shrink-0 snap-center rounded-[26px] border border-white/15 bg-white/8 px-4 py-2.5 backdrop-blur-xl sm:w-[680px] sm:px-6 sm:py-4"
-                    >
-                      <div className="flex items-start gap-2.5">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-white/90 sm:h-12 sm:w-12">
-                          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <div className="flex items-start gap-2">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-white/10 text-[10px] font-semibold text-white/90">
+                        {index + 1}
+                      </span>
+                      <div>
+                        <div className="text-[13px] font-semibold text-white/90 md:text-sm">
+                          {item.title}
                         </div>
-                        <div className="flex-1">
-                          <div className="text-[20px] font-semibold leading-tight text-white sm:text-2xl">
-                            {item.title}
-                          </div>
-                          <div className="mt-0.5 text-[13px] text-white/80 sm:text-base">
-                            {item.subtitle}
-                          </div>
-                          {textLines.length > 0 && (
-                            <div className="mt-1.5 space-y-1 text-[11px] leading-relaxed text-white/85 sm:text-sm">
-                              {textLines.map((line, lineIndex) => (
-                                <p key={`${item.title}-${lineIndex}`}>{line}</p>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <div className="hidden sm:flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-white/10 text-[10px] font-semibold text-white/80">
-                          {String(index + 1).padStart(2, "0")}
+                        <div className="space-y-0.5 text-[11px] leading-snug text-white/75 md:text-xs md:leading-snug md:text-white/60">
+                          {(Array.isArray(item.text) ? item.text : [item.text]).map((line) => (
+                            <p key={line}>{line}</p>
+                          ))}
                         </div>
                       </div>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             </div>
           </div>

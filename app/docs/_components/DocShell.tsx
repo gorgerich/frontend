@@ -59,7 +59,7 @@ export function DocShell({ title, updatedAt, sections }: DocShellProps) {
             </a>
           </p>
           <p className="mt-1 text-sm text-gray-700">Телефон: +7 (985) 248-94-25</p>
-          <p className="mt-1 text-xs text-gray-500">Реквизиты ИП: TODO (банковские реквизиты)</p>
+          
         </div>
       </div>
     </main>
