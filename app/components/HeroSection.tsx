@@ -1,6 +1,5 @@
 // app/components/HeroSection.tsx
 import { TopButtons } from "./TopButtons";
-
 const heroImage = "/hero-forest.jpg";
 
 // DESKTOP controls
@@ -21,15 +20,13 @@ const MOBILE_LINES_GAP = "8px"; // расстояние между строка�
 
 export function HeroSection() {
   return (
-    <section className="relative w-full px-4 pt-8 pb-16 md:pb-20 lg:pb-24">
+    <section className="relative w-full px-4 pt-14 sm:pt-16 pb-16 md:pt-8 md:pb-20 lg:pb-24">
       <div className="mx-auto max-w-7xl relative">
-        {/* Top buttons */}
-        <div className="pointer-events-none absolute left-0 right-0 -top-10 z-50 flex justify-center md:-top-14">
+        <div className="pointer-events-none absolute left-1/2 top-4 z-30 -translate-x-1/2 sm:top-6">
           <div className="pointer-events-auto">
             <TopButtons />
           </div>
         </div>
-
         <div className="relative h-[60vh] w-full overflow-hidden rounded-3xl md:h-[70vh] lg:h-[75vh] md:rounded-[40px]">
           {/* Background (hero only) */}
           <div className="pointer-events-none absolute inset-0 z-0">

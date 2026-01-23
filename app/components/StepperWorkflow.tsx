@@ -3910,7 +3910,10 @@ function formatRub(n: number) {
           <div className="text-center mb-2 mt-4">
             <div className="w-full">
               {workflowMode === "wizard" ? (
-                <div className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55">
+                <div
+                  id="scenario-end"
+                  className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55"
+                >
                   <div className="flex gap-4 items-start">
                     <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
                       {currentStep === 0 && <Church className="h-5 w-5" />}
@@ -3944,19 +3947,19 @@ function formatRub(n: number) {
                   </div>
                 </div>
               ) : (
-                <div className="relative overflow-hidden rounded-xl border border-white/25 bg-white/10 backdrop-blur-md shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-white/80 md:backdrop-blur-sm md:shadow-none p-5 transition-all md:hover:bg-white/90">
+                <div className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55">
                   <div className="flex gap-4 items-start">
                     <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
                       <Package className="h-5 w-5" />
                     </div>
                     <div className="space-y-1.5 text-left">
                       <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
-                        <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-gray-900">
+                        <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
                           1
                         </span>
                         Выбор сценария
                       </h4>
-                      <p className="text-[15px] leading-relaxed text-gray-700 md:text-zinc-800 font-normal">
+                      <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
                         Выберите сценарий: сдержанный, традиционный или расширенный. Вы всегда можете изменить детали позже
                       </p>
                     </div>
@@ -4009,7 +4012,7 @@ function formatRub(n: number) {
   ) : (
     <div className="space-y-8">
       <div className="flex justify-center">
-        <div className="inline-flex items-center p-1.5 rounded-full bg-zinc-100/80 border border-zinc-200/50 backdrop-blur-sm shadow-inner">
+        <div className="inline-flex items-center p-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm shadow-inner md:bg-zinc-100/80 md:border-zinc-200/50">
           <button
             type="button"
             onClick={() => handleInputChange("serviceType", "burial")}
@@ -4017,14 +4020,14 @@ function formatRub(n: number) {
               "px-8 py-2.5 rounded-full text-sm font-medium transition-all duration-300 relative overflow-hidden",
               formData.serviceType === "burial"
                 ? "bg-white text-gray-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-black/5"
-                : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
+                : "text-white/70 hover:text-white hover:bg-white/10 md:text-gray-500 md:hover:text-gray-700 md:hover:bg-white/50",
             )}
           >
             <span className="relative z-10 flex items-center gap-2">
               <Church
                 className={cn(
                   "w-4 h-4",
-                  formData.serviceType === "burial" ? "text-gray-900" : "text-gray-400",
+                  formData.serviceType === "burial" ? "text-gray-900" : "text-white/70 md:text-gray-400",
                 )}
               />
               Захоронение
@@ -4038,14 +4041,14 @@ function formatRub(n: number) {
               "px-8 py-2.5 rounded-full text-sm font-medium transition-all duration-300 relative overflow-hidden",
               formData.serviceType === "cremation"
                 ? "bg-white text-gray-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-black/5"
-                : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
+                : "text-white/70 hover:text-white hover:bg-white/10 md:text-gray-500 md:hover:text-gray-700 md:hover:bg-white/50",
             )}
           >
             <span className="relative z-10 flex items-center gap-2">
               <Flame
                 className={cn(
                   "w-4 h-4",
-                  formData.serviceType === "cremation" ? "text-gray-900" : "text-gray-400",
+                  formData.serviceType === "cremation" ? "text-gray-900" : "text-white/70 md:text-gray-400",
                 )}
               />
               Кремация
@@ -4053,6 +4056,7 @@ function formatRub(n: number) {
           </button>
         </div>
       </div>
+      <div id="hero-bg-end-marker" className="h-0 w-0" />
 
       <PackagesSelection
         selectedPackageId=""

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { HeroSection } from './components/HeroSection';
 import { StepperWorkflow } from './components/StepperWorkflow';
 import { PackagesSection } from './components/PackagesSection';
@@ -177,11 +177,6 @@ MessagePort.prototype.postMessage = originalPortPostMessage;
 };
 }, []);
 
-// Принудительный скролл к началу при первой загрузке
-useEffect(() => {
-window.scrollTo(0, 0);
-}, []);
-
 const initialFormData = {
 serviceType: 'burial' as 'burial' | 'cremation',
 hasHall: true,
@@ -224,6 +219,8 @@ userEmail: '',
 const [formData, setFormData] = useState(initialFormData);
 const [currentStep, setCurrentStep] = useState(0);
 const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
+const heroStageRef = useRef<HTMLDivElement | null>(null);
+const [heroExtendHeight, setHeroExtendHeight] = useState(0);
 const [selectedCemeteryCategory, setSelectedCemeteryCategory] =
   useState<'standard' | 'comfort' | 'premium'>('standard');
 const trackingSessionId = getTrackingSessionId();
@@ -232,6 +229,31 @@ const baseTotal = calculateTotal(formData, selectedCemeteryCategory);
 const baseBreakdown = calculateBreakdown(formData, selectedCemeteryCategory);
 return applyHearseCategoryToCalculator(baseTotal, baseBreakdown, formData);
 }, [formData, selectedCemeteryCategory]);
+
+// Принудительный скролл к началу при первой загрузке
+useEffect(() => {
+window.scrollTo(0, 0);
+}, []);
+
+useLayoutEffect(() => {
+const updateHeroExtendHeight = () => {
+requestAnimationFrame(() => {
+const wrapper = heroStageRef.current;
+if (!wrapper) return;
+const wrapTop = wrapper.getBoundingClientRect().top + window.scrollY;
+const markerEl = document.getElementById("hero-bg-end-marker");
+const bottom = markerEl
+? markerEl.getBoundingClientRect().bottom + window.scrollY
+: wrapper.getBoundingClientRect().bottom + window.scrollY;
+const nextHeight = Math.max(0, Math.round(bottom - wrapTop + 16));
+setHeroExtendHeight(nextHeight);
+});
+};
+
+updateHeroExtendHeight();
+window.addEventListener("resize", updateHeroExtendHeight);
+return () => window.removeEventListener("resize", updateHeroExtendHeight);
+}, [currentStep]);
 
 useEffect(() => {
 try {
@@ -309,41 +331,46 @@ return (
 {/* ВЕСЬ КОНТЕНТ */}
 <div className="flex-1">
 <div className="relative">
-  <div className="pointer-events-none absolute inset-0 -z-10 md:hidden">
+  <section ref={heroStageRef} className="relative overflow-hidden z-0">
     <div
-      className="absolute inset-0"
-      style={{
-        WebkitMaskImage:
-          "linear-gradient(to bottom, transparent 0px, rgba(0,0,0,1) 120px, rgba(0,0,0,1) 100%)",
-        maskImage:
-          "linear-gradient(to bottom, transparent 0px, rgba(0,0,0,1) 120px, rgba(0,0,0,1) 100%)",
-      }}
+      className="pointer-events-none absolute inset-x-0 top-0 -z-10 md:hidden"
+      style={{ height: heroExtendHeight ? `${heroExtendHeight}px` : "0px" }}
     >
       <div
-        className="absolute inset-0 bg-cover bg-center blur-[8px] scale-[1.05]"
-        style={{ backgroundImage: `url(${HERO_BG_SRC})` }}
-      />
-      <div className="absolute inset-0 bg-black/35 md:bg-black/20" />
+        className="absolute inset-0"
+        style={{
+          WebkitMaskImage:
+            "linear-gradient(to bottom, transparent 0%, transparent 45%, rgba(0,0,0,1) 60%, rgba(0,0,0,1) 100%)",
+          maskImage:
+            "linear-gradient(to bottom, transparent 0%, transparent 45%, rgba(0,0,0,1) 60%, rgba(0,0,0,1) 100%)",
+        }}
+      >
+        <div
+          className="absolute inset-0 bg-cover bg-center blur-[8px] scale-[1.05]"
+          style={{ backgroundImage: `url(${HERO_BG_SRC})` }}
+        />
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent to-white" />
+      </div>
     </div>
-  </div>
 
-  <HeroSection />
+    <HeroSection />
 
-  <div className="relative z-20 stepper-overlay-position">
-    <StepperWorkflow
-      formData={formData}
-      onUpdateFormData={handleUpdateFormData}
-      onStepChange={handleStepChange}
-      onCemeteryCategoryChange={handleCemeteryCategoryChange}
-      onModeChange={handleModeChange}
-      onOrderConfirmed={setIsOrderConfirmed}
-    />
-  </div>
-
-  {currentStep === 2 && (
-    <PackagesSection formData={formData} onUpdateFormData={handleUpdateFormData} />
-  )}
+    <div className="relative z-20 stepper-overlay-position">
+      <StepperWorkflow
+        formData={formData}
+        onUpdateFormData={handleUpdateFormData}
+        onStepChange={handleStepChange}
+        onCemeteryCategoryChange={handleCemeteryCategoryChange}
+        onModeChange={handleModeChange}
+        onOrderConfirmed={setIsOrderConfirmed}
+      />
+    </div>
+  </section>
 </div>
+{currentStep === 2 && (
+  <PackagesSection formData={formData} onUpdateFormData={handleUpdateFormData} />
+)}
 {currentStep >= 1 && !isOrderConfirmed && (
 <FloatingCalculator
 total={calculatorSummary.total}
