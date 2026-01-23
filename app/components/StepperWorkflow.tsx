@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 
 import { User, Flame } from "lucide-react";
 import { PackagesSelection, type Package as PackagesSelectionPackage } from "./PackagesSelection";
@@ -104,6 +104,7 @@ import {
 type PaymentMethod = "deposit_10" | "call_rep";
 const SUPPORT_PHONE_DISPLAY = "+7 (985) 248-94-25";
 const SUPPORT_PHONE_TEL = "+79852489425";
+const HERO_BG_SRC = "/hero-forest.jpg";
 
 const steps = [
   { id: "format", label: "Формат", description: "Выбор церемонии" },
@@ -1068,6 +1069,10 @@ export function StepperWorkflow({
   onOrderConfirmed,
 }: StepperWorkflowProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const bgEndWizardRef = useRef<HTMLDivElement | null>(null);
+  const bgEndPackagesRef = useRef<HTMLDivElement | null>(null);
+  const [bgH, setBgH] = useState(0);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -1095,6 +1100,28 @@ export function StepperWorkflow({
     useState<"standard" | "comfort" | "premium">("standard");
 
   const [showHearseDialog, setShowHearseDialog] = useState(false);
+
+  useLayoutEffect(() => {
+    const calc = () => {
+      requestAnimationFrame(() => {
+        const wrap = wrapRef.current;
+        const end =
+          (workflowMode === "wizard" ? bgEndWizardRef.current : bgEndPackagesRef.current) ??
+          bgEndWizardRef.current ??
+          bgEndPackagesRef.current;
+        if (!wrap || !end) return;
+        const wrapTop = wrap.getBoundingClientRect().top;
+        const endBottom = end.getBoundingClientRect().bottom;
+        const offset = workflowMode === "packages" ? 32 : 0;
+        const height = Math.max(0, Math.round(endBottom - wrapTop + offset));
+        if (height > 0) setBgH(height);
+      });
+    };
+
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, [workflowMode, currentStep, selectedPackageForSimplified]);
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("deposit_10");
   const didInitDefaultsRef = useRef(false);
@@ -3747,22 +3774,49 @@ function formatRub(n: number) {
   // simplified workflow
   if (selectedPackageForSimplified) {
     return (
-      <div ref={containerRef} className="max-w-5xl mx-auto -translate-y-12 pb-12">
-        <SimplifiedStepperWorkflow
-          selectedPackage={selectedPackageForSimplified as any}
-          onBack={() => {
-            setSelectedPackageForSimplified(null);
-            setWorkflowMode("packages");
-          }}
-          formData={formData}
-          onUpdateFormData={onUpdateFormData}
-        />
+      <div ref={wrapRef} className="relative max-w-5xl mx-auto -translate-y-12 pb-12">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 transition-[height] duration-300 ease-out"
+          style={{ height: bgH ? `${bgH}px` : "0px" }}
+        >
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${HERO_BG_SRC})` }}
+          />
+          <div className="absolute inset-0 bg-black/35" />
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-white" />
+        </div>
+        <div ref={containerRef}>
+          <SimplifiedStepperWorkflow
+            selectedPackage={selectedPackageForSimplified as any}
+            onBack={() => {
+              setSelectedPackageForSimplified(null);
+              setWorkflowMode("packages");
+            }}
+            formData={formData}
+            onUpdateFormData={onUpdateFormData}
+          />
+        </div>
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className="max-w-5xl mx-auto -translate-y-12 pb-12">
+    <div ref={wrapRef} className="relative max-w-5xl mx-auto -translate-y-12 pb-12">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 transition-[height] duration-300 ease-out"
+        style={{ height: bgH ? `${bgH}px` : "0px" }}
+      >
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${HERO_BG_SRC})` }}
+        />
+        <div className="absolute inset-0 bg-black/35" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-white" />
+      </div>
+      <div ref={containerRef}>
       <Card className="bg-white/10 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30 relative">
         <CardHeader className="pb-4 pt-8 px-6 sm:px-8">
           <div className="absolute -top-5 right-8 z-50">
@@ -3910,61 +3964,66 @@ function formatRub(n: number) {
           <div className="text-center mb-2 mt-4">
             <div className="w-full">
               {workflowMode === "wizard" ? (
-                <div
-                  id="scenario-end"
-                  className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55"
-                >
-                  <div className="flex gap-4 items-start">
-                    <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
-                      {currentStep === 0 && <Church className="h-5 w-5" />}
-                      {currentStep === 1 && <Car className="h-5 w-5" />}
-                      {currentStep === 2 && <Package className="h-5 w-5" />}
-                      {currentStep === 3 && <FileText className="h-5 w-5" />}
-                      {currentStep === 4 && <CheckCircle2 className="h-5 w-5" />}
-                    </div>
-                    <div className="space-y-1.5 text-left">
-                      <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
-                        <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
-                          {currentStep + 1}
-                        </span>
-                        {currentStep === 0 && "Этап 1: Церемония"}
-                        {currentStep === 1 && "Этап 2: Логистика"}
-                        {currentStep === 2 && "Этап 3: Атрибутика"}
-                        {currentStep === 3 && "Этап 4: Документы"}
-                        {currentStep === 4 && "Этап 5: Итог"}
-                      </h4>
-                      <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
-                        {currentStep === 0 && "Настройте формат прощания: выберите тип церемонии (светская или религиозная) и длительность аренды зала."}
-                        {currentStep === 1 && "Спланируйте логистику: укажите дату и время прощания, выберите транспорт для усопшего и гостей."}
-                        {currentStep === 2 &&
-                          (attributesMode === "preset"
-                            ? "Выберите готовый комплект атрибутики или соберите свой вариант. В наборах включено всё необходимое для достойной церемонии."
-                            : "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности.")}
-                        {currentStep === 3 && "Заполните документы: укажите паспортные данные заявителя и информацию об усопшем для оформления."}
-                        {currentStep === 4 && "Проверьте и подтвердите: внимательно ознакомьтесь со всеми деталями заказа перед финальным оформлением."}
-                      </p>
+                <>
+                  <div
+                    id="scenario-end"
+                    className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55"
+                  >
+                    <div className="flex gap-4 items-start">
+                      <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
+                        {currentStep === 0 && <Church className="h-5 w-5" />}
+                        {currentStep === 1 && <Car className="h-5 w-5" />}
+                        {currentStep === 2 && <Package className="h-5 w-5" />}
+                        {currentStep === 3 && <FileText className="h-5 w-5" />}
+                        {currentStep === 4 && <CheckCircle2 className="h-5 w-5" />}
+                      </div>
+                      <div className="space-y-1.5 text-left">
+                        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
+                          <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
+                            {currentStep + 1}
+                          </span>
+                          {currentStep === 0 && "Этап 1: Церемония"}
+                          {currentStep === 1 && "Этап 2: Логистика"}
+                          {currentStep === 2 && "Этап 3: Атрибутика"}
+                          {currentStep === 3 && "Этап 4: Документы"}
+                          {currentStep === 4 && "Этап 5: Итог"}
+                        </h4>
+                        <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
+                          {currentStep === 0 && "Настройте формат прощания: выберите тип церемонии (светская или религиозная) и длительность аренды зала."}
+                          {currentStep === 1 && "Спланируйте логистику: укажите дату и время прощания, выберите транспорт для усопшего и гостей."}
+                          {currentStep === 2 &&
+                            (attributesMode === "preset"
+                              ? "Выберите готовый комплект атрибутики или соберите свой вариант. В наборах включено всё необходимое для достойной церемонии."
+                              : "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности.")}
+                          {currentStep === 3 && "Заполните документы: укажите паспортные данные заявителя и информацию об усопшем для оформления."}
+                          {currentStep === 4 && "Проверьте и подтвердите: внимательно ознакомьтесь со всеми деталями заказа перед финальным оформлением."}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                  <div ref={bgEndWizardRef} className="h-0 w-0" />
+                </>
               ) : (
-                <div className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55">
-                  <div className="flex gap-4 items-start">
-                    <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
-                      <Package className="h-5 w-5" />
-                    </div>
-                    <div className="space-y-1.5 text-left">
-                      <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
-                        <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
-                          1
-                        </span>
-                        Выбор сценария
-                      </h4>
-                      <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
-                        Выберите сценарий: сдержанный, традиционный или расширенный. Вы всегда можете изменить детали позже
-                      </p>
+                <>
+                  <div className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55">
+                    <div className="flex gap-4 items-start">
+                      <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
+                        <Package className="h-5 w-5" />
+                      </div>
+                      <div className="space-y-1.5 text-left">
+                        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
+                          <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
+                            1
+                          </span>
+                          Выбор сценария
+                        </h4>
+                        <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
+                          Выберите сценарий: сдержанный, традиционный или расширенный. Вы всегда можете изменить детали позже
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </>
               )}
             </div>
           </div>
@@ -4012,7 +4071,7 @@ function formatRub(n: number) {
   ) : (
     <div className="space-y-8">
       <div className="flex justify-center">
-        <div className="inline-flex items-center p-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm shadow-inner md:bg-zinc-100/80 md:border-zinc-200/50">
+        <div className="relative inline-flex items-center p-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm shadow-inner md:bg-zinc-100/80 md:border-zinc-200/50">
           <button
             type="button"
             onClick={() => handleInputChange("serviceType", "burial")}
@@ -4056,8 +4115,7 @@ function formatRub(n: number) {
           </button>
         </div>
       </div>
-      <div id="hero-bg-end-marker" className="h-0 w-0" />
-
+      <div ref={bgEndPackagesRef} className="h-0 w-0" />
       <PackagesSelection
         selectedPackageId=""
         packages={formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES_BURIAL}
@@ -4071,6 +4129,7 @@ function formatRub(n: number) {
 </Card>
 
 <PersonalAccountModal open={isAccountOpen} onOpenChange={setIsAccountOpen} />
-</div>
+      </div>
+    </div>
 );
 }

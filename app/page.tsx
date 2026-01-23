@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { HeroSection } from './components/HeroSection';
 import { StepperWorkflow } from './components/StepperWorkflow';
 import { PackagesSection } from './components/PackagesSection';
@@ -16,7 +16,6 @@ import {
 
 type BreakdownItem = { name: string; price?: number };
 type BreakdownSection = { category: string; price: number; items?: BreakdownItem[] };
-const HERO_BG_SRC = "/hero-forest.jpg";
 
 const HEARSE_CATEGORY_PRICE = {
   standard: 8000,
@@ -219,8 +218,6 @@ userEmail: '',
 const [formData, setFormData] = useState(initialFormData);
 const [currentStep, setCurrentStep] = useState(0);
 const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
-const heroStageRef = useRef<HTMLDivElement | null>(null);
-const [heroExtendHeight, setHeroExtendHeight] = useState(0);
 const [selectedCemeteryCategory, setSelectedCemeteryCategory] =
   useState<'standard' | 'comfort' | 'premium'>('standard');
 const trackingSessionId = getTrackingSessionId();
@@ -235,25 +232,7 @@ useEffect(() => {
 window.scrollTo(0, 0);
 }, []);
 
-useLayoutEffect(() => {
-const updateHeroExtendHeight = () => {
-requestAnimationFrame(() => {
-const wrapper = heroStageRef.current;
-if (!wrapper) return;
-const wrapTop = wrapper.getBoundingClientRect().top + window.scrollY;
-const markerEl = document.getElementById("hero-bg-end-marker");
-const bottom = markerEl
-? markerEl.getBoundingClientRect().bottom + window.scrollY
-: wrapper.getBoundingClientRect().bottom + window.scrollY;
-const nextHeight = Math.max(0, Math.round(bottom - wrapTop + 16));
-setHeroExtendHeight(nextHeight);
-});
-};
-
-updateHeroExtendHeight();
-window.addEventListener("resize", updateHeroExtendHeight);
-return () => window.removeEventListener("resize", updateHeroExtendHeight);
-}, [currentStep]);
+ 
 
 useEffect(() => {
 try {
@@ -331,29 +310,7 @@ return (
 {/* ВЕСЬ КОНТЕНТ */}
 <div className="flex-1">
 <div className="relative">
-  <section ref={heroStageRef} className="relative overflow-hidden z-0">
-    <div
-      className="pointer-events-none absolute inset-x-0 top-0 -z-10 md:hidden"
-      style={{ height: heroExtendHeight ? `${heroExtendHeight}px` : "0px" }}
-    >
-      <div
-        className="absolute inset-0"
-        style={{
-          WebkitMaskImage:
-            "linear-gradient(to bottom, transparent 0%, transparent 45%, rgba(0,0,0,1) 60%, rgba(0,0,0,1) 100%)",
-          maskImage:
-            "linear-gradient(to bottom, transparent 0%, transparent 45%, rgba(0,0,0,1) 60%, rgba(0,0,0,1) 100%)",
-        }}
-      >
-        <div
-          className="absolute inset-0 bg-cover bg-center blur-[8px] scale-[1.05]"
-          style={{ backgroundImage: `url(${HERO_BG_SRC})` }}
-        />
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent to-white" />
-      </div>
-    </div>
-
+  <section className="relative z-0 overflow-visible">
     <HeroSection />
 
     <div className="relative z-20 stepper-overlay-position">

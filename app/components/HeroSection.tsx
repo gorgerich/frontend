@@ -22,7 +22,7 @@ export function HeroSection() {
   return (
     <section className="relative w-full px-4 pt-14 sm:pt-16 pb-16 md:pt-8 md:pb-20 lg:pb-24">
       <div className="mx-auto max-w-7xl relative">
-        <div className="pointer-events-none absolute left-1/2 top-4 z-30 -translate-x-1/2 sm:top-6">
+        <div className="pointer-events-none absolute left-1/2 top-0 z-30 -translate-x-1/2 -translate-y-1/2">
           <div className="pointer-events-auto">
             <TopButtons />
           </div>
