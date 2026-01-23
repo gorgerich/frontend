@@ -16,6 +16,7 @@ import {
 
 type BreakdownItem = { name: string; price?: number };
 type BreakdownSection = { category: string; price: number; items?: BreakdownItem[] };
+const HERO_BG_SRC = "/hero-forest.jpg";
 
 const HEARSE_CATEGORY_PRICE = {
   standard: 8000,
@@ -307,23 +308,42 @@ return (
 <main className="min-h-screen bg-white pt-8 flex flex-col">
 {/* ВЕСЬ КОНТЕНТ */}
 <div className="flex-1">
-<HeroSection />
+<div className="relative">
+  <div className="pointer-events-none absolute inset-0 -z-10 md:hidden">
+    <div
+      className="absolute inset-0"
+      style={{
+        WebkitMaskImage:
+          "linear-gradient(to bottom, transparent 0px, rgba(0,0,0,1) 120px, rgba(0,0,0,1) 100%)",
+        maskImage:
+          "linear-gradient(to bottom, transparent 0px, rgba(0,0,0,1) 120px, rgba(0,0,0,1) 100%)",
+      }}
+    >
+      <div
+        className="absolute inset-0 bg-cover bg-center blur-[8px] scale-[1.05]"
+        style={{ backgroundImage: `url(${HERO_BG_SRC})` }}
+      />
+      <div className="absolute inset-0 bg-black/35 md:bg-black/20" />
+    </div>
+  </div>
 
-<div className="relative z-20 stepper-overlay-position">
-<StepperWorkflow
-formData={formData}
-onUpdateFormData={handleUpdateFormData}
-onStepChange={handleStepChange}
-onCemeteryCategoryChange={handleCemeteryCategoryChange}
-onModeChange={handleModeChange}
-onOrderConfirmed={setIsOrderConfirmed}
-/>
+  <HeroSection />
+
+  <div className="relative z-20 stepper-overlay-position">
+    <StepperWorkflow
+      formData={formData}
+      onUpdateFormData={handleUpdateFormData}
+      onStepChange={handleStepChange}
+      onCemeteryCategoryChange={handleCemeteryCategoryChange}
+      onModeChange={handleModeChange}
+      onOrderConfirmed={setIsOrderConfirmed}
+    />
+  </div>
+
+  {currentStep === 2 && (
+    <PackagesSection formData={formData} onUpdateFormData={handleUpdateFormData} />
+  )}
 </div>
-
-{currentStep === 2 && (
-<PackagesSection formData={formData} onUpdateFormData={handleUpdateFormData} />
-)}
-
 {currentStep >= 1 && !isOrderConfirmed && (
 <FloatingCalculator
 total={calculatorSummary.total}

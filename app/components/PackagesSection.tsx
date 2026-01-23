@@ -292,7 +292,7 @@ export function PackagesSection({ formData, onUpdateFormData }: PackagesSectionP
   }, {} as Record<string, ComparisonFeature[]>);
 
   return (
-    <div className="py-16 px-4 bg-gray-50">
+    <div className="py-16 px-4 bg-transparent">
       <div className="max-w-7xl mx-auto">
         <Tabs defaultValue={SHOW_LEGACY_PACKAGES_BLOCK ? 'packages' : 'custom'} className="w-full">
           {/* Переключатель: Готовые пакеты / Собрать пакет */}

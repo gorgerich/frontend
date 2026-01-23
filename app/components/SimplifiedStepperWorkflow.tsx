@@ -47,6 +47,7 @@ type FormData as CalculatorFormData,
   ADDITIONAL_SERVICES,
   trackEvent,
   getTrackingSessionId,
+  reachMetrikaGoal,
 } from "./calculationUtils";
 
 import type { ImgHTMLAttributes } from "react";
@@ -483,7 +484,9 @@ farewellDateTime?: { date?: string | Date; timeSlot?: TimeSlot; time?: string };
 burialDateTime?: { date?: string | Date; timeSlot?: TimeSlot; time?: string };
 };
 
-type PaymentMethod = "card" | "sbp" | "transfer";
+type PaymentMethod = "deposit_10" | "call_rep";
+const SUPPORT_PHONE_DISPLAY = "+7 (985) 248-94-25";
+const SUPPORT_PHONE_TEL = "+79852489425";
 
 interface SimplifiedStepperWorkflowProps {
 selectedPackage: {
@@ -772,7 +775,7 @@ setBurialDateTime(savedBurialDateTime);
 }, [burialDateTime.date, burialDateTime.timeSlot, savedBurialDateTime.date, savedBurialDateTime.timeSlot]);
 
 // Состояния для оплаты
-const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
+const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("deposit_10");
 const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
 const [orderConfirmation, setOrderConfirmation] = useState<{
   emailSent: boolean;
@@ -2196,6 +2199,29 @@ case 4: {
 const emailValue = (safeFormData.userEmail || "").trim();
 const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue);
 const canSubmit = totalRub > 0 && emailOk;
+const deposit10Rub = Math.max(0, Math.round(totalRub * 0.1));
+const paymentOptions: Array<{ id: PaymentMethod; title: string; subtitle?: string }> = [
+  {
+    id: "deposit_10",
+    title: "Депозит 10%",
+    subtitle:
+      "Депозит гарантирует закрепление координатора за вашей заявкой. Сумма депозита входит в итоговую стоимость вашего заказа.",
+  },
+  {
+    id: "call_rep",
+    title: "Хочу поговорить с представителем",
+  },
+];
+const handlePaymentMethodSelect = (method: PaymentMethod) => {
+  if (paymentMethod === method) return;
+  setPaymentMethod(method);
+  if (method === "deposit_10") {
+    reachMetrikaGoal("payment_option_deposit_10", { flow: trackingFlow });
+  }
+  if (method === "call_rep") {
+    reachMetrikaGoal("payment_option_call_rep", { flow: trackingFlow });
+  }
+};
 
 const breakdown = simplifiedSections;
 const cemeteryCategoryLabel =
@@ -2389,7 +2415,9 @@ return (
   <div className="bg-white border border-gray-200 rounded-[30px] p-6 shadow-sm">
     <div className="text-sm font-semibold text-gray-900">Бронирование оформлено</div>
     <p className="mt-2 text-sm text-gray-600">
-      {orderConfirmation.paymentLink
+      {paymentMethod === "call_rep"
+        ? "Договор и детали заказа отправлены вам на почту. Наш представитель свяжется с вами для уточнения деталей."
+        : orderConfirmation.paymentLink
         ? "Бронирование оформлено. Договор, детали заказа и ссылка на оплату отправлены вам на почту."
         : "Договор и детали заказа отправлены вам на почту. Ссылку на оплату пришлём отдельным письмом."}
     </p>
@@ -2416,30 +2444,63 @@ return (
 
       <div className="mt-6">
         <div className="text-sm font-semibold text-gray-900 mb-3">Способ оплаты</div>
-        <div className="space-y-2">
-          {[
-          { id: "card", title: "Картой по защищённой ссылке", subtitle: "Онлайн-оплата через банк" },
-          { id: "transfer", title: "Оплата по банковским реквизитам", subtitle: "Реквизиты в письме" },
-          { id: "sbp", title: "СБП по QR", subtitle: "Перевод по СБП" },
-        ].map((option) => (
+        <div className="space-y-3">
+          {paymentOptions.map((option) => (
             <button
               key={option.id}
               type="button"
-              onClick={() => setPaymentMethod(option.id as PaymentMethod)}
+              onClick={() => handlePaymentMethodSelect(option.id)}
               className={[
-                "w-full rounded-2xl border px-4 py-3 text-left transition-all",
-                paymentMethod === option.id ? "border-gray-900 bg-gray-50" : "border-gray-200 hover:border-gray-300",
+                "w-full rounded-2xl border px-4 py-4 text-left transition-all",
+                paymentMethod === option.id ? "border-gray-900 bg-gray-50 shadow-sm" : "border-gray-200 hover:border-gray-300",
               ].join(" ")}
             >
               <div className="flex items-start gap-3">
                 <div className={paymentMethod === option.id ? "mt-1 h-4 w-4 rounded-full bg-gray-900" : "mt-1 h-4 w-4 rounded-full border border-gray-400"} />
                 <div>
                   <div className="text-sm font-medium text-gray-900">{option.title}</div>
-                  <div className="text-xs text-gray-500">{option.subtitle}</div>
+                  {option.subtitle && <div className="mt-1 text-xs text-gray-500">{option.subtitle}</div>}
                 </div>
               </div>
             </button>
           ))}
+        </div>
+        <div
+          className={[
+            "mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 transition-all",
+            paymentMethod === "call_rep"
+              ? "max-h-40 opacity-100"
+              : "max-h-0 opacity-0 pointer-events-none py-0 border-transparent",
+          ].join(" ")}
+        >
+          <div className="text-sm font-semibold text-gray-900">Телефон</div>
+          <a
+            href={`tel:${SUPPORT_PHONE_TEL}`}
+            className="mt-1 block text-base font-medium text-gray-900 hover:underline"
+          >
+            {SUPPORT_PHONE_DISPLAY}
+          </a>
+          <div className="mt-1 text-xs text-gray-500">Нажмите, чтобы позвонить</div>
+        </div>
+
+        <div className="mt-4 border-t border-gray-200 pt-3">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            Документы
+          </div>
+          <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-600">
+            <a href="/info" className="underline hover:text-gray-900">
+              Политика конфиденциальности
+            </a>
+            <a href="/docs/oferta" className="underline hover:text-gray-900">
+              Публичная оферта
+            </a>
+            <a href="/docs/payment-rules" className="underline hover:text-gray-900">
+              Порядок оплаты по ссылке
+            </a>
+            <a href="/docs/refund" className="underline hover:text-gray-900">
+              Политика возврата средств
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -2447,9 +2508,19 @@ return (
     <div className="space-y-4">
       <div className="bg-white border border-gray-200 rounded-[30px] p-5 shadow-sm">
         <div className="mt-1 flex items-center justify-between rounded-2xl bg-gray-900 text-white px-4 py-4">
-          <div>
-            <div className="text-[11px] text-white/70">К оплате</div>
-            <div className="text-xl font-semibold">{formatRubLocal(totalRub)} ₽</div>
+          <div className="space-y-1">
+            <div className="flex items-baseline gap-2">
+              <span className="text-[11px] text-white/70">Итого</span>
+              <span className="text-xl font-semibold whitespace-nowrap">
+                {formatRubLocal(totalRub)} ₽
+              </span>
+            </div>
+            {paymentMethod === "deposit_10" && (
+              <div className="text-[11px] text-white/70 leading-snug">
+                Депозит 10% — {formatRubLocal(deposit10Rub)} ₽. Депозит гарантирует закрепление координатора
+                за заявкой и включен в итоговую сумму.
+              </div>
+            )}
           </div>
 
           <Button
@@ -2463,7 +2534,9 @@ return (
         </div>
 
         <div className="mt-3 text-xs text-gray-500">
-          После оформления мы отправим договор и детали заказа на email. Ссылку на оплату пришлём, если она доступна.
+          {paymentMethod === "call_rep"
+            ? "После оформления мы отправим договор и детали заказа на email. Наш представитель свяжется с вами для уточнения деталей."
+            : "После оформления мы отправим договор и детали заказа на email. Ссылку на оплату пришлём, если она доступна."}
         </div>
       </div>
     </div>

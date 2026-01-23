@@ -950,12 +950,18 @@ const YM_ALLOWED_GOALS = new Set<string>([
   "payment_option_full",
   "payment_option_deposit_5",
   "payment_option_split",
+  "payment_option_deposit_10",
+  "payment_option_call_rep",
   "order_created",
   "payment_start",
   "payment_success",
   "wizard_started",
   "attributes_started",
+  "logistics_started",
+  "logistics_filled",
+  "lead_submit",
   "documents_started",
+  "documents_filled",
   "contacts_filled",
 ]);
 

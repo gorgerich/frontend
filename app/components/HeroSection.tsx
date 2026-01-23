@@ -22,10 +22,17 @@ const MOBILE_LINES_GAP = "8px"; // расстояние между строка�
 export function HeroSection() {
   return (
     <section className="relative w-full px-4 pt-8 pb-16 md:pb-20 lg:pb-24">
-      <div className="mx-auto max-w-7xl">
-        <div className="relative h-[60vh] w-full overflow-visible rounded-3xl md:h-[70vh] lg:h-[75vh] md:rounded-[40px]">
-          {/* Background (extended only on mobile) */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[calc(100%+240px)] md:h-full z-0">
+      <div className="mx-auto max-w-7xl relative">
+        {/* Top buttons */}
+        <div className="pointer-events-none absolute left-0 right-0 -top-10 z-50 flex justify-center md:-top-14">
+          <div className="pointer-events-auto">
+            <TopButtons />
+          </div>
+        </div>
+
+        <div className="relative h-[60vh] w-full overflow-hidden rounded-3xl md:h-[70vh] lg:h-[75vh] md:rounded-[40px]">
+          {/* Background (hero only) */}
+          <div className="pointer-events-none absolute inset-0 z-0">
             <img
               src={heroImage}
               alt="Тихая Память"
@@ -33,13 +40,6 @@ export function HeroSection() {
             />
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/70 via-black/60 to-black/75 md:rounded-[40px]" />
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/50 via-black/25 to-black/10 md:hidden" />
-          </div>
-
-          {/* Top buttons */}
-          <div className="pointer-events-none absolute -top-10 left-0 right-0 z-20 flex justify-center md:-top-14">
-            <div className="pointer-events-auto">
-              <TopButtons />
-            </div>
           </div>
 
           {/* TEXT LAYER */}
@@ -70,7 +70,7 @@ export function HeroSection() {
                       marginBottom: MOBILE_LINES_GAP,
                     }}
                   >
-                    Цифровой помощник по самостоятельной организации прощания без агентств и давления
+                    Цифровой помощник по самостоятельной организации прощания без звонков и давления
                   </span>
 
                   <span
@@ -124,7 +124,7 @@ export function HeroSection() {
                       lineHeight: LINE2_LINE_HEIGHT,
                     }}
                   >
-                    организации прощания без агентств и давления
+                    организации прощания без звонков и давления
                   </span>
                 </span>
               </h1>

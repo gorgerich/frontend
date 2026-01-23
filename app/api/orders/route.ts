@@ -304,6 +304,7 @@ function buildEmailHtml(
     orderSummaryHtml?: string;
     showServicesTable?: boolean;
     paymentMethodLabel?: string;
+    paymentMethod?: string;
     paymentLink?: string | null;
     orderId?: string;
     createdAtLabel?: string;
@@ -370,6 +371,7 @@ function buildEmailHtml(
 
   const notes = body.notes ?? body.formData?.specialRequests;
   const paymentMethodLabel = options?.paymentMethodLabel;
+  const paymentMethod = options?.paymentMethod;
   const paymentLink = options?.paymentLink;
   const orderId = options?.orderId ?? "";
   const createdAtLabel = options?.createdAtLabel ?? new Date().toLocaleDateString("ru-RU");
@@ -377,11 +379,14 @@ function buildEmailHtml(
     ? orderSummaryHtml
     : `<div style="font-size:14px;line-height:1.7;color:#374151;">Данные заказа не заполнены.</div>`;
 
-  const paymentText = paymentLink
-    ? `Ссылка на оплату: <a href="${escapeHtml(paymentLink)}" target="_blank" rel="noreferrer">${escapeHtml(
-        paymentLink,
-      )}</a>`
-    : "Ссылка на оплату будет направлена отдельным письмом.";
+  const paymentText =
+    paymentMethod === "call_rep"
+      ? "Наш представитель свяжется с вами для уточнения деталей оплаты."
+      : paymentLink
+        ? `Ссылка на оплату: <a href="${escapeHtml(paymentLink)}" target="_blank" rel="noreferrer">${escapeHtml(
+            paymentLink,
+          )}</a>`
+        : "Ссылка на оплату будет направлена отдельным письмом.";
 
   return `
 <!doctype html>
@@ -570,25 +575,21 @@ export async function POST(req: NextRequest) {
     const publicId = "order_" + crypto.randomBytes(6).toString("hex");
     const paymentMethodRaw = String(body.paymentMethod ?? body.formData?.paymentMethod ?? "").trim();
     const paymentMethod =
-      paymentMethodRaw === "card" || paymentMethodRaw === "sbp" || paymentMethodRaw === "transfer"
+      paymentMethodRaw === "deposit_10" || paymentMethodRaw === "call_rep"
         ? paymentMethodRaw
         : undefined;
     const paymentMethodLabel =
-      paymentMethod === "card"
-        ? "Картой по защищённой ссылке"
-        : paymentMethod === "sbp"
-          ? "СБП по QR"
-          : paymentMethod === "transfer"
-            ? "Оплата по банковским реквизитам"
-            : undefined;
+      paymentMethod === "deposit_10"
+        ? "Депозит 10%"
+        : paymentMethod === "call_rep"
+          ? "Хочу поговорить с представителем"
+          : undefined;
     const paymentLink =
-      paymentMethod === "card"
+      paymentMethod === "deposit_10"
         ? process.env.PAYMENT_LINK_CARD || null
-        : paymentMethod === "sbp"
-          ? process.env.PAYMENT_LINK_SBP || null
-          : paymentMethod === "transfer"
-            ? process.env.PAYMENT_LINK_TRANSFER || null
-            : null;
+        : paymentMethod === "call_rep"
+          ? null
+          : null;
 
     const user = await prisma.user.upsert({
       where: { email: customerEmail },
@@ -673,6 +674,7 @@ export async function POST(req: NextRequest) {
       orderSummaryHtml,
       showServicesTable: true,
       paymentMethodLabel,
+      paymentMethod,
       paymentLink,
       orderId: publicId,
       createdAtLabel,
@@ -706,7 +708,9 @@ export async function POST(req: NextRequest) {
     ];
     if (paymentMethodLabel) {
       textParts.push("", "Оплата", `Способ оплаты: ${paymentMethodLabel}`);
-      if (paymentLink) {
+      if (paymentMethod === "call_rep") {
+        textParts.push("Наш представитель свяжется с вами для уточнения деталей оплаты.");
+      } else if (paymentLink) {
         textParts.push(`Ссылка на оплату: ${paymentLink}`);
       } else {
         textParts.push("Ссылка на оплату будет направлена отдельным письмом.");
