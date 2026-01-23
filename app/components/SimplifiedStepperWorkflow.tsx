@@ -2209,7 +2209,7 @@ const paymentOptions: Array<{ id: PaymentMethod; title: string; subtitle?: strin
   },
   {
     id: "call_rep",
-    title: "Хочу поговорить с представителем",
+    title: "Мне нужна консультация",
   },
 ];
 const handlePaymentMethodSelect = (method: PaymentMethod) => {
@@ -2454,10 +2454,21 @@ return (
               ].join(" ")}
             >
               <div className="flex items-start gap-3">
-                <div className={paymentMethod === option.id ? "mt-1 h-4 w-4 rounded-full bg-gray-900" : "mt-1 h-4 w-4 rounded-full border border-gray-400"} />
+                <div
+                  className={[
+                    "mt-1 flex h-4 w-4 items-center justify-center rounded-full",
+                    paymentMethod === option.id ? "border-2 border-gray-900" : "border border-gray-400",
+                  ].join(" ")}
+                >
+                  {paymentMethod === option.id && (
+                    <div className="h-[6px] w-[6px] rounded-full bg-gray-900" />
+                  )}
+                </div>
                 <div>
                   <div className="text-sm font-medium text-gray-900">{option.title}</div>
-                  {option.subtitle && <div className="mt-1 text-xs text-gray-500">{option.subtitle}</div>}
+                  {option.subtitle && paymentMethod === option.id && (
+                    <div className="mt-1 text-xs text-gray-500">{option.subtitle}</div>
+                  )}
                 </div>
               </div>
             </button>

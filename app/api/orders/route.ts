@@ -582,7 +582,7 @@ export async function POST(req: NextRequest) {
       paymentMethod === "deposit_10"
         ? "Депозит 10%"
         : paymentMethod === "call_rep"
-          ? "Хочу поговорить с представителем"
+          ? "Мне нужна консультация"
           : undefined;
     const paymentLink =
       paymentMethod === "deposit_10"
