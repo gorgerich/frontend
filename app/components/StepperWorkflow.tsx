@@ -3479,7 +3479,7 @@ function formatRub(n: number) {
             reachMetrikaGoal("payment_option_deposit_10", { flow: trackingFlow });
           }
           if (method === "call_rep") {
-            reachMetrikaGoal("payment_option_call_rep", { flow: trackingFlow });
+            reachMetrikaGoal("payment_option_call", { flow: trackingFlow });
           }
         };
         const canSubmit = totalRub > 0 && emailOk;

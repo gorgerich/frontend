@@ -951,7 +951,7 @@ const YM_ALLOWED_GOALS = new Set<string>([
   "payment_option_deposit_5",
   "payment_option_split",
   "payment_option_deposit_10",
-  "payment_option_call_rep",
+  "payment_option_call",
   "order_created",
   "payment_start",
   "payment_success",
