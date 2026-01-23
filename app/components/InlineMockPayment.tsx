@@ -242,7 +242,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
             subtitle={`Итого ${rub(totalAmount)} ₽`}
             onClick={() => {
               setPayPlan("full");
-              trackBoth("payplan_select", {
+              trackEvent("payplan_select", {
                 orderId,
                 payPlan: "full",
                 totalAmount,
@@ -255,7 +255,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
             subtitle={`5% сейчас: ${rub(Math.round(totalAmount * 0.05))} ₽`}
             onClick={() => {
               setPayPlan("deposit");
-              trackBoth("payplan_select", {
+              trackEvent("payplan_select", {
                 orderId,
                 payPlan: "deposit",
                 totalAmount,
@@ -268,7 +268,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
             subtitle="4 платежа без переплат (UX)"
             onClick={() => {
               setPayPlan("split");
-              trackBoth("payplan_select", {
+              trackEvent("payplan_select", {
                 orderId,
                 payPlan: "split",
                 totalAmount,
@@ -300,7 +300,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
             title="Карта"
             onClick={() => {
               setMethod("card");
-              trackBoth("payment_method_select", { orderId, method: "card" });
+              trackEvent("payment_method_select", { orderId, method: "card" });
             }}
           />
           <MethodBtn
@@ -308,7 +308,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
             title="СБП"
             onClick={() => {
               setMethod("sbp");
-              trackBoth("payment_method_select", { orderId, method: "sbp" });
+              trackEvent("payment_method_select", { orderId, method: "sbp" });
             }}
           />
         </div>
