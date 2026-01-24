@@ -1357,6 +1357,16 @@ export function StepperWorkflow({
   }, [workflowMode, currentStep, trackingFlow, trackingSessionId]);
 
   useEffect(() => {
+    if (workflowMode !== "wizard") return;
+    if (currentStep !== 0) return;
+    if (formatStartedRef.current) return;
+    formatStartedRef.current = true;
+    reachMetrikaGoal(buildGoalName(trackingFlow, "format_started"), {
+      flow: trackingFlow,
+    });
+  }, [workflowMode, currentStep, trackingFlow]);
+
+  useEffect(() => {
     if (workflowMode !== "wizard" || currentStep !== 0) return;
     if (!formData.serviceType) return;
     const totalRub = Math.max(0, Math.round(calculateTotal() || 0));
@@ -1476,6 +1486,12 @@ export function StepperWorkflow({
   useEffect(() => {
     if (workflowMode !== "wizard") return;
     if (currentStep !== 4) return;
+    if (!confirmationViewedRef.current) {
+      confirmationViewedRef.current = true;
+      reachMetrikaGoal(buildGoalName(trackingFlow, "confirmation_viewed"), {
+        flow: trackingFlow,
+      });
+    }
     if (!calculatorViewedRef.current) {
       const totalRub = Math.max(0, Math.round(calculateTotal() || 0));
       const breakdown = calculateBreakdown();
@@ -1495,6 +1511,9 @@ export function StepperWorkflow({
         },
         `${trackingSessionId}:${trackingFlow}:step6`,
       );
+      reachMetrikaGoal(buildGoalName(trackingFlow, "calculator_viewed"), {
+        flow: trackingFlow,
+      });
     }
 
     if (!contactsStartedRef.current) {
@@ -1594,6 +1613,12 @@ export function StepperWorkflow({
   const hearseCategoryInfoRef = useRef<HTMLDivElement>(null);
   const wizardStartedRef = useRef(false);
   const attributesStartedRef = useRef(false);
+  const formatStartedRef = useRef(false);
+  const formatFilledRef = useRef(false);
+  const attributesFilledRef = useRef(false);
+  const logisticsFilledRef = useRef(false);
+  const documentsFilledRef = useRef(false);
+  const confirmationViewedRef = useRef(false);
   const logisticsStartedRef = useRef(false);
   const logisticsSessionRef = useRef(trackingSessionId);
   const documentsStartedRef = useRef(false);
@@ -1980,6 +2005,15 @@ export function StepperWorkflow({
     const totalRub = Math.max(0, Math.round(calculateTotal() || 0));
 
     if (workflowMode === "wizard") {
+      if (currentStep === 0) {
+        if (!formatFilledRef.current) {
+          formatFilledRef.current = true;
+          reachMetrikaGoal(buildGoalName(trackingFlow, "format_filled"), {
+            flow: trackingFlow,
+          });
+        }
+      }
+
       if (currentStep === 1) {
         const hasLocation = Boolean(formData.cemetery);
         const hasPickup = Boolean(pickupDateTime.date && pickupDateTime.timeSlot);
@@ -1989,6 +2023,12 @@ export function StepperWorkflow({
         const hasTimes = hasPickup && hasBurial && hasFarewell;
         const routePoints = Object.values(formData.hearseRoute || {}).filter(Boolean).length;
         if (hasLocation && hasTimes) {
+          if (!logisticsFilledRef.current) {
+            logisticsFilledRef.current = true;
+            reachMetrikaGoal(buildGoalName(trackingFlow, "logistics_filled"), {
+              flow: trackingFlow,
+            });
+          }
           trackEvent(
             "logistics_filled",
             {
@@ -2005,6 +2045,12 @@ export function StepperWorkflow({
       }
 
       if (currentStep === 2) {
+        if (!attributesFilledRef.current) {
+          attributesFilledRef.current = true;
+          reachMetrikaGoal(buildGoalName(trackingFlow, "attributes_filled"), {
+            flow: trackingFlow,
+          });
+        }
         const ceremonyFormat =
           formData.ceremonyType === "civil"
             ? "secular"
@@ -2030,6 +2076,12 @@ export function StepperWorkflow({
       }
 
       if (currentStep === 3) {
+        if (!documentsFilledRef.current) {
+          documentsFilledRef.current = true;
+          reachMetrikaGoal(buildGoalName(trackingFlow, "documents_filled"), {
+            flow: trackingFlow,
+          });
+        }
         trackEvent(
           "documents_completed",
           {

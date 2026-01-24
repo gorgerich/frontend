@@ -948,11 +948,16 @@ const YM_FALLBACK_ID = 106219376;
 const YM_FLOW_PREFIXES = ["wizard", "tariffs"] as const;
 type YmFlow = (typeof YM_FLOW_PREFIXES)[number];
 const YM_BASE_GOALS = new Set<string>([
+  "format_started",
+  "format_filled",
   "attributes_started",
+  "attributes_filled",
   "logistics_started",
   "logistics_filled",
   "documents_started",
-  "documents_completed",
+  "documents_filled",
+  "confirmation_viewed",
+  "calculator_viewed",
   "contacts_filled",
   "order_created",
   "payment_start",

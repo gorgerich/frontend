@@ -597,6 +597,12 @@ const [showConsentError, setShowConsentError] = useState(false);
 
 const didStepScrollMountRef = useRef(false);
 const wizardStartedRef = useRef(false);
+const formatStartedRef = useRef(false);
+const formatFilledRef = useRef(false);
+const attributesFilledRef = useRef(false);
+const logisticsFilledRef = useRef(false);
+const documentsFilledRef = useRef(false);
+const confirmationViewedRef = useRef(false);
 const attributesStartedRef = useRef(false);
 const logisticsStartedRef = useRef(false);
 const logisticsSessionRef = useRef(trackingSessionId);
@@ -978,6 +984,15 @@ useEffect(() => {
 }, [currentStep]);
 
 useEffect(() => {
+  if (currentStep !== 1) return;
+  if (formatStartedRef.current) return;
+  formatStartedRef.current = true;
+  reachMetrikaGoal(buildGoalName(trackingFlow, "format_started"), {
+    flow: trackingFlow,
+  });
+}, [currentStep, trackingFlow]);
+
+useEffect(() => {
   if (currentStep !== 0) return;
   const liningName = liningOptions.find((l) => l.id === currentLiningId)?.name;
   const wishesFilled = Boolean((safeFormData.specialRequests || "").trim());
@@ -1064,6 +1079,12 @@ useEffect(() => {
 
 useEffect(() => {
   if (currentStep !== 4) return;
+  if (!confirmationViewedRef.current) {
+    confirmationViewedRef.current = true;
+    reachMetrikaGoal(buildGoalName(trackingFlow, "confirmation_viewed"), {
+      flow: trackingFlow,
+    });
+  }
   if (!calculatorViewedRef.current) {
     const itemsCount = floatingBreakdown.reduce(
       (acc, section) => acc + (section.items?.length || 0),
@@ -1081,6 +1102,9 @@ useEffect(() => {
       },
       `${trackingSessionId}:${trackingFlow}:step5`,
     );
+    reachMetrikaGoal(buildGoalName(trackingFlow, "calculator_viewed"), {
+      flow: trackingFlow,
+    });
   }
 
   if (!contactsStartedRef.current) {
@@ -1165,7 +1189,22 @@ if (currentStep < simplifiedSteps.length - 1 && !isTransitioning) {
 setIsTransitioning(true);
 setShowConsentError(false);
 
+if (currentStep === 0) {
+  if (!attributesFilledRef.current) {
+    attributesFilledRef.current = true;
+    reachMetrikaGoal(buildGoalName(trackingFlow, "attributes_filled"), {
+      flow: trackingFlow,
+    });
+  }
+}
+
 if (currentStep === 1) {
+  if (!formatFilledRef.current) {
+    formatFilledRef.current = true;
+    reachMetrikaGoal(buildGoalName(trackingFlow, "format_filled"), {
+      flow: trackingFlow,
+    });
+  }
   const ceremonyFormat =
     safeFormData.ceremonyType === "civil"
       ? "secular"
@@ -1199,6 +1238,12 @@ if (currentStep === 2) {
   const hasTimes = hasPickup && hasBurial && hasFarewell;
   const routePoints = Object.values(safeFormData.hearseRoute || {}).filter(Boolean).length;
   if (hasLocation && hasTimes) {
+    if (!logisticsFilledRef.current) {
+      logisticsFilledRef.current = true;
+      reachMetrikaGoal(buildGoalName(trackingFlow, "logistics_filled"), {
+        flow: trackingFlow,
+      });
+    }
     trackEvent(
       "logistics_filled",
       {
@@ -1215,6 +1260,12 @@ if (currentStep === 2) {
 }
 
 if (currentStep === 3) {
+  if (!documentsFilledRef.current) {
+    documentsFilledRef.current = true;
+    reachMetrikaGoal(buildGoalName(trackingFlow, "documents_filled"), {
+      flow: trackingFlow,
+    });
+  }
   trackEvent(
     "documents_completed",
     {
