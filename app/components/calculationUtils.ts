@@ -945,25 +945,35 @@ export function getTrackingSessionId() {
 }
 
 const YM_FALLBACK_ID = 106219376;
-const YM_ALLOWED_GOALS = new Set<string>([
+const YM_FLOW_PREFIXES = ["wizard", "tariffs"] as const;
+type YmFlow = (typeof YM_FLOW_PREFIXES)[number];
+const YM_BASE_GOALS = new Set<string>([
+  "attributes_started",
   "logistics_started",
+  "logistics_filled",
+  "documents_started",
+  "documents_completed",
+  "contacts_filled",
+  "order_created",
+  "payment_start",
+  "payment_success",
   "payment_option_full",
   "payment_option_deposit_5",
   "payment_option_split",
   "payment_option_deposit_10",
   "payment_option_call",
-  "order_created",
-  "payment_start",
-  "payment_success",
-  "wizard_started",
-  "attributes_started",
-  "logistics_started",
-  "logistics_filled",
-  "lead_submit",
-  "documents_started",
-  "documents_filled",
-  "contacts_filled",
 ]);
+const YM_ALLOWED_GOALS = new Set<string>([
+  "wizard_started",
+  "tariffs_started",
+  ...YM_FLOW_PREFIXES.flatMap((flow) =>
+    Array.from(YM_BASE_GOALS, (goal) => `${flow}_${goal}`),
+  ),
+]);
+
+export function buildGoalName(flow: YmFlow, goalBase: string) {
+  return `${flow}_${goalBase}`;
+}
 
 export function reachMetrikaGoal(
   name: string,
@@ -980,6 +990,23 @@ export function reachMetrikaGoal(
     w.ym(ymId, "reachGoal", name, params);
     if (process.env.NEXT_PUBLIC_YM_DEBUG === "true") {
       console.debug("[ym]", name, params);
+    }
+  } catch (_) {
+    // best-effort analytics: ignore failures
+  }
+}
+
+export function setMetrikaVisitParams(params: Record<string, any> = {}) {
+  if (typeof window === "undefined") return;
+  const w = window as TrackerWindow;
+  const ymIdRaw = process.env.NEXT_PUBLIC_YM_ID;
+  const ymId = Number.isFinite(Number(ymIdRaw)) ? Number(ymIdRaw) : YM_FALLBACK_ID;
+  if (!Number.isFinite(ymId)) return;
+  if (typeof w.ym !== "function") return;
+  try {
+    w.ym(ymId, "params", params);
+    if (process.env.NEXT_PUBLIC_YM_DEBUG === "true") {
+      console.debug("[ym:params]", params);
     }
   } catch (_) {
     // best-effort analytics: ignore failures
@@ -1017,7 +1044,17 @@ export function trackEvent(
     }
   }
 
-  reachMetrikaGoal(name, params);
+  const flow = typeof params?.flow === "string" ? params.flow : undefined;
+  const hasPrefix = name.startsWith("wizard_") || name.startsWith("tariffs_");
+  const ymGoal =
+    !hasPrefix &&
+    flow &&
+    (YM_FLOW_PREFIXES as readonly string[]).includes(flow) &&
+    YM_BASE_GOALS.has(name)
+      ? buildGoalName(flow as YmFlow, name)
+      : name;
+
+  reachMetrikaGoal(ymGoal, params);
 
   if (process.env.NODE_ENV !== "production") {
     console.info("[tracking]", name, params);

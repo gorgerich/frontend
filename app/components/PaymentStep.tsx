@@ -6,7 +6,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { cn } from "./ui/utils";
 import { Download, Share2, RubleSign, CheckCircle2, Search } from "./Icons";
-import { getTrackingSessionId, reachMetrikaGoal, trackEvent } from "./calculationUtils";
+import { buildGoalName, getTrackingSessionId, reachMetrikaGoal, trackEvent } from "./calculationUtils";
 import {
 Select,
 SelectContent,
@@ -94,10 +94,11 @@ if (!didMountRef.current) {
 }
 if (lastSentOptionRef.current === paymentOption) return;
 
-reachMetrikaGoal(optionGoalMap[paymentOption], {
+reachMetrikaGoal(buildGoalName(trackingFlow, optionGoalMap[paymentOption]), {
 option: paymentOption,
 pay_now: payNow,
 total,
+flow: trackingFlow,
 });
 
 lastSentOptionRef.current = paymentOption;

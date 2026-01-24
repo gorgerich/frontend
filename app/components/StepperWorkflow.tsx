@@ -98,6 +98,8 @@ import {
   trackEvent,
   getTrackingSessionId,
   reachMetrikaGoal,
+  setMetrikaVisitParams,
+  buildGoalName,
 } from "./calculationUtils";
 
 
@@ -1089,6 +1091,7 @@ export function StepperWorkflow({
 
   const trackingSessionId = getTrackingSessionId();
   const trackingFlow: "wizard" = "wizard";
+  const metrikaVisitSessionRef = useRef<string | null>(null);
 
   const [isAccountOpen, setIsAccountOpen] = useState(false);
 
@@ -1122,6 +1125,13 @@ export function StepperWorkflow({
     window.addEventListener("resize", calc);
     return () => window.removeEventListener("resize", calc);
   }, [workflowMode, currentStep, selectedPackageForSimplified]);
+
+  useEffect(() => {
+    if (workflowMode !== "wizard") return;
+    if (metrikaVisitSessionRef.current === trackingSessionId) return;
+    metrikaVisitSessionRef.current = trackingSessionId;
+    setMetrikaVisitParams({ td_flow: "wizard" });
+  }, [workflowMode, trackingSessionId]);
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("deposit_10");
   const didInitDefaultsRef = useRef(false);
@@ -3503,10 +3513,15 @@ function formatRub(n: number) {
           if (paymentMethod === method) return;
           setPaymentMethod(method);
           if (method === "deposit_10") {
-            reachMetrikaGoal("payment_option_deposit_10", { flow: trackingFlow });
+            reachMetrikaGoal(
+              buildGoalName(trackingFlow, "payment_option_deposit_10"),
+              { flow: trackingFlow },
+            );
           }
           if (method === "call_rep") {
-            reachMetrikaGoal("payment_option_call", { flow: trackingFlow });
+            reachMetrikaGoal(buildGoalName(trackingFlow, "payment_option_call"), {
+              flow: trackingFlow,
+            });
           }
         };
         const canSubmit = totalRub > 0 && emailOk;
@@ -3668,14 +3683,14 @@ function formatRub(n: number) {
                             <div className="flex items-start gap-3">
                               <div
                                 className={cn(
-                                  "mt-1 flex h-4 w-4 items-center justify-center rounded-full",
+                                  "mt-1 flex h-5 w-5 items-center justify-center rounded-full",
                                   paymentMethod === option.id
-                                    ? "border-2 border-gray-900"
-                                    : "border border-gray-400",
+                                    ? "border border-gray-900"
+                                    : "border border-gray-300",
                                 )}
                               >
                                 {paymentMethod === option.id && (
-                                  <div className="h-[6px] w-[6px] rounded-full bg-gray-900" />
+                                  <div className="h-2 w-2 rounded-full bg-gray-900" />
                                 )}
                               </div>
                               <div>

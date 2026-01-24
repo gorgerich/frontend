@@ -48,6 +48,8 @@ type FormData as CalculatorFormData,
   trackEvent,
   getTrackingSessionId,
   reachMetrikaGoal,
+  setMetrikaVisitParams,
+  buildGoalName,
 } from "./calculationUtils";
 
 import type { ImgHTMLAttributes } from "react";
@@ -87,7 +89,7 @@ type SimplifiedBreakdownSection = {
 type SimplifiedFloatingCalculatorProps = {
   total: number;
   breakdown: SimplifiedBreakdownSection[];
-  flow: "package";
+  flow: "tariffs";
   trackingSessionId: string;
 };
 
@@ -584,7 +586,8 @@ const containerRef = useRef<HTMLDivElement>(null);
 const topRef = useRef<HTMLDivElement | null>(null);
 const didInitialScrollRef = useRef(false);
 const trackingSessionId = getTrackingSessionId();
-const trackingFlow: "package" = "package";
+const trackingFlow: "tariffs" = "tariffs";
+const metrikaVisitSessionRef = useRef<string | null>(null);
 
 const [currentStep, setCurrentStep] = useState(0);
 const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -947,15 +950,21 @@ useEffect(() => {
 }, [trackingSessionId]);
 
 useEffect(() => {
+  if (metrikaVisitSessionRef.current === trackingSessionId) return;
+  metrikaVisitSessionRef.current = trackingSessionId;
+  setMetrikaVisitParams({ td_flow: "tariffs" });
+}, [trackingSessionId]);
+
+useEffect(() => {
   if (currentStep !== 0) return;
   if (wizardStartedRef.current) return;
   wizardStartedRef.current = true;
   trackEvent(
-    "wizard_started",
-    { entry_mode: "package", flow: trackingFlow },
+    "tariffs_started",
+    { entry_mode: "tariffs", flow: trackingFlow },
     `${trackingSessionId}:${trackingFlow}:step1`,
   );
-}, [currentStep]);
+}, [currentStep, trackingFlow, trackingSessionId]);
 
 useEffect(() => {
   if (currentStep !== 0) return;
@@ -2216,10 +2225,15 @@ const handlePaymentMethodSelect = (method: PaymentMethod) => {
   if (paymentMethod === method) return;
   setPaymentMethod(method);
   if (method === "deposit_10") {
-    reachMetrikaGoal("payment_option_deposit_10", { flow: trackingFlow });
+    reachMetrikaGoal(
+      buildGoalName(trackingFlow, "payment_option_deposit_10"),
+      { flow: trackingFlow },
+    );
   }
   if (method === "call_rep") {
-    reachMetrikaGoal("payment_option_call", { flow: trackingFlow });
+    reachMetrikaGoal(buildGoalName(trackingFlow, "payment_option_call"), {
+      flow: trackingFlow,
+    });
   }
 };
 
@@ -2456,12 +2470,12 @@ return (
               <div className="flex items-start gap-3">
                 <div
                   className={[
-                    "mt-1 flex h-4 w-4 items-center justify-center rounded-full",
-                    paymentMethod === option.id ? "border-2 border-gray-900" : "border border-gray-400",
+                    "mt-1 flex h-5 w-5 items-center justify-center rounded-full",
+                    paymentMethod === option.id ? "border border-gray-900" : "border border-gray-300",
                   ].join(" ")}
                 >
                   {paymentMethod === option.id && (
-                    <div className="h-[6px] w-[6px] rounded-full bg-gray-900" />
+                    <div className="h-2 w-2 rounded-full bg-gray-900" />
                   )}
                 </div>
                 <div>

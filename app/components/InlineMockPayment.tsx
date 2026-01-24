@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { getTrackingSessionId, reachMetrikaGoal, trackEvent } from "./calculationUtils";
+import { buildGoalName, getTrackingSessionId, reachMetrikaGoal, trackEvent } from "./calculationUtils";
 
 
 
@@ -121,10 +121,11 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
     if (lastPayPlanRef.current === payPlan) return;
     lastPayPlanRef.current = payPlan;
     payPlanSelectionSeqRef.current += 1;
-    reachMetrikaGoal(payPlanGoalMap[payPlan], {
+    reachMetrikaGoal(buildGoalName(trackingFlow, payPlanGoalMap[payPlan]), {
       option: payPlan,
       pay_now: payNowRub,
       total: totalAmount,
+      flow: trackingFlow,
     });
     trackEvent(
       "pay_plan_selected",

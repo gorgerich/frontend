@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from './ui/utils';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { reachMetrikaGoal } from './calculationUtils';
+import { buildGoalName, reachMetrikaGoal } from './calculationUtils';
 
 type PaymentMethod = 'card' | 'sbp' | 'installment';
 type PaymentOption = 'full' | 'deposit_5' | 'split';
@@ -25,11 +25,13 @@ total = 47000,
 email,
 onEmailChange,
 breakdown = [],
+flow = "wizard",
 }: {
 total?: number;
 email: string;
 onEmailChange: (v: string) => void;
 breakdown?: CalculatorSection[];
+flow?: "wizard" | "tariffs";
 }) {
 const [method, setMethod] = useState<PaymentMethod>('card');
 
@@ -63,10 +65,11 @@ if (!didMountRef.current) {
 }
 if (lastSentOptionRef.current === paymentOption) return;
 
-reachMetrikaGoal(optionGoalMap[paymentOption], {
+reachMetrikaGoal(buildGoalName(flow, optionGoalMap[paymentOption]), {
 option: paymentOption,
 pay_now: payNow,
 total,
+flow,
 });
 
 lastSentOptionRef.current = paymentOption;
