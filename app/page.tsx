@@ -326,7 +326,9 @@ return (
   </section>
 </div>
 {currentStep === 2 && (
-  <PackagesSection formData={formData} onUpdateFormData={handleUpdateFormData} />
+  <div id="packages">
+    <PackagesSection formData={formData} onUpdateFormData={handleUpdateFormData} />
+  </div>
 )}
 {currentStep >= 1 && !isOrderConfirmed && (
 <FloatingCalculator

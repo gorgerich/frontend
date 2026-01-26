@@ -2456,179 +2456,180 @@ return (
 <div className="text-sm font-semibold text-gray-900">{formatRubLocal(totalRub)} ₽</div>
 </div>
 
-<div className="space-y-4">
-{breakdown.map((block, idx) => (
-<div key={`${block.title}-${idx}`} className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-<div className="flex items-start justify-between gap-3">
-<div className="text-sm font-semibold text-gray-900">{block.title}</div>
-<div className="text-sm font-semibold text-gray-900">{formatRubLocal(block.total)} ₽</div>
-</div>
-
-{block.items?.length ? (
-<div className="mt-3 space-y-2">
-{block.items.map((it, i) => (
-<div key={`${block.title}-it-${i}`} className="flex items-start justify-between gap-3 text-sm">
-<div className="text-gray-700">
-<span className="text-gray-900">•</span> {it.label}
-</div>
-<div className="text-gray-600 whitespace-nowrap">
-{typeof it.price === "number" ? `${formatRubLocal(it.price)} ₽` : "включено"}
-</div>
-</div>
-))}
-</div>
-) : null}
-</div>
-))}
-</div>
-</div>
-
-{/* Оплата */}
-<div className="pt-2">
-<div className="text-sm font-semibold text-gray-900 mb-3">Оплата</div>
-
-{orderConfirmation?.emailSent ? (
-  <div className="bg-white border border-gray-200 rounded-[30px] p-6 shadow-sm">
-    <div className="text-sm font-semibold text-gray-900">Бронирование оформлено</div>
-    <p className="mt-2 text-sm text-gray-600">
-      {orderConfirmation.paymentLink
-        ? "Бронирование оформлено. Договор, детали заказа и ссылка на оплату отправлены вам на почту."
-        : "Договор и детали заказа отправлены вам на почту. Ссылку на оплату пришлём отдельным письмом."}
-    </p>
-  </div>
-) : (
-  <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
-    <div className="bg-white border border-gray-200 rounded-[30px] p-6 shadow-sm">
-      <div className="text-sm font-semibold text-gray-900 mb-2">Email для получения информации</div>
-      <input
-        value={emailValue}
-        onChange={(e) => handleInputChange("userEmail", e.target.value)}
-        placeholder="name@email.com"
-        className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-gray-400"
-        inputMode="email"
-      />
-      {!emailOk && (
-        <div className="mt-2 text-xs text-red-600">
-          Проверьте корректность e-mail.
-        </div>
-      )}
-      <div className="mt-2 text-xs text-gray-500">
-        На этот адрес придёт подтверждение заказа, детали церемонии и документы.
-      </div>
-
-      <div className="mt-6">
-        <div className="text-sm font-semibold text-gray-900 mb-3">Способ оплаты</div>
-        <div className="space-y-3">
-          {paymentOptions.map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              onClick={() => handlePaymentMethodSelect(option.id)}
-              className={[
-                "w-full rounded-2xl border px-4 py-4 text-left transition-all",
-                paymentMethod === option.id ? "border-gray-900 bg-gray-50 shadow-sm" : "border-gray-200 hover:border-gray-300",
-              ].join(" ")}
-            >
-              <div className="flex items-start gap-3">
-                <div
-                  className={[
-                    "mt-1 flex h-5 w-5 items-center justify-center rounded-full",
-                    paymentMethod === option.id ? "border border-gray-900" : "border border-gray-300",
-                  ].join(" ")}
-                >
-                  {paymentMethod === option.id && (
-                    <div className="h-2 w-2 rounded-full bg-gray-900" />
-                  )}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
+          <div className="space-y-4">
+            {breakdown.map((block, idx) => (
+              <div key={`${block.title}-${idx}`} className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="text-sm font-semibold text-gray-900">{block.title}</div>
+                  <div className="text-sm font-semibold text-gray-900">{formatRubLocal(block.total)} ₽</div>
                 </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-900">{option.title}</div>
-                  {option.subtitle && paymentMethod === option.id && (
-                    <div className="mt-1 text-xs text-gray-500">{option.subtitle}</div>
-                  )}
-                </div>
+
+                {block.items?.length ? (
+                  <div className="mt-3 space-y-2">
+                    {block.items.map((it, i) => (
+                      <div key={`${block.title}-it-${i}`} className="flex items-start justify-between gap-3 text-sm">
+                        <div className="text-gray-700">
+                          <span className="text-gray-900">•</span> {it.label}
+                        </div>
+                        <div className="text-gray-600 whitespace-nowrap">
+                          {typeof it.price === "number" ? `${formatRubLocal(it.price)} ₽` : "включено"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </div>
-            </button>
-          ))}
-        </div>
-        <div
-          className={[
-            "mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 transition-all",
-            paymentMethod === "call_rep"
-              ? "max-h-40 opacity-100"
-              : "max-h-0 opacity-0 pointer-events-none py-0 border-transparent",
-          ].join(" ")}
-        >
-          <div className="text-sm font-semibold text-gray-900">Телефон</div>
-          <a
-            href={`tel:${SUPPORT_PHONE_TEL}`}
-            className="mt-1 block text-base font-medium text-gray-900 hover:underline"
-          >
-            {SUPPORT_PHONE_DISPLAY}
-          </a>
-          <div className="mt-1 text-xs text-gray-500">Нажмите, чтобы позвонить</div>
-        </div>
-
-        <div className="mt-4 border-t border-gray-200 pt-3">
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-            Документы
+            ))}
           </div>
-          <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-600">
-            <a href="/info" className="underline hover:text-gray-900">
-              Политика конфиденциальности
-            </a>
-            <a href="/docs/oferta" className="underline hover:text-gray-900">
-              Публичная оферта
-            </a>
-            <a href="/docs/payment-rules" className="underline hover:text-gray-900">
-              Порядок оплаты по ссылке
-            </a>
-            <a href="/docs/refund" className="underline hover:text-gray-900">
-              Политика возврата средств
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <div className="space-y-4">
-      <div className="bg-white border border-gray-200 rounded-[30px] p-5 shadow-sm">
-        <div className="mt-1 flex items-center justify-between rounded-2xl bg-gray-900 text-white px-4 py-4">
-          <div className="space-y-1">
-            <div className="flex items-baseline gap-2">
-              <span className="text-[11px] text-white/70">Итого</span>
-              <span className="text-xl font-semibold whitespace-nowrap">
-                {formatRubLocal(totalRub)} ₽
-              </span>
-            </div>
-            {paymentMethod === "deposit_10" && (
-              <div className="text-[11px] text-white/70 leading-snug">
-                Депозит 10% — {formatRubLocal(deposit10Rub)} ₽. Депозит гарантирует закрепление координатора
-                за заявкой и включен в итоговую сумму.
+          <div className="pt-2 lg:pt-0">
+            <div className="text-sm font-semibold text-gray-900 mb-3">Оплата</div>
+
+            {orderConfirmation?.emailSent ? (
+              <div className="bg-white border border-gray-200 rounded-[30px] p-6 shadow-sm">
+                <div className="text-sm font-semibold text-gray-900">Бронирование оформлено</div>
+                <p className="mt-2 text-sm text-gray-600">
+                  {orderConfirmation.paymentLink
+                    ? "Бронирование оформлено. Договор, детали заказа и ссылка на оплату отправлены вам на почту."
+                    : "Договор и детали заказа отправлены вам на почту. Ссылку на оплату пришлём отдельным письмом."}
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-[30px] bg-gray-900 text-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.35)] space-y-5">
+                <div>
+                  <div className="text-sm font-semibold text-white/90 mb-2">Email для получения информации</div>
+                  <input
+                    value={emailValue}
+                    onChange={(e) => handleInputChange("userEmail", e.target.value)}
+                    placeholder="name@email.com"
+                    className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/50 outline-none focus:border-white/50"
+                    inputMode="email"
+                  />
+                  {!emailOk && (
+                    <div className="mt-2 text-xs text-red-200">
+                      Проверьте корректность e-mail.
+                    </div>
+                  )}
+                  <div className="mt-2 text-xs text-white/60">
+                    На этот адрес придёт подтверждение заказа, детали церемонии и документы.
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm font-semibold text-white/90 mb-3">Способ оплаты</div>
+                  <div className="space-y-3">
+                    {paymentOptions.map((option) => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => handlePaymentMethodSelect(option.id)}
+                        className={[
+                          "w-full rounded-2xl border px-4 py-4 text-left transition-all",
+                          paymentMethod === option.id
+                            ? "border-white bg-white text-gray-900 shadow-sm"
+                            : "border-white/20 bg-white/5 text-white hover:bg-white/10",
+                        ].join(" ")}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div
+                            className={[
+                              "mt-1 flex h-5 w-5 items-center justify-center rounded-full",
+                              paymentMethod === option.id ? "border border-gray-900" : "border border-white/40",
+                            ].join(" ")}
+                          >
+                            {paymentMethod === option.id && (
+                              <div className="h-2 w-2 rounded-full bg-gray-900" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium">{option.title}</div>
+                            {option.subtitle && paymentMethod === option.id && (
+                              <div className="mt-1 text-xs text-gray-600">{option.subtitle}</div>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <div
+                    className={[
+                      "mt-4 overflow-hidden rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white/80 transition-all",
+                      paymentMethod === "call_rep"
+                        ? "max-h-40 opacity-100"
+                        : "max-h-0 opacity-0 pointer-events-none py-0 border-transparent",
+                    ].join(" ")}
+                  >
+                    <div className="text-sm font-semibold text-white/90">Телефон</div>
+                    <a
+                      href={`tel:${SUPPORT_PHONE_TEL}`}
+                      className="mt-1 block text-base font-medium text-white hover:underline"
+                    >
+                      {SUPPORT_PHONE_DISPLAY}
+                    </a>
+                    <div className="mt-1 text-xs text-white/60">Нажмите, чтобы позвонить</div>
+                  </div>
+
+                  <div className="mt-4 border-t border-white/15 pt-3">
+                    <div className="text-xs font-semibold text-white/60 uppercase tracking-wide">
+                      Документы
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-white/70">
+                      <a href="/info" className="underline hover:text-white">
+                        Политика конфиденциальности
+                      </a>
+                      <a href="/docs/oferta" className="underline hover:text-white">
+                        Публичная оферта
+                      </a>
+                      <a href="/docs/payment-rules" className="underline hover:text-white">
+                        Порядок оплаты по ссылке
+                      </a>
+                      <a href="/docs/refund" className="underline hover:text-white">
+                        Политика возврата средств
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl bg-white/10 px-4 py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-[11px] text-white/70">Итого</span>
+                        <span className="text-xl font-semibold whitespace-nowrap">
+                          {formatRubLocal(totalRub)} ₽
+                        </span>
+                      </div>
+                      {paymentMethod === "deposit_10" && (
+                        <div className="text-[11px] text-white/70 leading-snug">
+                          Депозит 10% — {formatRubLocal(deposit10Rub)} ₽. Депозит гарантирует закрепление координатора
+                          за заявкой и включен в итоговую сумму.
+                        </div>
+                      )}
+                    </div>
+
+                    <Button
+                      type="button"
+                      onClick={onPayClick}
+                      disabled={!canSubmit || isSubmittingOrder}
+                      className="rounded-2xl !bg-white !text-gray-600 hover:!bg-gray-100 hover:!text-gray-700 px-5 py-3 text-sm font-semibold disabled:opacity-60 disabled:!text-gray-400"
+                    >
+                      {isSubmittingOrder ? "Оформление..." : "Оформить"}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="text-xs text-white/60">
+                  {paymentMethod === "call_rep"
+                    ? "После оформления мы отправим договор и детали заказа на email. Наш представитель свяжется с вами для уточнения деталей."
+                    : "После оформления мы отправим договор, детали заказа и ссылку на оплату на email."}
+                </div>
               </div>
             )}
           </div>
-
-          <Button
-            type="button"
-            onClick={onPayClick}
-            disabled={!canSubmit || isSubmittingOrder}
-            className="rounded-2xl !bg-white !text-gray-600 hover:!bg-gray-100 hover:!text-gray-700 px-5 py-3 text-sm font-semibold disabled:opacity-60 disabled:!text-gray-400"
-          >
-            {isSubmittingOrder ? "Оформление..." : "Оформить"}
-          </Button>
-        </div>
-
-        <div className="mt-3 text-xs text-gray-500">
-          {paymentMethod === "call_rep"
-            ? "После оформления мы отправим договор и детали заказа на email. Наш представитель свяжется с вами для уточнения деталей."
-            : "После оформления мы отправим договор, детали заказа и ссылку на оплату на email."}
         </div>
       </div>
     </div>
-  </div>
-)}
-</div>
-</div>
 );
 }
 
