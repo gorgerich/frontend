@@ -3950,7 +3950,7 @@ function formatRub(n: number) {
     <div ref={wrapRef} className="relative max-w-5xl mx-auto -translate-y-12 pb-12">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 transition-[height] duration-300 ease-out"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 overflow-hidden rounded-3xl transition-[height] duration-300 ease-out"
         style={{ height: bgH ? `${bgH}px` : "0px" }}
       >
         <div
@@ -3976,7 +3976,7 @@ function formatRub(n: number) {
 
           <div id="start-options" className="mb-6">
             <div className="text-xs uppercase tracking-[0.2em] text-white/70">
-              Как вам удобнее начать
+              Как вам удобнее начать?
             </div>
             <div className="mt-3 flex items-center gap-2 sm:gap-3">
               <Button
@@ -4022,7 +4022,7 @@ function formatRub(n: number) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-white/80 md:text-white/60">
-                  Как это работает
+                  Как это работает?
                 </p>
                 <p className="mt-1 text-sm text-white/80 md:text-white/70">
                   5 шагов — чтобы вы понимали, что будет дальше.
@@ -4110,7 +4110,7 @@ function formatRub(n: number) {
           </div>
 
           <div className="flex justify-center mb-6 mt-2">
-            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[360px]">
+            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[360px] min-w-[320px] sm:min-w-[360px]">
               <button
                 type="button"
                 onClick={() => {
@@ -4118,7 +4118,7 @@ function formatRub(n: number) {
                   onModeChange?.("package");
                 }}
                 className={cn(
-                  "flex-1 px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 text-center",
+                  "flex-1 h-9 px-6 rounded-full text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
                   workflowMode === "packages" ? "bg-white text-black shadow-lg" : "text-white hover:bg-white/10",
                 )}
               >
@@ -4132,7 +4132,7 @@ function formatRub(n: number) {
                   onModeChange?.("wizard");
                 }}
                 className={cn(
-                  "flex-1 px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 text-center",
+                  "flex-1 h-9 px-6 rounded-full text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
                   workflowMode === "wizard" ? "bg-white text-black shadow-lg" : "text-white hover:bg-white/10",
                 )}
               >
@@ -4239,12 +4239,12 @@ function formatRub(n: number) {
   ) : (
     <div className="space-y-8">
       <div className="flex justify-center">
-        <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[360px]">
+        <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[360px] min-w-[320px] sm:min-w-[360px]">
           <button
             type="button"
             onClick={() => handleInputChange("serviceType", "burial")}
             className={cn(
-              "flex-1 px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 text-center",
+              "flex-1 h-9 px-6 rounded-full text-sm font-medium transition-all duration-200 text-center",
               formData.serviceType === "burial"
                 ? "bg-white text-black shadow-lg"
                 : "text-white hover:bg-white/10",
@@ -4260,7 +4260,7 @@ function formatRub(n: number) {
             type="button"
             onClick={() => handleInputChange("serviceType", "cremation")}
             className={cn(
-              "flex-1 px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 text-center",
+              "flex-1 h-9 px-6 rounded-full text-sm font-medium transition-all duration-200 text-center",
               formData.serviceType === "cremation"
                 ? "bg-white text-black shadow-lg"
                 : "text-white hover:bg-white/10",
