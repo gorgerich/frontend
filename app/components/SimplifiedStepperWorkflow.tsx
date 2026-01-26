@@ -913,7 +913,7 @@ setLocalFormData((prev) => ({
 }));
 };
 
-const handleSkipField = (field: "birthDate" | "deathDate" | "deathCertificate") => {
+const handleSkipField = (field: "fullName" | "birthDate" | "deathDate" | "deathCertificate") => {
 handleInputChange(field, "—");
 };
 
@@ -2118,13 +2118,24 @@ return (
 <div className="space-y-6">
 <div>
 <Label htmlFor="fullName">ФИО усопшего *</Label>
+<div className="flex gap-2 mt-2">
 <Input
 id="fullName"
 value={safeFormData.fullName}
 onChange={(e) => handleInputChange("fullName", e.target.value)}
 placeholder="Иванов Иван Иванович"
-className="mt-2"
+className="flex-1"
 />
+<Button
+variant="outline"
+size="sm"
+type="button"
+onClick={() => handleSkipField("fullName")}
+className="whitespace-nowrap rounded-[30px] min-w-[96px]"
+>
+Позже
+</Button>
+</div>
 </div>
 
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2143,7 +2154,7 @@ variant="outline"
 size="sm"
 type="button"
 onClick={() => handleSkipField("birthDate")}
-className="whitespace-nowrap rounded-[30px]"
+className="whitespace-nowrap rounded-[30px] min-w-[96px]"
 >
 Не знаю
 </Button>
@@ -2165,7 +2176,7 @@ variant="outline"
 size="sm"
 type="button"
 onClick={() => handleSkipField("deathDate")}
-className="whitespace-nowrap rounded-[30px]"
+className="whitespace-nowrap rounded-[30px] min-w-[96px]"
 >
 Не знаю
 </Button>
@@ -2188,7 +2199,7 @@ variant="outline"
 size="sm"
 type="button"
 onClick={() => handleSkipField("deathCertificate")}
-className="whitespace-nowrap rounded-[30px]"
+className="whitespace-nowrap rounded-[30px] min-w-[96px]"
 >
 Не знаю
 </Button>
@@ -2601,7 +2612,7 @@ return (
             type="button"
             onClick={onPayClick}
             disabled={!canSubmit || isSubmittingOrder}
-            className="rounded-2xl bg-white text-gray-900 hover:bg-gray-100 px-5 py-3 text-sm font-semibold disabled:opacity-60"
+            className="rounded-2xl !bg-white !text-gray-600 hover:!bg-gray-100 hover:!text-gray-700 px-5 py-3 text-sm font-semibold disabled:opacity-60 disabled:!text-gray-400"
           >
             {isSubmittingOrder ? "Оформление..." : "Оформить"}
           </Button>

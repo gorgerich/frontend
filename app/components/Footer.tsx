@@ -43,7 +43,7 @@ export function Footer() {
                   <span className="text-xs text-neutral-400 ml-6">Круглосуточно</span>
                 </a>
                 <a 
-                  href="mailto:info@tikhaya-pamyat.ru" 
+                  href="mailto:info@tihiydom.com" 
                   className="block group"
                 >
                   <div className="flex items-center gap-2 text-neutral-900 group-hover:text-neutral-600 transition-colors">

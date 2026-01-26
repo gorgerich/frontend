@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 
-import { User, Flame } from "lucide-react";
+import { User, CircleDot } from "lucide-react";
 import { PackagesSelection, type Package as PackagesSelectionPackage } from "./PackagesSelection";
 
 import { PersonalAccountModal } from "./PersonalAccountModal";
@@ -3400,13 +3400,24 @@ function formatRub(n: number) {
           <div className="space-y-6">
             <div>
               <Label htmlFor="fullName">ФИО усопшего *</Label>
-              <Input
-                id="fullName"
-                value={formData.fullName}
-                onChange={(e) => handleInputChange("fullName", e.target.value)}
-                placeholder="Иванов Иван Иванович"
-                className="mt-2"
-              />
+              <div className="flex gap-2 mt-2">
+                <Input
+                  id="fullName"
+                  value={formData.fullName}
+                  onChange={(e) => handleInputChange("fullName", e.target.value)}
+                  placeholder="Иванов Иван Иванович"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSkipField("fullName")}
+                  className="whitespace-nowrap rounded-[30px] min-w-[96px]"
+                >
+                  Позже
+                </Button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -3420,7 +3431,7 @@ function formatRub(n: number) {
                     onChange={(e) => handleInputChange("birthDate", e.target.value)}
                     className="flex-1"
                   />
-                  <Button type="button" variant="outline" size="sm" onClick={() => handleSkipField("birthDate")} className="whitespace-nowrap rounded-[30px]">
+                  <Button type="button" variant="outline" size="sm" onClick={() => handleSkipField("birthDate")} className="whitespace-nowrap rounded-[30px] min-w-[96px]">
                     Не знаю
                   </Button>
                 </div>
@@ -3436,7 +3447,7 @@ function formatRub(n: number) {
                     onChange={(e) => handleInputChange("deathDate", e.target.value)}
                     className="flex-1"
                   />
-                  <Button type="button" variant="outline" size="sm" onClick={() => handleSkipField("deathDate")} className="whitespace-nowrap rounded-[30px]">
+                  <Button type="button" variant="outline" size="sm" onClick={() => handleSkipField("deathDate")} className="whitespace-nowrap rounded-[30px] min-w-[96px]">
                     Не знаю
                   </Button>
                 </div>
@@ -3453,7 +3464,7 @@ function formatRub(n: number) {
                   placeholder="AA-000 № 000000"
                   className="flex-1"
                 />
-                <Button type="button" variant="outline" size="sm" onClick={() => handleSkipField("deathCertificate")} className="whitespace-nowrap">
+                <Button type="button" variant="outline" size="sm" onClick={() => handleSkipField("deathCertificate")} className="whitespace-nowrap rounded-[30px] min-w-[96px]">
                   Позже
                 </Button>
               </div>
@@ -3980,7 +3991,7 @@ function formatRub(n: number) {
           </div>
 
           <div className="flex justify-center mb-6 mt-2">
-            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex">
+            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[360px]">
               <button
                 type="button"
                 onClick={() => {
@@ -3988,7 +3999,7 @@ function formatRub(n: number) {
                   onModeChange?.("package");
                 }}
                 className={cn(
-                  "px-6 py-2 rounded-full text-sm font-medium transition-all duration-200",
+                  "flex-1 px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 text-center",
                   workflowMode === "packages" ? "bg-white text-black shadow-lg" : "text-white hover:bg-white/10",
                 )}
               >
@@ -4002,7 +4013,7 @@ function formatRub(n: number) {
                   onModeChange?.("wizard");
                 }}
                 className={cn(
-                  "px-6 py-2 rounded-full text-sm font-medium transition-all duration-200",
+                  "flex-1 px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 text-center",
                   workflowMode === "wizard" ? "bg-white text-black shadow-lg" : "text-white hover:bg-white/10",
                 )}
               >
@@ -4061,26 +4072,7 @@ function formatRub(n: number) {
                   </div>
                 </div>
               ) : (
-                <>
-                  <div className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55">
-                    <div className="flex gap-4 items-start">
-                      <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
-                        <Package className="h-5 w-5" />
-                      </div>
-                      <div className="space-y-1.5 text-left">
-                        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
-                          <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
-                            1
-                          </span>
-                          Выбор сценария
-                        </h4>
-                        <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
-                          Выберите сценарий: сдержанный, традиционный или расширенный. Вы всегда можете изменить детали позже
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </>
+                null
               )}
             </div>
           </div>
@@ -4128,24 +4120,19 @@ function formatRub(n: number) {
   ) : (
     <div className="space-y-8">
       <div className="flex justify-center">
-        <div className="relative inline-flex items-center p-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm shadow-inner md:bg-zinc-100/80 md:border-zinc-200/50">
+        <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[360px]">
           <button
             type="button"
             onClick={() => handleInputChange("serviceType", "burial")}
             className={cn(
-              "px-8 py-2.5 rounded-full text-sm font-medium transition-all duration-300 relative overflow-hidden",
+              "flex-1 px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 text-center",
               formData.serviceType === "burial"
-                ? "bg-white text-gray-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-black/5"
-                : "text-white/70 hover:text-white hover:bg-white/10 md:text-gray-500 md:hover:text-gray-700 md:hover:bg-white/50",
+                ? "bg-white text-black shadow-lg"
+                : "text-white hover:bg-white/10",
             )}
           >
-            <span className="relative z-10 flex items-center gap-2">
-              <Church
-                className={cn(
-                  "w-4 h-4",
-                  formData.serviceType === "burial" ? "text-gray-900" : "text-white/70 md:text-gray-400",
-                )}
-              />
+            <span className="flex items-center gap-2">
+              <Church className={cn("w-4 h-4", formData.serviceType === "burial" ? "text-black" : "text-white")} />
               Захоронение
             </span>
           </button>
@@ -4154,22 +4141,35 @@ function formatRub(n: number) {
             type="button"
             onClick={() => handleInputChange("serviceType", "cremation")}
             className={cn(
-              "px-8 py-2.5 rounded-full text-sm font-medium transition-all duration-300 relative overflow-hidden",
+              "flex-1 px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 text-center",
               formData.serviceType === "cremation"
-                ? "bg-white text-gray-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-black/5"
-                : "text-white/70 hover:text-white hover:bg-white/10 md:text-gray-500 md:hover:text-gray-700 md:hover:bg-white/50",
+                ? "bg-white text-black shadow-lg"
+                : "text-white hover:bg-white/10",
             )}
           >
-            <span className="relative z-10 flex items-center gap-2">
-              <Flame
-                className={cn(
-                  "w-4 h-4",
-                  formData.serviceType === "cremation" ? "text-gray-900" : "text-white/70 md:text-gray-400",
-                )}
-              />
+            <span className="flex items-center gap-2">
+              <CircleDot className={cn("w-4 h-4", formData.serviceType === "cremation" ? "text-black" : "text-white")} />
               Кремация
             </span>
           </button>
+        </div>
+      </div>
+      <div className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55">
+        <div className="flex gap-4 items-start">
+          <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
+            <Package className="h-5 w-5" />
+          </div>
+          <div className="space-y-1.5 text-left">
+            <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
+              <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
+                1
+              </span>
+              Выбор сценария
+            </h4>
+            <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
+              Выберите сценарий: сдержанный, традиционный или расширенный. Вы всегда можете изменить детали позже
+            </p>
+          </div>
         </div>
       </div>
       <div ref={bgEndPackagesRef} className="h-0 w-0" />
