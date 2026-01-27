@@ -3768,25 +3768,31 @@ function formatRub(n: number) {
 
 	                      <div className="h-px bg-white/15" />
 
-	                      <div className="space-y-1">
-	                        <div className="text-[11px] font-semibold tracking-[0.18em] uppercase text-white/60">
-	                          Итого к оплате
-	                        </div>
-	                        <div className="text-[32px] leading-none font-semibold">
-	                          {formatRubLocal(totalRub)} ₽
-	                        </div>
-	                      </div>
+                      <div className="space-y-1">
+                        <div className="text-[11px] font-semibold tracking-[0.18em] uppercase text-white/60">
+                          Итого к оплате
+                        </div>
+                        <div className="flex items-end gap-3">
+                          <div className="text-[32px] leading-none font-semibold">
+                            {formatRubLocal(totalRub)} ₽
+                          </div>
+                          <div className="text-sm text-white/70 whitespace-nowrap">
+                            Депозит {formatRubLocal(deposit10Rub)} ₽
+                          </div>
+                        </div>
+                      </div>
 
                       <Button
                         type="button"
-                        onClick={() => handlePaymentMethodSelect("deposit_10")}
-                        className="w-full rounded-2xl !bg-white !text-gray-900 hover:!bg-gray-100 hover:!text-gray-900 px-5 py-3 text-sm font-semibold"
+                        onClick={onPayClick}
+                        disabled={!canSubmit || isSubmittingOrder}
+                        className="w-full rounded-2xl !bg-white !text-gray-900 hover:!bg-gray-100 hover:!text-gray-900 px-5 py-3 text-sm font-semibold disabled:opacity-60 disabled:!text-gray-400"
                       >
-                        Внести депозит ({formatRubLocal(deposit10Rub)} ₽)
+                        {isSubmittingOrder ? "Оформление..." : "Оформить"}
                       </Button>
 
 	                      <div className="text-xs text-white/70 leading-relaxed">
-	                        Депозит нужен для бронирования и оформления. Остаток — после подтверждения времени и места.
+	                        Депозит включен в итоговую сумму. После оформления мы отправим договор, детали заказа и ссылку на оплату на указанный email.
 	                      </div>
 
 	                      <div className="h-px bg-white/15" />
@@ -3823,15 +3829,6 @@ function formatRub(n: number) {
                           </a>
                         </div>
                       </div>
-
-                      <Button
-                        type="button"
-                        onClick={onPayClick}
-                        disabled={!canSubmit || isSubmittingOrder}
-                        className="w-full rounded-2xl !bg-white !text-gray-900 hover:!bg-gray-100 hover:!text-gray-900 px-5 py-3 text-sm font-semibold disabled:opacity-60 disabled:!text-gray-400"
-                      >
-                        {isSubmittingOrder ? "Оформление..." : "Оформить"}
-                      </Button>
 
                       <div className="text-xs text-white/60">
                         {paymentMethod === "call_rep"

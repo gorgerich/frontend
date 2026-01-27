@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Phone, Mail, Shield, Clock } from "./Icons";
 import { HelpModal } from "./HelpModal";
+import { PUBLIC_OFFER_HREF } from "@/lib/legalLinks";
 
 export function Footer() {
   const [helpOpen, setHelpOpen] = useState(false);
@@ -93,7 +94,7 @@ export function Footer() {
               <Link href="/info" className="hover:text-neutral-900 transition-colors">
                 Политика конфиденциальности
               </Link>
-              <Link href="/docs/oferta" className="hover:text-neutral-900 transition-colors">
+              <Link href={PUBLIC_OFFER_HREF} className="hover:text-neutral-900 transition-colors">
                 Публичная оферта
               </Link>
               <Link href="/docs/payment-rules" className="hover:text-neutral-900 transition-colors">

@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { prisma } from "@/lib/prisma";
 import { sendOrderEmail } from "@/lib/mailer";
 import { buildOrderSummary } from "@/lib/orderSummary";
+import { PUBLIC_OFFER_HREF } from "@/lib/legalLinks";
 
 export const runtime = "nodejs";
 
@@ -77,6 +80,56 @@ function toNumber(v: unknown): number | null {
     if (Number.isFinite(n)) return n;
   }
   return null;
+}
+
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  process.env.SITE_URL ??
+  "https://tihiydom.com";
+
+const isAbsoluteUrl = (href: string) => /^https?:\/\//i.test(href);
+
+function buildOfferUrl(href: string) {
+  return isAbsoluteUrl(href) ? href : `${SITE_URL}${href}`;
+}
+
+function inferOfferFilename(href: string, contentType?: string | null) {
+  const ext = path.extname(href).toLowerCase();
+  if (ext === ".pdf" || contentType?.includes("pdf")) {
+    return { filename: "Публичная оферта.pdf", contentType: "application/pdf" };
+  }
+  if (ext === ".html" || contentType?.includes("html")) {
+    return { filename: "Публичная оферта.html", contentType: "text/html; charset=utf-8" };
+  }
+  return {
+    filename: "Публичная оферта.html",
+    contentType: contentType || "text/html; charset=utf-8",
+  };
+}
+
+async function loadPublicOfferAttachment(href: string) {
+  const offerUrl = buildOfferUrl(href);
+
+  // 1) Prefer a local public file if it exists.
+  if (!isAbsoluteUrl(href) && href.startsWith("/")) {
+    const publicPath = path.join(process.cwd(), "public", href.replace(/^\//, ""));
+    try {
+      const buffer = await fs.readFile(publicPath);
+      const meta = inferOfferFilename(href);
+      return { offerUrl, buffer, ...meta };
+    } catch {
+      // Fall through to fetch.
+    }
+  }
+
+  // 2) Fallback: fetch the URL.
+  const res = await fetch(offerUrl, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Offer fetch failed: ${res.status}`);
+  }
+  const buffer = Buffer.from(await res.arrayBuffer());
+  const meta = inferOfferFilename(href, res.headers.get("content-type"));
+  return { offerUrl, buffer, ...meta };
 }
 
 function formatRub(value: number) {
@@ -670,7 +723,7 @@ export async function POST(req: NextRequest) {
       ? new Date(createdOrder.createdAt).toLocaleDateString("ru-RU")
       : new Date().toLocaleDateString("ru-RU");
 
-    const html = buildEmailHtml(bodyForEmail, services, totalRub, {
+    let html = buildEmailHtml(bodyForEmail, services, totalRub, {
       orderSummaryHtml,
       showServicesTable: true,
       paymentMethodLabel,
@@ -722,6 +775,41 @@ export async function POST(req: NextRequest) {
     if (notes) {
       textParts.push("", "Дополнительные пожелания:", String(notes));
     }
+
+    // Attach the same public offer that is linked in the footer.
+    const offerHref = PUBLIC_OFFER_HREF;
+    let offerUrl = buildOfferUrl(offerHref);
+    let offerAttachment:
+      | {
+          filename: string;
+          content: string;
+        }
+      | undefined;
+
+    try {
+      const offer = await loadPublicOfferAttachment(offerHref);
+      offerUrl = offer.offerUrl;
+      offerAttachment = {
+        filename: offer.filename,
+        content: offer.buffer.toString("base64"),
+      };
+    } catch (err: any) {
+      console.warn("offer_attachment_failed", {
+        orderId: publicId,
+        error: err?.message || String(err),
+      });
+      textParts.push("", `Публичная оферта: ${offerUrl}`);
+      const offerHtmlLink = `
+        <p style="margin:12px 22px 0 22px;font-size:12px;line-height:1.6;color:#6b7280;">
+          Публичная оферта:
+          <a href="${escapeHtml(offerUrl)}" style="color:#6b7280;text-decoration:underline;">
+            ${escapeHtml(offerUrl)}
+          </a>
+        </p>
+      `;
+      html = html.replace("</body>", `${offerHtmlLink}</body>`);
+    }
+
     const text = textParts.join("\n");
 
     try {
@@ -731,6 +819,7 @@ export async function POST(req: NextRequest) {
         html,
         text,
         orderId: publicId,
+        attachments: offerAttachment ? [offerAttachment] : undefined,
       });
       console.info("email_sent_success", { orderId: publicId });
     } catch (e: any) {
