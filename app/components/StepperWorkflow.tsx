@@ -1325,6 +1325,18 @@ export function StepperWorkflow({
     return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    const minStep = 0;
+    const maxStep = steps.length - 1;
+    if (currentStep < minStep) {
+      setCurrentStep(minStep);
+      return;
+    }
+    if (currentStep > maxStep) {
+      setCurrentStep(maxStep);
+    }
+  }, [currentStep]);
+
   // ✅ notify parent step change
   useEffect(() => {
     if (!isInitialMountRef.current && onStepChange) onStepChange(currentStep);
@@ -2173,6 +2185,16 @@ export function StepperWorkflow({
     }
   };
 
+  const openWizardMode = () => {
+    setWorkflowMode("wizard");
+    setSelectedPackageForSimplified(null);
+    setCurrentStep(0);
+    setCompletedSteps([]);
+    setIsTransitioning(false);
+    setOrderConfirmation(null);
+    setIsSubmittingOrder(false);
+  };
+
 type BreakdownLine = {
   title: string;
   qty: number;
@@ -2333,226 +2355,167 @@ function formatRub(n: number) {
       case 0: {
         return (
           <div className="space-y-6">
-            {/* КАРТОЧКИ ПРОВЕРКИ */}
-            <div className="space-y-4">
-              {summarySections.map((section) => {
-                const editStep = summaryEditStepMap[section.title];
-                return (
-                  <div key={section.title} className="bg-white border border-gray-200 rounded-[30px] p-4 shadow-sm">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-sm text-gray-500">{section.title}</h4>
-                      {typeof editStep === "number" && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditStep(editStep)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-
-                    <div className="space-y-2 text-sm">
-                      {section.items.map((item, idx) => (
-                        <div key={`${section.title}-${idx}`} className="flex items-start justify-between gap-3">
-                          <span className="text-gray-600">{item.label}:</span>
-                          <span className="text-gray-900 text-right whitespace-pre-line">{item.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* СОСТАВ ЗАКАЗА */}
-            <div className="bg-white border border-gray-200 rounded-[30px] p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className="text-sm font-semibold text-gray-900">Состав заказа</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    Полный перечень услуг, которые входят в итоговую стоимость
-                  </div>
-                </div>
-                <div className="text-sm font-semibold text-gray-900">{formatRubLocal(totalRub)} ₽</div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
-                <div className="space-y-4">
-                  {breakdown.map((block, idx) => (
-                    <div key={`${block.category}-${idx}`} className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="text-sm font-semibold text-gray-900">{block.category}</div>
-                        <div className="text-sm font-semibold text-gray-900">{formatRubLocal(block.price)} ₽</div>
-                      </div>
-
-                      {block.items?.length ? (
-                        <div className="mt-3 space-y-2">
-                          {block.items.map((it, i) => (
-                            <div key={`${block.category}-it-${i}`} className="flex items-start justify-between gap-3 text-sm">
-                              <div className="text-gray-700">
-                                <span className="text-gray-900">•</span> {it.name}
-                              </div>
-                              <div className="text-gray-600 whitespace-nowrap">
-                                {typeof it.price === "number" ? `${formatRubLocal(it.price)} ₽` : "включено"}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-
-                {/* ОПЛАТА ВНУТРИ ШАГА 5 */}
-                <div className="pt-2 lg:pt-0">
-                  <div className="text-sm font-semibold text-gray-900 mb-3">Оплата</div>
-
-                  {orderConfirmation?.emailSent ? (
-                    <div className="bg-white border border-gray-200 rounded-[30px] p-6 shadow-sm">
-                      <div className="text-sm font-semibold text-gray-900">Бронирование оформлено</div>
-                      <p className="mt-2 text-sm text-gray-600">
-                        {paymentMethod === "call_rep"
-                          ? "Договор и детали заказа отправлены вам на почту. Наш представитель свяжется с вами для уточнения деталей."
-                          : orderConfirmation.paymentLink
-                          ? "Бронирование оформлено. Договор, детали заказа и ссылка на оплату отправлены вам на почту."
-                          : "Договор и детали заказа отправлены вам на почту. Ссылку на оплату пришлём отдельным письмом."}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="rounded-[30px] bg-gray-900 text-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.35)] space-y-5">
-                      <div>
-                        <div className="text-sm font-semibold text-white/90 mb-2">Email для получения информации</div>
-                        <input
-                          value={emailValue}
-                          onChange={(e) => handleInputChange("userEmail", e.target.value)}
-                          placeholder="name@email.com"
-                          className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/50 outline-none focus:border-white/50"
-                          inputMode="email"
-                        />
-                        {!emailOk && (
-                          <div className="mt-2 text-xs text-red-200">
-                            Проверьте корректность e-mail.
-                          </div>
-                        )}
-                        <div className="mt-2 text-xs text-white/60">
-                          На этот адрес придёт подтверждение заказа, детали церемонии и документы.
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="text-sm font-semibold text-white/90 mb-3">Способ оплаты</div>
-                        <div className="space-y-3">
-                          {paymentOptions.map((option) => (
-                            <button
-                              key={option.id}
-                              type="button"
-                              onClick={() => handlePaymentMethodSelect(option.id)}
-                              className={cn(
-                                "w-full rounded-2xl border px-4 py-4 text-left transition-all",
-                                paymentMethod === option.id
-                                  ? "border-white bg-white text-gray-900 shadow-sm"
-                                  : "border-white/20 bg-white/5 text-white hover:bg-white/10",
-                              )}
-                            >
-                              <div className="flex items-start gap-3">
-                                <div
-                                  className={cn(
-                                    "mt-1 flex h-5 w-5 items-center justify-center rounded-full",
-                                    paymentMethod === option.id ? "border border-gray-900" : "border border-white/40",
-                                  )}
-                                >
-                                  {paymentMethod === option.id && (
-                                    <div className="h-2 w-2 rounded-full bg-gray-900" />
-                                  )}
-                                </div>
-                                <div>
-                                  <div className="text-sm font-medium">{option.title}</div>
-                                  {option.subtitle && paymentMethod === option.id && (
-                                    <div className="mt-1 text-xs text-gray-600">{option.subtitle}</div>
-                                  )}
-                                </div>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                        <div
-                          className={cn(
-                            "mt-4 overflow-hidden rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white/80 transition-all",
-                            paymentMethod === "call_rep"
-                              ? "max-h-40 opacity-100"
-                              : "max-h-0 opacity-0 pointer-events-none py-0 border-transparent",
-                          )}
-                        >
-                          <div className="text-sm font-semibold text-white/90">Телефон</div>
-                          <a
-                            href={`tel:${SUPPORT_PHONE_TEL}`}
-                            className="mt-1 block text-base font-medium text-white hover:underline"
-                          >
-                            {SUPPORT_PHONE_DISPLAY}
-                          </a>
-                          <div className="mt-1 text-xs text-white/60">Нажмите, чтобы позвонить</div>
-                        </div>
-
-                        <div className="mt-4 border-t border-white/15 pt-3">
-                          <div className="text-xs font-semibold text-white/60 uppercase tracking-wide">Документы</div>
-                          <div className="mt-2 flex flex-wrap gap-3 text-xs text-white/70">
-                            <a href="/info" className="underline hover:text-white">
-                              Политика конфиденциальности
-                            </a>
-                            <a href="/docs/oferta" className="underline hover:text-white">
-                              Публичная оферта
-                            </a>
-                            <a href="/docs/payment-rules" className="underline hover:text-white">
-                              Порядок оплаты по ссылке
-                            </a>
-                            <a href="/docs/refund" className="underline hover:text-white">
-                              Политика возврата средств
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="rounded-2xl bg-white/10 px-4 py-4">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-1">
-                            <div className="flex items-baseline gap-2">
-                              <span className="text-[11px] text-white/70">Итого</span>
-                              <span className="text-xl font-semibold whitespace-nowrap">
-                                {formatRubLocal(totalRub)} ₽
-                              </span>
-                            </div>
-                            {paymentMethod === "deposit_10" && (
-                              <div className="text-[11px] text-white/70 leading-snug">
-                                Депозит 10% — {formatRubLocal(deposit10Rub)} ₽. Депозит гарантирует закрепление
-                                координатора за заявкой и включен в итоговую сумму.
-                              </div>
-                            )}
-                          </div>
-
-                          <Button
-                            type="button"
-                            onClick={onPayClick}
-                            disabled={!canSubmit || isSubmittingOrder}
-                            className="rounded-2xl !bg-white !text-gray-900 hover:!bg-gray-100 hover:!text-gray-900 px-5 py-3 text-sm font-semibold disabled:opacity-60 disabled:!text-gray-400"
-                          >
-                            {isSubmittingOrder ? "Оформление..." : "Оформить"}
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="text-xs text-white/60">
-                        {paymentMethod === "call_rep"
-                          ? "После оформления мы отправим договор и детали заказа на email. Наш представитель свяжется с вами для уточнения деталей."
-                          : "После оформления мы отправим договор, детали заказа и ссылку на оплату на email."}
-                      </div>
-                    </div>
+            <div>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleInputChange("serviceType", "burial")}
+                  className={cn(
+                    "px-5 py-2 border-2 rounded-full text-left transition-all backdrop-blur-sm",
+                    formData.serviceType === "burial"
+                      ? "border-gray-900 bg-white/60"
+                      : "border-gray-300/50 bg-white/30 hover:border-gray-400/60 hover:bg-white/40",
                   )}
-                </div>
+                >
+                  <div className="text-sm text-gray-900">Захоронение</div>
+                  <div className="text-xs text-gray-600">Традиционное погребение</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleInputChange("serviceType", "cremation")}
+                  className={cn(
+                    "px-5 py-2 border-2 rounded-full text-left transition-all backdrop-blur-sm",
+                    formData.serviceType === "cremation"
+                      ? "border-gray-900 bg-white/60"
+                      : "border-gray-300/50 bg-white/30 hover:border-gray-400/60 hover:bg-white/40",
+                  )}
+                >
+                  <div className="text-sm text-gray-900">Кремация</div>
+                  <div className="text-xs text-gray-600">С выдачей урны</div>
+                </button>
               </div>
             </div>
+
+            <Separator />
+
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <Label className="text-gray-900">Зал прощания</Label>
+                  <p className="text-xs text-gray-700 mt-1">Церемония прощания с родными</p>
+                </div>
+                <Switch checked={formData.hasHall} onCheckedChange={(checked) => handleInputChange("hasHall", checked)} />
+              </div>
+
+              {!formData.hasHall && (
+                <div className="bg-amber-500/10 backdrop-blur-sm border border-amber-400/30 rounded-full p-4">
+                  <p className="text-sm text-amber-900">
+                    Без зала — технологическая кремация без церемонии. Можно попрощаться в зале морга.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {formData.hasHall && (
+              <>
+                <div>
+                  <Label className="mb-3 block">Тип церемонии</Label>
+                  <RadioGroup
+                    value={formData.ceremonyType}
+                    onValueChange={(value) => handleInputChange("ceremonyType", value)}
+                    className="space-y-3"
+                  >
+                    <div
+                      className={cn(
+                        "flex items-start space-x-3 p-4 border rounded-full transition-all",
+                        formData.ceremonyType === "civil" && "border-black bg-gray-50",
+                      )}
+                    >
+                      <RadioGroupItem value="civil" id="civil" className="mt-0.5" />
+                      <div className="flex-1">
+                        <Label htmlFor="civil" className="cursor-pointer">
+                          Светская
+                        </Label>
+                        <p className="text-xs text-gray-500 mt-1">Без религиозных обрядов</p>
+                      </div>
+                    </div>
+
+                    <div
+                      className={cn(
+                        "flex items-start justify-between gap-3 p-4 border rounded-full transition-all",
+                        formData.ceremonyType === "religious" && "border-black bg-gray-50",
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <RadioGroupItem value="religious" id="religious" className="mt-0.5" />
+                        <div className="flex-1">
+                          <Label htmlFor="religious" className="cursor-pointer">
+                            Религиозная
+                          </Label>
+                          <p className="text-xs text-gray-500 mt-1">С участием священнослужителя</p>
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-500 whitespace-nowrap">
+                        +{formatRubLocal(PRICES.ceremonyType.religious)} ₽
+                      </div>
+                    </div>
+
+                    <div
+                      className={cn(
+                        "flex items-start justify-between gap-3 p-4 border rounded-full transition-all",
+                        formData.ceremonyType === "combined" && "border-black bg-gray-50",
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <RadioGroupItem value="combined" id="combined" className="mt-0.5" />
+                        <div className="flex-1">
+                          <Label htmlFor="combined" className="cursor-pointer">
+                            Комбинированная
+                          </Label>
+                          <p className="text-xs text-gray-500 mt-1">Светская + религиозная часть</p>
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-500 whitespace-nowrap">
+                        +{formatRubLocal(PRICES.ceremonyType.combined)} ₽
+                      </div>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                {formData.ceremonyType === "combined" && (
+                  <div>
+                    <Label htmlFor="ceremonyOrder">Последовательность</Label>
+                    <Select value={formData.ceremonyOrder} onValueChange={(value) => handleInputChange("ceremonyOrder", value)}>
+                      <SelectTrigger className="mt-2">
+                        <SelectValue placeholder="Выберите порядок" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="civil-first">Светская → Религиозная</SelectItem>
+                        <SelectItem value="religious-first">Религиозная → Светская</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <Separator />
+
+                <div>
+                  <Label className="mb-3 block">Длительность</Label>
+                  <p className="text-xs text-gray-500 mb-3">Рекомендуем 60–90 мин</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[30, 60, 90].map((duration) => (
+                      <button
+                        key={duration}
+                        type="button"
+                        onClick={() => handleInputChange("hallDuration", duration)}
+                        className={cn(
+                          "p-4 border-2 rounded-full text-center transition-all",
+                          formData.hallDuration === duration
+                            ? "border-gray-900 bg-gray-50"
+                            : "border-gray-200 hover:border-gray-300",
+                        )}
+                      >
+                        <div className="text-sm mb-1">{duration} мин</div>
+                        <div className="text-xs text-gray-500">
+                          {(PRICES.hallDuration as any)[duration].toLocaleString("ru-RU")} ₽
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         );
       }
@@ -4127,8 +4090,7 @@ function formatRub(n: number) {
               <button
                 type="button"
                 onClick={() => {
-                  setWorkflowMode("wizard");
-                  setSelectedPackageForSimplified(null);
+                  openWizardMode();
                   onModeChange?.("wizard");
                 }}
                 className={cn(
@@ -4238,6 +4200,24 @@ function formatRub(n: number) {
     </>
   ) : (
     <div className="space-y-8">
+      <div className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55">
+        <div className="flex gap-4 items-start">
+          <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
+            <Package className="h-5 w-5" />
+          </div>
+          <div className="space-y-1.5 text-left">
+            <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
+              <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
+                1
+              </span>
+              Выбор сценария
+            </h4>
+            <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
+              Выберите сценарий: сдержанный, традиционный или расширенный. Вы всегда можете изменить детали позже
+            </p>
+          </div>
+        </div>
+      </div>
       <div className="flex justify-center">
         <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[360px] min-w-[320px] sm:min-w-[360px]">
           <button
@@ -4271,24 +4251,6 @@ function formatRub(n: number) {
               Кремация
             </span>
           </button>
-        </div>
-      </div>
-      <div className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55">
-        <div className="flex gap-4 items-start">
-          <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
-            <Package className="h-5 w-5" />
-          </div>
-          <div className="space-y-1.5 text-left">
-            <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
-              <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
-                1
-              </span>
-              Выбор сценария
-            </h4>
-            <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
-              Выберите сценарий: сдержанный, традиционный или расширенный. Вы всегда можете изменить детали позже
-            </p>
-          </div>
         </div>
       </div>
       <div ref={bgEndPackagesRef} className="h-0 w-0" />
