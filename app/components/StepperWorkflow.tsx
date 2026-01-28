@@ -1172,8 +1172,8 @@ export function StepperWorkflow({
 
   const howItWorksSteps = [
     {
-      title: "Вы выбираете удобный способ начала",
-      subtitle: "Готовый сценарий — если нужно быстро.",
+      title: "Выберите способ начала",
+      subtitle: "Готовые решения — если нужно быстро.",
       text: [
         "Пошаговый мастер — если хотите настроить всё детально.",
         "Вы можете изменить любые решения позже.",
@@ -1181,7 +1181,7 @@ export function StepperWorkflow({
       icon: Sparkles,
     },
     {
-      title: "Формируете формат прощания",
+      title: "Сформируйте формат",
       subtitle: "Выбираете тип церемонии, атрибутику, логистику и предпочтительное время.",
       text: [
         "Система сразу показывает структуру и ориентиры по стоимости.",
@@ -1190,7 +1190,7 @@ export function StepperWorkflow({
       icon: Church,
     },
     {
-      title: "Уточняете детали и проверяете итог",
+      title: "Уточните детали",
       subtitle: "Указываете необходимые данные.",
       text: [
         "Видите полную детализацию: что включено, как всё будет происходить и итоговую сумму.",
@@ -1199,7 +1199,7 @@ export function StepperWorkflow({
       icon: CheckCircle2,
     },
     {
-      title: "Подтверждаете и выбираете способ оплаты",
+      title: "Подтверждение",
       subtitle: "Вы выбираете способ оплаты и указываете email для договора.",
       text: [
         "Мы отправляем вам подтверждение и документы на почту.",
@@ -1208,7 +1208,7 @@ export function StepperWorkflow({
       icon: FileText,
     },
     {
-      title: "Мы закрепляем за вами координатора",
+      title: "Мы закрепляем координатора",
       subtitle: "Ваш заказ передаётся специалисту с полной детализацией.",
       text: [
         "Он связывается с вами только для уточнений и подтверждений.",
@@ -3896,22 +3896,22 @@ function formatRub(n: number) {
             </button>
           </div>
 
-          <div id="start-options" className="mb-6">
-            <div className="text-xs uppercase tracking-[0.2em] text-white/70">
+          <div id="start-options" className="mt-3 mb-8">
+            <div className="text-sm font-medium text-white/90">
               Как вам удобнее начать?
             </div>
-            <div className="mt-3 flex items-center gap-2 sm:gap-3">
+            <div className="mt-3 grid w-full grid-cols-3 items-center gap-1.5 sm:gap-3">
               <Button
                 type="button"
                 onClick={handleStartOnline}
-                className="h-8 sm:h-9 flex-1 min-w-0 rounded-full !bg-white !text-gray-900 hover:!bg-white/90 px-2.5 sm:px-4 text-[11px] sm:text-sm font-semibold whitespace-nowrap shadow-sm"
+                className="h-7 sm:h-8 w-full min-w-0 rounded-xl !bg-white !text-gray-900 hover:!bg-white/90 px-1.5 sm:px-4 text-[10px] sm:text-xs font-semibold whitespace-nowrap leading-none tracking-tight shadow-sm"
               >
                 Начать онлайн
               </Button>
               <Button
                 asChild
                 variant="outline"
-                className="h-8 sm:h-9 flex-1 min-w-0 rounded-full border-white/40 bg-white/5 text-white hover:bg-white/10 px-2.5 sm:px-4 text-[10px] sm:text-sm whitespace-nowrap"
+                className="h-7 sm:h-8 w-full min-w-0 rounded-xl border border-white/20 bg-transparent text-white/80 hover:bg-white/5 px-1.5 sm:px-4 text-[10px] sm:text-xs font-semibold whitespace-nowrap leading-none tracking-tight"
               >
                 <a
                   href={`tel:${SUPPORT_PHONE_TEL}`}
@@ -3923,7 +3923,7 @@ function formatRub(n: number) {
               <Button
                 asChild
                 variant="outline"
-                className="h-8 sm:h-9 flex-1 min-w-0 rounded-full border-white/40 bg-white/5 text-white hover:bg-white/10 px-2.5 sm:px-4 text-[10px] sm:text-sm whitespace-nowrap"
+                className="h-7 sm:h-8 w-full min-w-0 rounded-xl border border-transparent bg-white/5 text-white/80 hover:bg-white/10 px-1.5 sm:px-4 text-[10px] sm:text-xs font-semibold whitespace-nowrap leading-none tracking-tight"
               >
                 <a
                   href={SUPPORT_TELEGRAM_URL}
@@ -3935,7 +3935,7 @@ function formatRub(n: number) {
                 </a>
               </Button>
             </div>
-            <div className="mt-2 text-xs text-white/70">
+            <div className="mt-2 text-[11px] text-white/55 max-w-[560px]">
               Можно начать самостоятельно или просто задать вопрос — без обязательств.
             </div>
           </div>
@@ -3943,7 +3943,7 @@ function formatRub(n: number) {
           <div id="how-it-works" className="mb-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-white/80 md:text-white/60">
+                <p className="text-sm font-medium text-white/90">
                   Как это работает?
                 </p>
                 <p className="mt-1 text-sm text-white/80 md:text-white/70">
@@ -4004,15 +4004,15 @@ function formatRub(n: number) {
                         <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-white/90 sm:h-12 sm:w-12">
                           <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                         </div>
-                        <div className="flex-1">
-                          <div className="text-[20px] font-semibold leading-tight text-white sm:text-2xl">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[16px] font-semibold leading-tight text-white sm:text-xl lg:text-2xl whitespace-nowrap overflow-hidden">
                             {item.title}
                           </div>
-                          <div className="mt-0.5 text-[13px] text-white/80 sm:text-base">
+                          <div className="mt-0.5 text-[13px] text-white/80 sm:text-base break-words">
                             {item.subtitle}
                           </div>
                           {textLines.length > 0 && (
-                            <div className="mt-1.5 space-y-1 text-[11px] leading-relaxed text-white/85 sm:text-sm">
+                            <div className="mt-1.5 space-y-1 text-[11px] leading-relaxed text-white/85 sm:text-sm break-words">
                               {textLines.map((line, lineIndex) => (
                                 <p key={`${item.title}-${lineIndex}`}>{line}</p>
                               ))}
