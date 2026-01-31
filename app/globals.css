@@ -8,6 +8,12 @@
   src: local("Spirits Sharp"), local("SpiritsSharp");
   font-display: swap;
 }
+
+@font-face {
+  font-family: "Humanist";
+  src: local("Humanist"), local("Humanist 521"), local("Humanist 521 BT");
+  font-display: swap;
+}
 /*! tailwindcss v4.1.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {

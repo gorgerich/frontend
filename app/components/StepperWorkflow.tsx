@@ -1165,98 +1165,55 @@ export function StepperWorkflow({
       method,
     });
 
-  const howItWorksScrollRef = useRef<HTMLDivElement | null>(null);
-  const howItWorksCardRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const [activeHowItWorksIndex, setActiveHowItWorksIndex] = useState(0);
-  const activeHowItWorksRef = useRef(0);
+  const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [showDocumentsHelp, setShowDocumentsHelp] = useState(false);
+  const howItWorksRef = useRef<HTMLDivElement | null>(null);
+  const [openDayId, setOpenDayId] = useState<string | null>(null);
 
-  const howItWorksSteps = [
+  const howItWorksDays: Array<{
+    id: string;
+    title: string;
+    description: string;
+    details: string;
+    numberLabel?: string;
+  }> = [
     {
-      title: "Выберите способ начала",
-      subtitle: "Готовые решения — если нужно быстро.",
-      text: [
-        "Пошаговый мастер — если хотите настроить всё детально.",
-        "Вы можете изменить любые решения позже.",
-      ],
-      icon: Sparkles,
+      id: "day1",
+      title: "Спокойно собрать план",
+      description:
+        "В первый день вы разбираетесь с основными вопросами и собираете план действий.",
+      details:
+        "Вы выбираете формат и отмечаете нужные варианты на сайте. Можно вернуться назад, изменить выбор или сделать паузу — ничего не начинается автоматически.",
+        numberLabel: "1",
     },
     {
-      title: "Сформируйте формат",
-      subtitle: "Выбираете тип церемонии, атрибутику, логистику и предпочтительное время.",
-      text: [
-        "Система сразу показывает структуру и ориентиры по стоимости.",
-        "Без звонков. Без давления.",
-      ],
-      icon: Church,
+      id: "day1_2",
+      title: "Проверка и уточнение деталей",
+      description:
+        "Когда план собран, вы спокойно его проверяете и при необходимости уточняете детали.",
+      details:
+        "Вы видите полный состав плана и стоимость. Координатор связывается только для уточнений и подтверждений — без давления и навязывания.",
+      numberLabel: "1-2",
     },
     {
-      title: "Уточните детали",
-      subtitle: "Указываете необходимые данные.",
-      text: [
-        "Видите полную детализацию: что включено, как всё будет происходить и итоговую сумму.",
-        "Никаких скрытых пунктов.",
-      ],
-      icon: CheckCircle2,
+      id: "day2",
+      title: "Организационные вопросы",
+      description:
+        "Мы берём на себя организационные и формальные задачи, чтобы снять с вас лишнюю нагрузку.",
+      details:
+        "Работа с документами и необходимыми службами, объяснение последовательности действий и текущего статуса — всё по согласованному плану.",
+      numberLabel: "2",
     },
     {
-      title: "Подтверждение",
-      subtitle: "Вы выбираете способ оплаты и указываете email для договора.",
-      text: [
-        "Мы отправляем вам подтверждение и документы на почту.",
-        "Вы ничего не оплачиваете, пока всё не проверите.",
-      ],
-      icon: FileText,
-    },
-    {
-      title: "Мы закрепляем координатора",
-      subtitle: "Ваш заказ передаётся специалисту с полной детализацией.",
-      text: [
-        "Он связывается с вами только для уточнений и подтверждений.",
-        "Без навязывания услуг.",
-      ],
-      icon: UserCheck,
+      id: "day3",
+      title: "Церемония и завершение",
+      description:
+        "Мы сопровождаем церемонию и доводим процесс до завершения.",
+      details:
+        "Контроль договорённостей, сопровождение прощания и передача итоговых документов, чтобы вам не пришлось возвращаться к этим вопросам позже.",
+      numberLabel: "3"
     },
   ];
-
-  useEffect(() => {
-    activeHowItWorksRef.current = activeHowItWorksIndex;
-  }, [activeHowItWorksIndex]);
-
-  useEffect(() => {
-    const root = howItWorksScrollRef.current;
-    if (!root) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        let nextIndex = activeHowItWorksRef.current;
-        let maxRatio = 0;
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          const idx = Number((entry.target as HTMLElement).dataset.index || 0);
-          if (entry.intersectionRatio >= maxRatio) {
-            maxRatio = entry.intersectionRatio;
-            nextIndex = idx;
-          }
-        });
-        if (nextIndex !== activeHowItWorksRef.current) {
-          setActiveHowItWorksIndex(nextIndex);
-        }
-      },
-      { root, threshold: [0.6, 0.75, 0.9] },
-    );
-
-    howItWorksCardRefs.current.forEach((card) => {
-      if (card) observer.observe(card);
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  const handleHowItWorksSelect = (index: number) => {
-    setActiveHowItWorksIndex(index);
-    const target = howItWorksCardRefs.current[index];
-    if (!target) return;
-    target.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-  };
 
   const resetOrderConfirmation = () => {
     if (!orderConfirmation) return;
@@ -3897,138 +3854,202 @@ function formatRub(n: number) {
           </div>
 
           <div id="start-options" className="mt-3 mb-8">
-            <div className="text-sm font-medium text-white/90">
-              Как вам удобнее начать?
-            </div>
-            <div className="mt-3 grid w-full grid-cols-3 items-center gap-1.5 sm:gap-3">
+            <div className="mt-3">
               <Button
                 type="button"
-                onClick={handleStartOnline}
-                className="h-7 sm:h-8 w-full min-w-0 rounded-xl !bg-white !text-gray-900 hover:!bg-white/90 px-1.5 sm:px-4 text-[10px] sm:text-xs font-semibold whitespace-nowrap leading-none tracking-tight shadow-sm"
+                onClick={() => {
+                  setShowHowItWorks((prev) => {
+                    const next = !prev;
+                    if (next) {
+                      requestAnimationFrame(() => {
+                        howItWorksRef.current?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        });
+                      });
+                    }
+                    return next;
+                  });
+                }}
+                className="h-10 w-full rounded-xl rounded-b-none !bg-white !text-gray-900 hover:!bg-white/90 px-4 text-sm font-semibold shadow-sm"
               >
-                Начать онлайн
+                Показать план действий
               </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="h-7 sm:h-8 w-full min-w-0 rounded-xl border border-white/20 bg-transparent text-white/80 hover:bg-white/5 px-1.5 sm:px-4 text-[10px] sm:text-xs font-semibold whitespace-nowrap leading-none tracking-tight"
-              >
-                <a
-                  href={`tel:${SUPPORT_PHONE_TEL}`}
-                  onClick={() => handleEntryMethod("call")}
-                >
-                  Позвонить
-                </a>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="h-7 sm:h-8 w-full min-w-0 rounded-xl border border-transparent bg-white/5 text-white/80 hover:bg-white/10 px-1.5 sm:px-4 text-[10px] sm:text-xs font-semibold whitespace-nowrap leading-none tracking-tight"
-              >
-                <a
-                  href={SUPPORT_TELEGRAM_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={() => handleEntryMethod("telegram")}
-                >
-                  Написать в Telegram
-                </a>
-              </Button>
-            </div>
-            <div className="mt-2 text-[11px] text-white/55 max-w-[560px]">
-              Можно начать самостоятельно или просто задать вопрос — без обязательств.
             </div>
           </div>
 
-          <div id="how-it-works" className="mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-white/90">
-                  Как это работает?
-                </p>
-                <p className="mt-1 text-sm text-white/80 md:text-white/70">
-                  5 шагов — чтобы вы понимали, что будет дальше.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <div className="flex items-center justify-between gap-2 text-[11px] font-semibold text-white/70 sm:text-xs">
-                {howItWorksSteps.map((_, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => handleHowItWorksSelect(index)}
-                    className={cn(
-                      "relative px-1.5 py-1 transition-all",
-                      activeHowItWorksIndex === index
-                        ? "text-white"
-                        : "text-white/45 hover:text-white/70",
-                    )}
-                  >
-                    {String(index + 1).padStart(2, "0")}
-                  </button>
-                ))}
-              </div>
-              <div className="relative mt-2 h-px w-full bg-white/10">
-                <span
-                  className="absolute top-0 h-px bg-white/70 transition-transform duration-300"
-                  style={{
-                    width: `calc(100% / ${howItWorksSteps.length})`,
-                    transform: `translateX(${activeHowItWorksIndex * 100}%)`,
-                  }}
-                />
-              </div>
-
-              <div
-                ref={howItWorksScrollRef}
-                className="mt-5 flex w-full gap-4 overflow-x-auto overflow-y-visible px-4 pb-2 pt-1 scrollbar-hide snap-x snap-mandatory scroll-smooth"
-              >
-                {howItWorksSteps.map((item, index) => {
-                  const Icon = item.icon;
-                  const textLines = Array.isArray(item.text)
-                    ? item.text
-                    : item.text
-                      ? [item.text]
-                      : [];
+          {showHowItWorks && (
+            <div
+              id="how-it-works"
+              ref={howItWorksRef}
+              className="mb-6 -mt-3 rounded-2xl rounded-t-none border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-xl shadow-[0_12px_30px_rgba(15,23,42,0.25)]"
+            >
+              <div className="flex flex-col gap-4">
+                {howItWorksDays.map((day, index) => {
+                  const isOpen = openDayId === day.id;
                   return (
-                    <div
-                      key={item.title}
-                      ref={(el) => {
-                        howItWorksCardRefs.current[index] = el;
-                      }}
-                      data-index={index}
-                      className="w-[calc(100vw-32px)] max-w-full flex-shrink-0 snap-center rounded-[26px] border border-white/15 bg-white/8 px-4 py-2.5 backdrop-blur-xl sm:w-[680px] sm:px-6 sm:py-4"
-                    >
-                      <div className="flex items-start gap-2.5">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-white/90 sm:h-12 sm:w-12">
-                          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <div key={day.id} className="flex items-start gap-4">
+                      <div className="relative flex w-10 flex-col items-center">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-white/10 text-xs font-medium text-white/80">
+                          {day.numberLabel ?? (index + 1 < 10 ? `0${index + 1}` : index + 1)}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-[16px] font-semibold leading-tight text-white sm:text-xl lg:text-2xl whitespace-nowrap overflow-hidden">
-                            {item.title}
+                        <div className="mt-1 text-[11px] text-white/70">день</div>
+                        {index !== howItWorksDays.length - 1 && (
+                          <span className="absolute top-11 bottom-0 w-px bg-white/15" />
+                        )}
+                      </div>
+                      <div className="flex-1 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
+                        <div className="text-sm font-semibold text-white/95 sm:text-base">
+                          {day.title}
+                        </div>
+                        <div className="mt-2 text-[12px] leading-relaxed text-white/85 sm:text-sm">
+                          {day.description}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setOpenDayId((prev) => (prev === day.id ? null : day.id))
+                          }
+                          className="mt-3 flex w-full items-center justify-between text-left text-[12px] font-semibold text-white/80 sm:text-sm"
+                        >
+                          Что это значит?
+                          <span
+                            className={cn(
+                              "ml-2 inline-block text-[12px] transition-transform",
+                              isOpen ? "rotate-180" : "rotate-0",
+                            )}
+                          >
+                            ▾
+                          </span>
+                        </button>
+                        {isOpen && (
+                          <div className="mt-2 text-[12px] leading-relaxed text-white/80 sm:text-sm">
+                            {day.details}
                           </div>
-                          <div className="mt-0.5 text-[13px] text-white/80 sm:text-base break-words">
-                            {item.subtitle}
-                          </div>
-                          {textLines.length > 0 && (
-                            <div className="mt-1.5 space-y-1 text-[11px] leading-relaxed text-white/85 sm:text-sm break-words">
-                              {textLines.map((line, lineIndex) => (
-                                <p key={`${item.title}-${lineIndex}`}>{line}</p>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <div className="hidden sm:flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-white/10 text-[10px] font-semibold text-white/80">
-                          {String(index + 1).padStart(2, "0")}
-                        </div>
+                        )}
                       </div>
                     </div>
                   );
                 })}
-              </div>
+                <div className="text-[12px] text-white/80 sm:text-sm">
+                  Сроки ориентировочные. Процесс может идти быстрее или медленнее — мы подстраиваемся под вашу ситуацию.
+                </div>
+                <div className="px-2 py-1">
+                  <div className="text-center text-sm font-semibold text-white/95 sm:text-base">
+                    Выберите, как хотите продолжить дальше:
+                  </div>
+                  <div className="mt-2 text-center text-[12px] leading-relaxed text-white/80 sm:text-sm">
+                    Вы можете пройти все шаги самостоятельно на сайте
+или обратиться к координатору.
 
+Оба варианта равнозначны — выбирайте тот, который сейчас спокойнее для вас.
+                    
+                  </div>
+                  <div className="mt-3 flex flex-col gap-2 sm:grid sm:grid-cols-2">
+                    <Button
+                      type="button"
+                      onClick={() => setShowHowItWorks(false)}
+                      className="h-auto w-full rounded-xl !bg-white !text-gray-900 hover:!bg-white/80 px-4 py-3 text-center text-sm font-semibold shadow-sm"
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="whitespace-normal break-words text-center">
+                          Продолжить самостоятельно
+                        </div>
+                        <div className="text-[12px] font-normal text-gray-600 whitespace-normal break-words text-center">
+                          Пошагово, в удобном темпе. Можно изменить детали в любой момент.
+                        </div>
+                      </div>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="h-auto w-full rounded-xl !bg-white !text-gray-900 hover:!bg-white/80 px-4 py-3 text-center text-sm font-semibold shadow-sm"
+                    >
+                      <a
+                        href={SUPPORT_TELEGRAM_URL}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={() => handleEntryMethod("telegram")}
+                        className="flex flex-col items-center gap-1 text-center"
+                      >
+                        <div className="whitespace-normal break-words text-center">
+                          Написать координатору
+                        </div>
+                        <div className="text-[12px] font-normal text-gray-600 whitespace-normal break-words text-center">
+                          Ответит на вопросы в чате. Без давления и навязывания услуг.
+                        </div>
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
+          )}
+
+          <div className="mb-6 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 backdrop-blur-xl">
+            <button
+              type="button"
+              onClick={() => setShowDocumentsHelp((prev) => !prev)}
+              className="flex w-full items-center justify-between text-left"
+            >
+              <p className="text-sm font-medium text-white/95">Документы и юридическая помощь</p>
+              <span className="ml-3 text-white/60 text-sm">
+                {showDocumentsHelp ? "Скрыть" : "Показать"}
+              </span>
+            </button>
+
+            {showDocumentsHelp && (
+              <div className="mt-3">
+                <p className="text-[13px] text-white/80 sm:text-sm">
+                  Соберём и оформим документы за вас или поможем подготовить всё самостоятельно. Если вы не уверены,
+                  наша команда возьмёт оформление на себя.
+                </p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border border-white/15 bg-white/10 px-3 py-2">
+                    <div className="text-[12px] font-semibold text-white/90">Необходимые документы</div>
+                    <ul className="mt-1 space-y-1 text-[12px] text-white/80">
+                      <li>Паспорт заявителя</li>
+                      <li>Свидетельство о смерти</li>
+                      <li>Справка о регистрации</li>
+                    </ul>
+                  </div>
+                  <div className="rounded-xl border border-white/15 bg-white/10 px-3 py-2">
+                    <div className="text-[12px] font-semibold text-white/90">Сроки и сопровождение</div>
+                    <ul className="mt-1 space-y-1 text-[12px] text-white/80">
+                      <li>Сбор документов — от 1 дня</li>
+                      <li>Согласование — в день обращения</li>
+                      <li>Можно поручить оформление команде</li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="text-[12px] font-semibold text-white/90">Шаблоны для скачивания</div>
+                  <div className="mt-1 flex flex-wrap gap-3 text-[12px] text-white/80">
+                    <a href="/docs/offer.pdf" className="underline hover:text-white">
+                      Шаблон заявления
+                    </a>
+                    <a href="/docs/offer.pdf" className="underline hover:text-white">
+                      Шаблон доверенности
+                    </a>
+                    <a href="/docs/offer.pdf" className="underline hover:text-white">
+                      Шаблон описи
+                    </a>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      openWizardMode();
+                      scrollToWizardTop();
+                    }}
+                    className="h-9 rounded-xl !bg-white !text-gray-900 hover:!bg-white/90 px-4 text-sm font-semibold shadow-sm"
+                  >
+                    Оформить документы
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-center mb-6 mt-2">

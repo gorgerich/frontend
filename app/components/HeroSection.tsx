@@ -52,32 +52,33 @@ export function HeroSection() {
                 }}
               >
                 <span
-                  className="mx-auto block text-2xl"
+                  className="mx-auto block text-2xl font-semibold"
                   style={{
                     maxWidth: "340px",
-                    fontWeight: 40,
+                    fontWeight: 100,
                     transform: `translateY(${MOBILE_SHIFT})`,
                   }}
-                >
-                  <span
-                    className="block"
-                    style={{
-                      transform: `translateY(${MOBILE_LINE1_SHIFT})`,
-                      lineHeight: MOBILE_LINE1_LINE_HEIGHT,
-                      marginBottom: MOBILE_LINES_GAP,
-                    }}
                   >
-                    Цифровой помощник по самостоятельной организации прощания без звонков и давления
-                  </span>
+                    <span
+                      className="block"
+                      style={{
+                        fontWeight: 300,
+                        transform: `translateY(${MOBILE_LINE1_SHIFT})`,
+                        lineHeight: MOBILE_LINE1_LINE_HEIGHT,
+                        marginBottom: MOBILE_LINES_GAP,
+                      }}
+                    >
+                    Организуйте прощание спокойно и честно
+                    </span>
 
-                  <span
-                    className="block"
+                    <span
+                    className="block text-base sm:text-lg"
                     style={{
                       transform: `translateY(${MOBILE_LINE2_SHIFT})`,
                       lineHeight: MOBILE_LINE2_LINE_HEIGHT,
                     }}
                   >
-                    
+                    Мы поможем пройти все этапы — от документов до церемонии без звонков и давления. Прозрачная стоимость и поддержка 24/7
                   </span>
                 </span>
               </h1>
@@ -104,24 +105,28 @@ export function HeroSection() {
                   }}
                 >
                   <span
-                    className="block text-3xl lg:text-4xl xl:text-4xl"
+                    className="block text-3xl lg:text-4xl xl:text-4xl font-semibold whitespace-nowrap"
                     style={{
-                      transform: `translateY(${LINE1_SHIFT})`,
+                      fontFamily:
+                        "\"Humanist\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
+                      letterSpacing: "normal",
+                      fontWeight: 600,
                       lineHeight: LINE1_LINE_HEIGHT,
+                      transform: `translateY(${LINE1_SHIFT})`,
                       marginBottom: LINES_GAP,
                     }}
                   >
-                    Цифровой помощник по самостоятельной
+                    Организуйте прощание спокойно и честно
                   </span>
 
                   <span
-                    className="block text-4xl lg:text-3xl xl:text-4xl"
+                    className="block text-xl lg:text-2xl xl:text-2xl"
                     style={{
                       transform: `translateY(${LINE2_SHIFT})`,
                       lineHeight: LINE2_LINE_HEIGHT,
                     }}
                   >
-                    организации прощания без звонков и давления
+                    Мы поможем пройти все этапы — от документов до церемонии без звонков и давления. Прозрачная стоимость и поддержка 24/7
                   </span>
                 </span>
               </h1>

@@ -184,7 +184,7 @@ export function PackagesSelection({
   }, []);
 
   return (
-    <div className="pt-6">
+    <div className="pt-6 w-full">
       <div className="mb-3 flex items-center justify-center gap-2 md:hidden">
         {packages.map((pkg, index) => {
           const isActive = index === activeIndex;
@@ -203,7 +203,7 @@ export function PackagesSelection({
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="flex flex-nowrap overflow-x-auto snap-x snap-mandatory scroll-smooth gap-4 px-4 pt-5 md:pt-0 md:px-2 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:snap-none md:scroll-auto items-start [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex flex-nowrap overflow-x-auto snap-x snap-mandatory scroll-smooth gap-4 px-4 pt-5 md:pt-0 md:px-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-hidden md:snap-none md:scroll-auto md:w-full md:justify-items-center items-start [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
       {packages.map((pkg) => {
         const isSelected = selectedPackageId === pkg.id;
@@ -221,10 +221,10 @@ export function PackagesSelection({
             onClick={() => onSelectPackage(pkg)}
             data-package-card
             className={cn(
-              "group relative flex flex-col p-8 rounded-3xl border transition-all duration-300 cursor-pointer bg-white flex-none w-[88vw] max-w-[360px] snap-start md:w-auto md:max-w-none md:flex-none",
+              "group relative flex flex-col p-8 rounded-3xl border transition-all duration-300 cursor-pointer bg-white flex-none w-[88vw] max-w-[360px] snap-start md:w-full md:max-w-[280px] md:mx-auto md:min-w-0",
               isSelected
-                ? "border-gray-900 shadow-2xl scale-[1.02] z-10"
-                : "border-gray-100 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1"
+                ? "border-gray-900 shadow-2xl scale-[1.02] md:scale-100 z-10"
+                : "border-gray-100 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1 md:hover:translate-y-0"
             )}
           >
             {pkg.popular && (

@@ -29,6 +29,64 @@ const HEARSE_CATEGORY_LABELS = {
   premium: 'Премиум',
 } as const;
 
+// TODO: заменить на реальные отзывы/логотипы/рейтинги/лицензии
+const TRUST_REVIEWS = [
+  {
+    id: 'review-1',
+    name: 'Ирина П.',
+    date: '12.12.2024',
+    service: 'Захоронение',
+    text:
+      'Очень аккуратный и спокойный процесс. Всё объяснили, помогли с документами и организацией. Спасибо за тактичность.',
+    photo: '/hero-forest.jpg',
+  },
+  {
+    id: 'review-2',
+    name: 'Алексей Н.',
+    date: '03.11.2024',
+    service: 'Кремация',
+    text:
+      'Быстро согласовали детали, всё прошло без лишних звонков. Понравилась прозрачность по стоимости.',
+    photo: '/images/hearse-lux.jpg',
+  },
+  {
+    id: 'review-3',
+    name: 'Марина С.',
+    date: '27.10.2024',
+    service: 'Организация церемонии',
+    text:
+      'Поддержка 24/7 — действительно работает. Координатор был на связи и помогал с мелочами.',
+    photo: '/hero-forest.jpg',
+  },
+];
+
+const TRUST_METRICS = [
+  { label: 'Средняя оценка', value: '4.9/5' },
+  { label: 'Рекомендации', value: '97%' },
+  { label: 'Обращений в месяц', value: '120+' },
+  { label: 'Срок подтверждения', value: 'от 30 минут' },
+];
+
+const TRUST_RATINGS = [
+  { label: 'Яндекс Карты', url: 'https://yandex.ru/maps' },
+  { label: 'Google', url: 'https://www.google.com/maps' },
+  { label: '2ГИС', url: 'https://2gis.ru' },
+];
+
+const TRUST_LEGAL = [
+  'ИП Пачулия Ричард Гарегинович',
+  'ИНН: 773438344967',
+  'ОГРНИП: 323774600033021',
+  'Лицензии: при необходимости предоставляются по запросу',
+];
+
+const TRUST_PARTNERS = [
+  'Крематорий №1',
+  'Крематорий №2',
+  'Кладбища Москвы',
+  'Флористические службы',
+];
+
 const applyHearseCategoryToCalculator = (
   total: number,
   breakdown: BreakdownSection[],
@@ -330,6 +388,92 @@ return (
     <PackagesSection formData={formData} onUpdateFormData={handleUpdateFormData} />
   </div>
 )}
+<section className="mt-12 md:mt-16">
+  <div className="mx-auto w-full max-w-6xl px-4">
+    <div className="flex flex-col gap-2">
+      <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">Нам доверяют</h2>
+      <p className="text-sm text-gray-500 md:text-base">
+        Реальные отзывы клиентов, показатели качества и партнёры. Данные будут обновлены после финального согласования.
+      </p>
+    </div>
+
+    <div className="mt-6 grid gap-4 md:grid-cols-3">
+      {TRUST_REVIEWS.map((review) => (
+        <div
+          key={review.id}
+          className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+            <img
+              src={review.photo}
+              alt={review.name}
+              className="h-12 w-12 rounded-full object-cover"
+            />
+            <div>
+              <div className="text-sm font-semibold text-gray-900">{review.name}</div>
+              <div className="text-xs text-gray-500">
+                {review.date} · {review.service}
+              </div>
+            </div>
+          </div>
+          <p className="mt-3 text-sm text-gray-600 leading-relaxed">{review.text}</p>
+        </div>
+      ))}
+    </div>
+
+    <div className="mt-8 grid gap-4 md:grid-cols-3">
+      <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="text-sm font-semibold text-gray-900">Показатели качества</div>
+        <div className="mt-3 grid gap-2">
+          {TRUST_METRICS.map((metric) => (
+            <div key={metric.label} className="flex items-center justify-between text-sm text-gray-600">
+              <span>{metric.label}</span>
+              <span className="font-semibold text-gray-900">{metric.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="text-sm font-semibold text-gray-900">Проверенные рейтинги</div>
+        <div className="mt-3 flex flex-col gap-2 text-sm">
+          {TRUST_RATINGS.map((item) => (
+            <a
+              key={item.label}
+              href={item.url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-gray-600 underline-offset-4 hover:text-gray-900 hover:underline"
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </div>
+      <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="text-sm font-semibold text-gray-900">Юридические реквизиты и лицензии</div>
+        <div className="mt-3 space-y-1 text-sm text-gray-600">
+          {TRUST_LEGAL.map((line) => (
+            <div key={line}>{line}</div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div className="mt-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="text-sm font-semibold text-gray-900">Мы работаем с</div>
+      <div className="mt-3 flex flex-wrap gap-3">
+        {TRUST_PARTNERS.map((partner) => (
+          <div
+            key={partner}
+            className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-600"
+          >
+            {partner}
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
 {currentStep >= 1 && !isOrderConfirmed && (
 <FloatingCalculator
 total={calculatorSummary.total}
