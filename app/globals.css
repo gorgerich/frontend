@@ -14,6 +14,14 @@
   src: local("Humanist"), local("Humanist 521"), local("Humanist 521 BT");
   font-display: swap;
 }
+
+@font-face {
+  font-family: "Golos";
+  src: url("/fonts/GolosText-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 /*! tailwindcss v4.1.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -6373,7 +6381,7 @@
   --font-size: 16px;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --background: #fff;
+  --background: #F2F2F2;
   --foreground: #171717;
   --card: #fff;
   --card-foreground: #171717;

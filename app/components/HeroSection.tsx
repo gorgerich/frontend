@@ -1,6 +1,7 @@
 // app/components/HeroSection.tsx
 import { TopButtons } from "./TopButtons";
 const heroImage = "/hero-forest.jpg";
+const heroImageNew = "/heroIMGnew.PNG";
 
 // DESKTOP controls
 const DESKTOP_TOP = "14%"; // опускай/поднимай весь заголовок на десктопе
@@ -22,7 +23,10 @@ export function HeroSection() {
   return (
     <section className="relative w-full px-4 pt-14 sm:pt-16 pb-16 md:pt-8 md:pb-20 lg:pb-24">
       <div className="mx-auto max-w-7xl relative">
-        <div className="pointer-events-none absolute left-1/2 top-0 z-30 -translate-x-1/2 -translate-y-1/2">
+        <div
+          className="pointer-events-none absolute left-6 right-6 top-0 z-30"
+          style={{ transform: "translateY(-44px)" }}
+        >
           <div className="pointer-events-auto">
             <TopButtons />
           </div>
@@ -31,9 +35,15 @@ export function HeroSection() {
           {/* Background (hero only) */}
           <div className="pointer-events-none absolute inset-0 z-0">
             <img
-              src={heroImage}
+              src={heroImageNew}
               alt="Тихая Память"
               className="absolute inset-0 h-full w-full rounded-3xl object-cover md:rounded-[40px]"
+            />
+            <img
+              src={heroImage}
+              alt=""
+              aria-hidden="true"
+              className="hidden"
             />
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/70 via-black/60 to-black/75 md:rounded-[40px]" />
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/50 via-black/25 to-black/10 md:hidden" />
@@ -48,7 +58,7 @@ export function HeroSection() {
                 style={{
                   fontFamily: "var(--font-family-serif)",
                   textShadow:
-                    "0 4px 20px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.6)",
+                    "0 4px 20px rgba(0,0,0,0.8), 0 0px 0px rgba(0,0,0,0.6)",
                 }}
               >
                 <span
@@ -59,26 +69,30 @@ export function HeroSection() {
                     transform: `translateY(${MOBILE_SHIFT})`,
                   }}
                   >
-                    <span
-                      className="block"
-                      style={{
-                        fontWeight: 300,
-                        transform: `translateY(${MOBILE_LINE1_SHIFT})`,
-                        lineHeight: MOBILE_LINE1_LINE_HEIGHT,
-                        marginBottom: MOBILE_LINES_GAP,
-                      }}
-                    >
-                    Организуйте прощание спокойно и честно
-                    </span>
+                <span
+                  className="block"
+                  style={{
+                    fontFamily:
+                      "\"Humanist\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
+                    fontWeight: 550,
+                    transform: `translateY(${MOBILE_LINE1_SHIFT})`,
+                    lineHeight: MOBILE_LINE1_LINE_HEIGHT,
+                    marginBottom: MOBILE_LINES_GAP,
+                  }}
+                >
+                  Что делать, если умер близкий человек
+                </span>
 
                     <span
-                    className="block text-base sm:text-lg"
+                    className="block text-base sm:text-lg font-medium"
                     style={{
+                      fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
                       transform: `translateY(${MOBILE_LINE2_SHIFT})`,
                       lineHeight: MOBILE_LINE2_LINE_HEIGHT,
                     }}
                   >
-                    Мы поможем пройти все этапы — от документов до церемонии без звонков и давления. Прозрачная стоимость и поддержка 24/7
+                    Пошаговый план для Москвы и области.
+Документы, формат прощания и стоимость — в спокойном темпе, без звонков и давления
                   </span>
                 </span>
               </h1>
@@ -94,7 +108,7 @@ export function HeroSection() {
                 style={{
                   fontFamily: "var(--font-family-serif)",
                   textShadow:
-                    "0 4px 20px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.6)",
+                    "0 4px 20px rgba(0,0,0,0.8), 0 0px 0px rgba(0,0,0,0.6)",
                 }}
               >
                 <span
@@ -110,23 +124,25 @@ export function HeroSection() {
                       fontFamily:
                         "\"Humanist\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
                       letterSpacing: "normal",
-                      fontWeight: 600,
+                      fontWeight: 550,
                       lineHeight: LINE1_LINE_HEIGHT,
                       transform: `translateY(${LINE1_SHIFT})`,
                       marginBottom: LINES_GAP,
                     }}
                   >
-                    Организуйте прощание спокойно и честно
+                    Что делать, если умер близкий человек
                   </span>
 
                   <span
-                    className="block text-xl lg:text-2xl xl:text-2xl"
+                    className="block text-xl lg:text-2xl xl:text-2xl font-medium"
                     style={{
+                      fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
                       transform: `translateY(${LINE2_SHIFT})`,
                       lineHeight: LINE2_LINE_HEIGHT,
                     }}
                   >
-                    Мы поможем пройти все этапы — от документов до церемонии без звонков и давления. Прозрачная стоимость и поддержка 24/7
+                    Пошаговый план для Москвы и области.
+Документы, формат прощания и стоимость — в спокойном темпе, без звонков и давления
                   </span>
                 </span>
               </h1>

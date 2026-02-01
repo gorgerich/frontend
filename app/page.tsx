@@ -87,6 +87,9 @@ const TRUST_PARTNERS = [
   'Флористические службы',
 ];
 
+// reserved for future header/search links
+
+
 const applyHearseCategoryToCalculator = (
   total: number,
   breakdown: BreakdownSection[],
@@ -136,6 +139,7 @@ const applyHearseCategoryToCalculator = (
 };
 
 export default function Home() {
+  // search overlay removed
 // Глобальный обработчик ошибок для предотвращения краша из-за hls.js и других внешних библиотек
 useEffect(() => {
 // В Next это должно быть внутри useEffect, чтобы не ломать SSR/сборку
@@ -363,6 +367,7 @@ trackEvent(
 const handleCemeteryCategoryChange = (category: 'standard' | 'comfort' | 'premium') =>
 setSelectedCemeteryCategory(category);
 
+
 return (
 <main className="min-h-screen bg-white pt-8 flex flex-col">
 {/* ВЕСЬ КОНТЕНТ */}
@@ -430,30 +435,6 @@ return (
               <span>{metric.label}</span>
               <span className="font-semibold text-gray-900">{metric.value}</span>
             </div>
-          ))}
-        </div>
-      </div>
-      <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-        <div className="text-sm font-semibold text-gray-900">Проверенные рейтинги</div>
-        <div className="mt-3 flex flex-col gap-2 text-sm">
-          {TRUST_RATINGS.map((item) => (
-            <a
-              key={item.label}
-              href={item.url}
-              target="_blank"
-              rel="noreferrer"
-              className="text-gray-600 underline-offset-4 hover:text-gray-900 hover:underline"
-            >
-              {item.label}
-            </a>
-          ))}
-        </div>
-      </div>
-      <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-        <div className="text-sm font-semibold text-gray-900">Юридические реквизиты и лицензии</div>
-        <div className="mt-3 space-y-1 text-sm text-gray-600">
-          {TRUST_LEGAL.map((line) => (
-            <div key={line}>{line}</div>
           ))}
         </div>
       </div>
