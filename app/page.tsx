@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { HeroSection } from './components/HeroSection';
 import { StepperWorkflow } from './components/StepperWorkflow';
 import { PackagesSection } from './components/PackagesSection';
@@ -13,6 +14,7 @@ import {
   getTrackingSessionId,
   trackEvent,
 } from './components/calculationUtils';
+import { TELEGRAM_URL } from "../lib/legalLinks";
 
 type BreakdownItem = { name: string; price?: number };
 type BreakdownSection = { category: string; price: number; items?: BreakdownItem[] };
@@ -139,6 +141,9 @@ const applyHearseCategoryToCalculator = (
 };
 
 export default function Home() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const lastCtaRef = useRef<string | null>(null);
   // search overlay removed
 // Глобальный обработчик ошибок для предотвращения краша из-за hls.js и других внешних библиотек
 useEffect(() => {
@@ -279,6 +284,7 @@ userEmail: '',
 
 const [formData, setFormData] = useState(initialFormData);
 const [currentStep, setCurrentStep] = useState(0);
+const [selectedPackageSlug, setSelectedPackageSlug] = useState<string | null>(null);
 const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
 const [selectedCemeteryCategory, setSelectedCemeteryCategory] =
   useState<'standard' | 'comfort' | 'premium'>('standard');
@@ -354,18 +360,103 @@ console.error('Failed to save draft:', e);
 
 const handleUpdateFormData = (field: string, value: any) => {
 setFormData((prev) => ({ ...prev, [field]: value }));
+if (field === 'serviceType') {
+const type = value === 'cremation' ? 'cremation' : 'burial';
+const flow = searchParams.get('flow');
+if (flow === 'wizard') {
+router.push(`/wizard/${type}/step-${currentStep + 1}`);
+} else if (flow === 'packages') {
+if (selectedPackageSlug) {
+router.push(`/packages/${type}/${selectedPackageSlug}`);
+} else {
+router.push(`/packages/${type}`);
+}
+}
+}
 };
 
-const handleStepChange = (step: number) => setCurrentStep(step);
+const handleStepChange = (step: number) => {
+setCurrentStep(step);
+if (modeRef.current === 'wizard') {
+const type = formData.serviceType === 'cremation' ? 'cremation' : 'burial';
+router.push(`/wizard/${type}/step-${step + 1}`);
+}
+};
+const modeRef = useRef<'wizard' | 'packages' | null>(null);
 const handleModeChange = (mode: 'wizard' | 'package') => {
+modeRef.current = mode === 'wizard' ? 'wizard' : 'packages';
 trackEvent(
   'mode_selected',
   { mode, flow: mode },
   `${trackingSessionId}:${mode}:mode_selected`,
 );
+const type = formData.serviceType === 'cremation' ? 'cremation' : 'burial';
+if (mode === 'wizard') {
+router.push(`/wizard/${type}/step-${currentStep + 1}`);
+} else {
+if (selectedPackageSlug) {
+router.push(`/packages/${type}/${selectedPackageSlug}`);
+} else {
+router.push(`/packages/${type}`);
+}
+}
 };
 const handleCemeteryCategoryChange = (category: 'standard' | 'comfort' | 'premium') =>
 setSelectedCemeteryCategory(category);
+
+const flowParam = searchParams.get('flow');
+const typeParam = searchParams.get('type');
+const stepParam = searchParams.get('step');
+const packageParam = searchParams.get('package');
+const hiwParam = searchParams.get('hiw');
+const ctaParam = searchParams.get('cta');
+
+const routeFlowRaw =
+flowParam === 'wizard' || flowParam === 'packages' || flowParam === 'how-it-works'
+  ? flowParam
+  : null;
+const routeFlow = routeFlowRaw ?? (ctaParam === 'start' ? 'wizard' : null);
+const routeType = typeParam === 'cremation' ? 'cremation' : typeParam === 'burial' ? 'burial' : null;
+const routeStep = stepParam ? Math.max(1, Number(stepParam)) : null;
+const routeHowItWorksStep = hiwParam ? Math.max(1, Number(hiwParam)) : null;
+const routePackage = packageParam ? String(packageParam) : null;
+
+useEffect(() => {
+if (routeFlow === 'wizard' || routeFlow === 'packages') {
+modeRef.current = routeFlow;
+}
+}, [routeFlow]);
+
+useEffect(() => {
+if (routeType && routeType !== formData.serviceType) {
+handleUpdateFormData('serviceType', routeType);
+}
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [routeType]);
+
+useEffect(() => {
+if (routeFlow === 'wizard' && routeStep) {
+const nextStep = Math.max(1, routeStep);
+setCurrentStep(nextStep - 1);
+}
+}, [routeFlow, routeStep]);
+
+useEffect(() => {
+if (routePackage) {
+setSelectedPackageSlug(routePackage);
+}
+}, [routePackage]);
+
+useEffect(() => {
+if (ctaParam && ctaParam !== lastCtaRef.current) {
+lastCtaRef.current = ctaParam;
+if (ctaParam === 'call') {
+window.location.href = 'tel:+79852489425';
+} else if (ctaParam === 'telegram') {
+window.open(TELEGRAM_URL, '_blank', 'noopener,noreferrer');
+}
+}
+}, [ctaParam]);
 
 
 return (
@@ -384,6 +475,16 @@ return (
         onCemeteryCategoryChange={handleCemeteryCategoryChange}
         onModeChange={handleModeChange}
         onOrderConfirmed={setIsOrderConfirmed}
+        routeFlow={routeFlow}
+        routeType={routeType}
+        routeStep={routeStep}
+        routePackageSlug={routePackage}
+        routeHowItWorksStep={routeHowItWorksStep}
+        onPackageSelect={(slug) => {
+          setSelectedPackageSlug(slug);
+          const type = formData.serviceType === 'cremation' ? 'cremation' : 'burial';
+          router.push(`/packages/${type}/${slug}`);
+        }}
       />
     </div>
   </section>

@@ -1061,6 +1061,12 @@ splitSchedule?: string;
   onCemeteryCategoryChange?: (category: "standard" | "comfort" | "premium") => void;
   onModeChange?: (mode: "wizard" | "package") => void;
   onOrderConfirmed?: (confirmed: boolean) => void;
+  routeFlow?: "wizard" | "packages" | "how-it-works" | null;
+  routeType?: "burial" | "cremation" | null;
+  routeStep?: number | null;
+  routePackageSlug?: string | null;
+  routeHowItWorksStep?: number | null;
+  onPackageSelect?: (slug: string) => void;
 }
 
 export function StepperWorkflow({
@@ -1070,6 +1076,12 @@ export function StepperWorkflow({
   onCemeteryCategoryChange,
   onModeChange,
   onOrderConfirmed,
+  routeFlow,
+  routeType,
+  routeStep,
+  routePackageSlug,
+  routeHowItWorksStep,
+  onPackageSelect,
 }: StepperWorkflowProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -1104,6 +1116,8 @@ export function StepperWorkflow({
     useState<"standard" | "comfort" | "premium">("standard");
 
   const [showHearseDialog, setShowHearseDialog] = useState(false);
+  const [continueChoice, setContinueChoice] =
+    useState<"packages" | "wizard" | "unsure">("packages");
 
   useLayoutEffect(() => {
     const calc = () => {
@@ -1166,9 +1180,13 @@ export function StepperWorkflow({
     });
 
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [showFaq, setShowFaq] = useState(false);
+  const [activeFaqPhase, setActiveFaqPhase] = useState<string | null>(null);
   const [showDocumentsHelp, setShowDocumentsHelp] = useState(false);
   const howItWorksRef = useRef<HTMLDivElement | null>(null);
+  const faqRef = useRef<HTMLDivElement | null>(null);
   const [openDayId, setOpenDayId] = useState<string | null>(null);
+  const howItWorksItemRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   const howItWorksDays: Array<{
     id: string;
@@ -1214,6 +1232,281 @@ export function StepperWorkflow({
       numberLabel: "3"
     },
   ];
+
+  const faqPhases: Array<{
+    title: string;
+    items: Array<{ q: string; a: string[] }>;
+  }> = [
+    {
+      title: "Сразу после смерти",
+      items: [
+        {
+          q: "Что делать прямо сейчас?",
+          a: [
+            "Если смерть произошла дома — позвоните в 112 и следуйте инструкции диспетчера.",
+            "Если смерть произошла в больнице — вам подскажут, когда и куда обратиться дальше.",
+            "Экстренные действия выполняются по инструкции служб. Мы подключаемся после оформления на месте.",
+          ],
+        },
+        {
+          q: "Нужно ли сразу что-то решать по организации похорон?",
+          a: [
+            "Нет.",
+            "В первые часы ничего не нужно выбирать, заказывать или оплачивать.",
+            "Сначала оформляется факт смерти и определяется, куда доставлено тело.",
+          ],
+        },
+        {
+          q: "Мне уже предлагают услуги. Нужно соглашаться?",
+          a: [
+            "Нет.",
+            "Вы имеете право сказать: «Я приму решение позже».",
+            "Ничего подписывать и оплачивать на месте не обязательно.",
+          ],
+        },
+      ],
+    },
+    {
+      title: "Про сервис и начало работы",
+      items: [
+        {
+          q: "Когда имеет смысл начинать организацию через сайт?",
+          a: [
+            "После того как:",
+            "• факт смерти оформлен,",
+            "• понятно, где находится тело,",
+            "• у вас есть хотя бы часть документов.",
+            "Обычно это происходит в тот же день или на следующий.",
+          ],
+        },
+        {
+          q: "Что произойдёт, если я нажму «Получить план действий»?",
+          a: [
+            "Вы начнёте собирать план — без оплаты и без автоматического запуска услуг.",
+            "Вы сможете:",
+            "• пропускать шаги,",
+            "• выбирать «я не знаю»,",
+            "• сохранить и вернуться позже.",
+          ],
+        },
+        {
+          q: "Это обязывает меня к заказу?",
+          a: ["Нет.", "План не фиксируется и не запускается без вашего подтверждения."],
+        },
+      ],
+    },
+    {
+      title: "Про документы",
+      items: [
+        {
+          q: "Я не знаю, какие документы нужны. Это проблема?",
+          a: [
+            "Нет.",
+            "Мы показываем список под вашу ситуацию, и вы можете отметить «я не знаю».",
+            "Недостающие данные можно уточнить позже.",
+          ],
+        },
+        {
+          q: "Документы отличаются, если смерть произошла дома или в больнице?",
+          a: [
+            "Да.",
+            "Поэтому в списке документов есть переключатели по ситуации.",
+            "Вы видите только то, что относится к вашему случаю.",
+          ],
+        },
+      ],
+    },
+    {
+      title: "Про выбор формата",
+      items: [
+        {
+          q: "Я не понимаю, что выбрать: кремацию или захоронение.",
+          a: [
+            "Это нормально.",
+            "Вы можете выбрать «пока не знаю» — план всё равно соберётся, а выбор можно сделать позже.",
+          ],
+        },
+        {
+          q: "Если я выберу одно, можно будет изменить?",
+          a: ["Да, до подтверждения плана вы можете вернуться и изменить любой пункт."],
+        },
+      ],
+    },
+    {
+      title: "Про стоимость",
+      items: [
+        {
+          q: "Когда я увижу стоимость?",
+          a: [
+            "После того как выберете формат и основные пункты плана.",
+            "Стоимость всегда показывается до подтверждения.",
+          ],
+        },
+        {
+          q: "Почему иногда указана не точная сумма, а диапазон?",
+          a: [
+            "Диапазон появляется, если:",
+            "• есть несколько допустимых вариантов,",
+            "• часть данных пока неизвестна.",
+            "Мы всегда объясняем, от чего зависит разница и когда цена фиксируется окончательно.",
+          ],
+        },
+        {
+          q: "Может ли цена измениться позже?",
+          a: [
+            "Только если вы сами измените состав плана.",
+            "Никакие дополнительные услуги не добавляются без вашего согласия.",
+          ],
+        },
+      ],
+    },
+    {
+      title: "Про координатора",
+      items: [
+        {
+          q: "Мне обязательно общаться с координатором?",
+          a: ["Нет.", "Вы можете пройти весь процесс самостоятельно на сайте."],
+        },
+        {
+          q: "Если я обращусь к координатору, мне будут что-то продавать?",
+          a: [
+            "Нет.",
+            "Координатор:",
+            "• уточняет детали,",
+            "• сверяет план,",
+            "• помогает избежать ошибок.",
+            "Он не меняет план и не добавляет услуги без вашего согласия.",
+          ],
+        },
+      ],
+    },
+    {
+      title: "Про оплату",
+      items: [
+        {
+          q: "Когда происходит оплата?",
+          a: [
+            "Только после того, как вы:",
+            "• проверили план,",
+            "• поняли состав и стоимость,",
+            "• подтвердили, что всё верно.",
+          ],
+        },
+        {
+          q: "Что происходит после оплаты?",
+          a: [
+            "Мы начинаем действовать строго по согласованному плану и держим вас в курсе каждого этапа.",
+          ],
+        },
+      ],
+    },
+    {
+      title: "Про день церемонии и после",
+      items: [
+        {
+          q: "В день прощания мне нужно что-то решать?",
+          a: [
+            "Нет.",
+            "Организационные вопросы уже решены.",
+            "В день церемонии вы не занимаетесь координацией и логистикой.",
+          ],
+        },
+        {
+          q: "Что будет после церемонии?",
+          a: [
+            "Мы:",
+            "• передаём итоговые документы,",
+            "• фиксируем завершение организационной части.",
+            "К этим вопросам не нужно возвращаться позже.",
+          ],
+        },
+      ],
+    },
+    {
+      title: "Если я сомневаюсь",
+      items: [
+        {
+          q: "Я боюсь сделать что-то не так.",
+          a: [
+            "Это нормально.",
+            "Именно поэтому:",
+            "• все шаги можно пересмотреть,",
+            "• ничего не запускается автоматически,",
+            "• вы видите полный план до подтверждения.",
+          ],
+        },
+        {
+          q: "Я не готова сейчас продолжать. Можно остановиться?",
+          a: ["Да.", "Вы можете сохранить план и вернуться позже — с того же места."],
+        },
+      ],
+    },
+  ];
+
+  const PACKAGE_ID_BY_SLUG: Record<
+    "quiet" | "traditional" | "special",
+    { burial: string; cremation: string }
+  > = {
+    quiet: { burial: "basic", cremation: "cremation-standard" },
+    traditional: { burial: "standard", cremation: "cremation-comfort" },
+    special: { burial: "premium", cremation: "cremation-premium" },
+  };
+
+  const getPackageBySlug = (slug: string | null | undefined) => {
+    if (!slug) return null;
+    if (!["quiet", "traditional", "special"].includes(slug)) return null;
+    const list =
+      formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES_BURIAL;
+    const id =
+      PACKAGE_ID_BY_SLUG[slug as "quiet" | "traditional" | "special"][
+        formData.serviceType === "cremation" ? "cremation" : "burial"
+      ];
+    return list.find((pkg) => pkg.id === id) ?? null;
+  };
+
+  useEffect(() => {
+    if (!routeFlow) return;
+    if (routeFlow === "wizard") {
+      openWizardMode();
+    } else if (routeFlow === "packages") {
+      openPackagesMode();
+    } else if (routeFlow === "how-it-works") {
+      setShowHowItWorks(true);
+      setShowFaq(false);
+      requestAnimationFrame(() => {
+        howItWorksRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }, [routeFlow]);
+
+  useEffect(() => {
+    if (routeFlow !== "wizard" || !routeStep) return;
+    const maxStep = steps.length - 1;
+    const nextStep = Math.min(Math.max(routeStep - 1, 0), maxStep);
+    setCurrentStep(nextStep);
+  }, [routeFlow, routeStep, steps.length]);
+
+  useEffect(() => {
+    if (routeFlow !== "packages" || !routePackageSlug) return;
+    const pkg = getPackageBySlug(routePackageSlug);
+    if (pkg) {
+      setSelectedPackageForSimplified(pkg);
+    }
+  }, [routeFlow, routePackageSlug, formData.serviceType]);
+
+  useEffect(() => {
+    if (routeFlow !== "how-it-works" || !routeHowItWorksStep) return;
+    const idx = Math.min(
+      Math.max(routeHowItWorksStep - 1, 0),
+      howItWorksDays.length - 1,
+    );
+    requestAnimationFrame(() => {
+      howItWorksItemRefs.current[idx]?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }, [routeFlow, routeHowItWorksStep, howItWorksDays.length]);
 
   const resetOrderConfirmation = () => {
     if (!orderConfirmation) return;
@@ -2134,6 +2427,7 @@ export function StepperWorkflow({
 
   const openPackagesMode = () => {
     setWorkflowMode("packages");
+    setContinueChoice("packages");
     if (formData.packageType) {
       handleInputChange("packageType", "");
     }
@@ -2144,6 +2438,7 @@ export function StepperWorkflow({
 
   const openWizardMode = () => {
     setWorkflowMode("wizard");
+    setContinueChoice("wizard");
     setSelectedPackageForSimplified(null);
     setCurrentStep(0);
     setCompletedSteps([]);
@@ -3836,7 +4131,7 @@ function formatRub(n: number) {
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${HERO_BG_SRC})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/75" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/31 via-black/27 to-black/36" />
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-white" />
       </div>
       <div ref={containerRef}>
@@ -3854,12 +4149,13 @@ function formatRub(n: number) {
           </div>
 
           <div id="start-options" className="mt-3 mb-8">
-            <div className="mt-3">
+            <div className="mt-3 flex gap-2">
               <Button
                 type="button"
                 onClick={() => {
                   setShowHowItWorks((prev) => {
                     const next = !prev;
+                    if (next) setShowFaq(false);
                     if (next) {
                       requestAnimationFrame(() => {
                         howItWorksRef.current?.scrollIntoView({
@@ -3871,9 +4167,30 @@ function formatRub(n: number) {
                     return next;
                   });
                 }}
-                className="h-10 w-full rounded-xl rounded-b-none !bg-white !text-gray-900 hover:!bg-white/90 px-4 text-sm font-semibold shadow-sm"
+                className="h-10 w-full flex-1 rounded-xl rounded-b-none !bg-white !text-gray-900 hover:!bg-white/90 px-4 text-sm font-semibold shadow-sm"
               >
                 Показать план действий
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  setShowFaq((prev) => {
+                    const next = !prev;
+                    if (next) setShowHowItWorks(false);
+                    if (next) {
+                      requestAnimationFrame(() => {
+                        faqRef.current?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        });
+                      });
+                    }
+                    return next;
+                  });
+                }}
+                className="h-10 w-full flex-1 rounded-xl rounded-b-none !bg-white !text-gray-900 hover:!bg-white/90 px-4 text-sm font-semibold shadow-sm"
+              >
+                Частые вопросы
               </Button>
             </div>
           </div>
@@ -3888,7 +4205,13 @@ function formatRub(n: number) {
                 {howItWorksDays.map((day, index) => {
                   const isOpen = openDayId === day.id;
                   return (
-                    <div key={day.id} className="flex items-start gap-4">
+                    <div
+                      key={day.id}
+                      ref={(el) => {
+                        howItWorksItemRefs.current[index] = el;
+                      }}
+                      className="flex items-start gap-4"
+                    >
                       <div className="relative flex w-10 flex-col items-center">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-white/10 text-xs font-medium text-white/80">
                           {day.numberLabel ?? (index + 1 < 10 ? `0${index + 1}` : index + 1)}
@@ -3986,74 +4309,69 @@ function formatRub(n: number) {
             </div>
           )}
 
-          <div className="mb-6 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 backdrop-blur-xl">
-            <button
-              type="button"
-              onClick={() => setShowDocumentsHelp((prev) => !prev)}
-              className="flex w-full items-center justify-between text-left"
+          {showFaq && (
+            <div
+              id="faq"
+              ref={faqRef}
+              className="mb-6 -mt-3 rounded-2xl rounded-t-none border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-xl shadow-[0_12px_30px_rgba(15,23,42,0.25)]"
             >
-              <p className="text-sm font-medium text-white/95">Документы и юридическая помощь</p>
-              <span className="ml-3 text-white/60 text-sm">
-                {showDocumentsHelp ? "Скрыть" : "Показать"}
-              </span>
-            </button>
-
-            {showDocumentsHelp && (
-              <div className="mt-3">
-                <p className="text-[13px] text-white/80 sm:text-sm">
-                  Соберём и оформим документы за вас или поможем подготовить всё самостоятельно. Если вы не уверены,
-                  наша команда возьмёт оформление на себя.
-                </p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-xl border border-white/15 bg-white/10 px-3 py-2">
-                    <div className="text-[12px] font-semibold text-white/90">Необходимые документы</div>
-                    <ul className="mt-1 space-y-1 text-[12px] text-white/80">
-                      <li>Паспорт заявителя</li>
-                      <li>Свидетельство о смерти</li>
-                      <li>Справка о регистрации</li>
-                    </ul>
-                  </div>
-                  <div className="rounded-xl border border-white/15 bg-white/10 px-3 py-2">
-                    <div className="text-[12px] font-semibold text-white/90">Сроки и сопровождение</div>
-                    <ul className="mt-1 space-y-1 text-[12px] text-white/80">
-                      <li>Сбор документов — от 1 дня</li>
-                      <li>Согласование — в день обращения</li>
-                      <li>Можно поручить оформление команде</li>
-                    </ul>
-                  </div>
-                </div>
-                <div className="mt-3">
-                  <div className="text-[12px] font-semibold text-white/90">Шаблоны для скачивания</div>
-                  <div className="mt-1 flex flex-wrap gap-3 text-[12px] text-white/80">
-                    <a href="/docs/offer.pdf" className="underline hover:text-white">
-                      Шаблон заявления
-                    </a>
-                    <a href="/docs/offer.pdf" className="underline hover:text-white">
-                      Шаблон доверенности
-                    </a>
-                    <a href="/docs/offer.pdf" className="underline hover:text-white">
-                      Шаблон описи
-                    </a>
-                  </div>
-                </div>
-                <div className="mt-3">
-                  <Button
+              <div className="mb-4 flex flex-nowrap gap-2 overflow-x-auto no-scrollbar">
+                {faqPhases.map((phase) => (
+                  <button
+                    key={phase.title}
                     type="button"
                     onClick={() => {
-                      openWizardMode();
-                      scrollToWizardTop();
+                      const id = `faq-${phase.title}`;
+                      const el = document.getElementById(id);
+                      setActiveFaqPhase(phase.title);
+                      el?.scrollIntoView({ behavior: "smooth", block: "start" });
                     }}
-                    className="h-9 rounded-xl !bg-white !text-gray-900 hover:!bg-white/90 px-4 text-sm font-semibold shadow-sm"
+                    className={cn(
+                      "rounded-full border px-3 py-1.5 text-[11px] font-semibold whitespace-nowrap transition-colors",
+                      activeFaqPhase === phase.title
+                        ? "border-white/40 bg-white/25 text-white"
+                        : "border-white/20 bg-white/10 text-white/85 hover:bg-white/15",
+                    )}
                   >
-                    Оформить документы
-                  </Button>
-                </div>
+                    {phase.title}
+                  </button>
+                ))}
               </div>
-            )}
-          </div>
+              <div className="space-y-6">
+                {faqPhases.map((phase) => (
+                  <div
+                    key={phase.title}
+                    id={`faq-${phase.title}`}
+                    className="space-y-3"
+                  >
+                    <div className="text-xs font-semibold uppercase tracking-wider text-white/70">
+                      {phase.title}
+                    </div>
+                    <div className="space-y-2">
+                      {phase.items.map((item) => (
+                        <details
+                          key={item.q}
+                          className="rounded-xl border border-white/15 bg-white/10 px-3 py-2.5 backdrop-blur"
+                        >
+                          <summary className="cursor-pointer list-none text-sm font-semibold text-white/95">
+                            {item.q}
+                          </summary>
+                          <div className="mt-2 space-y-1 text-[12px] leading-relaxed text-white/85 sm:text-sm">
+                            {item.a.map((line, idx) => (
+                              <p key={`${item.q}-${idx}`}>{line}</p>
+                            ))}
+                          </div>
+                        </details>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-center mb-6 mt-2">
-            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[360px] min-w-[320px] sm:min-w-[360px]">
+            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[520px] min-w-[360px] flex-nowrap gap-1">
               <button
                 type="button"
                 onClick={() => {
@@ -4061,8 +4379,10 @@ function formatRub(n: number) {
                   onModeChange?.("package");
                 }}
                 className={cn(
-                  "flex-1 h-9 px-6 rounded-full text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
-                  workflowMode === "packages" ? "bg-white text-black shadow-lg" : "text-white hover:bg-white/10",
+                  "flex-1 h-9 px-4 rounded-full text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
+                  continueChoice === "packages"
+                    ? "bg-white text-black shadow-lg"
+                    : "text-white hover:bg-white/10",
                 )}
               >
                 Готовые решения
@@ -4074,17 +4394,53 @@ function formatRub(n: number) {
                   onModeChange?.("wizard");
                 }}
                 className={cn(
-                  "flex-1 h-9 px-6 rounded-full text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
-                  workflowMode === "wizard" ? "bg-white text-black shadow-lg" : "text-white hover:bg-white/10",
+                  "flex-1 h-9 px-4 rounded-full text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
+                  continueChoice === "wizard"
+                    ? "bg-white text-black shadow-lg"
+                    : "text-white hover:bg-white/10",
                 )}
               >
                 Пошаговый мастер
               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setContinueChoice("unsure");
+                }}
+                className={cn(
+                  "flex-1 h-9 px-4 rounded-full text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
+                  continueChoice === "unsure" ? "bg-white text-black shadow-lg" : "text-white hover:bg-white/10",
+                )}
+              >
+                Пока не знаю
+              </button>
             </div>
           </div>
-          {workflowMode === "wizard" && <div ref={bgEndWizardRef} className="h-0 w-0" />}
+          {continueChoice === "unsure" && (
+            <div className="mt-3 rounded-2xl border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-sm">
+              <div className="text-sm font-semibold text-white/95">
+                Пока не знаете, что выбрать?
+              </div>
+              <div className="mt-1 text-[12px] leading-relaxed text-white/80 sm:text-sm">
+                Это нормально. Координатор поможет определиться и ответит на вопросы.
+              </div>
+              <div className="mt-3">
+                <a
+                  href={SUPPORT_TELEGRAM_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex w-full items-center justify-center rounded-xl bg-white text-gray-900 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-white/90"
+                >
+                  Написать координатору
+                </a>
+              </div>
+            </div>
+          )}
+          {continueChoice !== "unsure" && workflowMode === "wizard" && (
+            <div ref={bgEndWizardRef} className="h-0 w-0" />
+          )}
 
-          {workflowMode === "wizard" && (
+          {continueChoice !== "unsure" && workflowMode === "wizard" && (
             <Stepper
               steps={steps as any}
               currentStep={currentStep}
@@ -4093,54 +4449,54 @@ function formatRub(n: number) {
             />
           )}
 
-          <div className="text-center mb-2 mt-4">
-            <div className="w-full">
-              {workflowMode === "wizard" ? (
-                <div
-                  id="scenario-end"
-                  className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55"
-                >
-                  <div className="flex gap-4 items-start">
-                    <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
-                      {currentStep === 0 && <Church className="h-5 w-5" />}
-                      {currentStep === 1 && <Car className="h-5 w-5" />}
-                      {currentStep === 2 && <Package className="h-5 w-5" />}
-                      {currentStep === 3 && <FileText className="h-5 w-5" />}
-                      {currentStep === 4 && <CheckCircle2 className="h-5 w-5" />}
-                    </div>
-                    <div className="space-y-1.5 text-left">
-                      <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
-                        <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
-                          {currentStep + 1}
-                        </span>
-                        {currentStep === 0 && "Этап 1: Церемония"}
-                        {currentStep === 1 && "Этап 2: Логистика"}
-                        {currentStep === 2 && "Этап 3: Атрибутика"}
-                        {currentStep === 3 && "Этап 4: Документы"}
-                        {currentStep === 4 && "Этап 5: Итог"}
-                      </h4>
-                      <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
-                        {currentStep === 0 && "Настройте формат прощания: выберите тип церемонии (светская или религиозная) и длительность аренды зала."}
-                        {currentStep === 1 && "Спланируйте логистику: укажите дату и время прощания, выберите транспорт для усопшего и гостей."}
-                        {currentStep === 2 &&
-                          (attributesMode === "preset"
-                            ? "Выберите готовый комплект атрибутики или соберите свой вариант. В наборах включено всё необходимое для достойной церемонии."
-                            : "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности.")}
-                        {currentStep === 3 && "Заполните документы: укажите паспортные данные заявителя и информацию об усопшем для оформления."}
-                        {currentStep === 4 && "Проверьте и подтвердите: внимательно ознакомьтесь со всеми деталями заказа перед финальным оформлением."}
-                      </p>
+          {continueChoice !== "unsure" && (
+            <div className="text-center mb-2 mt-4">
+              <div className="w-full">
+                {workflowMode === "wizard" ? (
+                  <div
+                    id="scenario-end"
+                    className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55"
+                  >
+                    <div className="flex gap-4 items-start">
+                      <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
+                        {currentStep === 0 && <Church className="h-5 w-5" />}
+                        {currentStep === 1 && <Car className="h-5 w-5" />}
+                        {currentStep === 2 && <Package className="h-5 w-5" />}
+                        {currentStep === 3 && <FileText className="h-5 w-5" />}
+                        {currentStep === 4 && <CheckCircle2 className="h-5 w-5" />}
+                      </div>
+                      <div className="space-y-1.5 text-left">
+                        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
+                          <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
+                            {currentStep + 1}
+                          </span>
+                          {currentStep === 0 && "Этап 1: Церемония"}
+                          {currentStep === 1 && "Этап 2: Логистика"}
+                          {currentStep === 2 && "Этап 3: Атрибутика"}
+                          {currentStep === 3 && "Этап 4: Документы"}
+                          {currentStep === 4 && "Этап 5: Итог"}
+                        </h4>
+                        <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
+                          {currentStep === 0 && "Настройте формат прощания: выберите тип церемонии (светская или религиозная) и длительность аренды зала."}
+                          {currentStep === 1 && "Спланируйте логистику: укажите дату и время прощания, выберите транспорт для усопшего и гостей."}
+                          {currentStep === 2 &&
+                            (attributesMode === "preset"
+                              ? "Выберите готовый комплект атрибутики или соберите свой вариант. В наборах включено всё необходимое для достойной церемонии."
+                              : "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности.")}
+                          {currentStep === 3 && "Заполните документы: укажите паспортные данные заявителя и информацию об усопшем для оформления."}
+                          {currentStep === 4 && "Проверьте и подтвердите: внимательно ознакомьтесь со всеми деталями заказа перед финальным оформлением."}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : (
-                null
-              )}
+                ) : null}
+              </div>
             </div>
-          </div>
+          )}
 </CardHeader>
 
 <CardContent className="px-6 sm:px-8 pb-8">
-  {workflowMode === "wizard" ? (
+  {continueChoice === "unsure" ? null : workflowMode === "wizard" ? (
     <>
       <div
         className={cn(
@@ -4199,12 +4555,12 @@ function formatRub(n: number) {
         </div>
       </div>
       <div className="flex justify-center">
-        <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[360px] min-w-[320px] sm:min-w-[360px]">
+        <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[440px] min-w-[320px] sm:min-w-[360px] flex-wrap gap-1">
           <button
             type="button"
             onClick={() => handleInputChange("serviceType", "burial")}
             className={cn(
-              "flex-1 h-9 px-6 rounded-full text-sm font-medium transition-all duration-200 text-center",
+              "flex-1 min-w-[140px] h-9 px-4 rounded-full text-sm font-medium transition-all duration-200 text-center",
               formData.serviceType === "burial"
                 ? "bg-white text-black shadow-lg"
                 : "text-white hover:bg-white/10",
@@ -4220,7 +4576,7 @@ function formatRub(n: number) {
             type="button"
             onClick={() => handleInputChange("serviceType", "cremation")}
             className={cn(
-              "flex-1 h-9 px-6 rounded-full text-sm font-medium transition-all duration-200 text-center",
+              "flex-1 min-w-[140px] h-9 px-4 rounded-full text-sm font-medium transition-all duration-200 text-center",
               formData.serviceType === "cremation"
                 ? "bg-white text-black shadow-lg"
                 : "text-white hover:bg-white/10",
@@ -4231,16 +4587,62 @@ function formatRub(n: number) {
               Кремация
             </span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => handleInputChange("serviceType", "unsure")}
+            className={cn(
+              "flex-1 min-w-[140px] h-9 px-4 rounded-full text-sm font-medium transition-all duration-200 text-center",
+              formData.serviceType === "unsure"
+                ? "bg-white text-black shadow-lg"
+                : "text-white hover:bg-white/10",
+            )}
+          >
+            <span className="flex items-center gap-2">
+              <CircleDot className={cn("w-4 h-4", formData.serviceType === "unsure" ? "text-black" : "text-white")} />
+              Пока не знаю
+            </span>
+          </button>
         </div>
       </div>
       <div ref={bgEndPackagesRef} className="h-0 w-0" />
-      <PackagesSelection
-        selectedPackageId=""
-        packages={formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES_BURIAL}
-        onSelectPackage={(pkg) => {
-          setSelectedPackageForSimplified(pkg);
-        }}
-      />
+      {formData.serviceType === "unsure" ? (
+        <div className="mt-4 rounded-2xl border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-sm">
+          <div className="text-sm font-semibold text-white/95">
+            Пока не знаете, что выбрать?
+          </div>
+          <div className="mt-1 text-[12px] leading-relaxed text-white/80 sm:text-sm">
+            Это нормально. Координатор поможет определиться и ответит на вопросы.
+          </div>
+          <div className="mt-3">
+            <a
+              href={SUPPORT_TELEGRAM_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex w-full items-center justify-center rounded-xl bg-white text-gray-900 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-white/90"
+            >
+              Написать координатору
+            </a>
+          </div>
+        </div>
+      ) : (
+        <PackagesSelection
+          selectedPackageId=""
+          packages={formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES_BURIAL}
+          onSelectPackage={(pkg) => {
+            setSelectedPackageForSimplified(pkg);
+            if (onPackageSelect) {
+              const slug =
+                pkg.id === "basic" || pkg.id === "cremation-standard"
+                  ? "quiet"
+                  : pkg.id === "standard" || pkg.id === "cremation-comfort"
+                    ? "traditional"
+                    : "special";
+              onPackageSelect(slug);
+            }
+          }}
+        />
+      )}
     </div>
   )}
 </CardContent>

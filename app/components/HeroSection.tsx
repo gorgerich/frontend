@@ -45,8 +45,8 @@ export function HeroSection() {
               aria-hidden="true"
               className="hidden"
             />
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/70 via-black/60 to-black/75 md:rounded-[40px]" />
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/50 via-black/25 to-black/10 md:hidden" />
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/21 via-black/17 to-black/26 md:rounded-[40px]" />
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/10 via-black/6 to-black/2 md:hidden" />
           </div>
 
           {/* TEXT LAYER */}

@@ -156,7 +156,7 @@ export function TopButtons() {
               className="flex items-center gap-2 rounded-full border border-white/30 bg-white/15 px-3 py-2 text-sm font-medium text-white/80 backdrop-blur-md hover:text-white transition"
             >
               <Phone className="h-4 w-4" />
-              <span className="hidden sm:inline">Написать</span>
+              <span>Написать</span>
             </a>
             <motion.button
               whileHover={{ scale: 1.1, y: -2 }}
