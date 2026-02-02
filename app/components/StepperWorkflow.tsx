@@ -1087,6 +1087,8 @@ export function StepperWorkflow({
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const bgEndWizardRef = useRef<HTMLDivElement | null>(null);
   const bgEndPackagesRef = useRef<HTMLDivElement | null>(null);
+  const bgEndPackagesUnsureRef = useRef<HTMLDivElement | null>(null);
+  const bgEndContinueUnsureRef = useRef<HTMLDivElement | null>(null);
   const [bgH, setBgH] = useState(0);
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -1124,9 +1126,13 @@ export function StepperWorkflow({
       requestAnimationFrame(() => {
         const wrap = wrapRef.current;
         const end =
-          (workflowMode === "wizard" ? bgEndWizardRef.current : bgEndPackagesRef.current) ??
-          bgEndWizardRef.current ??
-          bgEndPackagesRef.current;
+          continueChoice === "unsure"
+            ? bgEndContinueUnsureRef.current
+            : workflowMode === "wizard"
+            ? bgEndWizardRef.current
+            : formData.serviceType === "unsure"
+            ? bgEndPackagesUnsureRef.current
+            : bgEndPackagesRef.current;
         if (!wrap || !end) return;
         const wrapTop = wrap.getBoundingClientRect().top;
         const endBottom = end.getBoundingClientRect().bottom;
@@ -1139,7 +1145,7 @@ export function StepperWorkflow({
     calc();
     window.addEventListener("resize", calc);
     return () => window.removeEventListener("resize", calc);
-  }, [workflowMode, currentStep, selectedPackageForSimplified]);
+  }, [workflowMode, currentStep, selectedPackageForSimplified, formData.serviceType, continueChoice]);
 
   useEffect(() => {
     if (workflowMode !== "wizard") return;
@@ -4122,8 +4128,18 @@ function formatRub(n: number) {
 
   return (
     <div ref={wrapRef} className="relative max-w-5xl mx-auto -translate-y-12 pb-12">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 rounded-3xl"
+        style={bgH ? { height: `${bgH}px` } : undefined}
+      >
+        <div
+          className="absolute inset-0 rounded-3xl bg-cover bg-center"
+          style={{ backgroundImage: `url(${HERO_BG_SRC})` }}
+        />
+        <div className="absolute inset-0 rounded-3xl bg-black/18 md:bg-black/14" />
+      </div>
       <div ref={containerRef}>
-      <Card className="bg-white/10 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30 relative">
+      <Card className="relative z-10 bg-white/10 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30">
         {(showHowItWorks || showFaq) && (
           <div className="pointer-events-none absolute inset-0 z-0 rounded-3xl border border-white/20 bg-black/20 backdrop-blur-2xl" />
         )}
@@ -4362,7 +4378,7 @@ function formatRub(n: number) {
           )}
 
           <div className="flex justify-center mb-6 mt-2">
-            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[520px] min-w-[360px] flex-nowrap gap-1">
+            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[520px] min-w-0 flex-nowrap gap-1">
               <button
                 type="button"
                 onClick={() => {
@@ -4370,7 +4386,7 @@ function formatRub(n: number) {
                   onModeChange?.("package");
                 }}
                 className={cn(
-                  "flex-1 h-9 px-4 rounded-full text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
+                  "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
                   continueChoice === "packages"
                     ? "bg-white text-black shadow-lg"
                     : "text-white hover:bg-white/10",
@@ -4385,7 +4401,7 @@ function formatRub(n: number) {
                   onModeChange?.("wizard");
                 }}
                 className={cn(
-                  "flex-1 h-9 px-4 rounded-full text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
+                  "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
                   continueChoice === "wizard"
                     ? "bg-white text-black shadow-lg"
                     : "text-white hover:bg-white/10",
@@ -4399,7 +4415,7 @@ function formatRub(n: number) {
                   setContinueChoice("unsure");
                 }}
                 className={cn(
-                  "flex-1 h-9 px-4 rounded-full text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
+                  "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
                   continueChoice === "unsure" ? "bg-white text-black shadow-lg" : "text-white hover:bg-white/10",
                 )}
               >
@@ -4425,10 +4441,8 @@ function formatRub(n: number) {
                   Написать координатору
                 </a>
               </div>
+              <div ref={bgEndContinueUnsureRef} className="h-0 w-0" />
             </div>
-          )}
-          {continueChoice !== "unsure" && workflowMode === "wizard" && (
-            <div ref={bgEndWizardRef} className="h-0 w-0" />
           )}
 
           {continueChoice !== "unsure" && workflowMode === "wizard" && (
@@ -4446,6 +4460,7 @@ function formatRub(n: number) {
                 {workflowMode === "wizard" ? (
                   <div
                     id="scenario-end"
+                    ref={bgEndWizardRef}
                     className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55"
                   >
                     <div className="flex gap-4 items-start">
@@ -4546,12 +4561,12 @@ function formatRub(n: number) {
         </div>
       </div>
       <div className="flex justify-center">
-        <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[440px] min-w-[320px] sm:min-w-[360px] flex-wrap gap-1">
+        <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[440px] min-w-0 flex-wrap gap-1">
           <button
             type="button"
             onClick={() => handleInputChange("serviceType", "burial")}
             className={cn(
-              "flex-1 min-w-[140px] h-9 px-4 rounded-full text-sm font-medium transition-all duration-200 text-center",
+              "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[12px] sm:text-sm font-medium transition-all duration-200 text-center",
               formData.serviceType === "burial"
                 ? "bg-white text-black shadow-lg"
                 : "text-white hover:bg-white/10",
@@ -4567,7 +4582,7 @@ function formatRub(n: number) {
             type="button"
             onClick={() => handleInputChange("serviceType", "cremation")}
             className={cn(
-              "flex-1 min-w-[140px] h-9 px-4 rounded-full text-sm font-medium transition-all duration-200 text-center",
+              "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[12px] sm:text-sm font-medium transition-all duration-200 text-center",
               formData.serviceType === "cremation"
                 ? "bg-white text-black shadow-lg"
                 : "text-white hover:bg-white/10",
@@ -4583,13 +4598,13 @@ function formatRub(n: number) {
             type="button"
             onClick={() => handleInputChange("serviceType", "unsure")}
             className={cn(
-              "flex-1 min-w-[140px] h-9 px-4 rounded-full text-sm font-medium transition-all duration-200 text-center",
+              "flex-1 min-w-0 h-9 px-2.5 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center",
               formData.serviceType === "unsure"
                 ? "bg-white text-black shadow-lg"
                 : "text-white hover:bg-white/10",
             )}
           >
-            <span className="flex items-center gap-2">
+            <span className="flex items-center gap-1 whitespace-nowrap leading-none">
               <CircleDot className={cn("w-4 h-4", formData.serviceType === "unsure" ? "text-black" : "text-white")} />
               Пока не знаю
             </span>
@@ -4615,6 +4630,7 @@ function formatRub(n: number) {
               Написать координатору
             </a>
           </div>
+          <div ref={bgEndPackagesUnsureRef} className="h-0 w-0" />
         </div>
       ) : (
         <PackagesSelection

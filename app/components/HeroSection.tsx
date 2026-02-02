@@ -31,7 +31,7 @@ export function HeroSection() {
             <TopButtons />
           </div>
         </div>
-        <div className="relative h-[70vh] w-full overflow-hidden rounded-3xl md:h-[82vh] lg:h-[88vh] md:rounded-[40px]">
+        <div className="relative h-[80vh] w-full overflow-hidden rounded-3xl md:h-[82vh] lg:h-[88vh] md:rounded-[40px]">
           {/* Background (hero only) */}
           <div className="pointer-events-none absolute inset-0 z-0">
             <img
