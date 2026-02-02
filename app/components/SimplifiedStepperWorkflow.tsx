@@ -39,6 +39,7 @@ import { cn } from "./ui/utils";
 import { SimpleCalendar } from "./SimpleCalendar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { buildOrderSummary } from "@/lib/orderSummary";
+import { TELEGRAM_URL } from "@/lib/legalLinks";
 import {
 calculateOrder,
 type CalculatorConfig,
@@ -487,7 +488,6 @@ burialDateTime?: { date?: string | Date; timeSlot?: TimeSlot; time?: string };
 };
 
 type PaymentMethod = "deposit_10" | "call_rep";
-const SUPPORT_PHONE_DISPLAY = "+7 (985) 248-94-25";
 const SUPPORT_PHONE_TEL = "+79852489425";
 
 interface SimplifiedStepperWorkflowProps {
@@ -2484,7 +2484,7 @@ return (
           </div>
 
           <div className="pt-2 lg:pt-0">
-            <div className="text-sm font-semibold text-gray-900 mb-3">Оплата</div>
+            <div className="text-sm font-semibold text-gray-900 mb-3">Оформление</div>
 
             {orderConfirmation?.emailSent ? (
               <div className="bg-white border border-gray-200 rounded-[30px] p-6 shadow-sm">
@@ -2495,7 +2495,12 @@ return (
                     : "Договор и детали заказа отправлены вам на почту. Ссылку на оплату пришлём отдельным письмом."}
                 </p>
               </div>
-	            ) : (
+            ) : (
+              <>
+                <div className="mb-4 text-sm text-gray-600">
+                  На этом этапе оплата не требуется, цена указана для вашего понимания.
+После нажатия «Оформить» вы получите договор на почту. Координатор свяжется с вами в течение 30 минут для подтверждения.
+                </div>
 	              <div className="rounded-[30px] bg-gray-900 text-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.35)] space-y-5">
 	                <div>
 	                  <div className="text-sm font-semibold text-white/90 mb-2">Email для получения информации</div>
@@ -2547,18 +2552,31 @@ return (
 
 	                <div className="h-px bg-white/15" />
 
-	                <div
-	                  className="overflow-hidden rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white/80"
-	                >
-	                  <div className="text-sm font-semibold text-white/90">Нужна консультация?</div>
-	                  <a
-	                    href={`tel:${SUPPORT_PHONE_TEL}`}
-	                    className="mt-1 block text-base font-medium text-white hover:underline"
-	                  >
-	                    {SUPPORT_PHONE_DISPLAY}
-	                  </a>
-	                  <div className="mt-1 text-xs text-white/60">Нажмите, чтобы позвонить</div>
-	                </div>
+                <div
+                  className="overflow-hidden rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white/80"
+                >
+                  <div className="text-sm font-semibold text-white/90">Нужна консультация?</div>
+                  <div className="mt-1 text-xs text-white/60">Выберите способ коммуникации</div>
+                  <div className="mt-3 flex flex-col gap-2">
+                    <a href={`tel:${SUPPORT_PHONE_TEL}`} className="block">
+                      <Button
+                        type="button"
+                        className="w-full rounded-xl !bg-white !text-gray-900 hover:!bg-gray-100 hover:!text-gray-900 px-4 py-2 text-sm font-semibold"
+                      >
+                        Позвонить координатору
+                      </Button>
+                    </a>
+                    <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" className="block">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-xl !bg-white/10 !text-white hover:!bg-white/15 px-4 py-2 text-sm font-semibold"
+                      >
+                        Написать в чат
+                      </Button>
+                    </a>
+                  </div>
+                </div>
 
 	                <div className="mt-1 border-t border-white/15 pt-3">
 	                  <div className="text-xs font-semibold text-white/60 uppercase tracking-wide">
@@ -2580,12 +2598,13 @@ return (
 	                  </div>
 	                </div>
 
-	                <div className="text-xs text-white/60">
-	                  {paymentMethod === "call_rep"
-	                    ? "После оформления мы отправим договор и детали заказа на email. Наш представитель свяжется с вами для уточнения деталей."
-	                    : "После оформления мы отправим договор, детали заказа и ссылку на оплату на email."}
+                <div className="text-xs text-white/60">
+                  {paymentMethod === "call_rep"
+                    ? "После оформления мы отправим договор и детали заказа на email. Наш представитель свяжется с вами для уточнения деталей."
+                    : ""}
                 </div>
               </div>
+            </>
             )}
           </div>
         </div>

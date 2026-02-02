@@ -35,20 +35,20 @@ const TRUST_REVIEWS = [
   {
     id: 'review-1',
     name: 'Ирина П.',
-    date: '12.12.2024',
+    date: '12.12.2025',
     service: 'Захоронение',
     text:
       'Очень аккуратный и спокойный процесс. Всё объяснили, помогли с документами и организацией. Спасибо за тактичность.',
-    photo: '/hero-forest.jpg',
+    photo: '/avatar.jpg',
   },
   {
     id: 'review-2',
     name: 'Алексей Н.',
-    date: '03.11.2024',
+    date: '03.02.2025',
     service: 'Кремация',
     text:
       'Быстро согласовали детали, всё прошло без лишних звонков. Понравилась прозрачность по стоимости.',
-    photo: '/images/hearse-lux.jpg',
+    photo: '/avatar.jpg',
   },
   {
     id: 'review-3',
@@ -57,7 +57,7 @@ const TRUST_REVIEWS = [
     service: 'Организация церемонии',
     text:
       'Поддержка 24/7 — действительно работает. Координатор был на связи и помогал с мелочами.',
-    photo: '/hero-forest.jpg',
+    photo: '/avatar.jpg',
   },
 ];
 
@@ -82,10 +82,11 @@ const TRUST_LEGAL = [
 ];
 
 const TRUST_PARTNERS = [
-  'Крематорий №1',
-  'Крематорий №2',
-  'Кладбища Москвы',
-  'Флористические службы',
+  'Митинский крематорий',
+  'Николо-Архангельский крематорий',
+  'Хованский крематорий',
+  'Кладбища Москвы и МО',
+  
 ];
 
 const applyHearseCategoryToCalculator = (
@@ -479,8 +480,7 @@ function HomeInner() {
             <div className="flex flex-col gap-2">
               <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">Нам доверяют</h2>
               <p className="text-sm text-gray-500 md:text-base">
-                Реальные отзывы клиентов, показатели качества и партнёры. Данные будут
-                обновлены после финального согласования.
+                Реальные отзывы клиентов, показатели качества и партнёры.
               </p>
             </div>
             <div className="mt-6 grid gap-4 md:grid-cols-3">

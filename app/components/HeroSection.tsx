@@ -70,7 +70,7 @@ export function HeroSection() {
                   }}
                   >
                 <span
-                  className="block"
+                  className="block text-[clamp(18px,5.2vw,24px)] break-words text-center"
                   style={{
                     fontFamily:
                       "\"Humanist\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
@@ -78,6 +78,7 @@ export function HeroSection() {
                     transform: `translateY(${MOBILE_LINE1_SHIFT})`,
                     lineHeight: MOBILE_LINE1_LINE_HEIGHT,
                     marginBottom: MOBILE_LINES_GAP,
+                    maxWidth: "92vw",
                   }}
                 >
                   Что делать, если умер близкий человек
@@ -91,8 +92,8 @@ export function HeroSection() {
                       lineHeight: MOBILE_LINE2_LINE_HEIGHT,
                     }}
                   >
-                    Пошаговый план для Москвы и области.
-Документы, формат прощания и стоимость — в спокойном темпе, без звонков и давления
+                    Онлайн-сервис для самостоятельной организации прощания в Москве и области.
+Пошаговый план, документы и стоимость — без звонков, без давления и скрытых доплат.
                   </span>
                 </span>
               </h1>
@@ -141,8 +142,8 @@ export function HeroSection() {
                       lineHeight: LINE2_LINE_HEIGHT,
                     }}
                   >
-                    Пошаговый план для Москвы и области.
-Документы, формат прощания и стоимость — в спокойном темпе, без звонков и давления
+                    Онлайн-сервис для самостоятельной организации прощания в Москве и области.
+Пошаговый план, документы и стоимость — без звонков, без давления и скрытых доплат.
                   </span>
                 </span>
               </h1>

@@ -3988,7 +3988,7 @@ function formatRub(n: number) {
 
                 {/* ОПЛАТА ВНУТРИ ШАГА 5 */}
                 <div className="pt-2 lg:pt-0">
-                  <div className="text-sm font-semibold text-gray-900 mb-3">Оплата</div>
+                  <div className="text-sm font-semibold text-gray-900 mb-3">Оформление</div>
 
                   {orderConfirmation?.emailSent ? (
                     <div className="bg-white border border-gray-200 rounded-[30px] p-6 shadow-sm">
@@ -4002,7 +4002,12 @@ function formatRub(n: number) {
                       </p>
                     </div>
                   ) : (
-	                    <div className="rounded-[30px] bg-gray-900 text-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.35)] space-y-5">
+                    <>
+                      <div className="mb-4 text-sm text-gray-600">
+                        На этом этапе оплата не требуется, цена указана для вашего понимания.
+После нажатия «Оформить» вы получите договор на почту. Координатор свяжется с вами в течение 30 минут для подтверждения.
+                      </div>
+                      <div className="rounded-[30px] bg-gray-900 text-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.35)] space-y-5">
 	                      <div>
 	                        <div className="text-sm font-semibold text-white/90 mb-2">
 	                          Email для получения информации
@@ -4065,7 +4070,7 @@ function formatRub(n: number) {
                         >
                           {SUPPORT_PHONE_DISPLAY}
                         </a>
-                        <div className="mt-1 text-xs text-white/60">Нажмите, чтобы позвонить</div>
+                        <div className="mt-1 text-xs text-white/60">Выберите способ коммуникации</div>
                       </div>
 
                       <div className="mt-1 border-t border-white/15 pt-3">
@@ -4091,9 +4096,10 @@ function formatRub(n: number) {
                       <div className="text-xs text-white/60">
                         {paymentMethod === "call_rep"
                           ? "После оформления мы отправим договор и детали заказа на email. Наш представитель свяжется с вами для уточнения деталей."
-                          : "После оформления мы отправим договор, детали заказа и ссылку на оплату на email."}
+                          : ""}
                       </div>
                     </div>
+                    </>
                   )}
                 </div>
             </div>
@@ -4377,6 +4383,9 @@ function formatRub(n: number) {
             </div>
           )}
 
+          <div className="text-left text-sm font-semibold text-white/90 mb-2">
+            Выберите, как вы хотите начать?
+          </div>
           <div className="flex justify-center mb-6 mt-2">
             <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[520px] min-w-0 flex-nowrap gap-1">
               <button
