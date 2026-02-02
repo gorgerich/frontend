@@ -4122,21 +4122,12 @@ function formatRub(n: number) {
 
   return (
     <div ref={wrapRef} className="relative max-w-5xl mx-auto -translate-y-12 pb-12">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 overflow-hidden rounded-3xl transition-[height] duration-300 ease-out"
-        style={{ height: bgH ? `${bgH}px` : "0px" }}
-      >
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${HERO_BG_SRC})` }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/31 via-black/27 to-black/36" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-white" />
-      </div>
       <div ref={containerRef}>
       <Card className="bg-white/10 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30 relative">
-        <CardHeader className="pb-4 pt-8 px-6 sm:px-8">
+        {(showHowItWorks || showFaq) && (
+          <div className="pointer-events-none absolute inset-0 z-0 rounded-3xl border border-white/20 bg-black/20 backdrop-blur-2xl" />
+        )}
+        <CardHeader className="relative z-10 pb-4 pt-8 px-6 sm:px-8">
           <div className="absolute -top-5 right-8 z-50">
             <button
               type="button"
@@ -4149,7 +4140,7 @@ function formatRub(n: number) {
           </div>
 
           <div id="start-options" className="mt-3 mb-8">
-            <div className="mt-3 flex gap-2">
+            <div className="flex gap-2">
               <Button
                 type="button"
                 onClick={() => {
@@ -4169,7 +4160,7 @@ function formatRub(n: number) {
                 }}
                 className="h-10 w-full flex-1 rounded-xl rounded-b-none !bg-white !text-gray-900 hover:!bg-white/90 px-4 text-sm font-semibold shadow-sm"
               >
-                Показать план действий
+                Получить план действий
               </Button>
               <Button
                 type="button"
@@ -4199,7 +4190,7 @@ function formatRub(n: number) {
             <div
               id="how-it-works"
               ref={howItWorksRef}
-              className="mb-6 -mt-3 rounded-2xl rounded-t-none border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-xl shadow-[0_12px_30px_rgba(15,23,42,0.25)]"
+              className="relative mb-6 -mt-3 overflow-hidden rounded-2xl rounded-t-none border border-white/25 bg-black/15 px-4 py-4 backdrop-blur-2xl shadow-[0_16px_36px_rgba(15,23,42,0.3)]"
             >
               <div className="flex flex-col gap-4">
                 {howItWorksDays.map((day, index) => {
@@ -4221,7 +4212,7 @@ function formatRub(n: number) {
                           <span className="absolute top-11 bottom-0 w-px bg-white/15" />
                         )}
                       </div>
-                      <div className="flex-1 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
+                      <div className="flex-1 rounded-2xl border border-white/20 bg-black/12 px-4 py-3 backdrop-blur-xl">
                         <div className="text-sm font-semibold text-white/95 sm:text-base">
                           {day.title}
                         </div>
@@ -4313,7 +4304,7 @@ function formatRub(n: number) {
             <div
               id="faq"
               ref={faqRef}
-              className="mb-6 -mt-3 rounded-2xl rounded-t-none border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-xl shadow-[0_12px_30px_rgba(15,23,42,0.25)]"
+              className="relative mb-6 -mt-3 overflow-hidden rounded-2xl rounded-t-none border border-white/25 bg-black/15 px-4 py-4 backdrop-blur-2xl shadow-[0_16px_36px_rgba(15,23,42,0.3)]"
             >
               <div className="mb-4 flex flex-nowrap gap-2 overflow-x-auto no-scrollbar">
                 {faqPhases.map((phase) => (
@@ -4329,8 +4320,8 @@ function formatRub(n: number) {
                     className={cn(
                       "rounded-full border px-3 py-1.5 text-[11px] font-semibold whitespace-nowrap transition-colors",
                       activeFaqPhase === phase.title
-                        ? "border-white/40 bg-white/25 text-white"
-                        : "border-white/20 bg-white/10 text-white/85 hover:bg-white/15",
+                        ? "border-white/45 bg-black/25 text-white"
+                        : "border-white/25 bg-black/15 text-white/90 hover:bg-black/20",
                     )}
                   >
                     {phase.title}
@@ -4351,7 +4342,7 @@ function formatRub(n: number) {
                       {phase.items.map((item) => (
                         <details
                           key={item.q}
-                          className="rounded-xl border border-white/15 bg-white/10 px-3 py-2.5 backdrop-blur"
+                          className="rounded-xl border border-white/20 bg-black/12 px-3 py-2.5 backdrop-blur-xl"
                         >
                           <summary className="cursor-pointer list-none text-sm font-semibold text-white/95">
                             {item.q}
@@ -4495,7 +4486,7 @@ function formatRub(n: number) {
           )}
 </CardHeader>
 
-<CardContent className="px-6 sm:px-8 pb-8">
+<CardContent className="relative z-10 px-6 sm:px-8 pb-8">
   {continueChoice === "unsure" ? null : workflowMode === "wizard" ? (
     <>
       <div

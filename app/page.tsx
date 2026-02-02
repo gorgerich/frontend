@@ -289,10 +289,6 @@ function HomeInner() {
   }, [formData, selectedCemeteryCategory]);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  useEffect(() => {
     try {
       const saved = localStorage.getItem('funeral-workflow-draft');
       if (saved) {

@@ -31,7 +31,7 @@ export function HeroSection() {
             <TopButtons />
           </div>
         </div>
-        <div className="relative h-[60vh] w-full overflow-hidden rounded-3xl md:h-[70vh] lg:h-[75vh] md:rounded-[40px]">
+        <div className="relative h-[70vh] w-full overflow-hidden rounded-3xl md:h-[82vh] lg:h-[88vh] md:rounded-[40px]">
           {/* Background (hero only) */}
           <div className="pointer-events-none absolute inset-0 z-0">
             <img
@@ -45,8 +45,8 @@ export function HeroSection() {
               aria-hidden="true"
               className="hidden"
             />
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/21 via-black/17 to-black/26 md:rounded-[40px]" />
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/10 via-black/6 to-black/2 md:hidden" />
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/24 via-black/20 to-black/30 md:rounded-[40px]" />
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/12 via-black/7 to-black/3 md:hidden" />
           </div>
 
           {/* TEXT LAYER */}
