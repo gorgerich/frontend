@@ -1,17 +1,17 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Info, Sparkles, Search, Phone } from "lucide-react";
 import { AIChatModal } from "./AIChatModal";
 import { AboutServiceModal } from "./AboutServiceModal";
 import { DeathActionGuideModal } from "./DeathActionGuideModal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { TELEGRAM_URL } from "@/lib/legalLinks";
+import type { Ref } from "react";
 
-export function TopButtons() {
+export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTMLButtonElement> }) {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isDeathGuideOpen, setIsDeathGuideOpen] = useState(false);
@@ -19,6 +19,8 @@ export function TopButtons() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTariff, setSelectedTariff] = useState<string | null>(null);
   const shouldReduceMotion = useReducedMotion();
+  const searchRef = useRef<HTMLDivElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const SEARCH_LINKS = [
     { label: "Тарифы", href: "#packages" },
@@ -36,6 +38,17 @@ export function TopButtons() {
     setSelectedTariff(tariffName);
     setIsAIChatOpen(false);
   };
+
+  useEffect(() => {
+    const handleDocClick = (event: MouseEvent) => {
+      if (!searchRef.current) return;
+      if (!searchRef.current.contains(event.target as Node)) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleDocClick);
+    return () => document.removeEventListener("mousedown", handleDocClick);
+  }, []);
 
   return (
     <>
@@ -97,7 +110,7 @@ export function TopButtons() {
         {/* Desktop: как на скрине (поиск + написать) */}
         <div className="relative hidden md:block w-full pointer-events-auto">
           {/* Левая зона: О сервисе + Поиск */}
-          <div className="absolute left-0 top-0 flex items-center gap-3">
+          <div className="absolute left-0 top-0 flex items-center gap-3" ref={searchRef}>
             <motion.button
               whileHover={{ scale: 1.1, y: -2 }}
               whileTap={{ scale: 0.95 }}
@@ -108,14 +121,42 @@ export function TopButtons() {
               <div className="absolute inset-0 rounded-full bg-white/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <Info className="relative w-7 h-7 md:w-8 md:h-8 text-white/90 group-hover:text-white transition-colors" />
             </motion.button>
-            <button
-              type="button"
-              onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2 rounded-full border border-white/30 bg-white/15 px-3 py-2 text-sm font-medium text-white/80 backdrop-blur-md hover:text-white transition w-[200px] sm:w-[220px] md:w-[240px]"
+            <div
+              className="relative w-[200px] sm:w-[220px] md:w-[240px]"
+              onClick={() => searchInputRef.current?.focus()}
             >
-              <span>Поиск</span>
-              <Search className="h-4 w-4" />
-            </button>
+              <div className="flex items-center gap-2.5 rounded-full bg-white/15 px-3 py-2 text-sm font-medium text-white/80 backdrop-blur-md shadow-lg shadow-white/5 hover:text-white transition">
+                <Search className="pointer-events-none h-4 w-4 text-white/80" />
+                <Input
+                  ref={searchInputRef}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setSearchOpen(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") setSearchOpen(false);
+                  }}
+                  placeholder="Поиск"
+                  className="h-5 w-full !border-0 !bg-transparent p-0 text-xs font-medium text-white/90 placeholder:text-white/90 !outline-none !ring-0 focus:!ring-0 focus:!outline-none !shadow-none focus-visible:!ring-0 focus-visible:!ring-offset-0"
+                />
+              </div>
+              {searchOpen && (
+                <div className="absolute left-0 right-0 mt-2 max-h-64 overflow-auto rounded-xl border border-white/15 bg-white/90 p-2 text-sm text-gray-800 shadow-lg">
+                  {filteredLinks.map((item) => (
+                    <a
+                      key={item.href}
+                      href={item.href}
+                      className="block rounded-lg px-3 py-2 hover:bg-gray-100"
+                      onClick={() => setSearchOpen(false)}
+                    >
+                      {item.label}
+                    </a>
+                  ))}
+                  {!filteredLinks.length && (
+                    <div className="px-3 py-2 text-sm text-gray-500">Ничего не найдено</div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Центральная кнопка: Как начать */}
@@ -135,6 +176,7 @@ export function TopButtons() {
             whileHover={{ scale: 1.1, y: -2 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsDeathGuideOpen(true)}
+            ref={questionButtonRef}
             className="group absolute left-1/2 top-0 w-20 h-20 md:w-28 md:h-28 -translate-x-1/2 rounded-full bg-gradient-to-b from-white/20 to-white/5 backdrop-blur-2xl border-2 border-white/30 shadow-2xl flex items-center justify-center transition-all duration-300 hover:border-white/50"
             aria-label="Первые действия"
           >
@@ -179,34 +221,6 @@ export function TopButtons() {
       {typeof document !== "undefined" &&
         createPortal(
           <>
-            <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-              <DialogContent className="max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Поиск</DialogTitle>
-                </DialogHeader>
-                <Input
-                  placeholder="Введите запрос…"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="mt-2"
-                />
-                <div className="mt-4 space-y-2">
-                  {filteredLinks.map((item) => (
-                    <a
-                      key={item.href}
-                      href={item.href}
-                      className="block rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setSearchOpen(false)}
-                    >
-                      {item.label}
-                    </a>
-                  ))}
-                  {!filteredLinks.length && (
-                    <div className="text-sm text-gray-500">Ничего не найдено</div>
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
             <AboutServiceModal
               isOpen={isAboutOpen}
               onClose={() => setIsAboutOpen(false)}

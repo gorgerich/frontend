@@ -1,14 +1,24 @@
 // app/layout.tsx
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import Script from "next/script";
 import "./globals.css";
 
 import { Footer } from "./components/Footer";
 import { ClientErrorBoundary } from "./components/ClientErrorBoundary";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const golosSans = localFont({
+  src: "../public/fonts/GolosText-Regular.woff",
+  variable: "--font-geist-sans",
+  weight: "400",
+  display: "swap",
+});
+const golosMono = localFont({
+  src: "../public/fonts/GolosText-Regular.woff",
+  variable: "--font-geist-mono",
+  weight: "400",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://tihiydom.com"),
@@ -81,7 +91,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         />
       </head>
 
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${golosSans.variable} ${golosMono.variable} antialiased`}>
         <noscript
           dangerouslySetInnerHTML={{
             __html: `<iframe src="https://www.googletagmanager.com/ns.html?id=${GTM_ID}"

@@ -1,4 +1,5 @@
 // app/components/HeroSection.tsx
+import { useLayoutEffect, useRef, useState } from "react";
 import { TopButtons } from "./TopButtons";
 const heroImage = "/hero-forest.jpg";
 const heroImageNew = "/heroIMGnew.PNG";
@@ -9,7 +10,7 @@ const LINE1_SHIFT = "0px"; // сдвиг первой строки
 const LINE2_SHIFT = "6px"; // сдвиг второй строки
 const LINE1_LINE_HEIGHT = 1.15; // межстрочное 1-й строки
 const LINE2_LINE_HEIGHT = 1.12; // межстрочное 2-й строки
-const LINES_GAP = "-2px"; // расстояние между строками/предложениями
+const LINES_GAP = "140px"; // расстояние между строками/предложениями
 
 // MOBILE controls
 const MOBILE_SHIFT = "20%"; // общий сдвиг мобайл-заголовка (как было translateY(20%))
@@ -20,17 +21,72 @@ const MOBILE_LINE2_LINE_HEIGHT = 1.12;
 const MOBILE_LINES_GAP = "8px"; // расстояние между строками на мобайле
 
 export function HeroSection() {
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const questionRef = useRef<HTMLButtonElement | null>(null);
+  const titleRef = useRef<HTMLHeadingElement | null>(null);
+  const [connectorStyle, setConnectorStyle] = useState<{ top: number; left: number; height: number; opacity: number }>({
+    top: 0,
+    left: 0,
+    height: 0,
+    opacity: 0,
+  });
+
+  useLayoutEffect(() => {
+    const wrapper = wrapperRef.current;
+    const question = questionRef.current;
+    const title = titleRef.current;
+    if (!wrapper || !question || !title) return;
+
+    const measure = () => {
+      const w = wrapper.getBoundingClientRect();
+      const q = question.getBoundingClientRect();
+      const t = title.getBoundingClientRect();
+      const top = q.bottom - w.top;
+      const height = Math.max(0, t.top - q.bottom);
+      const left = q.left + q.width / 2 - w.left;
+      setConnectorStyle({
+        top,
+        left,
+        height,
+        opacity: height > 0 ? 1 : 0,
+      });
+    };
+
+    measure();
+    const resizeObserver = new ResizeObserver(measure);
+    resizeObserver.observe(question);
+    resizeObserver.observe(title);
+    window.addEventListener("resize", measure);
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
+
   return (
     <section className="relative w-full px-4 pt-14 sm:pt-16 pb-16 md:pt-8 md:pb-20 lg:pb-24">
-      <div className="mx-auto max-w-7xl relative">
+      <div className="mx-auto max-w-7xl relative" ref={wrapperRef}>
         <div
           className="pointer-events-none absolute left-6 right-6 top-0 z-30"
           style={{ transform: "translateY(-44px)" }}
         >
           <div className="pointer-events-auto">
-            <TopButtons />
+            <TopButtons questionButtonRef={questionRef} />
           </div>
         </div>
+        <div
+          className="pointer-events-none absolute hidden md:block"
+          style={{
+            top: connectorStyle.top,
+            left: connectorStyle.left,
+            height: connectorStyle.height,
+            opacity: connectorStyle.opacity,
+            width: 1,
+            background: "rgba(255,255,255,0.35)",
+            borderRadius: 9999,
+            transform: "translateX(-50%)",
+          }}
+        />
         <div className="relative h-[80vh] w-full overflow-hidden rounded-3xl md:h-[82vh] lg:h-[88vh] md:rounded-[40px]">
           {/* Background (hero only) */}
           <div className="pointer-events-none absolute inset-0 z-0">
@@ -70,7 +126,7 @@ export function HeroSection() {
                   }}
                   >
                 <span
-                  className="block text-[clamp(18px,5.2vw,24px)] break-words text-center"
+                  className="block text-[clamp(10px,3.2vw,16px)] break-words text-center mt-10 sm:mt-12"
                   style={{
                     fontFamily:
                       "\"Humanist\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
@@ -92,8 +148,7 @@ export function HeroSection() {
                       lineHeight: MOBILE_LINE2_LINE_HEIGHT,
                     }}
                   >
-                    Онлайн-сервис для самостоятельной организации прощания в Москве и области.
-Пошаговый план, документы и стоимость — без звонков, без давления и скрытых доплат.
+                    «Тихий дом» — это онлайн сервис для самостоятельной организации прощания без давления, посредников и скрытых наценок.
                   </span>
                 </span>
               </h1>
@@ -105,6 +160,7 @@ export function HeroSection() {
               style={{ top: DESKTOP_TOP }}
             >
               <h1
+                ref={titleRef}
                 className="mx-auto mb-4 max-w-3xl tracking-tight text-white drop-shadow-2xl"
                 style={{
                   fontFamily: "var(--font-family-serif)",
@@ -120,12 +176,12 @@ export function HeroSection() {
                   }}
                 >
                   <span
-                    className="block text-3xl lg:text-4xl xl:text-4xl font-semibold whitespace-nowrap"
+                    className="block text-[clamp(10px,3.2vw,16px)] break-words text-center"
                     style={{
                       fontFamily:
                         "\"Humanist\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
                       letterSpacing: "normal",
-                      fontWeight: 550,
+                      fontWeight: 440,
                       lineHeight: LINE1_LINE_HEIGHT,
                       transform: `translateY(${LINE1_SHIFT})`,
                       marginBottom: LINES_GAP,
@@ -138,12 +194,12 @@ export function HeroSection() {
                     className="block text-xl lg:text-2xl xl:text-2xl font-medium"
                     style={{
                       fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
+                      fontWeight: 900,
                       transform: `translateY(${LINE2_SHIFT})`,
                       lineHeight: LINE2_LINE_HEIGHT,
                     }}
                   >
-                    Онлайн-сервис для самостоятельной организации прощания в Москве и области.
-Пошаговый план, документы и стоимость — без звонков, без давления и скрытых доплат.
+                    «Тихий дом» — это онлайн сервис для самостоятельной организации прощания без давления, посредников и скрытых наценок.
                   </span>
                 </span>
               </h1>

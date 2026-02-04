@@ -143,6 +143,17 @@ function HomeInner() {
   const lastCtaRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+    });
+  }, []);
+
+  useEffect(() => {
     const originalWorkerPostMessage = Worker.prototype.postMessage;
     const originalPortPostMessage = MessagePort.prototype.postMessage;
 

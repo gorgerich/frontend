@@ -4003,11 +4003,32 @@ function formatRub(n: number) {
                     </div>
                   ) : (
                     <>
-                      <div className="mb-4 text-sm text-gray-600">
-                        На этом этапе оплата не требуется, цена указана для вашего понимания.
+                      {renderPaymentBlock()}
+                    </>
+                  )}
+                </div>
+            </div>
+          </div>
+        </div>
+        );
+      }
+
+      default:
+        return null;
+    }
+  };
+
+  const renderPaymentBlock = (overrideTotalRub?: number) => {
+    const effectiveTotalRub =
+      typeof overrideTotalRub === "number" ? overrideTotalRub : totalRub;
+    const effectiveDepositRub = Math.round(effectiveTotalRub * 0.1);
+    return (
+    <>
+      <div className="mb-4 text-sm text-gray-600">
+        На этом этапе оплата не требуется, цена указана для вашего понимания.
 После нажатия «Оформить» вы получите договор на почту. Координатор свяжется с вами в течение 30 минут для подтверждения.
-                      </div>
-                      <div className="rounded-[30px] bg-gray-900 text-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.35)] space-y-5">
+      </div>
+      <div className="rounded-[30px] bg-gray-900 text-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.35)] space-y-5">
 	                      <div>
 	                        <div className="text-sm font-semibold text-white/90 mb-2">
 	                          Email для получения информации
@@ -4032,15 +4053,15 @@ function formatRub(n: number) {
 	                      <div className="h-px bg-white/15" />
 
                       <div className="space-y-1">
-                        <div className="text-[11px] font-semibold tracking-[0.18em] uppercase text-white/60">
+                      <div className="text-[11px] font-semibold tracking-[0.18em] uppercase text-white/60">
                           Итого к оплате
                         </div>
-                        <div className="flex items-end gap-3">
-                          <div className="text-[32px] leading-none font-semibold">
-                            {formatRubLocal(totalRub)} ₽
+                        <div className="flex flex-wrap items-end gap-3">
+                          <div className="text-[32px] leading-none font-semibold whitespace-nowrap">
+                            {formatRubLocal(effectiveTotalRub)} ₽
                           </div>
-                          <div className="text-sm text-white/70 whitespace-nowrap">
-                            Депозит {formatRubLocal(deposit10Rub)} ₽
+                          <div className="text-[12px] leading-tight text-white/70">
+                            Депозит {formatRubLocal(effectiveDepositRub)} ₽
                           </div>
                         </div>
                       </div>
@@ -4054,9 +4075,9 @@ function formatRub(n: number) {
                         {isSubmittingOrder ? "Оформление..." : "Оформить"}
                       </Button>
 
-	                      <div className="text-xs text-white/70 leading-relaxed">
-	                        Депозит включен в итоговую сумму. После оформления мы отправим договор, детали заказа и ссылку на оплату на указанный email.
-	                      </div>
+                      <div className="text-xs text-white/70 leading-relaxed">
+                        Депозит включен в итоговую сумму. После оформления мы отправим договор, детали заказа и ссылку на оплату на указанный email.
+                      </div>
 
 	                      <div className="h-px bg-white/15" />
 
@@ -4093,24 +4114,14 @@ function formatRub(n: number) {
                         </div>
                       </div>
 
-                      <div className="text-xs text-white/60">
-                        {paymentMethod === "call_rep"
-                          ? "После оформления мы отправим договор и детали заказа на email. Наш представитель свяжется с вами для уточнения деталей."
-                          : ""}
-                      </div>
-                    </div>
-                    </>
-                  )}
-                </div>
-            </div>
-          </div>
-        </div>
-        );
-      }
-
-      default:
-        return null;
-    }
+	                      <div className="text-xs text-white/60">
+	                        {paymentMethod === "call_rep"
+	                          ? "После оформления мы отправим договор и детали заказа на email. Наш представитель свяжется с вами для уточнения деталей."
+	                          : ""}
+	                      </div>
+      </div>
+    </>
+  );
   };
 
   // simplified workflow
@@ -4657,6 +4668,7 @@ function formatRub(n: number) {
               onPackageSelect(slug);
             }
           }}
+          paymentSlot={(override) => renderPaymentBlock(override?.totalRub)}
         />
       )}
     </div>

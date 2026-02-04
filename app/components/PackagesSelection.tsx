@@ -1,88 +1,8 @@
 import React from "react";
 import { cn } from "./ui/utils";
 import { Button } from "./ui/button";
-import { Check, X } from "./Icons";
-
-type CatalogItem = { id: string; label: string };
-
-const normalizeFeatureLabel = (label: string) =>
-  label.replace(/\s+/g, " ").replace(/,\s*$/, "").trim();
-
-const SERVICE_CATALOG_BURIAL: CatalogItem[] = [
-  { id: "docs_paperwork", label: "Оформление документов" },
-  { id: "docs_burial_help", label: "Помощь в оформлении захоронения" },
-  { id: "body_basic", label: "Базовая подготовка тела" },
-  { id: "transport_to_place", label: "Перевозка к месту прощания/захоронения" },
-  { id: "bearers", label: "Носильщики" },
-  { id: "hearse_standard", label: "Катафалк (стандарт)" },
-  { id: "hearse_comfort", label: "Катафалк (комфорт)" },
-  { id: "hearse_premium", label: "Катафалк (премиальный)" },
-  { id: "coffin_pine", label: "Гроб для захоронения (сосна)" },
-  { id: "coffin_oak", label: "Гроб для захоронения (дуб)" },
-  { id: "coffin_valuable", label: "Гроб для захоронения (ценное дерево)" },
-  { id: "wreath_artificial", label: "Венок (искусственный)" },
-  { id: "wreath_mixed", label: "Венок (искусственный/живая композиция)" },
-  { id: "wreath_premium", label: "Венок (премиальная флористика)" },
-  { id: "lining_basic", label: "Базовая отделка (обивка)" },
-  { id: "lining_upgrade", label: "Улучшенная отделка (обивка)" },
-  { id: "lining_premium", label: "Премиальная отделка (обивка)" },
-  { id: "hall_30", label: "Зал прощания до 30 минут" },
-  { id: "hall_60", label: "Зал прощания до 60 минут" },
-  { id: "hall_90", label: "Зал прощания до 90 минут" },
-  { id: "bus_5", label: "Транспорт для близких (до 5 человек)" },
-  { id: "bus_10", label: "Транспорт для близких (до 10 человек)" },
-  { id: "bus_15", label: "Транспорт для близких повышенного комфорта (до 15 человек)" },
-  { id: "coord_day", label: "Координатор в день церемонии" },
-  { id: "coord_senior", label: "Старший координатор церемонии" },
-];
-
-const BURIAL_STANDARD_UPGRADES = new Set<string>([
-  "hearse_premium",
-  "coffin_valuable",
-  "wreath_premium",
-  "lining_premium",
-  "hall_90",
-  "bus_15",
-  "coord_senior",
-]);
-
-const SERVICE_CATALOG_CREMATION: CatalogItem[] = [
-  { id: "docs_paperwork", label: "Оформление документов" },
-  { id: "columbarium_booking", label: "Бронирование места в колумбарии" },
-  { id: "columbarium_booking_premium", label: "Бронирование места в колумбарии премиум" },
-  { id: "body_storage_basic", label: "Хранение и базовая подготовка тела" },
-  { id: "body_storage", label: "Хранение и подготовка тела" },
-  { id: "coffin_container", label: "Гроб-контейнер для кремации" },
-  { id: "coffin_farewell", label: "Гроб для прощания + гроб-контейнер" },
-  { id: "coffin_elite", label: "Гроб элитный для прощания + контейнер" },
-  { id: "transport_to_crematorium", label: "Транспортировка до крематория" },
-  { id: "transport_deceased", label: "Транспортировка покойного" },
-  { id: "cremation_with_urn", label: "Кремация + урна стандартная" },
-  { id: "cremation", label: "Кремация" },
-  { id: "urn_ceramic", label: "Урна керамическая" },
-  { id: "urn_premium", label: "Урна премиум (мрамор/гранит)" },
-  { id: "farewell_hall_2h", label: "Зал прощания на 2 часа" },
-  { id: "farewell_hall_4h", label: "Ритуальный зал на 4 часа" },
-  { id: "memorial_dinner_20", label: "Поминальный обед (до 20 человек)" },
-  { id: "memorial_dinner_40", label: "Поминальный обед (до 40 человек)" },
-  { id: "live_flowers", label: "Композиция из живых цветов" },
-  { id: "ritual_premium", label: "Ритуальные принадлежности премиум" },
-  { id: "coord_individual", label: "Индивидуальный координатор" },
-];
-
-const warnDuplicateCatalogIds = (name: string, catalog: CatalogItem[]) => {
-  const ids = catalog.map((item) => item.id);
-  const dup = ids.filter((id, idx) => ids.indexOf(id) !== idx);
-  if (dup.length) {
-    // eslint-disable-next-line no-console
-    console.warn(`Duplicate ${name} catalog ids:`, dup);
-  }
-};
-
-if (process.env.NODE_ENV !== "production") {
-  warnDuplicateCatalogIds("BURIAL", SERVICE_CATALOG_BURIAL);
-  warnDuplicateCatalogIds("CREMATION", SERVICE_CATALOG_CREMATION);
-}
+import { Check } from "./Icons";
+import { calcTariffTotal, formatCurrency, formatDelta, TariffDraftConfig, BASE_TARIFF_TOTAL } from "./calculationUtils";
 
 export interface Package {
   id: string;
@@ -96,216 +16,595 @@ export interface Package {
 interface PackagesSelectionProps {
   selectedPackageId: string;
   onSelectPackage: (pkg: Package) => void;
-  packages: readonly Package[]; // ✅ тоже readonly (можно и Package[])
+  packages?: readonly Package[]; // ✅ тоже readonly (можно и Package[])
+  paymentSlot?: (override?: { totalRub?: number }) => React.ReactNode;
 }
 
 export function PackagesSelection({
   selectedPackageId,
   onSelectPackage,
   packages,
+  paymentSlot,
 }: PackagesSelectionProps) {
-  const scrollRef = React.useRef<HTMLDivElement | null>(null);
-  const [activeIndex, setActiveIndex] = React.useState(0);
-  const scrollRafRef = React.useRef<number | null>(null);
+  const [activePanel, setActivePanel] = React.useState<"base" | "custom" | "all">("base");
+  const [showInlinePayment, setShowInlinePayment] = React.useState(false);
+  const [draftConfig, setDraftConfig] = React.useState<TariffDraftConfig>({
+    format: "burial",
+    transport: "none",
+    pallbearers: "none",
+    hall: "none",
+    hearseTier: "standard",
+    coordinationTier: "base",
+    secularCeremony: "no",
+    churchService: "no",
+  });
 
-  const isCremation = React.useMemo(
-    () => packages.every((pkg) => pkg.id.startsWith("cremation-")),
-    [packages]
-  );
+  const [allInclusiveTiers, setAllInclusiveTiers] = React.useState<
+    Record<string, "standard" | "comfort" | "premium">
+  >({});
 
-  const catalog = React.useMemo(
-    () => (isCremation ? SERVICE_CATALOG_CREMATION : SERVICE_CATALOG_BURIAL),
-    [isCremation]
-  );
+  const BASE_MINIMUM: Package = {
+    id: "base-minimum",
+    name: "Базовый минимум",
+    price: BASE_TARIFF_TOTAL,
+    description: "Понятный стартовый план. Вы можете принять его как есть или спокойно изменить — ничего не начнётся без вашего подтверждения.",
+    features: [],
+    popular: false,
+  };
 
-  const labelToId = React.useMemo(() => {
-    const entries = catalog.map((item) => [item.label, item.id] as const);
-    return Object.fromEntries(entries) as Record<string, string>;
-  }, [catalog]);
-
-  const mapFeatureToId = React.useCallback(
-    (label: string, pkgId: string) => {
-      if (label === "Зал прощания") {
-        if (pkgId === "basic") return "hall_30";
-        if (pkgId === "standard") return "hall_60";
-        if (pkgId === "premium") return "hall_90";
-      }
-      return labelToId[label];
+  const isSelected = selectedPackageId === BASE_MINIMUM.id;
+  const pricing = calcTariffTotal(draftConfig);
+  const paymentTotal =
+    activePanel === "custom" ? pricing.total : BASE_TARIFF_TOTAL;
+  const addedItems = [
+    draftConfig.hearseTier !== "standard" && {
+      key: "hearseTier",
+      label: "Катафалк",
+      detail: draftConfig.hearseTier === "comfort" ? "Комфорт" : "Премиум",
+      delta: draftConfig.hearseTier === "comfort" ? 12000 : 35000,
     },
-    [labelToId]
-  );
-
-  const includedByPackage = React.useMemo(() => {
-    const map = new Map<string, Set<string>>();
-    packages.forEach((pkg) => {
-      const set = new Set<string>();
-      pkg.features.forEach((feature) => {
-        const label = normalizeFeatureLabel(String(feature || ""));
-        if (!label) return;
-        const id = mapFeatureToId(label, pkg.id);
-        if (!id) {
-          if (process.env.NODE_ENV !== "production") {
-            // eslint-disable-next-line no-console
-            console.warn("Unknown catalog label:", label);
-          }
-          return;
-        }
-        set.add(id);
-      });
-      map.set(pkg.id, set);
-    });
-    return map;
-  }, [packages, mapFeatureToId]);
-
-  const handleScroll = React.useCallback(() => {
-    if (!scrollRef.current) return;
-    if (scrollRafRef.current) return;
-    scrollRafRef.current = window.requestAnimationFrame(() => {
-      scrollRafRef.current = null;
-      const container = scrollRef.current;
-      if (!container) return;
-      const cards = Array.from(
-        container.querySelectorAll<HTMLElement>("[data-package-card]")
-      );
-      if (!cards.length) return;
-      const containerLeft = container.getBoundingClientRect().left;
-      let closestIndex = 0;
-      let closestDistance = Number.POSITIVE_INFINITY;
-      cards.forEach((card, index) => {
-        const rect = card.getBoundingClientRect();
-        const distance = Math.abs(rect.left - containerLeft);
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          closestIndex = index;
-        }
-      });
-      setActiveIndex(closestIndex);
-    });
-  }, []);
+    draftConfig.pallbearers !== "none" && {
+      key: "pallbearers",
+      label: "Носильщики",
+      detail: `${draftConfig.pallbearers} человек`,
+      delta: draftConfig.pallbearers === "4" ? 12000 : draftConfig.pallbearers === "6" ? 18000 : 24000,
+    },
+    draftConfig.transport !== "none" && {
+      key: "transport",
+      label: "Транспорт для близких",
+      detail: draftConfig.transport === "10" ? "До 10 мест" : "До 15 мест",
+      delta: draftConfig.transport === "10" ? 12000 : 20000,
+    },
+    draftConfig.hall !== "none" && {
+      key: "hall",
+      label: "Зал прощания",
+      detail: `${draftConfig.hall} минут`,
+      delta: draftConfig.hall === "60" ? 12000 : 20000,
+    },
+    draftConfig.secularCeremony === "yes" && {
+      key: "secularCeremony",
+      label: "Светская церемония",
+      detail: "Ведущий",
+      delta: 12000,
+    },
+    draftConfig.churchService === "yes" && {
+      key: "churchService",
+      label: "Отпевание в церкви",
+      detail: "Церковная служба",
+      delta: 18000,
+    },
+    draftConfig.coordinationTier !== "base" && {
+      key: "coordinationTier",
+      label: "Координатор",
+      detail: draftConfig.coordinationTier === "comfort" ? "Комфорт" : "Премиум",
+      delta: draftConfig.coordinationTier === "comfort" ? 12000 : 24000,
+    },
+  ].filter(Boolean) as { key: string; label: string; detail?: string; delta: number }[];
+  const isCustomizingPlan = activePanel === "custom" && addedItems.length > 0;
 
   return (
     <div className="pt-6 w-full">
-      <div className="mb-3 flex items-center justify-center gap-2 md:hidden">
-        {packages.map((pkg, index) => {
-          const isActive = index === activeIndex;
-          return (
-            <span
-              key={pkg.id}
-              className={cn(
-                "h-1.5 rounded-full transition-all duration-200",
-                isActive ? "w-6 bg-gray-900/80" : "w-2.5 bg-gray-300/70"
+      <div className="mx-auto w-full max-w-4xl px-2">
+        <div
+          data-package-card
+          className={cn(
+            "group relative flex flex-col gap-8 rounded-3xl border transition-all duration-300 bg-white p-8",
+            isSelected
+              ? "border-gray-900 shadow-2xl scale-[1.01] z-10"
+              : "border-gray-100 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1"
+          )}
+        >
+          <div className="text-center">
+            <h3 className="text-[11px] sm:text-sm font-semibold uppercase tracking-[0.18em] text-gray-500 mb-3 break-words">
+              {isCustomizingPlan ? "ПРОИСХОДИТ НАСТРОЙКА ПЛАНА" : BASE_MINIMUM.name}
+            </h3>
+            <p className="text-sm text-gray-400 mt-3 font-medium">
+              {isCustomizingPlan
+                ? "Вы можете добавлять и убирать услуги. Ничего не фиксируется без вашего подтверждения."
+                : BASE_MINIMUM.description}
+            </p>
+          </div>
+
+          {activePanel !== "all" && (
+            <div className="space-y-6">
+              <div className="space-y-4 text-sm text-gray-700">
+                <div className="grid grid-cols-[1fr_auto] items-center gap-4">
+                  <span>Санитарная обработка и бальзамирование</span>
+                  <span className="font-semibold text-gray-900 whitespace-nowrap">18 000 ₽</span>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="grid grid-cols-[1fr_auto] items-center gap-4">
+                    <span>Атрибутика</span>
+                    <span className="font-semibold text-gray-900 whitespace-nowrap">20 000 ₽</span>
+                  </div>
+                  <div className="ml-3 space-y-1 text-xs text-gray-500">
+                    <div>• Гроб обитый тканью (цвет на Ваш выбор)</div>
+                    <div>• Постель в гроб</div>
+                    <div>• Подушка шелковая</div>
+                    <div>• Покрывало шелковое</div>
+                    <div>• Тапочки похоронные</div>
+                    <div>• Доставка в морг</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-[1fr_auto] items-center gap-4">
+                  <span>Катафалк</span>
+                  <span className="font-semibold text-gray-900 whitespace-nowrap">13 500 ₽</span>
+                </div>
+
+                <div className="grid grid-cols-[1fr_auto] items-center gap-4">
+                  <span>Копка могилы</span>
+                  <span className="font-semibold text-gray-900 whitespace-nowrap">24 700 ₽</span>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="grid grid-cols-[1fr_auto] items-center gap-4">
+                    <span>Координатор базовый</span>
+                    <span className="font-semibold text-gray-900 whitespace-nowrap">10 400 ₽</span>
+                  </div>
+                  <div className="ml-3 text-xs text-gray-500">• Оформление и сопровождение заказа</div>
+                </div>
+
+                {addedItems.length > 0 && (
+                  <div className="pt-3 mt-4 border-t border-gray-200/70">
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400 mb-2">
+                      Добавлено в план
+                    </div>
+                    <div className="space-y-2">
+                      {addedItems.map((item) => (
+                        <div key={item.key} className="flex items-start justify-between gap-4 text-gray-700">
+                          <div className="space-y-1">
+                            <div>{item.label}</div>
+                            {item.detail && (
+                              <div className="ml-3 text-xs text-gray-500">• {item.detail}</div>
+                            )}
+                          </div>
+                          <span className="font-semibold text-gray-900 whitespace-nowrap">
+                            {formatDelta(item.delta)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="text-center">
+                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Итого</div>
+                <div className="mt-2 text-4xl font-semibold text-gray-900">
+                  {activePanel === "custom" ? formatCurrency(pricing.total) : "86 600 ₽"}
+                </div>
+              </div>
+              {activePanel === "custom" && (
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 mb-3">
+                      Формат
+                    </div>
+                    <OptionRow
+                      label="Как будет проходить прощание"
+                      value={draftConfig.format}
+                      options={[
+                        { value: "burial", label: "Захоронение" },
+                        { value: "cremation", label: "Кремация" },
+                        { value: "unknown", label: "Пока не знаю" },
+                      ]}
+                      onChange={(value) =>
+                        setDraftConfig((prev) => ({ ...prev, format: value as TariffDraftConfig["format"] }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 mb-3">
+                      Транспорт и организация
+                    </div>
+                    <div className="space-y-3">
+                      <OptionRow
+                        label="Катафалк"
+                        value={draftConfig.hearseTier}
+                        options={[
+                          { value: "standard", label: "Стандарт (включено)" },
+                          { value: "comfort", label: "Комфорт", delta: 12000 },
+                          { value: "premium", label: "Премиум", delta: 35000 },
+                        ]}
+                        onChange={(value) =>
+                          setDraftConfig((prev) => ({ ...prev, hearseTier: value as TariffDraftConfig["hearseTier"] }))
+                        }
+                      />
+                      <OptionRow
+                        label="Носильщики"
+                        value={draftConfig.pallbearers}
+                        options={[
+                          { value: "none", label: "Не нужны" },
+                          { value: "4", label: "4 человека", delta: 12000 },
+                          { value: "6", label: "6 человек", delta: 18000 },
+                          { value: "8", label: "8 человек", delta: 24000 },
+                        ]}
+                        onChange={(value) =>
+                          setDraftConfig((prev) => ({ ...prev, pallbearers: value as TariffDraftConfig["pallbearers"] }))
+                        }
+                      />
+                      <OptionRow
+                        label="Транспорт для близких"
+                        value={draftConfig.transport}
+                        options={[
+                          { value: "none", label: "Не нужен" },
+                          { value: "10", label: "До 10 мест", delta: 12000 },
+                          { value: "15", label: "До 15 мест", delta: 20000 },
+                        ]}
+                        onChange={(value) =>
+                          setDraftConfig((prev) => ({ ...prev, transport: value as TariffDraftConfig["transport"] }))
+                        }
+                      />
+                      <OptionRow
+                        label="Координатор"
+                        value={draftConfig.coordinationTier}
+                        options={[
+                          {
+                            value: "base",
+                            label: "Оформление и сопровождение заказа",
+                          },
+                          {
+                            value: "comfort",
+                            label: "Сопровождение по документам и согласованиям",
+                            delta: 12000,
+                          },
+                          {
+                            value: "premium",
+                            label: "Персональный координатор в день церемонии + контроль договорённостей",
+                            delta: 24000,
+                          },
+                        ]}
+                        onChange={(value) =>
+                          setDraftConfig((prev) => ({
+                            ...prev,
+                            coordinationTier: value as TariffDraftConfig["coordinationTier"],
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 mb-3">
+                      Прощание
+                    </div>
+                    <div className="space-y-3">
+                      <OptionRow
+                        label="Зал прощания"
+                        value={draftConfig.hall}
+                        options={[
+                          { value: "none", label: "Не нужен" },
+                          { value: "60", label: "60 минут", delta: 12000 },
+                          { value: "90", label: "90 минут", delta: 20000 },
+                        ]}
+                        onChange={(value) =>
+                          setDraftConfig((prev) => ({ ...prev, hall: value as TariffDraftConfig["hall"] }))
+                        }
+                      />
+                      <OptionRow
+                        label="Светская церемония (ведущий)"
+                        value={draftConfig.secularCeremony}
+                        options={[
+                          { value: "no", label: "Не нужно" },
+                          { value: "yes", label: "Нужно", delta: 12000 },
+                        ]}
+                        onChange={(value) =>
+                          setDraftConfig((prev) => ({
+                            ...prev,
+                            secularCeremony: value as TariffDraftConfig["secularCeremony"],
+                          }))
+                        }
+                      />
+                      <OptionRow
+                        label="Отпевание в церкви"
+                        value={draftConfig.churchService}
+                        options={[
+                          { value: "no", label: "Не нужно" },
+                          { value: "yes", label: "Нужно", delta: 18000 },
+                        ]}
+                        onChange={(value) =>
+                          setDraftConfig((prev) => ({
+                            ...prev,
+                            churchService: value as TariffDraftConfig["churchService"],
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
               )}
-            />
+            </div>
+          )}
+
+          {activePanel === "all" && (
+            <div className="space-y-6">
+              <div className="grid gap-6 md:grid-cols-3">
+                {(packages ?? [])
+                  .filter((pkg) => !pkg.id.startsWith("cremation"))
+                  .map((pkg) => {
+                  const isPopular = !!pkg.popular;
+                  const isBaseMinimum = pkg.id === "basic";
+                  const packageLabel =
+                    pkg.id === "basic"
+                      ? "Базовый минимум"
+                      : pkg.id === "standard"
+                        ? "Ничего не упустить"
+                        : "Передать все заботы";
+                  const tier = allInclusiveTiers[pkg.id] ?? "standard";
+                  const tierPriceMap: Record<"standard" | "comfort" | "premium", number> = {
+                    standard: pkg.price,
+                    comfort: Math.round(pkg.price * 1.35),
+                    premium: Math.round(pkg.price * 1.75),
+                  };
+                  return (
+                    <div
+                      key={pkg.id}
+                      className="relative rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm"
+                    >
+                      {isPopular && (
+                        <div className="absolute left-1/2 -translate-x-1/2 -top-4 rounded-full bg-gray-900 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white">
+                          Популярный выбор
+                        </div>
+                      )}
+                      <div className="text-center">
+                        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+                          {packageLabel}
+                        </div>
+                        <div className="mt-4 text-4xl font-semibold text-gray-900">
+                          {isBaseMinimum ? "86 600 ₽" : `от ${formatCurrency(tierPriceMap[tier])}`}
+                        </div>
+                        <div className="mt-2 text-sm text-gray-500">
+                          {isBaseMinimum ? "Необходимый минимум" : pkg.description}
+                        </div>
+                      </div>
+
+                      <div className="mt-5 flex items-center justify-center gap-2">
+                        {(["standard", "comfort", "premium"] as const).map((value) => {
+                          const isActive = tier === value;
+                          return (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() =>
+                                setAllInclusiveTiers((prev) => ({ ...prev, [pkg.id]: value }))
+                              }
+                              className={cn(
+                                "rounded-full border px-3 py-1 text-xs font-medium transition",
+                                isActive
+                                  ? "border-gray-900 bg-gray-900 text-white"
+                                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                              )}
+                            >
+                              {value === "standard" ? "Стандарт" : value === "comfort" ? "Комфорт" : "Премиум"}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="mt-6 space-y-3">
+                        {isBaseMinimum ? (
+                          <>
+                            <div className="flex items-start gap-3 text-sm text-gray-700">
+                              <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                                <Check className="h-3 w-3" />
+                              </span>
+                              <span>Санитарная обработка и бальзамирование — 18 000₽</span>
+                            </div>
+                            <div className="flex items-start gap-3 text-sm text-gray-700">
+                              <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                                <Check className="h-3 w-3" />
+                              </span>
+                              <div className="space-y-2">
+                                <div>Атрибутика и доставка — 20 000₽</div>
+                                <div className="space-y-1 text-[12px] text-gray-500">
+                                  <div>• Гроб обитый тканью (цвет на Ваш выбор)</div>
+                                  <div>• Постель в гроб</div>
+                                  <div>• Подушка шелковая</div>
+                                  <div>• Покрывало шелковое</div>
+                                  <div>• Тапочки похоронные</div>
+                                  <div>• Доставка в морг</div>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3 text-sm text-gray-700">
+                              <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                                <Check className="h-3 w-3" />
+                              </span>
+                              <span>Катафалк — 13 500₽</span>
+                            </div>
+                            <div className="flex items-start gap-3 text-sm text-gray-700">
+                              <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                                <Check className="h-3 w-3" />
+                              </span>
+                              <span>Копка могилы — 24 700₽</span>
+                            </div>
+                            <div className="flex items-start gap-3 text-sm text-gray-700">
+                              <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                                <Check className="h-3 w-3" />
+                              </span>
+                              <div className="space-y-2">
+                                <div>Координатор базовый — 10 400₽</div>
+                                <div className="text-[12px] text-gray-500">• Оформление и сопровождение заказа</div>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          pkg.features.map((feature, idx) => (
+                            <div key={`${pkg.id}-feature-${idx}`} className="flex items-start gap-3 text-sm text-gray-700">
+                              <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                                <Check className="h-3 w-3" />
+                              </span>
+                              <span>{feature}</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      <Button
+                        className="mt-6 w-full rounded-2xl h-12 text-sm font-semibold tracking-wide"
+                        onClick={() => {
+                          if (isBaseMinimum) {
+                            const draft = {
+                              format: "burial",
+                              transport: "none",
+                              pallbearers: "none",
+                              hall: "none",
+                              hearseTier: "standard",
+                              coordinationTier: "base",
+                              secularCeremony: "no",
+                              churchService: "no",
+                            } satisfies TariffDraftConfig;
+                            try {
+                              localStorage.setItem("tihiydom_plan_draft_v1", JSON.stringify(draft));
+                            } catch {
+                              // ignore write errors
+                            }
+                            onSelectPackage(pkg);
+                            return;
+                          }
+                          const isCremation = false;
+                          const mappedTier = allInclusiveTiers[pkg.id] ?? "standard";
+                          const draft = {
+                            format: isCremation ? "cremation" : "burial",
+                            transport: mappedTier === "premium" ? "15" : "10",
+                            pallbearers: mappedTier === "premium" ? "8" : mappedTier === "comfort" ? "6" : "4",
+                            hall: mappedTier === "premium" ? "90" : "60",
+                            hearseTier: mappedTier === "premium" ? "premium" : mappedTier === "comfort" ? "comfort" : "standard",
+                            coordinationTier: mappedTier === "premium" ? "premium" : mappedTier === "comfort" ? "comfort" : "base",
+                            secularCeremony: "no",
+                            churchService: "no",
+                          } satisfies TariffDraftConfig;
+                          try {
+                            localStorage.setItem("tihiydom_plan_draft_v1", JSON.stringify(draft));
+                          } catch {
+                            // ignore write errors
+                          }
+                          onSelectPackage(pkg);
+                        }}
+                      >
+                        Настроить
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3">
+            <div className="space-y-1.5">
+              <Button
+                onClick={() => {
+                  setActivePanel("base");
+                  setShowInlinePayment((v) => !v);
+                }}
+                className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide bg-gray-900 text-white hover:bg-gray-800"
+              >
+                Заключить договор
+              </Button>
+              {!showInlinePayment && (
+                <div className="text-xs text-gray-500">
+                  Сейчас оплата не требуется. Сначала вы получите договор и сможете спокойно всё проверить.
+                </div>
+              )}
+              {showInlinePayment && (
+                <div className="pt-4">
+                  {paymentSlot?.({ totalRub: paymentTotal })}
+                </div>
+              )}
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setActivePanel((prev) => (prev === "custom" ? "base" : "custom"));
+                setShowInlinePayment(false);
+              }}
+              className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide"
+            >
+              Настроить
+            </Button>
+            <div className="text-xs text-gray-500">
+              Изменить формат, зал, транспорт и другие детали
+            </div>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setActivePanel("all");
+                setShowInlinePayment(false);
+              }}
+              className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide"
+            >
+              Тарифы «всё включено»
+            </Button>
+            <div className="text-xs text-gray-500">
+              Если хотите сразу выбрать готовое решение — посмотрите тарифы «всё включено»
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OptionRow({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: { value: string; label: string; delta?: number }[];
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="text-sm font-medium text-gray-700">{label}</div>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => {
+          const isActive = value === option.value;
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => onChange(option.value)}
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-xs font-medium transition",
+                isActive
+                  ? "border-gray-900 bg-gray-900 text-white"
+                  : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+              )}
+            >
+              <span>{option.label}</span>
+              {typeof option.delta === "number" && option.delta !== 0 && (
+                <span className="ml-2 text-[11px] opacity-70">{formatDelta(option.delta)}</span>
+              )}
+            </button>
           );
         })}
       </div>
-      <div className="overflow-visible">
-        <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          className="flex flex-nowrap overflow-x-auto snap-x snap-mandatory scroll-smooth gap-4 px-4 pt-5 md:pt-0 md:px-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-hidden md:snap-none md:scroll-auto md:w-full md:justify-items-center items-start [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-      {packages.map((pkg) => {
-        const isSelected = selectedPackageId === pkg.id;
-        const included = includedByPackage.get(pkg.id) ?? new Set<string>();
-        const visibleCatalog =
-          !isCremation && pkg.id === "standard"
-            ? catalog.filter(
-                (item) => included.has(item.id) || BURIAL_STANDARD_UPGRADES.has(item.id)
-              )
-            : catalog;
-        const useLegacyIncludedList = !isCremation && pkg.id === "premium";
-        return (
-          <div
-            key={pkg.id}
-            onClick={() => onSelectPackage(pkg)}
-            data-package-card
-            className={cn(
-              "group relative flex flex-col p-8 rounded-3xl border transition-all duration-300 cursor-pointer bg-white flex-none w-[88vw] max-w-[360px] snap-start md:w-full md:max-w-[280px] md:mx-auto md:min-w-0",
-              isSelected
-                ? "border-gray-900 shadow-2xl scale-[1.02] md:scale-100 z-10"
-                : "border-gray-100 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1 md:hover:translate-y-0"
-            )}
-          >
-            {pkg.popular && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 bg-gray-900 text-white text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg ring-4 ring-white whitespace-nowrap">
-                Популярный выбор
-              </div>
-            )}
-
-            <div className="text-center mb-8">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
-                {pkg.name}
-              </h3>
-              <div className="flex items-start justify-center gap-1 text-gray-900 whitespace-nowrap">
-                <span className="text-5xl font-light tracking-tighter whitespace-nowrap">
-                  <span className="text-2xl font-medium align-baseline">от</span>{" "}
-                  {pkg.price.toLocaleString("ru-RU")}
-                </span>
-                <span className="text-xl font-light mt-1">₽</span>
-              </div>
-              <p className="text-sm text-gray-400 mt-3 font-medium">{pkg.description}</p>
-            </div>
-
-            <div className="space-y-3 mb-8">
-              {useLegacyIncludedList
-                ? pkg.features.map((feature) => (
-                    <div
-                      key={`${pkg.id}-${feature}`}
-                      className="flex items-start gap-3 text-sm"
-                    >
-                      <div className="mt-0.5 h-5 w-5 rounded-full flex items-center justify-center shrink-0 bg-gray-100 text-gray-600">
-                        <Check className="h-3 w-3" />
-                      </div>
-                      <span className="leading-tight pt-0.5 text-gray-600 font-medium">
-                        {feature}
-                      </span>
-                    </div>
-                  ))
-                : visibleCatalog.map((item) => {
-                    const hasFeature = included.has(item.id);
-                    return (
-                      <div key={`${pkg.id}-${item.id}`} className="flex items-start gap-3 text-sm">
-                        <div
-                          className={cn(
-                            "mt-0.5 h-5 w-5 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300",
-                            hasFeature
-                              ? isSelected
-                                ? "bg-gray-900 text-white"
-                                : "bg-gray-100 text-gray-600"
-                              : "bg-gray-50 text-gray-300"
-                          )}
-                        >
-                          {hasFeature ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
-                        </div>
-                        <span
-                          className={cn(
-                            "leading-tight pt-0.5",
-                            hasFeature ? "text-gray-600 font-medium" : "text-gray-400"
-                          )}
-                        >
-                          {item.label}
-                        </span>
-                      </div>
-                    );
-                  })}
-            </div>
-
-            <Button
-              className={cn(
-                "w-full rounded-2xl h-12 text-sm font-semibold tracking-wide transition-all duration-300",
-                isSelected
-                  ? "bg-gray-900 text-white shadow-lg hover:bg-gray-800"
-                  : "bg-gray-50 text-gray-900 hover:bg-gray-100 border border-gray-100"
-              )}
-            >
-              {isSelected ? "Выбран" : "Настроить"}
-            </Button>
-          </div>
-        );
-      })}
-      </div>
-    </div>
     </div>
   );
 }

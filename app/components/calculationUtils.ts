@@ -21,6 +21,217 @@ export const PRICES = {
   pallbearers: 6000,
 };
 
+export const BASE_START_PRICE = 28000;
+
+export const PLAN_DELTAS = {
+  hall: {
+    none: -15000,
+    "60": 0,
+    "90": 8000,
+  },
+  ceremony: {
+    secular: 0,
+    religious: 15000,
+    mixed: 20000,
+    unknown: 0,
+  },
+  hearse: {
+    standard: 0,
+    comfort: 15000,
+    premium: 45000,
+  },
+  transport: {
+    none: -12000,
+    "10": 0,
+    "15": 8000,
+  },
+  pallbearers: {
+    included: 0,
+    none: -7000,
+  },
+  attributesLevel: {
+    minimal: -9000,
+    recommended: 0,
+    extended: 16000,
+    custom: 0,
+  },
+} as const;
+
+export type PlanState = {
+  format: "burial" | "cremation" | "unknown";
+  hall: keyof typeof PLAN_DELTAS.hall;
+  ceremony: keyof typeof PLAN_DELTAS.ceremony;
+  hearse: keyof typeof PLAN_DELTAS.hearse;
+  transport: keyof typeof PLAN_DELTAS.transport;
+  pallbearers: keyof typeof PLAN_DELTAS.pallbearers;
+  attributesLevel: keyof typeof PLAN_DELTAS.attributesLevel;
+};
+
+const formatRubLocal = (v: number) => Math.round(v).toLocaleString("ru-RU");
+
+export const formatDelta = (delta: number) => {
+  const sign = delta >= 0 ? "+" : "−";
+  return `${sign} ${formatRubLocal(Math.abs(delta))} ₽`;
+};
+
+export const formatCurrency = (value: number) => `${formatRubLocal(value)} ₽`;
+
+export const calcPlanTotal = (plan: PlanState) => {
+  return (
+    BASE_START_PRICE +
+    PLAN_DELTAS.hall[plan.hall] +
+    PLAN_DELTAS.ceremony[plan.ceremony] +
+    PLAN_DELTAS.hearse[plan.hearse] +
+    PLAN_DELTAS.transport[plan.transport] +
+    PLAN_DELTAS.pallbearers[plan.pallbearers] +
+    PLAN_DELTAS.attributesLevel[plan.attributesLevel]
+  );
+};
+
+export type TariffDraftConfig = {
+  format: "burial" | "cremation" | "unknown";
+  transport: "none" | "10" | "15";
+  pallbearers: "none" | "4" | "6" | "8";
+  hall: "none" | "60" | "90";
+  hearseTier: "standard" | "comfort" | "premium";
+  coordinationTier: "base" | "comfort" | "premium";
+  secularCeremony: "no" | "yes";
+  churchService: "no" | "yes";
+};
+
+type TariffBreakdownItem = {
+  key: string;
+  label: string;
+  price?: number | null;
+  delta?: number | null;
+  note?: string;
+};
+
+// Типовые диапазоны и ориентиры (используем консервативные значения)
+const TARIFF_PRICING = {
+  basePrice: 86600,
+  transport: {
+    none: 0,
+    "10": 12000,
+    "15": 20000,
+  },
+  pallbearers: {
+    none: 0,
+    "4": 12000,
+    "6": 18000,
+    "8": 24000,
+  },
+  hearseTier: {
+    standard: 0,
+    comfort: 12000,
+    premium: 35000,
+  },
+  hall: {
+    none: 0,
+    "60": 12000,
+    "90": 20000,
+  },
+  coordinationTier: {
+    base: 0,
+    comfort: 12000,
+    premium: 24000,
+  },
+  ceremony: {
+    secular: 12000,
+    church: 18000,
+  },
+} as const;
+
+export const BASE_TARIFF_TOTAL = 86600;
+export const BASE_TARIFF_LINES = [
+  { key: "sanitary", label: "Санитарная обработка и бальзамирование", price: 18000 },
+  { key: "attributes", label: "Атрибутика", price: 20000 },
+  { key: "hearse", label: "Катафалк", price: 13500 },
+  { key: "digging", label: "Копка могилы", price: 24700 },
+  { key: "coord", label: "Координатор базовый", price: 10400 },
+] as const;
+
+export const calcTariffTotal = (config: TariffDraftConfig) => {
+  const breakdown: TariffBreakdownItem[] = [];
+
+  breakdown.push({
+    key: "base",
+    label: "Базовый минимум",
+    price: TARIFF_PRICING.basePrice,
+    delta: 0,
+  });
+
+  const addLine = (key: string, label: string, price: number, delta: number) => {
+    if (price === 0 && delta === 0) return;
+    breakdown.push({ key, label, price, delta });
+  };
+
+  addLine(
+    "transport",
+    "Транспорт для близких",
+    TARIFF_PRICING.transport[config.transport],
+    TARIFF_PRICING.transport[config.transport],
+  );
+
+  addLine(
+    "pallbearers",
+    "Носильщики",
+    TARIFF_PRICING.pallbearers[config.pallbearers],
+    TARIFF_PRICING.pallbearers[config.pallbearers],
+  );
+
+  addLine(
+    "hearseTier",
+    "Катафалк",
+    TARIFF_PRICING.hearseTier[config.hearseTier],
+    TARIFF_PRICING.hearseTier[config.hearseTier],
+  );
+
+  addLine(
+    "hall",
+    "Зал прощания",
+    TARIFF_PRICING.hall[config.hall],
+    TARIFF_PRICING.hall[config.hall],
+  );
+
+  addLine(
+    "coordinationTier",
+    "Координатор",
+    TARIFF_PRICING.coordinationTier[config.coordinationTier],
+    TARIFF_PRICING.coordinationTier[config.coordinationTier],
+  );
+
+  if (config.secularCeremony === "yes") {
+    addLine("secularCeremony", "Светская церемония", TARIFF_PRICING.ceremony.secular, TARIFF_PRICING.ceremony.secular);
+  }
+
+  if (config.churchService === "yes") {
+    addLine("churchService", "Отпевание в церкви", TARIFF_PRICING.ceremony.church, TARIFF_PRICING.ceremony.church);
+  }
+
+  const total = breakdown.reduce((sum, item) => sum + (item.price || 0), 0);
+
+  return {
+    total,
+    breakdown,
+  };
+};
+
+export type AllInclusiveTier = "standard" | "comfort" | "premium";
+export type AllInclusivePackageKey = "basic" | "complete" | "care";
+
+export const ALL_INCLUSIVE_PRICES: Record<AllInclusivePackageKey, Record<AllInclusiveTier, number>> =
+  {
+    basic: { standard: 160000, comfort: 220000, premium: 280000 },
+    complete: { standard: 260000, comfort: 360000, premium: 460000 },
+    care: { standard: 360000, comfort: 480000, premium: 620000 },
+  };
+
+export const calcAllInclusiveTotal = (
+  pkg: AllInclusivePackageKey,
+  tier: AllInclusiveTier
+) => ALL_INCLUSIVE_PRICES[pkg][tier];
+
 const WREATH_TYPE_LABELS: Record<string, string> = {
   artificial: "Искусственные цветы",
   composition: "Живая композиция",
