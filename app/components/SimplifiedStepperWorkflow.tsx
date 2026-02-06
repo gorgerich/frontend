@@ -12,6 +12,7 @@ import { Label } from "./ui/label";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Textarea } from "./ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Switch } from "./ui/switch";
 import { Checkbox } from "./ui/checkbox";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
@@ -45,8 +46,6 @@ type CalculatorConfig,
 type FormData as CalculatorFormData,
   PRICES,
   ADDITIONAL_SERVICES,
-  PLAN_DELTAS,
-  formatDelta,
   trackEvent,
   getTrackingSessionId,
   reachMetrikaGoal,
@@ -56,7 +55,7 @@ type FormData as CalculatorFormData,
 
 import type { ImgHTMLAttributes } from "react";
 
-const SIMPLIFIED_LOGISTICS_STEP_INDEX = 3;
+const SIMPLIFIED_LOGISTICS_STEP_INDEX = 2;
 
 function SafeImg(
   props: ImgHTMLAttributes<HTMLImageElement> & { fallbackSrc?: string }
@@ -268,14 +267,13 @@ function SimplifiedFloatingCalculator({
 }
 
 
-// Упрощенные шаги (новая структура 6 шагов)
+// Упрощенные шаги для готовых решений
 const simplifiedSteps = [
-  { id: "base", label: "Базовый план", description: "Старт" },
-  { id: "format", label: "Формат", description: "Прощание" },
-  { id: "hall", label: "Зал и церемония", description: "Формат проведения" },
-  { id: "logistics", label: "Логистика", description: "Организация" },
-  { id: "attributes", label: "Атрибутика", description: "Оформление" },
-  { id: "summary", label: "Итог", description: "Проверка" },
+{ id: "attributes", label: "Атрибутика", description: "Персонализация" },
+{ id: "format", label: "Формат", description: "Тип церемонии" },
+{ id: "logistics", label: "Логистика", description: "Место и время" },
+{ id: "documents", label: "Документы", description: "Основная информация" },
+{ id: "confirmation", label: "Подтверждение", description: "Проверка данных" },
 ];
 
 // Справочник кладбищ и крематориев
@@ -487,10 +485,6 @@ liningColor?: string;
 pickupDateTime?: { date?: string | Date; timeSlot?: TimeSlot; time?: string };
 farewellDateTime?: { date?: string | Date; timeSlot?: TimeSlot; time?: string };
 burialDateTime?: { date?: string | Date; timeSlot?: TimeSlot; time?: string };
-hearseTier?: "standard" | "comfort" | "premium";
-coordinationTier?: "base" | "comfort" | "premium";
-pallbearersCount?: "none" | "4" | "6" | "8";
-churchServiceChoice?: "no" | "yes" | "later";
 };
 
 type PaymentMethod = "deposit_10" | "call_rep";
@@ -512,7 +506,7 @@ onUpdateFormData: (field: string, value: any) => void;
 const DEFAULT_FORM_DATA: FormDataShape = {
 serviceType: "burial",
 hasHall: true,
-hallDuration: 60,
+hallDuration: 30,
 ceremonyType: "civil",
 confession: "",
 ceremonyOrder: "civil-first",
@@ -528,13 +522,9 @@ relationship: "",
 dataConsent: false,
 userEmail: "",
 liningColor: "satin-white",
-hearseTier: "standard",
-coordinationTier: "base",
-pallbearersCount: "none",
-churchServiceChoice: "no",
 };
 
-const SIMPLIFIED_FORM_STORAGE_KEY = "TIHIYDOM_SIMPLIFIED_FORM_V2";
+const SIMPLIFIED_FORM_STORAGE_KEY = "TIHIYDOM_SIMPLIFIED_FORM_V1";
 
 type TimeSlot = "morning" | "afternoon" | "evening" | "night";
 
@@ -604,12 +594,6 @@ const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 const [isTransitioning, setIsTransitioning] = useState(false);
 
 const [showConsentError, setShowConsentError] = useState(false);
-const [showDocumentsBlock, setShowDocumentsBlock] = useState(false);
-const [attributesLevel, setAttributesLevel] = useState<"minimal" | "recommended" | "extended" | "custom">(
-  "recommended"
-);
-const didApplyDraftRef = useRef(false);
-const [prefilledFromDraft, setPrefilledFromDraft] = useState(false);
 
 const didStepScrollMountRef = useRef(false);
 const wizardStartedRef = useRef(false);
@@ -646,63 +630,6 @@ const [localFormData, setLocalFormData] = useState<FormDataShape>(() => {
   }
 });
 
-useEffect(() => {
-  if (typeof window === "undefined") return;
-  if (didApplyDraftRef.current) return;
-  try {
-    const raw = localStorage.getItem("tihiydom_plan_draft_v1");
-    if (!raw) return;
-    const draft = JSON.parse(raw);
-    setLocalFormData((prev) => {
-      const next = { ...prev };
-      if (draft?.format === "cremation") next.serviceType = "cremation";
-      if (draft?.format === "burial") next.serviceType = "burial";
-      if (draft?.hall === "none") {
-        next.hasHall = false;
-      }
-      if (draft?.hall === "60") {
-        next.hasHall = true;
-        next.hallDuration = 60;
-      }
-      if (draft?.hall === "90") {
-        next.hasHall = true;
-        next.hallDuration = 90;
-      }
-      if (draft?.churchService && draft.churchService !== "none") {
-        next.ceremonyType = "religious";
-      } else if (draft?.ceremonyType === "religious") {
-        next.ceremonyType = "religious";
-      } else if (draft?.ceremonyType === "mixed") {
-        next.ceremonyType = "combined";
-      } else if (draft?.ceremonyType === "secular") {
-        next.ceremonyType = "civil";
-      }
-      if (draft?.churchService) next.churchServiceChoice = draft.churchService;
-      if (draft?.hearseTier) next.hearseTier = draft.hearseTier;
-      if (draft?.coordinationTier) next.coordinationTier = draft.coordinationTier;
-      if (draft?.pallbearers) {
-        if (draft.pallbearers === "standard" || draft.pallbearers === "comfort") {
-          next.pallbearersCount = "4";
-        } else if (draft.pallbearers === "premium") {
-          next.pallbearersCount = "8";
-        } else {
-          next.pallbearersCount = draft.pallbearers;
-        }
-      }
-      if (draft?.pallbearers && draft.pallbearers !== "none") {
-        next.needsPallbearers = true;
-      }
-      if (draft?.pallbearers === "none") {
-        next.needsPallbearers = false;
-      }
-      return next;
-    });
-    setPrefilledFromDraft(true);
-  } finally {
-    didApplyDraftRef.current = true;
-  }
-}, []);
-
 const didInitDefaultsRef = useRef(false);
 
 const scrollToTop = () => {
@@ -737,13 +664,8 @@ useEffect(() => {
     const next = { ...prev };
     if (!next.serviceType) next.serviceType = "burial";
     if (next.hasHall == null) next.hasHall = true;
-    if (!next.hallDuration || next.hallDuration === 30) next.hallDuration = 60;
+    if (!next.hallDuration) next.hallDuration = 30;
     if (!next.ceremonyType) next.ceremonyType = "civil";
-    if (next.ceremonyType === "secular") next.ceremonyType = "civil";
-    if (next.ceremonyType === "mixed") next.ceremonyType = "combined";
-    if (!["civil", "religious", "combined", "unknown"].includes(next.ceremonyType)) {
-      next.ceremonyType = "civil";
-    }
     if (!next.ceremonyOrder) next.ceremonyOrder = "civil-first";
     if (!next.paymentPlan) next.paymentPlan = "full";
     if (!next.liningColor) next.liningColor = "satin-white";
@@ -868,7 +790,6 @@ const [orderConfirmation, setOrderConfirmation] = useState<{
   emailSent: boolean;
   paymentLink?: string | null;
 } | null>(null);
-const [draftCreated, setDraftCreated] = useState(false);
 
 const resetOrderConfirmation = () => {
   if (!orderConfirmation) return;
@@ -890,20 +811,19 @@ const simplifiedCalculatorConfig = useMemo<CalculatorConfig>(() => {
   return {
     base: {
       title: "Базовые услуги",
-      price: 28000,
+      price: 25000,
       items: [
-        "Оформление документов (минимальный пакет)",
-        "Санитарная обработка тела без бальзамирования (по возможностям морга)",
-        "Стандартный сосновый гроб, обитый тканью, с простым комплектом",
-        "Одна траурная лента и табличка на штыре",
-        "Катафальный транспорт (маршрут морг – кладбище или крематорий)",
-        "Копка могилы на открытом кладбище или базовая кремация (по выбору)",
-        "Координатор: оформление и сопровождение заказа",
+        "Оформление документов",
+        "Подтверждение места захоронения",
+        "Хранение и базовая подготовка тела",
+        "Гроб, подушка и покрывало",
+        "Транспортировка покойного и перенос",
+        "Кладбищенские работы",
       ],
     },
     prices: {
-      hallDuration: { 30: 0, 60: 0, 90: 8000 },
-      ceremonyType: { civil: 0, religious: 15000, combined: 20000, unknown: 0 },
+      hallDuration: { ...PRICES.hallDuration },
+      ceremonyType: { ...PRICES.ceremonyType },
       hearse: PRICES.hearse,
       familyTransport: { ...PRICES.familyTransport },
       pallbearers: PRICES.pallbearers,
@@ -938,7 +858,7 @@ const calculatorFormData: CalculatorFormData = {
   serviceType: safeFormData.serviceType,
   hasHall: !!safeFormData.hasHall,
   hallDuration: Number(safeFormData.hallDuration || 0),
-  ceremonyType: safeFormData.ceremonyType,
+  ceremonyType: "",
   packageType: selectedPackage?.id ?? "",
   needsHearse: false,
   needsFamilyTransport: false,
@@ -1053,13 +973,13 @@ useEffect(() => {
 }, [currentStep, trackingFlow, trackingSessionId]);
 
 useEffect(() => {
-  if (currentStep !== 4) return;
+  if (currentStep !== 0) return;
   if (attributesStartedRef.current) return;
   attributesStartedRef.current = true;
   trackEvent(
     "attributes_started",
     { flow: trackingFlow },
-    `${trackingSessionId}:${trackingFlow}:step5`,
+    `${trackingSessionId}:${trackingFlow}:step1`,
   );
 }, [currentStep]);
 
@@ -1073,7 +993,7 @@ useEffect(() => {
 }, [currentStep, trackingFlow]);
 
 useEffect(() => {
-  if (currentStep !== 4) return;
+  if (currentStep !== 0) return;
   const liningName = liningOptions.find((l) => l.id === currentLiningId)?.name;
   const wishesFilled = Boolean((safeFormData.specialRequests || "").trim());
   trackEvent(
@@ -1093,7 +1013,7 @@ useEffect(() => {
 }, [currentStep, packageWoodId, currentLiningId, safeFormData.specialRequests]);
 
 useEffect(() => {
-  if (currentStep !== 2) return;
+  if (currentStep !== 1) return;
   if (!safeFormData.serviceType) return;
   trackEvent(
     "ceremony_type_selected",
@@ -1109,7 +1029,7 @@ useEffect(() => {
 }, [currentStep, safeFormData.serviceType, safeFormData.hasHall]);
 
 useEffect(() => {
-  if (currentStep !== 2) return;
+  if (currentStep !== 1) return;
   if (!safeFormData.hasHall) return;
   const ceremonyFormat =
     safeFormData.ceremonyType === "civil"
@@ -1158,7 +1078,7 @@ useEffect(() => {
 }, [currentStep]);
 
 useEffect(() => {
-  if (currentStep !== 5) return;
+  if (currentStep !== 4) return;
   if (!confirmationViewedRef.current) {
     confirmationViewedRef.current = true;
     reachMetrikaGoal(buildGoalName(trackingFlow, "confirmation_viewed"), {
@@ -1198,7 +1118,7 @@ useEffect(() => {
 }, [currentStep, totalRub, floatingBreakdown, safeFormData.serviceType]);
 
 useEffect(() => {
-  if (currentStep !== 5) return;
+  if (currentStep !== 4) return;
   if (lastPayPlanRef.current === selectedPayPlan) return;
   lastPayPlanRef.current = selectedPayPlan;
   payPlanSelectionSeqRef.current += 1;
@@ -1255,11 +1175,21 @@ useEffect(() => {
 }, []);
 
 const handleNext = () => {
+// Проверка согласия на шаге документов
+if (currentStep === 3 && !safeFormData.dataConsent) {
+setShowConsentError(true);
+setTimeout(() => {
+const consentElement = document.getElementById("data-consent");
+consentElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+}, 100);
+return;
+}
+
 if (currentStep < simplifiedSteps.length - 1 && !isTransitioning) {
 setIsTransitioning(true);
 setShowConsentError(false);
 
-if (currentStep === 4) {
+if (currentStep === 0) {
   if (!attributesFilledRef.current) {
     attributesFilledRef.current = true;
     reachMetrikaGoal(buildGoalName(trackingFlow, "attributes_filled"), {
@@ -1275,19 +1205,6 @@ if (currentStep === 1) {
       flow: trackingFlow,
     });
   }
-  trackEvent(
-    "format_step_completed",
-    {
-      final_burial_type: safeFormData.serviceType,
-      value: totalRub,
-      currency: "RUB",
-      flow: trackingFlow,
-    },
-    `${trackingSessionId}:${trackingFlow}:step2`,
-  );
-}
-
-if (currentStep === 2) {
   const ceremonyFormat =
     safeFormData.ceremonyType === "civil"
       ? "secular"
@@ -1308,11 +1225,11 @@ if (currentStep === 2) {
       currency: "RUB",
       flow: trackingFlow,
     },
-    `${trackingSessionId}:${trackingFlow}:step3`,
+    `${trackingSessionId}:${trackingFlow}:step2`,
   );
 }
 
-if (currentStep === 3) {
+if (currentStep === 2) {
   const hasLocation = Boolean(safeFormData.cemetery);
   const hasPickup = Boolean(pickupDateTime.date && pickupDateTime.timeSlot);
   const hasBurial = Boolean(burialDateTime.date && burialDateTime.timeSlot);
@@ -1337,7 +1254,7 @@ if (currentStep === 3) {
         currency: "RUB",
         flow: trackingFlow,
       },
-      `${trackingSessionId}:${trackingFlow}:step4:filled`,
+      `${trackingSessionId}:${trackingFlow}:step3:filled`,
     );
   }
 }
@@ -1422,39 +1339,104 @@ const coffinPreviewSrc = `/coffins/${material}/${safeFormData.liningColor}.jpg`;
 
 
 const renderStepContent = () => {
-const sharedNote = (
-  <div className="rounded-2xl border border-gray-200 bg-white p-4 text-xs text-gray-600 space-y-1">
-    <div>Ничего не начнётся автоматически. Вы подтверждаете план только когда всё понятно.</div>
-    <div>Можно вернуться назад в любой момент.</div>
-    <div>План можно изменить позже.</div>
-  </div>
-);
-
 switch (currentStep) {
 case 0: {
   return (
-    <div className="space-y-6">
-      {sharedNote}
+    <div className="space-y-8">
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <div className="text-sm font-semibold text-gray-900">Базовый план организации</div>
-        <div className="mt-1 text-xs text-gray-500">Старт от 28 000 ₽</div>
-        <p className="mt-3 text-sm text-gray-700">
-          Это организационная основа. Итоговая стоимость зависит от формата и деталей — всё будет видно до подтверждения.
-        </p>
-        <ul className="mt-4 space-y-2 text-sm text-gray-700">
-          {[
-            "Оформление необходимых документов",
-            "Координация процесса",
-            "Консультация и сопровождение",
-            "Организация взаимодействия с моргом и кладбищем",
-          ].map((item) => (
-            <li key={item} className="flex items-start gap-2">
-              <Check className="mt-0.5 h-4 w-4 text-gray-700" />
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
+      {/* ✅ Превью гроба */}
+<div className="bg-[#1a1c23] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 relative">
+  <div className="aspect-[16/9] md:aspect-[2/1] relative">
+    <SafeImg
+      src={currentCoffinPreview}
+      fallbackSrc="/coffins/pine/pine-atlas.jpg"
+      alt="Превью гроба"
+      className="w-full h-full object-cover"
+    />
+    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+    {/* Инфо-панель */}
+    <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
+      <div className="min-w-0">
+        <div className="text-white/80 text-xs truncate">
+          Отделка: {liningOptions.find((l) => l.id === currentLiningId)?.name ?? "—"}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{/* ✅ Заголовок блока */}
+<div className="space-y-4">
+  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0">
+    <Label className="text-base font-medium text-gray-900">Внутренняя отделка</Label>
+    <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">
+      Ткань и цвет
+    </span>
+  </div>
+
+  {/* ✅ Карточки как в основном мастере */}
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+    {liningOptions.map((lining) => (
+      <button
+        key={lining.id}
+        type="button"
+        onClick={() => handleInputChange("liningColor", lining.id)}
+        className={cn(
+          "group relative rounded-2xl overflow-hidden transition-all duration-300 text-left",
+          currentLiningId === lining.id
+            ? "ring-2 ring-purple-600 ring-offset-2 shadow-xl scale-[1.02]"
+            : "ring-1 ring-gray-200 hover:ring-gray-300 hover:shadow-lg hover:-translate-y-0.5"
+        )}
+      >
+        <div className="aspect-[16/9] sm:aspect-[4/3] w-full relative">
+          <SafeImg
+            src={lining.texture}
+            fallbackSrc="https://images.unsplash.com/photo-1619043519379-99df2736108d?w=800"
+            alt={lining.name}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          />
+
+          {/* градиент/оверлей */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60" />
+
+          {/* галочка */}
+          {currentLiningId === lining.id && (
+            <div className="absolute top-3 right-3 w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center shadow-lg animate-in zoom-in">
+              <Check className="w-3.5 h-3.5 text-white" />
+            </div>
+          )}
+
+          {/* подписи */}
+          <div className="absolute bottom-0 inset-x-0 p-3 bg-white/90 backdrop-blur-sm border-t border-white/50">
+            <div className="text-gray-900 font-medium text-sm truncate">
+              {lining.name}
+            </div>
+            <div className="text-gray-500 text-xs">
+              {lining.description}
+            </div>
+          </div>
+        </div>
+      </button>
+    ))}
+  </div>
+</div>
+
+
+      <Separator />
+
+      {/* ОСОБЫЕ ПОЖЕЛАНИЯ */}
+      <div>
+        <Label>Особые пожелания</Label>
+        <Textarea
+          value={safeFormData.specialRequests}
+          onChange={(e) =>
+            handleInputChange("specialRequests", e.target.value)
+          }
+          rows={4}
+          maxLength={300}
+          className="mt-2"
+        />
       </div>
     </div>
   );
@@ -1463,10 +1445,7 @@ case 0: {
 case 1: {
 return (
 <div className="space-y-6">
-{sharedNote}
 <div>
-<div className="text-sm font-semibold text-gray-900">Как будет проходить прощание</div>
-<p className="text-xs text-gray-500 mt-1">Это основной выбор. Его можно изменить позже.</p>
 <div className="grid grid-cols-2 gap-3">
 <button
 type="button"
@@ -1495,85 +1474,33 @@ safeFormData.serviceType === "cremation"
 <div className="text-sm text-gray-900">Кремация</div>
 <div className="text-xs text-gray-600">С выдачей урны</div>
 </button>
-
-<button
-type="button"
-onClick={() => handleInputChange("serviceType", "unknown")}
-className={cn(
-"px-5 py-2 border-2 rounded-full text-left transition-all backdrop-blur-sm col-span-2",
-safeFormData.serviceType === "unknown"
-? "border-gray-900 bg-white/60"
-: "border-gray-300/50 bg-white/30 hover:border-gray-400/60 hover:bg-white/40"
-)}
->
-<div className="text-sm text-gray-900">Пока не знаю — поможем определиться</div>
-</button>
 </div>
-</div>
-
-</div>
-);
-}
-
-case 2: {
-return (
-<div className="space-y-6">
-{sharedNote}
-
-<div>
-<div className="text-sm font-semibold text-gray-900">Зал и церемония</div>
-<p className="text-xs text-gray-500 mt-1">Выбор влияет только на формат проведения, не на достоинство прощания.</p>
-<div className="flex items-center justify-between mb-3">
-<div>
-<Label className="text-gray-900">Прощание в зале</Label>
-<p className="text-xs text-gray-700 mt-1">Церемония прощания с родными</p>
-</div>
-</div>
-</div>
-
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-{[
-  { id: "60", title: "Зал прощания до 60 минут", note: "Большинство семей выбирают этот вариант." },
-  { id: "none", title: "Без зала" },
-  { id: "90", title: "Увеличить время до 90 минут" },
-].map((option) => {
-  const isSelected =
-    option.id === "none"
-      ? !safeFormData.hasHall
-      : safeFormData.hasHall && Number(safeFormData.hallDuration || 0) === Number(option.id);
-  return (
-    <button
-      key={option.id}
-      type="button"
-      onClick={() => {
-        if (option.id === "none") {
-          handleInputChange("hasHall", false);
-        } else {
-          handleInputChange("hasHall", true);
-          handleInputChange("hallDuration", Number(option.id));
-        }
-      }}
-      className={cn(
-        "p-4 border-2 rounded-full text-left transition-all",
-        isSelected ? "border-gray-900 bg-gray-50" : "border-gray-200 hover:border-gray-300"
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="text-sm text-gray-900">{option.title}</div>
-        <div className="text-xs text-gray-500 whitespace-nowrap">
-          {formatDelta(PLAN_DELTAS.hall[option.id as keyof typeof PLAN_DELTAS.hall])}
-        </div>
-      </div>
-      {option.note && <div className="text-xs text-gray-500 mt-1">{option.note}</div>}
-    </button>
-  );
-})}
 </div>
 
 <Separator />
 
 <div>
-<Label className="mb-3 block">Формат церемонии</Label>
+<div className="flex items-center justify-between mb-3">
+<div>
+<Label className="text-gray-900">Зал прощания</Label>
+<p className="text-xs text-gray-700 mt-1">Церемония прощания с родными</p>
+</div>
+<Switch checked={safeFormData.hasHall} onCheckedChange={(checked) => handleInputChange("hasHall", checked)} />
+</div>
+
+{!safeFormData.hasHall && (
+<div className="bg-amber-500/10 backdrop-blur-sm border border-amber-400/30 rounded-full p-4">
+<p className="text-sm text-amber-900">
+Без зала — технологическая кремация без церемонии. Можно попрощаться в зале морга.
+</p>
+</div>
+)}
+</div>
+
+{safeFormData.hasHall && (
+<>
+<div>
+<Label className="mb-3 block">Тип церемонии</Label>
 <RadioGroup
 value={safeFormData.ceremonyType}
 onValueChange={(value) => handleInputChange("ceremonyType", value)}
@@ -1586,13 +1513,11 @@ safeFormData.ceremonyType === "civil" && "border-black bg-gray-50"
 )}
 >
 <RadioGroupItem value="civil" id="civil" className="mt-0.5" />
-<div className="flex-1 flex items-start justify-between gap-3">
+<div className="flex-1">
 <Label htmlFor="civil" className="cursor-pointer">
-Светская церемония
+Светская
 </Label>
-  <span className="text-xs text-gray-500 whitespace-nowrap">
-    {formatDelta(PLAN_DELTAS.ceremony.secular)}
-  </span>
+<p className="text-xs text-gray-500 mt-1">Без религиозных обрядов</p>
 </div>
 </div>
 
@@ -1603,13 +1528,11 @@ safeFormData.ceremonyType === "religious" && "border-black bg-gray-50"
 )}
 >
 <RadioGroupItem value="religious" id="religious" className="mt-0.5" />
-<div className="flex-1 flex items-start justify-between gap-3">
+<div className="flex-1">
 <Label htmlFor="religious" className="cursor-pointer">
 Религиозная
 </Label>
-  <span className="text-xs text-gray-500 whitespace-nowrap">
-    {formatDelta(PLAN_DELTAS.ceremony.religious)}
-  </span>
+<p className="text-xs text-gray-500 mt-1">С участием священнослужителя</p>
 </div>
 </div>
 
@@ -1620,43 +1543,65 @@ safeFormData.ceremonyType === "combined" && "border-black bg-gray-50"
 )}
 >
 <RadioGroupItem value="combined" id="combined" className="mt-0.5" />
-<div className="flex-1 flex items-start justify-between gap-3">
+<div className="flex-1">
 <Label htmlFor="combined" className="cursor-pointer">
 Комбинированная
 </Label>
-  <span className="text-xs text-gray-500 whitespace-nowrap">
-    {formatDelta(PLAN_DELTAS.ceremony.mixed)}
-  </span>
-</div>
-</div>
-
-<div
-className={cn(
-"flex items-start space-x-3 p-4 border rounded-full transition-all",
-safeFormData.ceremonyType === "unknown" && "border-black bg-gray-50"
-)}
->
-<RadioGroupItem value="unknown" id="unknown" className="mt-0.5" />
-<div className="flex-1 flex items-start justify-between gap-3">
-<Label htmlFor="unknown" className="cursor-pointer">
-Пока не знаю
-</Label>
-  <span className="text-xs text-gray-500 whitespace-nowrap">
-    {formatDelta(PLAN_DELTAS.ceremony.unknown)}
-  </span>
+<p className="text-xs text-gray-500 mt-1">Светская + религиозная часть</p>
 </div>
 </div>
 </RadioGroup>
-<p className="text-xs text-gray-500 mt-3">
-Выбор влияет только на формат проведения, не на достоинство прощания.
-</p>
 </div>
+
+{safeFormData.ceremonyType === "combined" && (
+<div>
+<Label htmlFor="ceremonyOrder">Последовательность</Label>
+<Select value={safeFormData.ceremonyOrder} onValueChange={(value) => handleInputChange("ceremonyOrder", value)}>
+<SelectTrigger className="mt-2">
+<SelectValue placeholder="Выберите порядок" />
+</SelectTrigger>
+<SelectContent>
+<SelectItem value="civil-first">Светская → Религиозная</SelectItem>
+<SelectItem value="religious-first">Религиозная → Светская</SelectItem>
+</SelectContent>
+</Select>
+</div>
+)}
+
+<Separator />
+
+<div>
+<Label className="mb-3 block">Длительность</Label>
+<p className="text-xs text-gray-500 mb-3">Рекомендуем 60–90 мин</p>
+<div className="grid grid-cols-3 gap-3">
+{[30, 60, 90].map((duration) => (
+<button
+key={duration}
+type="button"
+onClick={() => handleInputChange("hallDuration", duration)}
+className={cn(
+"p-4 border-2 rounded-full text-center transition-all",
+safeFormData.hallDuration === duration
+? "border-gray-900 bg-gray-50"
+: "border-gray-200 hover:border-gray-300"
+)}
+>
+<div className="text-sm mb-1">{duration} мин</div>
+<div className="text-xs text-gray-500">
+{(PRICES.hallDuration as any)[duration].toLocaleString("ru-RU")} ₽
+</div>
+</button>
+))}
+</div>
+</div>
+</>
+)}
 </div>
 );
 }
 
-case 3: {
-// Шаг 4: Логистика
+case 2: {
+// Шаг 3: Логистика
 const totalActive = [...MOSCOW_CEMETERIES, ...MO_CEMETERIES].filter((c) => {
 if (safeFormData.serviceType === "burial") {
 return (c.type === "cemetery" || c.type === "both") && c.working;
@@ -1666,11 +1611,6 @@ return c.type === "crematorium" || c.type === "both";
 
 return (
 <div className="space-y-6">
-{sharedNote}
-<div>
-  <div className="text-sm font-semibold text-gray-900">Организация и транспорт</div>
-  <p className="text-xs text-gray-500 mt-1">Это стандартный набор для спокойного проведения церемонии.</p>
-</div>
 <div className="relative">
 <Label htmlFor="cemetery" className="mb-3 block">
 {safeFormData.serviceType === "burial" ? "Выбор кладбища" : "Выбор крематория"}
@@ -1741,9 +1681,9 @@ className="w-full text-left p-3 rounded-xl hover:bg-gray-50 transition-colors"
 </span>
 )}
 </div>
-            </div>
-          </div>
-        </button>
+</div>
+</div>
+</button>
 ))}
 </div>
 </div>
@@ -2168,336 +2108,165 @@ cemetery: !safeFormData.hearseRoute.cemetery,
 </Button>
 </div>
 </div>
+</div>
+);
+}
+
+case 3: {
+// Шаг 4: Документы
+return (
+<div className="space-y-6">
+<div>
+<Label htmlFor="fullName">ФИО усопшего *</Label>
+<div className="flex gap-2 mt-2">
+<Input
+id="fullName"
+value={safeFormData.fullName}
+onChange={(e) => handleInputChange("fullName", e.target.value)}
+placeholder="Иванов Иван Иванович"
+className="flex-1"
+/>
+<Button
+variant="outline"
+size="sm"
+type="button"
+onClick={() => handleSkipField("fullName")}
+className="whitespace-nowrap rounded-[30px] min-w-[96px]"
+>
+Позже
+</Button>
+</div>
+</div>
+
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div>
+<Label htmlFor="birthDate">Дата рождения</Label>
+<div className="flex gap-2 mt-2">
+<Input
+id="birthDate"
+type={safeFormData.birthDate === "—" ? "text" : "date"}
+value={safeFormData.birthDate}
+onChange={(e) => handleInputChange("birthDate", e.target.value)}
+className="flex-1"
+/>
+<Button
+variant="outline"
+size="sm"
+type="button"
+onClick={() => handleSkipField("birthDate")}
+className="whitespace-nowrap rounded-[30px] min-w-[96px]"
+>
+Не знаю
+</Button>
+</div>
+</div>
+
+<div>
+<Label htmlFor="deathDate">Дата смерти</Label>
+<div className="flex gap-2 mt-2">
+<Input
+id="deathDate"
+type={safeFormData.deathDate === "—" ? "text" : "date"}
+value={safeFormData.deathDate}
+onChange={(e) => handleInputChange("deathDate", e.target.value)}
+className="flex-1"
+/>
+<Button
+variant="outline"
+size="sm"
+type="button"
+onClick={() => handleSkipField("deathDate")}
+className="whitespace-nowrap rounded-[30px] min-w-[96px]"
+>
+Не знаю
+</Button>
+</div>
+</div>
+</div>
+
+<div>
+<Label htmlFor="deathCertificate">№ свидетельства о смерти</Label>
+<div className="flex gap-2 mt-2">
+<Input
+id="deathCertificate"
+value={safeFormData.deathCertificate}
+onChange={(e) => handleInputChange("deathCertificate", e.target.value)}
+placeholder="AA-000 № 000000"
+className="flex-1"
+/>
+<Button
+variant="outline"
+size="sm"
+type="button"
+onClick={() => handleSkipField("deathCertificate")}
+className="whitespace-nowrap rounded-[30px] min-w-[96px]"
+>
+Не знаю
+</Button>
+</div>
+</div>
 
 <Separator />
 
-<div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-  <button
-    type="button"
-    onClick={() => setShowDocumentsBlock((prev) => !prev)}
-    className="w-full flex items-center justify-between text-left"
-  >
-    <div>
-      <div className="text-sm font-semibold text-gray-900">Документы и данные</div>
-      <div className="text-xs text-gray-500 mt-1">Можно заполнить сейчас или вернуться позже</div>
-    </div>
-    <ChevronDown className={cn("h-4 w-4 text-gray-500 transition-transform", showDocumentsBlock && "rotate-180")} />
-  </button>
+<div>
+<Label htmlFor="relationship">Ваше отношение к усопшему</Label>
+<Select value={safeFormData.relationship} onValueChange={(value) => handleInputChange("relationship", value)}>
+<SelectTrigger className="mt-2">
+<SelectValue placeholder="Выберите из списка" />
+</SelectTrigger>
+<SelectContent>
+<SelectItem value="spouse">Супруг(а)</SelectItem>
+<SelectItem value="child">Сын / Дочь</SelectItem>
+<SelectItem value="parent">Родитель</SelectItem>
+<SelectItem value="sibling">Брат / Сестра</SelectItem>
+<SelectItem value="relative">Дальний родственник</SelectItem>
+<SelectItem value="friend">Друг</SelectItem>
+<SelectItem value="other">Доверенное лицо</SelectItem>
+</SelectContent>
+</Select>
+</div>
 
-  {showDocumentsBlock && (
-    <div className="mt-4 space-y-6">
-      <div>
-        <Label htmlFor="fullName">ФИО усопшего *</Label>
-        <div className="flex gap-2 mt-2">
-          <Input
-            id="fullName"
-            value={safeFormData.fullName}
-            onChange={(e) => handleInputChange("fullName", e.target.value)}
-            placeholder="Иванов Иван Иванович"
-            className="flex-1"
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            type="button"
-            onClick={() => handleSkipField("fullName")}
-            className="whitespace-nowrap rounded-[30px] min-w-[96px]"
-          >
-            Позже
-          </Button>
-        </div>
-      </div>
+<Separator />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="birthDate">Дата рождения</Label>
-          <div className="flex gap-2 mt-2">
-            <Input
-              id="birthDate"
-              type={safeFormData.birthDate === "—" ? "text" : "date"}
-              value={safeFormData.birthDate}
-              onChange={(e) => handleInputChange("birthDate", e.target.value)}
-              className="flex-1"
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              type="button"
-              onClick={() => handleSkipField("birthDate")}
-              className="whitespace-nowrap rounded-[30px] min-w-[96px]"
-            >
-              Не знаю
-            </Button>
-          </div>
-        </div>
-
-        <div>
-          <Label htmlFor="deathDate">Дата смерти</Label>
-          <div className="flex gap-2 mt-2">
-            <Input
-              id="deathDate"
-              type={safeFormData.deathDate === "—" ? "text" : "date"}
-              value={safeFormData.deathDate}
-              onChange={(e) => handleInputChange("deathDate", e.target.value)}
-              className="flex-1"
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              type="button"
-              onClick={() => handleSkipField("deathDate")}
-              className="whitespace-nowrap rounded-[30px] min-w-[96px]"
-            >
-              Не знаю
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <Label htmlFor="deathCertificate">№ свидетельства о смерти</Label>
-        <div className="flex gap-2 mt-2">
-          <Input
-            id="deathCertificate"
-            value={safeFormData.deathCertificate}
-            onChange={(e) => handleInputChange("deathCertificate", e.target.value)}
-            placeholder="AA-000 № 000000"
-            className="flex-1"
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            type="button"
-            onClick={() => handleSkipField("deathCertificate")}
-            className="whitespace-nowrap rounded-[30px] min-w-[96px]"
-          >
-            Не знаю
-          </Button>
-        </div>
-      </div>
-
-      <Separator />
-
-      <div>
-        <Label htmlFor="relationship">Ваше отношение к усопшему</Label>
-        <Select value={safeFormData.relationship} onValueChange={(value) => handleInputChange("relationship", value)}>
-          <SelectTrigger className="mt-2">
-            <SelectValue placeholder="Выберите из списка" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="spouse">Супруг(а)</SelectItem>
-            <SelectItem value="child">Сын / Дочь</SelectItem>
-            <SelectItem value="parent">Родитель</SelectItem>
-            <SelectItem value="sibling">Брат / Сестра</SelectItem>
-            <SelectItem value="relative">Дальний родственник</SelectItem>
-            <SelectItem value="friend">Друг</SelectItem>
-            <SelectItem value="other">Доверенное лицо</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <Separator />
-
-      <div
-        id="data-consent"
-        className={cn(
-          "flex items-start space-x-3 p-4 border rounded-full transition-all",
-          showConsentError && "border-red-500 bg-red-50"
-        )}
-      >
-        <Checkbox
-          id="consent"
-          checked={safeFormData.dataConsent}
-          onCheckedChange={(checked) => {
-            handleInputChange("dataConsent", checked === true);
-          }}
-          className="mt-1"
-        />
-        <div className="flex-1">
-          <Label htmlFor="consent" className="cursor-pointer text-sm">
-            Я согласен(а) на обработку персональных данных и подтверждаю, что ознакомлен(а) с{" "}
-            <a
-              href="/info"
-              className="underline text-blue-600"
-              target="_blank"
-              rel="noreferrer"
-            >
-              политикой конфиденциальности
-            </a>
-          </Label>
-          {showConsentError && (
-            <p className="text-xs text-red-600 mt-2">Необходимо дать согласие для продолжения</p>
-          )}
-        </div>
-      </div>
-    </div>
-  )}
+<div
+id="data-consent"
+className={cn(
+"flex items-start space-x-3 p-4 border rounded-full transition-all",
+showConsentError && "border-red-500 bg-red-50"
+)}
+>
+<Checkbox
+id="consent"
+checked={safeFormData.dataConsent}
+onCheckedChange={(checked) => {
+// shadcn Checkbox отдаёт boolean | "indeterminate"
+handleInputChange("dataConsent", checked === true);
+}}
+className="mt-1"
+/>
+<div className="flex-1">
+<Label htmlFor="consent" className="cursor-pointer text-sm">
+Я согласен(а) на обработку персональных данных и подтверждаю, что ознакомлен(а) с{" "}
+<a
+  href="/info"
+  className="underline text-blue-600"
+  target="_blank"
+  rel="noreferrer"
+>
+политикой конфиденциальности
+</a>
+</Label>
+{showConsentError && (
+<p className="text-xs text-red-600 mt-2">Необходимо дать согласие для продолжения</p>
+)}
+</div>
 </div>
 </div>
 );
 }
 
 case 4: {
-  const attributesOptions = [
-    {
-      id: "minimal",
-      title: "Минимальный (достойный)",
-      description: "Спокойный базовый набор.",
-      delta: PLAN_DELTAS.attributesLevel.minimal,
-    },
-    {
-      id: "recommended",
-      title: "Рекомендуемый",
-      description: "Оптимальный вариант для большинства семей.",
-      delta: PLAN_DELTAS.attributesLevel.recommended,
-    },
-    {
-      id: "extended",
-      title: "Расширенный",
-      description: "Больше деталей и материалов.",
-      delta: PLAN_DELTAS.attributesLevel.extended,
-    },
-    {
-      id: "custom",
-      title: "Выбрать самостоятельно",
-      description: "Настройте детали вручную.",
-      delta: PLAN_DELTAS.attributesLevel.custom,
-    },
-  ] as const;
-
-  return (
-    <div className="space-y-6">
-      {sharedNote}
-
-      <div>
-        <div className="text-sm font-semibold text-gray-900">Оформление и атрибутика</div>
-        <div className="mt-1 text-xs text-gray-500">Все варианты соответствуют уважительному формату прощания.</div>
-        <div className="text-xs text-gray-500">Разница — в материалах и деталях.</div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {attributesOptions.map((option) => {
-          const isSelected = attributesLevel === option.id;
-          return (
-            <button
-              key={option.id}
-              type="button"
-              onClick={() => setAttributesLevel(option.id)}
-              className={cn(
-                "p-4 border-2 rounded-2xl text-left transition-all",
-                isSelected ? "border-gray-900 bg-gray-50" : "border-gray-200 hover:border-gray-300"
-              )}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-sm text-gray-900">{option.title}</div>
-                  <div className="text-xs text-gray-500 mt-1">{option.description}</div>
-                </div>
-                <div className="text-xs text-gray-500 whitespace-nowrap">
-                  {formatDelta(option.delta)}
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {attributesLevel === "custom" && (
-        <div className="space-y-8 pt-2">
-          {/* ✅ Превью гроба */}
-          <div className="bg-[#1a1c23] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 relative">
-            <div className="aspect-[16/9] md:aspect-[2/1] relative">
-              <SafeImg
-                src={currentCoffinPreview}
-                fallbackSrc="/coffins/pine/pine-atlas.jpg"
-                alt="Превью гроба"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-              <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-white/80 text-xs truncate">
-                    Отделка: {liningOptions.find((l) => l.id === currentLiningId)?.name ?? "—"}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0">
-              <Label className="text-base font-medium text-gray-900">Внутренняя отделка</Label>
-              <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">
-                Ткань и цвет
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-              {liningOptions.map((lining) => (
-                <button
-                  key={lining.id}
-                  type="button"
-                  onClick={() => handleInputChange("liningColor", lining.id)}
-                  className={cn(
-                    "group relative rounded-2xl overflow-hidden transition-all duration-300 text-left",
-                    currentLiningId === lining.id
-                      ? "ring-2 ring-purple-600 ring-offset-2 shadow-xl scale-[1.02]"
-                      : "ring-1 ring-gray-200 hover:ring-gray-300 hover:shadow-lg hover:-translate-y-0.5"
-                  )}
-                >
-                  <div className="aspect-[16/9] sm:aspect-[4/3] w-full relative">
-                    <SafeImg
-                      src={lining.texture}
-                      fallbackSrc="https://images.unsplash.com/photo-1619043519379-99df2736108d?w=800"
-                      alt={lining.name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60" />
-
-                    {currentLiningId === lining.id && (
-                      <div className="absolute top-3 right-3 w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center shadow-lg animate-in zoom-in">
-                        <Check className="w-3.5 h-3.5 text-white" />
-                      </div>
-                    )}
-
-                    <div className="absolute bottom-0 inset-x-0 p-3 bg-white/90 backdrop-blur-sm border-t border-white/50">
-                      <div className="text-gray-900 font-medium text-sm truncate">
-                        {lining.name}
-                      </div>
-                      <div className="text-gray-500 text-xs">
-                        {lining.description}
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <Separator />
-
-          <div>
-            <Label>Особые пожелания</Label>
-            <Textarea
-              value={safeFormData.specialRequests}
-              onChange={(e) =>
-                handleInputChange("specialRequests", e.target.value)
-              }
-              rows={4}
-              maxLength={300}
-              className="mt-2"
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-case 5: {
-// Шаг 6: Подтверждение и оплата
+// Шаг 5: Подтверждение и оплата
 const emailValue = (safeFormData.userEmail || "").trim();
 const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue);
 const canSubmit = totalRub > 0 && emailOk;
@@ -2651,7 +2420,6 @@ setOrderConfirmation({
   emailSent: Boolean(data?.emailSent),
   paymentLink: data?.paymentLink ?? null,
 });
-setDraftCreated(true);
 } catch (e) {
 console.error("Order request failed:", e);
 alert("Не удалось оформить бронирование. Попробуйте ещё раз или свяжитесь с поддержкой.");
@@ -2662,18 +2430,6 @@ setIsSubmittingOrder(false);
 
 return (
 <div className="space-y-6">
-
-<div className="bg-white border border-gray-200 rounded-[30px] p-5 shadow-sm">
-  <div className="text-sm font-semibold text-gray-900">Ваш план прощания</div>
-  <div className="mt-1 text-xs text-gray-500">
-    Цена фиксируется до подтверждения и не изменится без вашего согласия.
-  </div>
-  <div className="mt-4 text-sm text-gray-700 leading-relaxed">
-    Сейчас вы ничего не оплачиваете. После нажатия «Оформить» мы отправим вам договор на почту.
-    Координатор свяжется с вами в течение 30 минут только для уточнения деталей, если это понадобится, и ответит на вопросы.
-    Ничего не начнётся без вашего подтверждения.
-  </div>
-</div>
 
 {/* Формат */}
 {summarySections.map((section) => (
@@ -2738,18 +2494,6 @@ return (
                     ? "Бронирование оформлено. Договор, детали заказа и ссылка на оплату отправлены вам на почту."
                     : "Договор и детали заказа отправлены вам на почту. Ссылку на оплату пришлём отдельным письмом."}
                 </p>
-                {draftCreated && orderConfirmation.paymentLink && (
-                  <a
-                    href={orderConfirmation.paymentLink ?? "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 inline-block w-full"
-                  >
-                    <Button className="w-full rounded-2xl bg-gray-900 text-white hover:bg-gray-800">
-                      Перейти к оплате
-                    </Button>
-                  </a>
-                )}
               </div>
             ) : (
               <>
@@ -2773,7 +2517,7 @@ return (
                     </div>
                   )}
                   <div className="mt-2 text-xs text-white/60">
-	                    На этот адрес придёт подтверждение заказа, детали церемонии и договор.
+	                    На этот адрес придёт подтверждение заказа, детали церемонии и документы.
 	                  </div>
 	                </div>
 
@@ -2788,7 +2532,7 @@ return (
                       {formatRubLocal(totalRub)} ₽
                     </div>
                     <div className="text-sm text-white/70 whitespace-nowrap">
-                      Депозит {formatRubLocal(deposit10Rub)} ₽ (включен в итоговую сумму)
+                      Депозит {formatRubLocal(deposit10Rub)} ₽
                     </div>
                   </div>
                 </div>
@@ -2803,7 +2547,7 @@ return (
                 </Button>
 
 	                <div className="text-xs text-white/70 leading-relaxed">
-	                  После оформления мы отправим договор, детали заказа и ссылку на оплату на указанный email.
+	                  Депозит включен в итоговую сумму. После оформления мы отправим договор, детали заказа и ссылку на оплату на указанный email.
 	                </div>
 
 	                <div className="h-px bg-white/15" />
@@ -2812,7 +2556,7 @@ return (
                   className="overflow-hidden rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white/80"
                 >
                   <div className="text-sm font-semibold text-white/90">Нужна консультация?</div>
-                  <div className="mt-1 text-xs text-white/60">Координатор ответит на вопросы в чате. Без давления и навязывания услуг</div>
+                  <div className="mt-1 text-xs text-white/60">Выберите способ коммуникации</div>
                   <div className="mt-3 flex flex-col gap-2">
                     <a href={`tel:${SUPPORT_PHONE_TEL}`} className="block">
                       <Button
@@ -2826,7 +2570,7 @@ return (
                       <Button
                         type="button"
                         variant="secondary"
-                        className="w-full rounded-xl !bg-white/10 !text-white hover:!bg-white/15 px-4 py-2 text-sm font-semibold whitespace-nowrap"
+                        className="w-full rounded-xl !bg-white/10 !text-white hover:!bg-white/15 px-4 py-2 text-sm font-semibold"
                       >
                         Написать в чат
                       </Button>
@@ -2889,12 +2633,6 @@ type="button"
 Назад к пакетам
 </Button>
 
-{prefilledFromDraft && (
-  <div className="rounded-2xl border border-white/30 bg-white/30 backdrop-blur-xl px-4 py-3 text-left text-xs text-white md:border-gray-200 md:bg-gray-50/80 md:text-gray-700">
-    Мы перенесли ваш план. Дальше уточним место и данные — это влияет на расходы площадки.
-  </div>
-)}
-
 <Stepper
 steps={simplifiedSteps}
 currentStep={currentStep}
@@ -2908,30 +2646,27 @@ onStepClick={handleStepClick}
       <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
         {currentStep === 0 && <Package className="h-5 w-5" />}
         {currentStep === 1 && <Church className="h-5 w-5" />}
-        {currentStep === 2 && <Clock className="h-5 w-5" />}
-        {currentStep === 3 && <Car className="h-5 w-5" />}
-        {currentStep === 4 && <FileText className="h-5 w-5" />}
-        {currentStep === 5 && <CheckCircle2 className="h-5 w-5" />}
+        {currentStep === 2 && <Car className="h-5 w-5" />}
+        {currentStep === 3 && <FileText className="h-5 w-5" />}
+        {currentStep === 4 && <CheckCircle2 className="h-5 w-5" />}
       </div>
       <div className="space-y-1.5 text-left">
         <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
           <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
             {currentStep + 1}
           </span>
-          {currentStep === 0 && "Этап 1: Базовый план"}
+          {currentStep === 0 && "Этап 1: Атрибутика"}
           {currentStep === 1 && "Этап 2: Формат"}
-          {currentStep === 2 && "Этап 3: Зал и церемония"}
-          {currentStep === 3 && "Этап 4: Логистика"}
-          {currentStep === 4 && "Этап 5: Атрибутика"}
-          {currentStep === 5 && "Этап 6: Итог"}
+          {currentStep === 2 && "Этап 3: Логистика"}
+          {currentStep === 3 && "Этап 4: Документы"}
+          {currentStep === 4 && "Этап 5: Итог"}
         </h4>
         <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
-          {currentStep === 0 && "Это организационная основа. Итоговая стоимость зависит от формата и деталей — всё будет видно до подтверждения."}
-          {currentStep === 1 && "Выберите формат прощания. Этот выбор можно изменить позже."}
-          {currentStep === 2 && "Определите зал и формат церемонии. Выбор влияет только на формат проведения."}
-          {currentStep === 3 && "Спланируйте логистику: место, время и маршрут сопровождения."}
-          {currentStep === 4 && "Подберите атрибутику и детали оформления."}
-          {currentStep === 5 && "Проверьте и подтвердите: внимательно ознакомьтесь со всеми деталями заказа перед финальным оформлением."}
+          {currentStep === 0 && "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности."}
+          {currentStep === 1 && "Настройте формат прощания: выберите тип церемонии (светская или религиозная) и длительность аренды зала."}
+          {currentStep === 2 && "Спланируйте логистику: укажите дату и время прощания, выберите транспорт для усопшего и гостей."}
+          {currentStep === 3 && "Заполните документы: укажите паспортные данные заявителя и информацию об усопшем для оформления."}
+          {currentStep === 4 && "Проверьте и подтвердите: внимательно ознакомьтесь со всеми деталями заказа перед финальным оформлением."}
         </p>
       </div>
     </div>
@@ -2973,7 +2708,7 @@ disabled={currentStep === simplifiedSteps.length - 1}
 className="gap-2 bg-gray-900 hover:bg-gray-800 rounded-[30px]"
 type="button"
 >
-{currentStep === 0 ? "Продолжить и уточнить формат" : "Далее"}
+Далее
 <ChevronRight className="h-4 w-4" />
 </Button>
 </div>
