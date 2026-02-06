@@ -469,10 +469,7 @@ function HomeInner() {
   }, []);
 
   const handleTopFaq = () => {
-    const faqButton = document.getElementById('td-faq-button') as HTMLButtonElement | null;
-    if (faqButton) {
-      faqButton.click();
-    }
+    router.push('/faq');
   };
 
   return (
@@ -506,7 +503,7 @@ function HomeInner() {
                   {[
                     { label: 'План действий', href: '#how-it-works' },
                     { label: 'Тариф/настройка', href: '#packages' },
-                    { label: 'Частые вопросы', href: '#faq' },
+                    { label: 'Частые вопросы', href: '/faq' },
                     { label: 'Контакты', href: '#contacts' },
                   ].map((item) => (
                     <a
@@ -580,32 +577,6 @@ function HomeInner() {
                   <p className="mt-3 text-sm text-gray-600 leading-relaxed">{review.text}</p>
                 </div>
               ))}
-            </div>
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-                <div className="text-sm font-semibold text-gray-900">Показатели качества</div>
-                <div className="mt-3 grid gap-2">
-                  {TRUST_METRICS.map((metric) => (
-                    <div key={metric.label} className="flex items-center justify-between text-sm text-gray-600">
-                      <span>{metric.label}</span>
-                      <span className="font-semibold text-gray-900">{metric.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="mt-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-              <div className="text-sm font-semibold text-gray-900">Мы работаем с</div>
-              <div className="mt-3 flex flex-wrap gap-3">
-                {TRUST_PARTNERS.map((partner) => (
-                  <div
-                    key={partner}
-                    className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-600"
-                  >
-                    {partner}
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </section>

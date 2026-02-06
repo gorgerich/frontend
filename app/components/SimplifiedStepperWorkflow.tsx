@@ -2761,7 +2761,7 @@ return (
                     </div>
                   )}
                   <div className="mt-2 text-xs text-white/60">
-	                    На этот адрес придёт подтверждение заказа, детали церемонии и документы.
+	                    На этот адрес придёт подтверждение заказа, детали церемонии и договор.
 	                  </div>
 	                </div>
 
@@ -2776,7 +2776,7 @@ return (
                       {formatRubLocal(totalRub)} ₽
                     </div>
                     <div className="text-sm text-white/70 whitespace-nowrap">
-                      Депозит {formatRubLocal(deposit10Rub)} ₽
+                      Депозит {formatRubLocal(deposit10Rub)} ₽ (включен в итоговую сумму)
                     </div>
                   </div>
                 </div>
@@ -2791,7 +2791,7 @@ return (
                 </Button>
 
 	                <div className="text-xs text-white/70 leading-relaxed">
-	                  Депозит включен в итоговую сумму. После оформления мы отправим договор, детали заказа и ссылку на оплату на указанный email.
+	                  После оформления мы отправим договор, детали заказа и ссылку на оплату на указанный email.
 	                </div>
 
 	                <div className="h-px bg-white/15" />
@@ -2800,7 +2800,7 @@ return (
                   className="overflow-hidden rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white/80"
                 >
                   <div className="text-sm font-semibold text-white/90">Нужна консультация?</div>
-                  <div className="mt-1 text-xs text-white/60">Выберите способ коммуникации</div>
+                  <div className="mt-1 text-xs text-white/60">Координатор ответит на вопросы в чате. Без давления и навязывания услуг</div>
                   <div className="mt-3 flex flex-col gap-2">
                     <a href={`tel:${SUPPORT_PHONE_TEL}`} className="block">
                       <Button
@@ -2814,7 +2814,7 @@ return (
                       <Button
                         type="button"
                         variant="secondary"
-                        className="w-full rounded-xl !bg-white/10 !text-white hover:!bg-white/15 px-4 py-2 text-sm font-semibold"
+                        className="w-full rounded-xl !bg-white/10 !text-white hover:!bg-white/15 px-4 py-2 text-sm font-semibold whitespace-nowrap"
                       >
                         Написать в чат
                       </Button>

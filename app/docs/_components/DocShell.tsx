@@ -24,18 +24,17 @@ export function DocShell({ title, updatedAt, sections }: DocShellProps) {
 
         <nav className="mt-6 rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
           <div className="text-xs font-semibold uppercase tracking-wider text-neutral-500">Оглавление</div>
-          <ul className="mt-3 space-y-1 text-sm">
+          <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar">
             {sections.map((section) => (
-              <li key={section.id}>
-                <a
-                  href={`#${section.id}`}
-                  className="text-neutral-700 underline decoration-neutral-300 underline-offset-4 hover:text-neutral-900"
-                >
-                  {section.label}
-                </a>
-              </li>
+              <a
+                key={section.id}
+                href={`#${section.id}`}
+                className="whitespace-nowrap rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-sm transition hover:bg-neutral-100"
+              >
+                {section.label}
+              </a>
             ))}
-          </ul>
+          </div>
         </nav>
 
         <div className="mt-8 space-y-8">

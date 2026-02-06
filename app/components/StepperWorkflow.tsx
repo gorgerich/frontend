@@ -1187,11 +1187,8 @@ export function StepperWorkflow({
     });
 
   const [showHowItWorks, setShowHowItWorks] = useState(false);
-  const [showFaq, setShowFaq] = useState(false);
-  const [activeFaqPhase, setActiveFaqPhase] = useState<string | null>(null);
   const [showDocumentsHelp, setShowDocumentsHelp] = useState(false);
   const howItWorksRef = useRef<HTMLDivElement | null>(null);
-  const faqRef = useRef<HTMLDivElement | null>(null);
   const [openDayId, setOpenDayId] = useState<string | null>(null);
   const howItWorksItemRefs = useRef<Array<HTMLDivElement | null>>([]);
 
@@ -1314,216 +1311,6 @@ export function StepperWorkflow({
     },
   ];
 
-  const faqPhases: Array<{
-    title: string;
-    items: Array<{ q: string; a: string[] }>;
-  }> = [
-    {
-      title: "Сразу после смерти",
-      items: [
-        {
-          q: "Что делать прямо сейчас?",
-          a: [
-            "Если смерть произошла дома — позвоните в 112 и следуйте инструкции диспетчера.",
-            "Если смерть произошла в больнице — вам подскажут, когда и куда обратиться дальше.",
-            "Экстренные действия выполняются по инструкции служб. Мы подключаемся после оформления на месте.",
-          ],
-        },
-        {
-          q: "Нужно ли сразу что-то решать по организации похорон?",
-          a: [
-            "Нет.",
-            "В первые часы ничего не нужно выбирать, заказывать или оплачивать.",
-            "Сначала оформляется факт смерти и определяется, куда доставлено тело.",
-          ],
-        },
-        {
-          q: "Мне уже предлагают услуги. Нужно соглашаться?",
-          a: [
-            "Нет.",
-            "Вы имеете право сказать: «Я приму решение позже».",
-            "Ничего подписывать и оплачивать на месте не обязательно.",
-          ],
-        },
-      ],
-    },
-    {
-      title: "Про сервис и начало работы",
-      items: [
-        {
-          q: "Когда имеет смысл начинать организацию через сайт?",
-          a: [
-            "После того как:",
-            "• факт смерти оформлен,",
-            "• понятно, где находится тело,",
-            "• у вас есть хотя бы часть документов.",
-            "Обычно это происходит в тот же день или на следующий.",
-          ],
-        },
-        {
-          q: "Что произойдёт, если я нажму «Получить план действий»?",
-          a: [
-            "Вы начнёте собирать план — без оплаты и без автоматического запуска услуг.",
-            "Вы сможете:",
-            "• пропускать шаги,",
-            "• выбирать «я не знаю»,",
-            "• сохранить и вернуться позже.",
-          ],
-        },
-        {
-          q: "Это обязывает меня к заказу?",
-          a: ["Нет.", "План не фиксируется и не запускается без вашего подтверждения."],
-        },
-      ],
-    },
-    {
-      title: "Про документы",
-      items: [
-        {
-          q: "Я не знаю, какие документы нужны. Это проблема?",
-          a: [
-            "Нет.",
-            "Мы показываем список под вашу ситуацию, и вы можете отметить «я не знаю».",
-            "Недостающие данные можно уточнить позже.",
-          ],
-        },
-        {
-          q: "Документы отличаются, если смерть произошла дома или в больнице?",
-          a: [
-            "Да.",
-            "Поэтому в списке документов есть переключатели по ситуации.",
-            "Вы видите только то, что относится к вашему случаю.",
-          ],
-        },
-      ],
-    },
-    {
-      title: "Про выбор формата",
-      items: [
-        {
-          q: "Я не понимаю, что выбрать: кремацию или захоронение.",
-          a: [
-            "Это нормально.",
-            "Вы можете выбрать «пока не знаю» — план всё равно соберётся, а выбор можно сделать позже.",
-          ],
-        },
-        {
-          q: "Если я выберу одно, можно будет изменить?",
-          a: ["Да, до подтверждения плана вы можете вернуться и изменить любой пункт."],
-        },
-      ],
-    },
-    {
-      title: "Про стоимость",
-      items: [
-        {
-          q: "Когда я увижу стоимость?",
-          a: [
-            "После того как выберете формат и основные пункты плана.",
-            "Стоимость всегда показывается до подтверждения.",
-          ],
-        },
-        {
-          q: "Почему иногда указана не точная сумма, а диапазон?",
-          a: [
-            "Диапазон появляется, если:",
-            "• есть несколько допустимых вариантов,",
-            "• часть данных пока неизвестна.",
-            "Мы всегда объясняем, от чего зависит разница и когда цена фиксируется окончательно.",
-          ],
-        },
-        {
-          q: "Может ли цена измениться позже?",
-          a: [
-            "Только если вы сами измените состав плана.",
-            "Никакие дополнительные услуги не добавляются без вашего согласия.",
-          ],
-        },
-      ],
-    },
-    {
-      title: "Про координатора",
-      items: [
-        {
-          q: "Мне обязательно общаться с координатором?",
-          a: ["Нет.", "Вы можете пройти весь процесс самостоятельно на сайте."],
-        },
-        {
-          q: "Если я обращусь к координатору, мне будут что-то продавать?",
-          a: [
-            "Нет.",
-            "Координатор:",
-            "• уточняет детали,",
-            "• сверяет план,",
-            "• помогает избежать ошибок.",
-            "Он не меняет план и не добавляет услуги без вашего согласия.",
-          ],
-        },
-      ],
-    },
-    {
-      title: "Про оплату",
-      items: [
-        {
-          q: "Когда происходит оплата?",
-          a: [
-            "Только после того, как вы:",
-            "• проверили план,",
-            "• поняли состав и стоимость,",
-            "• подтвердили, что всё верно.",
-          ],
-        },
-        {
-          q: "Что происходит после оплаты?",
-          a: [
-            "Мы начинаем действовать строго по согласованному плану и держим вас в курсе каждого этапа.",
-          ],
-        },
-      ],
-    },
-    {
-      title: "Про день церемонии и после",
-      items: [
-        {
-          q: "В день прощания мне нужно что-то решать?",
-          a: [
-            "Нет.",
-            "Организационные вопросы уже решены.",
-            "В день церемонии вы не занимаетесь координацией и логистикой.",
-          ],
-        },
-        {
-          q: "Что будет после церемонии?",
-          a: [
-            "Мы:",
-            "• передаём итоговые документы,",
-            "• фиксируем завершение организационной части.",
-            "К этим вопросам не нужно возвращаться позже.",
-          ],
-        },
-      ],
-    },
-    {
-      title: "Если я сомневаюсь",
-      items: [
-        {
-          q: "Я боюсь сделать что-то не так.",
-          a: [
-            "Это нормально.",
-            "Именно поэтому:",
-            "• все шаги можно пересмотреть,",
-            "• ничего не запускается автоматически,",
-            "• вы видите полный план до подтверждения.",
-          ],
-        },
-        {
-          q: "Я не готова сейчас продолжать. Можно остановиться?",
-          a: ["Да.", "Вы можете сохранить план и вернуться позже — с того же места."],
-        },
-      ],
-    },
-  ];
-
   const PACKAGE_ID_BY_SLUG: Record<
     "quiet" | "traditional" | "special",
     { burial: string; cremation: string }
@@ -1553,7 +1340,6 @@ export function StepperWorkflow({
       openPackagesMode();
     } else if (routeFlow === "how-it-works") {
       setShowHowItWorks(true);
-      setShowFaq(false);
       requestAnimationFrame(() => {
         howItWorksRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
@@ -4121,7 +3907,7 @@ function formatRub(n: number) {
 	                          </div>
 	                        )}
 	                        <div className="mt-2 text-xs text-white/60">
-	                          На этот адрес придёт подтверждение заказа, детали церемонии и документы.
+	                          На этот адрес придёт подтверждение заказа, детали церемонии и договор.
 	                        </div>
 	                      </div>
 
@@ -4136,7 +3922,7 @@ function formatRub(n: number) {
                             {formatRubLocal(effectiveTotalRub)} ₽
                           </div>
                           <div className="text-[12px] leading-tight text-white/70">
-                            Депозит {formatRubLocal(effectiveDepositRub)} ₽
+                            Депозит {formatRubLocal(effectiveDepositRub)} ₽ (включен в итоговую сумму)
                           </div>
                         </div>
                       </div>
@@ -4151,7 +3937,7 @@ function formatRub(n: number) {
                       </Button>
 
                       <div className="text-xs text-white/70 leading-relaxed">
-                        Депозит включен в итоговую сумму. После оформления мы отправим договор, детали заказа и ссылку на оплату на указанный email.
+                        После оформления мы отправим договор, детали заказа и ссылку на оплату на указанный email.
                       </div>
 
 	                      <div className="h-px bg-white/15" />
@@ -4161,12 +3947,14 @@ function formatRub(n: number) {
                       >
                         <div className="text-sm font-semibold text-white/90">Нужна консультация?</div>
                         <a
-                          href={`tel:${SUPPORT_PHONE_TEL}`}
-                          className="mt-1 block text-base font-medium text-white hover:underline"
+                          href={SUPPORT_TELEGRAM_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-2 inline-flex w-full items-center justify-center rounded-xl border border-white/30 bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/20 whitespace-nowrap"
                         >
-                          {SUPPORT_PHONE_DISPLAY}
+                          Написать координатору
                         </a>
-                        <div className="mt-1 text-xs text-white/60">Выберите способ коммуникации</div>
+                        <div className="mt-1 text-xs text-white/60">Координатор ответит на вопросы в чате. Без давления и навязывания услуг</div>
                       </div>
 
                       <div className="mt-1 border-t border-white/15 pt-3">
@@ -4232,7 +4020,7 @@ function formatRub(n: number) {
       </div>
       <div ref={containerRef}>
       <Card className="relative z-10 bg-white/10 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30">
-        {(showHowItWorks || showFaq) && (
+        {showHowItWorks && (
           <div className="pointer-events-none absolute inset-0 z-0 rounded-3xl border border-white/20 bg-black/20 backdrop-blur-2xl" />
         )}
         <CardHeader className="relative z-10 pb-4 pt-8 px-6 sm:px-8">
@@ -4254,7 +4042,6 @@ function formatRub(n: number) {
                 onClick={() => {
                   setShowHowItWorks((prev) => {
                     const next = !prev;
-                    if (next) setShowFaq(false);
                     if (next) {
                       requestAnimationFrame(() => {
                         howItWorksRef.current?.scrollIntoView({
@@ -4269,28 +4056,6 @@ function formatRub(n: number) {
                 className="h-10 w-full flex-1 rounded-xl rounded-b-none !bg-white !text-gray-900 hover:!bg-white/90 px-4 text-sm font-semibold shadow-sm"
               >
                 Получить план действий
-              </Button>
-              <Button
-                type="button"
-                onClick={() => {
-                  setShowFaq((prev) => {
-                    const next = !prev;
-                    if (next) setShowHowItWorks(false);
-                    if (next) {
-                      requestAnimationFrame(() => {
-                        faqRef.current?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "start",
-                        });
-                      });
-                    }
-                    return next;
-                  });
-                }}
-                id="td-faq-button"
-                className="h-10 w-full flex-1 rounded-xl rounded-b-none !bg-white !text-gray-900 hover:!bg-white/90 px-4 text-sm font-semibold shadow-sm"
-              >
-                Частые вопросы
               </Button>
             </div>
           </div>
@@ -4374,15 +4139,14 @@ function formatRub(n: number) {
                     </div>
                   );
                 })}
-                <div className="text-[12px] text-white/80 sm:text-sm">
-                  Сроки ориентировочные. Процесс может идти быстрее или медленнее — мы подстраиваемся под вашу ситуацию.
-                </div>
+                
+                
                 <div className="px-2 py-1">
                   <div className="text-center text-sm font-semibold text-white/95 sm:text-base">
                     Выберите, как хотите продолжить дальше:
                   </div>
                   <div className="mt-2 text-center text-[12px] leading-relaxed text-white/80 sm:text-sm">
-                    Вы можете пройти все шаги самостоятельно на сайте
+                    Пройти все шаги самостоятельно на сайте
 или обратиться к координатору.
 
 Оба варианта равнозначны — выбирайте тот, который сейчас спокойнее для вас.
@@ -4425,67 +4189,6 @@ function formatRub(n: number) {
                     </Button>
                   </div>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {showFaq && (
-            <div
-              id="faq"
-              ref={faqRef}
-              className="relative mb-6 -mt-3 overflow-hidden rounded-2xl rounded-t-none border border-white/25 bg-black/15 px-4 py-4 backdrop-blur-2xl shadow-[0_16px_36px_rgba(15,23,42,0.3)]"
-            >
-              <div className="mb-4 flex flex-nowrap gap-2 overflow-x-auto no-scrollbar">
-                {faqPhases.map((phase) => (
-                  <button
-                    key={phase.title}
-                    type="button"
-                    onClick={() => {
-                      const id = `faq-${phase.title}`;
-                      const el = document.getElementById(id);
-                      setActiveFaqPhase(phase.title);
-                      el?.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }}
-                    className={cn(
-                      "rounded-full border px-3 py-1.5 text-[11px] font-semibold whitespace-nowrap transition-colors",
-                      activeFaqPhase === phase.title
-                        ? "border-white/45 bg-black/25 text-white"
-                        : "border-white/25 bg-black/15 text-white/90 hover:bg-black/20",
-                    )}
-                  >
-                    {phase.title}
-                  </button>
-                ))}
-              </div>
-              <div className="space-y-6">
-                {faqPhases.map((phase) => (
-                  <div
-                    key={phase.title}
-                    id={`faq-${phase.title}`}
-                    className="space-y-3"
-                  >
-                    <div className="text-xs font-semibold uppercase tracking-wider text-white/70">
-                      {phase.title}
-                    </div>
-                    <div className="space-y-2">
-                      {phase.items.map((item) => (
-                        <details
-                          key={item.q}
-                          className="rounded-xl border border-white/20 bg-black/12 px-3 py-2.5 backdrop-blur-xl"
-                        >
-                          <summary className="cursor-pointer list-none text-sm font-semibold text-white/95">
-                            {item.q}
-                          </summary>
-                          <div className="mt-2 space-y-1 text-[12px] leading-relaxed text-white/85 sm:text-sm">
-                            {item.a.map((line, idx) => (
-                              <p key={`${item.q}-${idx}`}>{line}</p>
-                            ))}
-                          </div>
-                        </details>
-                      ))}
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
           )}
