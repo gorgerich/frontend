@@ -90,13 +90,16 @@ export const calcPlanTotal = (plan: PlanState) => {
 
 export type TariffDraftConfig = {
   format: "burial" | "cremation" | "unknown";
-  transport: "none" | "10" | "15";
-  pallbearers: "none" | "4" | "6" | "8";
-  hall: "none" | "60" | "90";
+  transport: "none" | "standard" | "comfort" | "premium";
+  pallbearers: "none" | "standard" | "comfort" | "premium";
+  hall: "none" | "60";
   hearseTier: "standard" | "comfort" | "premium";
   coordinationTier: "base" | "comfort" | "premium";
-  secularCeremony: "no" | "yes";
-  churchService: "no" | "yes";
+  ceremonyType: "secular" | "religious" | "mixed";
+  churchService: "none" | "morgue" | "parish" | "cathedral";
+  panikhida: "none" | "standard" | "comfort" | "premium";
+  memorialMeal: "none" | "standard" | "comfort" | "premium";
+  host: "no" | "yes";
 };
 
 type TariffBreakdownItem = {
@@ -108,18 +111,19 @@ type TariffBreakdownItem = {
 };
 
 // Типовые диапазоны и ориентиры (используем консервативные значения)
-const TARIFF_PRICING = {
+export const TARIFF_PRICING = {
   basePrice: 86600,
   transport: {
     none: 0,
-    "10": 12000,
-    "15": 20000,
+    standard: 11400,
+    comfort: 15300,
+    premium: 39000,
   },
   pallbearers: {
     none: 0,
-    "4": 12000,
-    "6": 18000,
-    "8": 24000,
+    standard: 8000,
+    comfort: 16100,
+    premium: 24000,
   },
   hearseTier: {
     standard: 0,
@@ -128,17 +132,39 @@ const TARIFF_PRICING = {
   },
   hall: {
     none: 0,
-    "60": 12000,
-    "90": 20000,
+    "60": 10000,
   },
   coordinationTier: {
     base: 0,
-    comfort: 12000,
-    premium: 24000,
+    comfort: 14100,
+    premium: 90000,
   },
   ceremony: {
-    secular: 12000,
-    church: 18000,
+    secular: 0,
+    religious: 15000,
+    mixed: 20000,
+  },
+  churchService: {
+    none: 0,
+    morgue: 4000,
+    parish: 6000,
+    cathedral: 47000,
+  },
+  panikhida: {
+    none: 0,
+    standard: 5000,
+    comfort: 10000,
+    premium: 20000,
+  },
+  memorialMeal: {
+    none: 0,
+    standard: 800,
+    comfort: 1500,
+    premium: 3000,
+  },
+  host: {
+    no: 0,
+    yes: 37000,
   },
 } as const;
 
@@ -201,12 +227,44 @@ export const calcTariffTotal = (config: TariffDraftConfig) => {
     TARIFF_PRICING.coordinationTier[config.coordinationTier],
   );
 
-  if (config.secularCeremony === "yes") {
-    addLine("secularCeremony", "Светская церемония", TARIFF_PRICING.ceremony.secular, TARIFF_PRICING.ceremony.secular);
+  if (config.ceremonyType !== "secular") {
+    addLine(
+      "ceremonyType",
+      config.ceremonyType === "religious" ? "Религиозная церемония" : "Комбинированная церемония",
+      TARIFF_PRICING.ceremony[config.ceremonyType],
+      TARIFF_PRICING.ceremony[config.ceremonyType],
+    );
   }
 
-  if (config.churchService === "yes") {
-    addLine("churchService", "Отпевание в церкви", TARIFF_PRICING.ceremony.church, TARIFF_PRICING.ceremony.church);
+  if (config.churchService !== "none") {
+    addLine(
+      "churchService",
+      "Отпевание",
+      TARIFF_PRICING.churchService[config.churchService],
+      TARIFF_PRICING.churchService[config.churchService],
+    );
+  }
+
+  if (config.panikhida !== "none") {
+    addLine(
+      "panikhida",
+      "Панихида",
+      TARIFF_PRICING.panikhida[config.panikhida],
+      TARIFF_PRICING.panikhida[config.panikhida],
+    );
+  }
+
+  if (config.memorialMeal !== "none") {
+    addLine(
+      "memorialMeal",
+      "Поминальный обед",
+      TARIFF_PRICING.memorialMeal[config.memorialMeal],
+      TARIFF_PRICING.memorialMeal[config.memorialMeal],
+    );
+  }
+
+  if (config.host === "yes") {
+    addLine("host", "Ведущий", TARIFF_PRICING.host.yes, TARIFF_PRICING.host.yes);
   }
 
   const total = breakdown.reduce((sum, item) => sum + (item.price || 0), 0);

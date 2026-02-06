@@ -668,15 +668,27 @@ useEffect(() => {
         next.hasHall = true;
         next.hallDuration = 90;
       }
-      if (draft?.churchService && draft.churchService !== "no") {
+      if (draft?.churchService && draft.churchService !== "none") {
         next.ceremonyType = "religious";
-      } else if (draft?.secularCeremony === "yes") {
+      } else if (draft?.ceremonyType === "religious") {
+        next.ceremonyType = "religious";
+      } else if (draft?.ceremonyType === "mixed") {
+        next.ceremonyType = "combined";
+      } else if (draft?.ceremonyType === "secular") {
         next.ceremonyType = "civil";
       }
       if (draft?.churchService) next.churchServiceChoice = draft.churchService;
       if (draft?.hearseTier) next.hearseTier = draft.hearseTier;
       if (draft?.coordinationTier) next.coordinationTier = draft.coordinationTier;
-      if (draft?.pallbearers) next.pallbearersCount = draft.pallbearers;
+      if (draft?.pallbearers) {
+        if (draft.pallbearers === "standard" || draft.pallbearers === "comfort") {
+          next.pallbearersCount = "4";
+        } else if (draft.pallbearers === "premium") {
+          next.pallbearersCount = "8";
+        } else {
+          next.pallbearersCount = draft.pallbearers;
+        }
+      }
       if (draft?.pallbearers && draft.pallbearers !== "none") {
         next.needsPallbearers = true;
       }

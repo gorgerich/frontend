@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "./ui/utils";
 import { Button } from "./ui/button";
 import { Check } from "./Icons";
-import { calcTariffTotal, formatCurrency, formatDelta, TariffDraftConfig, BASE_TARIFF_TOTAL } from "./calculationUtils";
+import { calcTariffTotal, formatCurrency, formatDelta, TariffDraftConfig, BASE_TARIFF_TOTAL, TARIFF_PRICING } from "./calculationUtils";
 
 export interface Package {
   id: string;
@@ -37,8 +37,11 @@ export function PackagesSelection({
     hall: "none",
     hearseTier: "standard",
     coordinationTier: "base",
-    secularCeremony: "no",
-    churchService: "no",
+    ceremonyType: "secular",
+    churchService: "none",
+    panikhida: "none",
+    memorialMeal: "none",
+    host: "no",
   });
 
   const [allInclusiveTiers, setAllInclusiveTiers] = React.useState<
@@ -63,43 +66,89 @@ export function PackagesSelection({
       key: "hearseTier",
       label: "Катафалк",
       detail: draftConfig.hearseTier === "comfort" ? "Комфорт" : "Премиум",
-      delta: draftConfig.hearseTier === "comfort" ? 12000 : 35000,
+      delta: TARIFF_PRICING.hearseTier[draftConfig.hearseTier],
     },
     draftConfig.pallbearers !== "none" && {
       key: "pallbearers",
       label: "Носильщики",
-      detail: `${draftConfig.pallbearers} человек`,
-      delta: draftConfig.pallbearers === "4" ? 12000 : draftConfig.pallbearers === "6" ? 18000 : 24000,
+      detail:
+        draftConfig.pallbearers === "standard"
+          ? "Стандарт, 4 человека"
+          : draftConfig.pallbearers === "comfort"
+            ? "Комфорт, 4 человека"
+            : "Премиум",
+      delta: TARIFF_PRICING.pallbearers[draftConfig.pallbearers],
     },
     draftConfig.transport !== "none" && {
       key: "transport",
       label: "Транспорт для близких",
-      detail: draftConfig.transport === "10" ? "До 10 мест" : "До 15 мест",
-      delta: draftConfig.transport === "10" ? 12000 : 20000,
+      detail:
+        draftConfig.transport === "standard"
+          ? "Стандарт (12–19 человек)"
+          : draftConfig.transport === "comfort"
+            ? "Комфорт (12–19 человек)"
+            : "Премиум (до 40 человек)",
+      delta: TARIFF_PRICING.transport[draftConfig.transport],
     },
     draftConfig.hall !== "none" && {
       key: "hall",
       label: "Зал прощания",
-      detail: `${draftConfig.hall} минут`,
-      delta: draftConfig.hall === "60" ? 12000 : 20000,
+      detail: "1 час",
+      delta: TARIFF_PRICING.hall[draftConfig.hall],
     },
-    draftConfig.secularCeremony === "yes" && {
-      key: "secularCeremony",
-      label: "Светская церемония",
-      detail: "Ведущий",
-      delta: 12000,
+    draftConfig.ceremonyType !== "secular" && {
+      key: "ceremonyType",
+      label: "Тип церемонии",
+      detail: draftConfig.ceremonyType === "religious" ? "Религиозная" : "Комбинированная",
+      delta: TARIFF_PRICING.ceremony[draftConfig.ceremonyType],
     },
-    draftConfig.churchService === "yes" && {
+    draftConfig.churchService !== "none" && {
       key: "churchService",
-      label: "Отпевание в церкви",
-      detail: "Церковная служба",
-      delta: 18000,
+      label: "Отпевание",
+      detail:
+        draftConfig.churchService === "morgue"
+          ? "Минимальный обряд в морге"
+          : draftConfig.churchService === "parish"
+            ? "Отпевание в обычном храме"
+            : "Кафедральный собор/монастырь",
+      delta: TARIFF_PRICING.churchService[draftConfig.churchService],
+    },
+    draftConfig.panikhida !== "none" && {
+      key: "panikhida",
+      label: "Панихида",
+      detail:
+        draftConfig.panikhida === "standard"
+          ? "Стандарт"
+          : draftConfig.panikhida === "comfort"
+            ? "Комфорт"
+            : "Премиум",
+      delta: TARIFF_PRICING.panikhida[draftConfig.panikhida],
+    },
+    draftConfig.memorialMeal !== "none" && {
+      key: "memorialMeal",
+      label: "Поминальный обед",
+      detail:
+        draftConfig.memorialMeal === "standard"
+          ? "Стандарт (за человека)"
+          : draftConfig.memorialMeal === "comfort"
+            ? "Комфорт (за человека)"
+            : "Премиум (за человека)",
+      delta: TARIFF_PRICING.memorialMeal[draftConfig.memorialMeal],
+    },
+    draftConfig.host === "yes" && {
+      key: "host",
+      label: "Ведущий",
+      detail: "Организация траурной церемонии",
+      delta: TARIFF_PRICING.host.yes,
     },
     draftConfig.coordinationTier !== "base" && {
       key: "coordinationTier",
       label: "Координатор",
-      detail: draftConfig.coordinationTier === "comfort" ? "Комфорт" : "Премиум",
-      delta: draftConfig.coordinationTier === "comfort" ? 12000 : 24000,
+      detail:
+        draftConfig.coordinationTier === "comfort"
+          ? "Сопровождение церемонии"
+          : "Персональный координатор церемонии",
+      delta: TARIFF_PRICING.coordinationTier[draftConfig.coordinationTier],
     },
   ].filter(Boolean) as { key: string; label: string; detail?: string; delta: number }[];
   const isCustomizingPlan = activePanel === "custom" && addedItems.length > 0;
@@ -216,16 +265,13 @@ export function PackagesSelection({
               {activePanel === "custom" && (
                 <div className="space-y-4">
                   <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 mb-3">
-                      Формат
-                    </div>
                     <OptionRow
                       label="Как будет проходить прощание"
                       value={draftConfig.format}
                       options={[
-                        { value: "burial", label: "Захоронение" },
-                        { value: "cremation", label: "Кремация" },
-                        { value: "unknown", label: "Пока не знаю" },
+                        { value: "burial", label: "Захоронение", subtitle: "Традиционное погребение" },
+                        { value: "cremation", label: "Кремация", subtitle: "С выдачей урны" },
+                        { value: "unknown", label: "Пока не знаю", subtitle: "Поможем определиться" },
                       ]}
                       onChange={(value) =>
                         setDraftConfig((prev) => ({ ...prev, format: value as TariffDraftConfig["format"] }))
@@ -233,122 +279,193 @@ export function PackagesSelection({
                     />
                   </div>
                   <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 mb-3">
-                      Транспорт и организация
-                    </div>
-                    <div className="space-y-3">
-                      <OptionRow
-                        label="Катафалк"
-                        value={draftConfig.hearseTier}
-                        options={[
-                          { value: "standard", label: "Стандарт (включено)" },
-                          { value: "comfort", label: "Комфорт", delta: 12000 },
-                          { value: "premium", label: "Премиум", delta: 35000 },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({ ...prev, hearseTier: value as TariffDraftConfig["hearseTier"] }))
-                        }
-                      />
-                      <OptionRow
-                        label="Носильщики"
-                        value={draftConfig.pallbearers}
-                        options={[
-                          { value: "none", label: "Не нужны" },
-                          { value: "4", label: "4 человека", delta: 12000 },
-                          { value: "6", label: "6 человек", delta: 18000 },
-                          { value: "8", label: "8 человек", delta: 24000 },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({ ...prev, pallbearers: value as TariffDraftConfig["pallbearers"] }))
-                        }
-                      />
-                      <OptionRow
-                        label="Транспорт для близких"
-                        value={draftConfig.transport}
-                        options={[
-                          { value: "none", label: "Не нужен" },
-                          { value: "10", label: "До 10 мест", delta: 12000 },
-                          { value: "15", label: "До 15 мест", delta: 20000 },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({ ...prev, transport: value as TariffDraftConfig["transport"] }))
-                        }
-                      />
-                      <OptionRow
-                        label="Координатор"
-                        value={draftConfig.coordinationTier}
-                        options={[
-                          {
-                            value: "base",
-                            label: "Оформление и сопровождение заказа",
-                          },
-                          {
-                            value: "comfort",
-                            label: "Сопровождение по документам и согласованиям",
-                            delta: 12000,
-                          },
-                          {
-                            value: "premium",
-                            label: "Персональный координатор в день церемонии + контроль договорённостей",
-                            delta: 24000,
-                          },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({
-                            ...prev,
-                            coordinationTier: value as TariffDraftConfig["coordinationTier"],
-                          }))
-                        }
-                      />
-                    </div>
+                    <OptionRow
+                      label="Прощание в зале"
+                      description="Церемония прощания с родными"
+                      value={draftConfig.hall}
+                      options={[
+                        { value: "none", label: "Выключен" },
+                        { value: "60", label: "Включен", delta: 10000 },
+                      ]}
+                      onChange={(value) =>
+                        setDraftConfig((prev) => ({ ...prev, hall: value as TariffDraftConfig["hall"] }))
+                      }
+                    />
                   </div>
 
                   <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 mb-3">
-                      Прощание
-                    </div>
-                    <div className="space-y-3">
-                      <OptionRow
-                        label="Зал прощания"
-                        value={draftConfig.hall}
-                        options={[
-                          { value: "none", label: "Не нужен" },
-                          { value: "60", label: "60 минут", delta: 12000 },
-                          { value: "90", label: "90 минут", delta: 20000 },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({ ...prev, hall: value as TariffDraftConfig["hall"] }))
-                        }
-                      />
-                      <OptionRow
-                        label="Светская церемония (ведущий)"
-                        value={draftConfig.secularCeremony}
-                        options={[
-                          { value: "no", label: "Не нужно" },
-                          { value: "yes", label: "Нужно", delta: 12000 },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({
-                            ...prev,
-                            secularCeremony: value as TariffDraftConfig["secularCeremony"],
-                          }))
-                        }
-                      />
-                      <OptionRow
-                        label="Отпевание в церкви"
-                        value={draftConfig.churchService}
-                        options={[
-                          { value: "no", label: "Не нужно" },
-                          { value: "yes", label: "Нужно", delta: 18000 },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({
-                            ...prev,
-                            churchService: value as TariffDraftConfig["churchService"],
-                          }))
-                        }
-                      />
-                    </div>
+                    <OptionRow
+                      label="Как проходит церемония"
+                      value={draftConfig.ceremonyType}
+                      options={[
+                        { value: "secular", label: "Светская", subtitle: "Без религиозных обрядов" },
+                        {
+                          value: "religious",
+                          label: "Религиозная",
+                          subtitle: "С участием священнослужителя",
+                          delta: 15000,
+                        },
+                        {
+                          value: "mixed",
+                          label: "Комбинированная",
+                          subtitle: "Светская + религиозная часть",
+                          delta: 20000,
+                        },
+                      ]}
+                      onChange={(value) =>
+                        setDraftConfig((prev) => ({
+                          ...prev,
+                          ceremonyType: value as TariffDraftConfig["ceremonyType"],
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <OptionRow
+                      label="Катафалк"
+                      description="Специализированный автомобиль для перевозки гроба"
+                      value={draftConfig.hearseTier}
+                      options={[
+                        { value: "standard", label: "Стандарт (включено)" },
+                        { value: "comfort", label: "Комфорт", delta: 12000 },
+                        { value: "premium", label: "Премиум", delta: 35000 },
+                      ]}
+                      onChange={(value) =>
+                        setDraftConfig((prev) => ({ ...prev, hearseTier: value as TariffDraftConfig["hearseTier"] }))
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <OptionRow
+                      label="Транспорт для близких"
+                      description="Автобус или микроавтобус для 12–19 пассажиров"
+                      value={draftConfig.transport}
+                      options={[
+                        { value: "none", label: "Не нужен" },
+                        { value: "standard", label: "Стандарт (12-19 человек)", delta: 11400 },
+                        { value: "comfort", label: "Комфорт (12-19 человек)", delta: 15300 },
+                        { value: "premium", label: "Премиум (до 40 человек)", delta: 39000 },
+                      ]}
+                      onChange={(value) =>
+                        setDraftConfig((prev) => ({ ...prev, transport: value as TariffDraftConfig["transport"] }))
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <OptionRow
+                      label="Носильщики"
+                      description="Бригада (обычно 4 человека) для погрузки, выноса и заноса гроба"
+                      value={draftConfig.pallbearers}
+                      options={[
+                        { value: "none", label: "Не нужны" },
+                        { value: "standard", label: "Стандарт (4 человека)", delta: 8000 },
+                        { value: "comfort", label: "Комфорт (4 человека)", delta: 16100 },
+                        { value: "premium", label: "Премиум", delta: 24000 },
+                      ]}
+                      onChange={(value) =>
+                        setDraftConfig((prev) => ({ ...prev, pallbearers: value as TariffDraftConfig["pallbearers"] }))
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <OptionRow
+                      label="Координатор"
+                      description="Помощь в подборе принадлежностей, расчет сметы, координация похорон"
+                      value={draftConfig.coordinationTier}
+                      options={[
+                        { value: "base", label: "Оформление заказа и сопровождение (включено)", delta: 10000 },
+                        { value: "comfort", label: "Сопровождение церемонии", delta: 30100 },
+                        { value: "premium", label: "Персональный координатор церемонии", delta: 90000 },
+                      ]}
+                      onChange={(value) =>
+                        setDraftConfig((prev) => ({
+                          ...prev,
+                          coordinationTier: value as TariffDraftConfig["coordinationTier"],
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <OptionRow
+                      label="Отпевание"
+                      description="Православный чин погребения"
+                      value={draftConfig.churchService}
+                      options={[
+                        { value: "none", label: "Не нужно" },
+                        { value: "morgue", label: "Минимальный обряд в морге", delta: 4000 },
+                        { value: "parish", label: "Отпевание в обычном храме", delta: 6000 },
+                        { value: "cathedral", label: "Кафедральный собор/монастырь", delta: 47000 },
+                      ]}
+                      onChange={(value) =>
+                        setDraftConfig((prev) => ({
+                          ...prev,
+                          churchService: value as TariffDraftConfig["churchService"],
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <OptionRow
+                      label="Панихида"
+                      description="Служба на кладбище или в храме, закрытие гроба, панихида"
+                      value={draftConfig.panikhida}
+                      options={[
+                        { value: "none", label: "Не нужно" },
+                        { value: "standard", label: "Стандарт", delta: 5000 },
+                        { value: "comfort", label: "Комфорт", delta: 10000 },
+                        { value: "premium", label: "Премиум", delta: 20000 },
+                      ]}
+                      onChange={(value) =>
+                        setDraftConfig((prev) => ({
+                          ...prev,
+                          panikhida: value as TariffDraftConfig["panikhida"],
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <OptionRow
+                      label="Ведущий"
+                      description="Организация траурной церемонии, сценарий, координация служб"
+                      value={draftConfig.host}
+                      options={[
+                        { value: "no", label: "Не нужно" },
+                        { value: "yes", label: "Нужно", delta: 37000 },
+                      ]}
+                      onChange={(value) =>
+                        setDraftConfig((prev) => ({
+                          ...prev,
+                          host: value as TariffDraftConfig["host"],
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <OptionRow
+                      label="Поминальный обед"
+                      description="Поминки после похорон"
+                      value={draftConfig.memorialMeal}
+                      options={[
+                        { value: "none", label: "Не нужно" },
+                        { value: "standard", label: "Стандарт (за человека)", delta: 800 },
+                        { value: "comfort", label: "Комфорт (за человека)", delta: 1500 },
+                        { value: "premium", label: "Премиум (за человека)", delta: 3000 },
+                      ]}
+                      onChange={(value) =>
+                        setDraftConfig((prev) => ({
+                          ...prev,
+                          memorialMeal: value as TariffDraftConfig["memorialMeal"],
+                        }))
+                      }
+                    />
                   </div>
                 </div>
               )}
@@ -490,8 +607,11 @@ export function PackagesSelection({
                               hall: "none",
                               hearseTier: "standard",
                               coordinationTier: "base",
-                              secularCeremony: "no",
-                              churchService: "no",
+                              ceremonyType: "secular",
+                              churchService: "none",
+                              panikhida: "none",
+                              memorialMeal: "none",
+                              host: "no",
                             } satisfies TariffDraftConfig;
                             try {
                               localStorage.setItem("tihiydom_plan_draft_v1", JSON.stringify(draft));
@@ -505,13 +625,16 @@ export function PackagesSelection({
                           const mappedTier = allInclusiveTiers[pkg.id] ?? "standard";
                           const draft = {
                             format: isCremation ? "cremation" : "burial",
-                            transport: mappedTier === "premium" ? "15" : "10",
-                            pallbearers: mappedTier === "premium" ? "8" : mappedTier === "comfort" ? "6" : "4",
-                            hall: mappedTier === "premium" ? "90" : "60",
+                            transport: mappedTier === "premium" ? "premium" : mappedTier === "comfort" ? "comfort" : "standard",
+                            pallbearers: mappedTier === "premium" ? "premium" : mappedTier === "comfort" ? "comfort" : "standard",
+                            hall: mappedTier === "premium" ? "60" : "60",
                             hearseTier: mappedTier === "premium" ? "premium" : mappedTier === "comfort" ? "comfort" : "standard",
                             coordinationTier: mappedTier === "premium" ? "premium" : mappedTier === "comfort" ? "comfort" : "base",
-                            secularCeremony: "no",
-                            churchService: "no",
+                            ceremonyType: "secular",
+                            churchService: "none",
+                            panikhida: "none",
+                            memorialMeal: "none",
+                            host: "no",
                           } satisfies TariffDraftConfig;
                           try {
                             localStorage.setItem("tihiydom_plan_draft_v1", JSON.stringify(draft));
@@ -590,19 +713,26 @@ export function PackagesSelection({
 
 function OptionRow({
   label,
+  description,
   value,
   options,
   onChange,
 }: {
   label: string;
+  description?: string;
   value: string;
-  options: { value: string; label: string; delta?: number }[];
+  options: { value: string; label: string; subtitle?: string; delta?: number }[];
   onChange: (value: string) => void;
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="text-sm font-medium text-gray-700">{label}</div>
-      <div className="flex flex-wrap gap-2">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500">{label}</div>
+      {description && <div className="text-[12px] text-gray-500 leading-snug">{description}</div>}
+      <div
+        className={cn(
+          "grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+        )}
+      >
         {options.map((option) => {
           const isActive = value === option.value;
           return (
@@ -611,15 +741,34 @@ function OptionRow({
               type="button"
               onClick={() => onChange(option.value)}
               className={cn(
-                "rounded-full border px-3 py-1.5 text-xs font-medium transition",
-                isActive
-                  ? "border-gray-900 bg-gray-900 text-white"
-                  : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+                "w-full min-w-0 rounded-full border-2 px-4 py-2 text-left transition flex items-center justify-between bg-white",
+                isActive ? "border-gray-900 shadow-sm" : "border-gray-200 hover:border-gray-300"
               )}
             >
-              <span>{option.label}</span>
+              <div className="flex min-w-0 items-center gap-3">
+                <span
+                  className={cn(
+                    "flex h-3.5 w-3.5 items-center justify-center rounded-full border",
+                    isActive ? "border-gray-900" : "border-gray-300"
+                  )}
+                >
+                  {isActive && <span className="h-1.5 w-1.5 rounded-full bg-gray-900" />}
+                </span>
+                <span className="flex min-w-0 flex-col">
+                  <span className="text-[12px] sm:text-[13px] font-medium text-gray-900 leading-tight break-words">
+                    {option.label}
+                  </span>
+                  {option.subtitle && (
+                    <span className="text-[11px] text-gray-500 leading-tight break-words">
+                      {option.subtitle}
+                    </span>
+                  )}
+                </span>
+              </div>
               {typeof option.delta === "number" && option.delta !== 0 && (
-                <span className="ml-2 text-[11px] opacity-70">{formatDelta(option.delta)}</span>
+                <span className="text-[11px] sm:text-[12px] font-semibold text-gray-600 whitespace-nowrap">
+                  {formatDelta(option.delta)}
+                </span>
               )}
             </button>
           );
