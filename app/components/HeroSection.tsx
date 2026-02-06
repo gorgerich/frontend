@@ -64,7 +64,7 @@ export function HeroSection() {
   }, []);
 
   return (
-    <section className="relative w-full px-4 pt-14 sm:pt-16 pb-16 md:pt-8 md:pb-20 lg:pb-24">
+    <section className="relative w-full px-4 pt-14 sm:pt-16 pb-16 md:pt-8 md:pb-20 lg:pb-24 md:translate-y-[4%]">
       <div className="mx-auto max-w-7xl relative" ref={wrapperRef}>
         <div
           className="pointer-events-none absolute left-6 right-6 top-0 z-30"
@@ -140,15 +140,15 @@ export function HeroSection() {
                   Что делать, если умер близкий человек
                 </span>
 
-                    <span
-                    className="block text-base sm:text-lg font-medium"
+                  <span
+                    className="block text-lg sm:text-xl font-semibold"
                     style={{
                       fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
                       transform: `translateY(${MOBILE_LINE2_SHIFT})`,
                       lineHeight: MOBILE_LINE2_LINE_HEIGHT,
                     }}
                   >
-                    «Тихий дом» — это онлайн сервис для самостоятельной организации прощания без давления, посредников и скрытых наценок.
+                    «Тихий дом» — это онлайн сервис для самостоятельной организации похорон без давления, посредников и скрытых наценок.
                   </span>
                 </span>
               </h1>
@@ -191,15 +191,15 @@ export function HeroSection() {
                   </span>
 
                   <span
-                    className="block text-xl lg:text-2xl xl:text-2xl font-medium"
+                    className="block text-2xl lg:text-3xl xl:text-3xl font-semibold"
                     style={{
                       fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
-                      fontWeight: 900,
+                      fontWeight: 600,
                       transform: `translateY(${LINE2_SHIFT})`,
                       lineHeight: LINE2_LINE_HEIGHT,
                     }}
                   >
-                    «Тихий дом» — это онлайн сервис для самостоятельной организации прощания без давления, посредников и скрытых наценок.
+                    «Тихий дом» — это онлайн сервис для самостоятельной организации похорон без давления, посредников и скрытых наценок.
                   </span>
                 </span>
               </h1>

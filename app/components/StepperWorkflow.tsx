@@ -1101,6 +1101,7 @@ export function StepperWorkflow({
   const previousStepRef = useRef(0);
 
   const [workflowMode, setWorkflowMode] = useState<"wizard" | "packages">("packages");
+  const [showScenarioBlock, setShowScenarioBlock] = useState(false);
   const [selectedPackageForSimplified, setSelectedPackageForSimplified] =
     useState<SimplifiedPackage | null>(null);
 
@@ -1198,25 +1199,97 @@ export function StepperWorkflow({
     id: string;
     title: string;
     description: string;
-    details: string;
+    details: Array<string | { text: string; strong?: boolean }>;
     numberLabel?: string;
   }> = [
     {
       id: "day1",
-      title: "Спокойно собрать план",
-      description:
-        "В первый день вы разбираетесь с основными вопросами и собираете план действий.",
-      details:
-        "Вы выбираете формат и отмечаете нужные варианты на сайте. Можно вернуться назад, изменить выбор или сделать паузу — ничего не начинается автоматически.",
-        numberLabel: "1",
+      title: "День 1 — обнаружение смерти и обязательные действия",
+      description: "Цель дня: официально зафиксировать факт смерти и не потерять документы и данные.",
+      details: [
+        
+        
+        { text: "1. Вызвать экстренные службы", strong: true },
+        { text: "Что сделать", strong: true },
+        "• Позвонить 112 и сообщить о смерти.",
+        "• Не трогать тело и не предпринимать никаких действий до инструкций диспетчера.",
+        { text: "Важно", strong: true },
+        "• Следовать указаниям по телефону.",
+        "• Не перемещать предметы вокруг тела без необходимости.",
+        "⸻",
+        { text: "2. Дождаться служб и оформления документов", strong: true },
+        { text: "Что происходит", strong: true },
+        "• Скорая и другие службы фиксируют факт смерти.",
+        "• Оформляются первичные документы.",
+        { text: "Важно", strong: true },
+        "• Не уходить, пока оформление не завершено.",
+        "• Уточнить, какие документы оформлены и кем.",
+        "⸻",
+        { text: "3. Зафиксировать данные морга", strong: true },
+        { text: "Что обязательно записать или сфотографировать", strong: true },
+        "• Название морга",
+        "• Адрес",
+        "• Телефон",
+        "• Любой номер / талон / документ, который выдали службы (если выдали)",
+        "• Фамилию сотрудника (если сообщили)",
+        { text: "Зачем", strong: true },
+        "Устные объяснения и бумажки часто теряются.",
+        "Эти данные понадобятся уже завтра.",
+        "⸻",
+        { text: "4. Проконтролировать паспорт умершего", strong: true },
+        { text: "Что проверить", strong: true },
+        "• Где сейчас находится паспорт.",
+        "• Не передавать паспорт «на словах» без фиксации.",
+        { text: "Когда паспорт могут забрать", strong: true },
+        "• Для установления личности и оформления первичных документов.",
+        "• Если смерть произошла вне медучреждения (часто с участием полиции).",
+        "• При проверке личности или обстоятельств смерти.",
+        "• При оформлении материалов проверки / следственных действий.",
+        { text: "Если паспорт забирают — зафиксировать:", strong: true },
+        "• ФИО и должность сотрудника.",
+        "• Куда именно передают паспорт (организация, адрес).",
+        "• Основание (коротко: «для оформления», «для проверки» и т.д.).",
+        "• Номер обращения / проверки и контакт для связи.",
+        "• По возможности — расписку, отметку или фото документа.",
+        "⸻",
+        { text: "5. Оповестить родных и близких", strong: true },
+        { text: "Что сделать", strong: true },
+        "• Коротко сообщить о смерти.",
+        "• Пообещать сообщить детали позже.",
+        { text: "Важно", strong: true },
+        "• В этот день не обсуждать организацию и время прощания.",
+        "• Не принимать финансовых решений в состоянии шока.",
+        { text: "Сообщения для копирования", strong: true },
+        "(скопировать → заменить <…> → отправить)",
+        { text: "Вариант 1 — тёплый", strong: true },
+        "Здравствуй. Пишу с тяжёлой новостью: сегодня не стало <имя/родство>.",
+        "Мы сейчас занимаемся всем необходимым, позже напишу время и место прощания.",
+        "Если сможешь — просто будь на связи.",
+        { text: "Вариант 2 — спокойный", strong: true },
+        "Здравствуй. Сегодня не стало <имя/родство>.",
+        "Детали прощания пришлю позже, как всё подтвердим.",
+        "Если нужно — напиши, отвечу, как будет возможность.",
+        { text: "Вариант 3 — краткий", strong: true },
+        "Здравствуй. Сообщаю, что сегодня не стало <имя/родство>.",
+        "Информацию о времени и месте прощания направлю после подтверждения.",
+        "⸻",
+        { text: "Контрольная точка дня", strong: true },
+        "К концу дня у вас должно быть:",
+        "• данные морга + любой номер / талон / документ от служб (если выдали);",
+        "• понимание, где находится паспорт и кто за него отвечает;",
+        "• контакт 1–2 близких, которые помогут завтра.",
+      ],
+      numberLabel: "1",
     },
     {
       id: "day1_2",
       title: "Проверка и уточнение деталей",
       description:
         "Когда план собран, вы спокойно его проверяете и при необходимости уточняете детали.",
-      details:
-        "Вы видите полный состав плана и стоимость. Координатор связывается только для уточнений и подтверждений — без давления и навязывания.",
+      details: [
+        "Вы видите полный состав плана и стоимость.",
+        "Координатор связывается только для уточнений и подтверждений — без давления и навязывания.",
+      ],
       numberLabel: "1-2",
     },
     {
@@ -1224,8 +1297,9 @@ export function StepperWorkflow({
       title: "Организационные вопросы",
       description:
         "Мы берём на себя организационные и формальные задачи, чтобы снять с вас лишнюю нагрузку.",
-      details:
+      details: [
         "Работа с документами и необходимыми службами, объяснение последовательности действий и текущего статуса — всё по согласованному плану.",
+      ],
       numberLabel: "2",
     },
     {
@@ -1233,8 +1307,9 @@ export function StepperWorkflow({
       title: "Церемония и завершение",
       description:
         "Мы сопровождаем церемонию и доводим процесс до завершения.",
-      details:
+      details: [
         "Контроль договорённостей, сопровождение прощания и передача итоговых документов, чтобы вам не пришлось возвращаться к этим вопросам позже.",
+      ],
       numberLabel: "3"
     },
   ];
@@ -4212,6 +4287,7 @@ function formatRub(n: number) {
                     return next;
                   });
                 }}
+                id="td-faq-button"
                 className="h-10 w-full flex-1 rounded-xl rounded-b-none !bg-white !text-gray-900 hover:!bg-white/90 px-4 text-sm font-semibold shadow-sm"
               >
                 Частые вопросы
@@ -4270,8 +4346,28 @@ function formatRub(n: number) {
                           </span>
                         </button>
                         {isOpen && (
-                          <div className="mt-2 text-[12px] leading-relaxed text-white/80 sm:text-sm">
-                            {day.details}
+                          <div className="mt-2 text-[12px] leading-relaxed text-white/80 sm:text-sm space-y-2">
+                            {day.details.map((detail, detailIndex) => {
+                              if (typeof detail !== "string") {
+                                return (
+                                  <p
+                                    key={`${day.id}-detail-${detailIndex}`}
+                                    className={detail.strong ? "font-semibold text-white/90" : undefined}
+                                  >
+                                    {detail.text}
+                                  </p>
+                                );
+                              }
+                              if (detail === "⸻") {
+                                return (
+                                  <div
+                                    key={`${day.id}-detail-${detailIndex}`}
+                                    className="h-px w-full bg-white/15 my-1"
+                                  />
+                                );
+                              }
+                              return <p key={`${day.id}-detail-${detailIndex}`}>{detail}</p>;
+                            })}
                           </div>
                         )}
                       </div>
@@ -4562,97 +4658,84 @@ function formatRub(n: number) {
     </>
   ) : (
     <div className="space-y-8">
-      <div className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55">
-        <div className="flex gap-4 items-start">
-          <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
-            <Package className="h-5 w-5" />
-          </div>
-          <div className="space-y-1.5 text-left">
-            <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
-              <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
-                1
-              </span>
-              Выбор сценария
-            </h4>
-            <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
-              Выберите сценарий: сдержанный, традиционный или расширенный. Вы всегда можете изменить детали позже
-            </p>
-          </div>
-        </div>
-      </div>
-      <div className="flex justify-center">
-        <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[440px] min-w-0 flex-wrap gap-1">
-          <button
-            type="button"
-            onClick={() => handleInputChange("serviceType", "burial")}
-            className={cn(
-              "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[12px] sm:text-sm font-medium transition-all duration-200 text-center",
-              formData.serviceType === "burial"
-                ? "bg-white text-black shadow-lg"
-                : "text-white hover:bg-white/10",
-            )}
-          >
-            <span className="flex items-center gap-2">
-              <Church className={cn("w-4 h-4", formData.serviceType === "burial" ? "text-black" : "text-white")} />
-              Захоронение
-            </span>
-          </button>
+      {showScenarioBlock && (
+        <>
+          <div className="flex justify-center">
+            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[440px] min-w-0 flex-wrap gap-1">
+              <button
+                type="button"
+                onClick={() => handleInputChange("serviceType", "burial")}
+                className={cn(
+                  "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[12px] sm:text-sm font-medium transition-all duration-200 text-center",
+                  formData.serviceType === "burial"
+                    ? "bg-white text-black shadow-lg"
+                    : "text-white hover:bg-white/10",
+                )}
+              >
+                <span className="flex items-center gap-2">
+                  <Church className={cn("w-4 h-4", formData.serviceType === "burial" ? "text-black" : "text-white")} />
+                  Захоронение
+                </span>
+              </button>
 
-          <button
-            type="button"
-            onClick={() => handleInputChange("serviceType", "cremation")}
-            className={cn(
-              "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[12px] sm:text-sm font-medium transition-all duration-200 text-center",
-              formData.serviceType === "cremation"
-                ? "bg-white text-black shadow-lg"
-                : "text-white hover:bg-white/10",
-            )}
-          >
-            <span className="flex items-center gap-2">
-              <CircleDot className={cn("w-4 h-4", formData.serviceType === "cremation" ? "text-black" : "text-white")} />
-              Кремация
-            </span>
-          </button>
+              <button
+                type="button"
+                onClick={() => handleInputChange("serviceType", "cremation")}
+                className={cn(
+                  "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[12px] sm:text-sm font-medium transition-all duration-200 text-center",
+                  formData.serviceType === "cremation"
+                    ? "bg-white text-black shadow-lg"
+                    : "text-white hover:bg-white/10",
+                )}
+              >
+                <span className="flex items-center gap-2">
+                  <CircleDot className={cn("w-4 h-4", formData.serviceType === "cremation" ? "text-black" : "text-white")} />
+                  Кремация
+                </span>
+              </button>
 
-          <button
-            type="button"
-            onClick={() => handleInputChange("serviceType", "unsure")}
-            className={cn(
-              "flex-1 min-w-0 h-9 px-2.5 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center",
-              formData.serviceType === "unsure"
-                ? "bg-white text-black shadow-lg"
-                : "text-white hover:bg-white/10",
-            )}
-          >
-            <span className="flex items-center gap-1 whitespace-nowrap leading-none">
-              <CircleDot className={cn("w-4 h-4", formData.serviceType === "unsure" ? "text-black" : "text-white")} />
-              Пока не знаю
-            </span>
-          </button>
-        </div>
-      </div>
-      <div ref={bgEndPackagesRef} className="h-0 w-0" />
-      {formData.serviceType === "unsure" ? (
-        <div className="mt-4 rounded-2xl border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-sm">
-          <div className="text-sm font-semibold text-white/95">
-            Пока не знаете, что выбрать?
+              <button
+                type="button"
+                onClick={() => handleInputChange("serviceType", "unsure")}
+                className={cn(
+                  "flex-1 min-w-0 h-9 px-2.5 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center",
+                  formData.serviceType === "unsure"
+                    ? "bg-white text-black shadow-lg"
+                    : "text-white hover:bg-white/10",
+                )}
+              >
+                <span className="flex items-center gap-1 whitespace-nowrap leading-none">
+                  <CircleDot className={cn("w-4 h-4", formData.serviceType === "unsure" ? "text-black" : "text-white")} />
+                  Пока не знаю
+                </span>
+              </button>
+            </div>
           </div>
-          <div className="mt-1 text-[12px] leading-relaxed text-white/80 sm:text-sm">
-            Это нормально. Координатор поможет определиться и ответит на вопросы.
-          </div>
-          <div className="mt-3">
-            <a
-              href={SUPPORT_TELEGRAM_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex w-full items-center justify-center rounded-xl bg-white text-gray-900 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-white/90"
-            >
-              Написать координатору
-            </a>
-          </div>
-          <div ref={bgEndPackagesUnsureRef} className="h-0 w-0" />
-        </div>
-      ) : (
+          <div ref={bgEndPackagesRef} className="h-0 w-0" />
+          {formData.serviceType === "unsure" ? (
+            <div className="mt-4 rounded-2xl border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-sm">
+              <div className="text-sm font-semibold text-white/95">
+                Пока не знаете, что выбрать?
+              </div>
+              <div className="mt-1 text-[12px] leading-relaxed text-white/80 sm:text-sm">
+                Это нормально. Координатор поможет определиться и ответит на вопросы.
+              </div>
+              <div className="mt-3">
+                <a
+                  href={SUPPORT_TELEGRAM_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex w-full items-center justify-center rounded-xl bg-white text-gray-900 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-white/90"
+                >
+                  Написать координатору
+                </a>
+              </div>
+              <div ref={bgEndPackagesUnsureRef} className="h-0 w-0" />
+            </div>
+          ) : null}
+        </>
+      )}
+      {showScenarioBlock && formData.serviceType === "unsure" ? null : (
         <PackagesSelection
           selectedPackageId=""
           packages={formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES_BURIAL}
@@ -4669,6 +4752,7 @@ function formatRub(n: number) {
             }
           }}
           paymentSlot={(override) => renderPaymentBlock(override?.totalRub)}
+          onAllInclusiveOpen={setShowScenarioBlock}
         />
       )}
     </div>

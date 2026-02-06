@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Info, Sparkles, Search, Phone } from "lucide-react";
+import { Info, Sparkles, Search, MessageCircle } from "lucide-react";
 import { AIChatModal } from "./AIChatModal";
 import { AboutServiceModal } from "./AboutServiceModal";
 import { DeathActionGuideModal } from "./DeathActionGuideModal";
@@ -11,14 +11,9 @@ import { Input } from "./ui/input";
 import { TELEGRAM_URL } from "@/lib/legalLinks";
 import type { Ref } from "react";
 
-export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTMLButtonElement> }) {
-  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
-  const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const [isDeathGuideOpen, setIsDeathGuideOpen] = useState(false);
+export function TopSearch() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTariff, setSelectedTariff] = useState<string | null>(null);
-  const shouldReduceMotion = useReducedMotion();
   const searchRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -34,11 +29,6 @@ export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTML
     item.label.toLowerCase().includes(searchQuery.trim().toLowerCase()),
   );
 
-  const handleOpenStepper = (tariffName: string) => {
-    setSelectedTariff(tariffName);
-    setIsAIChatOpen(false);
-  };
-
   useEffect(() => {
     const handleDocClick = (event: MouseEvent) => {
       if (!searchRef.current) return;
@@ -49,6 +39,76 @@ export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTML
     document.addEventListener("mousedown", handleDocClick);
     return () => document.removeEventListener("mousedown", handleDocClick);
   }, []);
+
+  return (
+    <div className="relative" ref={searchRef}>
+      <div
+        className="flex items-center gap-2.5 rounded-full bg-white/15 px-3 py-2 text-sm font-medium text-white/80 backdrop-blur-md shadow-lg shadow-white/5 hover:text-white transition"
+        onClick={() => searchInputRef.current?.focus()}
+      >
+        <Search className="pointer-events-none h-4 w-4 text-white/80" />
+        <Input
+          ref={searchInputRef}
+          id="td-search-input"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onFocus={() => setSearchOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setSearchOpen(false);
+          }}
+          placeholder="Поиск"
+          className="h-5 w-full !border-0 !bg-transparent p-0 text-xs font-medium text-white/90 placeholder:text-white/90 !outline-none !ring-0 focus:!ring-0 focus:!outline-none !shadow-none focus-visible:!ring-0 focus-visible:!ring-offset-0"
+        />
+      </div>
+      {searchOpen && (
+        <div className="absolute left-0 right-0 mt-2 max-h-64 overflow-auto rounded-xl border border-white/15 bg-white/90 p-2 text-sm text-gray-800 shadow-lg">
+          {filteredLinks.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className="block rounded-lg px-3 py-2 hover:bg-gray-100"
+              onClick={() => setSearchOpen(false)}
+            >
+              {item.label}
+            </a>
+          ))}
+          {!filteredLinks.length && (
+            <div className="px-3 py-2 text-sm text-gray-500">Ничего не найдено</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function TopTelegramButton({ className }: { className?: string }) {
+  return (
+    <a
+      href={TELEGRAM_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={
+        className ||
+        "flex items-center gap-2 rounded-full border border-white/30 bg-white/15 px-3 py-2 text-sm font-medium text-white/80 backdrop-blur-md hover:text-white transition"
+      }
+    >
+      <MessageCircle className="h-4 w-4" />
+      <span>Написать</span>
+    </a>
+  );
+}
+
+export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTMLButtonElement> }) {
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isDeathGuideOpen, setIsDeathGuideOpen] = useState(false);
+  const [selectedTariff, setSelectedTariff] = useState<string | null>(null);
+  const shouldReduceMotion = useReducedMotion();
+
+  const handleOpenStepper = (tariffName: string) => {
+    setSelectedTariff(tariffName);
+    setIsAIChatOpen(false);
+  };
 
   return (
     <>
@@ -107,10 +167,10 @@ export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTML
           </motion.button>
         </div>
 
-        {/* Desktop: как на скрине (поиск + написать) */}
+        {/* Desktop: без поиска и написать (перенесены в sticky панель) */}
         <div className="relative hidden md:block w-full pointer-events-auto">
           {/* Левая зона: О сервисе + Поиск */}
-          <div className="absolute left-0 top-0 flex items-center gap-3" ref={searchRef}>
+          <div className="absolute left-0 top-0 flex items-center gap-3">
             <motion.button
               whileHover={{ scale: 1.1, y: -2 }}
               whileTap={{ scale: 0.95 }}
@@ -121,42 +181,6 @@ export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTML
               <div className="absolute inset-0 rounded-full bg-white/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <Info className="relative w-7 h-7 md:w-8 md:h-8 text-white/90 group-hover:text-white transition-colors" />
             </motion.button>
-            <div
-              className="relative w-[200px] sm:w-[220px] md:w-[240px]"
-              onClick={() => searchInputRef.current?.focus()}
-            >
-              <div className="flex items-center gap-2.5 rounded-full bg-white/15 px-3 py-2 text-sm font-medium text-white/80 backdrop-blur-md shadow-lg shadow-white/5 hover:text-white transition">
-                <Search className="pointer-events-none h-4 w-4 text-white/80" />
-                <Input
-                  ref={searchInputRef}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setSearchOpen(true)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Escape") setSearchOpen(false);
-                  }}
-                  placeholder="Поиск"
-                  className="h-5 w-full !border-0 !bg-transparent p-0 text-xs font-medium text-white/90 placeholder:text-white/90 !outline-none !ring-0 focus:!ring-0 focus:!outline-none !shadow-none focus-visible:!ring-0 focus-visible:!ring-offset-0"
-                />
-              </div>
-              {searchOpen && (
-                <div className="absolute left-0 right-0 mt-2 max-h-64 overflow-auto rounded-xl border border-white/15 bg-white/90 p-2 text-sm text-gray-800 shadow-lg">
-                  {filteredLinks.map((item) => (
-                    <a
-                      key={item.href}
-                      href={item.href}
-                      className="block rounded-lg px-3 py-2 hover:bg-gray-100"
-                      onClick={() => setSearchOpen(false)}
-                    >
-                      {item.label}
-                    </a>
-                  ))}
-                  {!filteredLinks.length && (
-                    <div className="px-3 py-2 text-sm text-gray-500">Ничего не найдено</div>
-                  )}
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Центральная кнопка: Как начать */}
@@ -191,15 +215,6 @@ export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTML
 
           {/* Правая зона: Написать + AI */}
           <div className="absolute right-0 top-0 flex items-center gap-3">
-            <a
-              href={TELEGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 rounded-full border border-white/30 bg-white/15 px-3 py-2 text-sm font-medium text-white/80 backdrop-blur-md hover:text-white transition"
-            >
-              <Phone className="h-4 w-4" />
-              <span>Написать</span>
-            </a>
             <motion.button
               whileHover={{ scale: 1.1, y: -2 }}
               whileTap={{ scale: 0.95 }}

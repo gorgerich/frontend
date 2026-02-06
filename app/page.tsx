@@ -15,6 +15,8 @@ import {
   trackEvent,
 } from './components/calculationUtils';
 import { TELEGRAM_URL } from '../lib/legalLinks';
+import { HelpCircle, Menu } from 'lucide-react';
+import { TopSearch, TopTelegramButton } from './components/TopButtons';
 
 type BreakdownItem = { name: string; price?: number };
 type BreakdownSection = { category: string; price: number; items?: BreakdownItem[] };
@@ -141,6 +143,8 @@ function HomeInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const lastCtaRef = useRef<string | null>(null);
+  const [topMenuOpen, setTopMenuOpen] = useState(false);
+  const topMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -453,8 +457,73 @@ function HomeInner() {
     }
   }, [ctaParam]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!topMenuRef.current) return;
+      if (!topMenuRef.current.contains(event.target as Node)) {
+        setTopMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleTopFaq = () => {
+    const faqButton = document.getElementById('td-faq-button') as HTMLButtonElement | null;
+    if (faqButton) {
+      faqButton.click();
+    }
+  };
+
   return (
-    <main className="min-h-screen bg-white pt-8 flex flex-col">
+    <main className="min-h-screen bg-white flex flex-col">
+      <div className="sticky top-0 z-40 w-full">
+        <div className="mx-auto w-full max-w-7xl px-4">
+          <div className="flex h-12 w-full items-center justify-between gap-3 rounded-3xl md:rounded-[40px] border border-gray-200 bg-gray-100/90 backdrop-blur overflow-hidden px-2 sm:px-3">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleTopFaq}
+                className="inline-flex h-9 items-center gap-2 rounded-full border border-gray-300 bg-white/70 px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-white"
+              >
+                <HelpCircle className="h-4 w-4" />
+                <span className="hidden md:inline">Частые вопросы</span>
+              </button>
+              <TopSearch />
+            </div>
+            <div className="relative flex items-center gap-3" ref={topMenuRef}>
+              <TopTelegramButton className="inline-flex h-9 items-center gap-2 rounded-full border border-gray-300 bg-white/70 px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-white [&>span]:hidden md:[&>span]:inline" />
+              <button
+                type="button"
+                onClick={() => setTopMenuOpen((prev) => !prev)}
+                className="inline-flex h-9 items-center gap-2 rounded-full border border-gray-300 bg-white/70 px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-white"
+              >
+                <Menu className="h-4 w-4" />
+                <span className="hidden md:inline">Меню</span>
+              </button>
+              {topMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
+                  {[
+                    { label: 'План действий', href: '#how-it-works' },
+                    { label: 'Тариф/настройка', href: '#packages' },
+                    { label: 'Частые вопросы', href: '#faq' },
+                    { label: 'Контакты', href: '#contacts' },
+                  ].map((item) => (
+                    <a
+                      key={item.href}
+                      href={item.href}
+                      className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setTopMenuOpen(false)}
+                    >
+                      {item.label}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
       <div className="flex-1">
         <div className="relative">
           <section className="relative z-0 overflow-visible">

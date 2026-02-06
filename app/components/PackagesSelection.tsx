@@ -18,6 +18,7 @@ interface PackagesSelectionProps {
   onSelectPackage: (pkg: Package) => void;
   packages?: readonly Package[]; // ✅ тоже readonly (можно и Package[])
   paymentSlot?: (override?: { totalRub?: number }) => React.ReactNode;
+  onAllInclusiveOpen?: (open: boolean) => void;
 }
 
 export function PackagesSelection({
@@ -25,6 +26,7 @@ export function PackagesSelection({
   onSelectPackage,
   packages,
   paymentSlot,
+  onAllInclusiveOpen,
 }: PackagesSelectionProps) {
   const [activePanel, setActivePanel] = React.useState<"base" | "custom" | "all">("base");
   const [showInlinePayment, setShowInlinePayment] = React.useState(false);
@@ -47,7 +49,7 @@ export function PackagesSelection({
     id: "base-minimum",
     name: "Базовый минимум",
     price: BASE_TARIFF_TOTAL,
-    description: "Понятный стартовый план. Вы можете принять его как есть или спокойно изменить — ничего не начнётся без вашего подтверждения.",
+    description: "Это готовый базовый план похорон собранный нашей командой. Вы можете оформить его как есть или спокойно изменить нажав кнопку «Настроить» ниже. Ничего не начнётся без вашего подтверждения.",
     features: [],
     popular: false,
   };
@@ -105,6 +107,10 @@ export function PackagesSelection({
   return (
     <div className="pt-6 w-full">
       <div className="mx-auto w-full max-w-4xl px-2">
+        <div className="mb-5 text-center text-sm text-gray-500 font-medium">
+          Это готовый базовый план похорон собранный нашей командой. Вы можете оформить его как есть или спокойно изменить
+          нажав кнопку «Настроить» ниже. Ничего не начнётся без вашего подтверждения.
+        </div>
         <div
           data-package-card
           className={cn(
@@ -115,14 +121,17 @@ export function PackagesSelection({
           )}
         >
           <div className="text-center">
-            <h3 className="text-[11px] sm:text-sm font-semibold uppercase tracking-[0.18em] text-gray-500 mb-3 break-words">
+            <h3 className={cn(
+              "font-semibold text-gray-700 break-words",
+              isCustomizingPlan ? "text-[11px] sm:text-sm uppercase tracking-[0.18em] text-gray-500" : "text-[11px] sm:text-sm uppercase tracking-[0.18em] text-gray-500"
+            )}>
               {isCustomizingPlan ? "ПРОИСХОДИТ НАСТРОЙКА ПЛАНА" : BASE_MINIMUM.name}
             </h3>
-            <p className="text-sm text-gray-400 mt-3 font-medium">
-              {isCustomizingPlan
-                ? "Вы можете добавлять и убирать услуги. Ничего не фиксируется без вашего подтверждения."
-                : BASE_MINIMUM.description}
-            </p>
+            {isCustomizingPlan && (
+              <p className="mt-3 font-medium text-sm text-gray-400">
+                Вы можете добавлять и убирать услуги. Ничего не фиксируется без вашего подтверждения.
+              </p>
+            )}
           </div>
 
           {activePanel !== "all" && (
@@ -165,6 +174,14 @@ export function PackagesSelection({
                   </div>
                   <div className="ml-3 text-xs text-gray-500">• Оформление и сопровождение заказа</div>
                 </div>
+
+                {addedItems.length > 0 && (
+                  <div className="flex justify-end pt-3">
+                    <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700">
+                      Итого: {formatCurrency(BASE_TARIFF_TOTAL)}
+                    </span>
+                  </div>
+                )}
 
                 {addedItems.length > 0 && (
                   <div className="pt-3 mt-4 border-t border-gray-200/70">
@@ -519,6 +536,7 @@ export function PackagesSelection({
                 onClick={() => {
                   setActivePanel("base");
                   setShowInlinePayment((v) => !v);
+                  onAllInclusiveOpen?.(false);
                 }}
                 className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide bg-gray-900 text-white hover:bg-gray-800"
               >
@@ -540,6 +558,7 @@ export function PackagesSelection({
               onClick={() => {
                 setActivePanel((prev) => (prev === "custom" ? "base" : "custom"));
                 setShowInlinePayment(false);
+                onAllInclusiveOpen?.(false);
               }}
               className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide"
             >
@@ -553,6 +572,7 @@ export function PackagesSelection({
               onClick={() => {
                 setActivePanel("all");
                 setShowInlinePayment(false);
+                onAllInclusiveOpen?.(true);
               }}
               className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide"
             >
