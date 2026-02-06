@@ -4444,15 +4444,8 @@ function formatRub(n: number) {
           packages={formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES_BURIAL}
           onSelectPackage={(pkg) => {
             setSelectedPackageForSimplified(pkg);
-            if (onPackageSelect) {
-              const slug =
-                pkg.id === "basic" || pkg.id === "cremation-standard"
-                  ? "quiet"
-                  : pkg.id === "standard" || pkg.id === "cremation-comfort"
-                    ? "traditional"
-                    : "special";
-              onPackageSelect(slug);
-            }
+            setWorkflowMode("packages");
+            setContinueChoice("packages");
           }}
           paymentSlot={(override) => renderPaymentBlock(override?.totalRub)}
           onAllInclusiveOpen={setShowScenarioBlock}

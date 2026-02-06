@@ -474,6 +474,19 @@ export function PackagesSelection({
 
           {activePanel === "all" && (
             <div className="space-y-6">
+              <div className="flex justify-center">
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setActivePanel("base");
+                    setShowInlinePayment(false);
+                    onAllInclusiveOpen?.(false);
+                  }}
+                  className="h-10 rounded-full px-6 text-sm font-semibold"
+                >
+                  Вернуться к базовому минимуму
+                </Button>
+              </div>
               <div className="grid gap-6 md:grid-cols-3">
                 {(packages ?? [])
                   .filter((pkg) => !pkg.id.startsWith("cremation"))
@@ -498,7 +511,7 @@ export function PackagesSelection({
                       className="relative rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm"
                     >
                       {isPopular && (
-                        <div className="absolute left-1/2 -translate-x-1/2 -top-4 rounded-full bg-gray-900 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white">
+                        <div className="absolute left-1/2 -translate-x-1/2 -top-4 rounded-full bg-gray-900 px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white whitespace-nowrap">
                           Популярный выбор
                         </div>
                       )}
@@ -506,35 +519,12 @@ export function PackagesSelection({
                         <div className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
                           {packageLabel}
                         </div>
-                        <div className="mt-4 text-4xl font-semibold text-gray-900">
-                          {isBaseMinimum ? "86 600 ₽" : `от ${formatCurrency(tierPriceMap[tier])}`}
+                        <div className="mt-4 text-4xl font-semibold text-gray-900 whitespace-nowrap leading-none">
+                          {isBaseMinimum ? "200 000 ₽" : formatCurrency(tierPriceMap[tier])}
                         </div>
                         <div className="mt-2 text-sm text-gray-500">
                           {isBaseMinimum ? "Необходимый минимум" : pkg.description}
                         </div>
-                      </div>
-
-                      <div className="mt-5 flex items-center justify-center gap-2">
-                        {(["standard", "comfort", "premium"] as const).map((value) => {
-                          const isActive = tier === value;
-                          return (
-                            <button
-                              key={value}
-                              type="button"
-                              onClick={() =>
-                                setAllInclusiveTiers((prev) => ({ ...prev, [pkg.id]: value }))
-                              }
-                              className={cn(
-                                "rounded-full border px-3 py-1 text-xs font-medium transition",
-                                isActive
-                                  ? "border-gray-900 bg-gray-900 text-white"
-                                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                              )}
-                            >
-                              {value === "standard" ? "Стандарт" : value === "comfort" ? "Комфорт" : "Премиум"}
-                            </button>
-                          );
-                        })}
                       </div>
 
                       <div className="mt-6 space-y-3">
@@ -544,44 +534,73 @@ export function PackagesSelection({
                               <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
                                 <Check className="h-3 w-3" />
                               </span>
-                              <span>Санитарная обработка и бальзамирование — 18 000₽</span>
+                              <span>Оформление документов</span>
                             </div>
                             <div className="flex items-start gap-3 text-sm text-gray-700">
                               <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
                                 <Check className="h-3 w-3" />
                               </span>
-                              <div className="space-y-2">
-                                <div>Атрибутика и доставка — 20 000₽</div>
-                                <div className="space-y-1 text-[12px] text-gray-500">
-                                  <div>• Гроб обитый тканью (цвет на Ваш выбор)</div>
-                                  <div>• Постель в гроб</div>
-                                  <div>• Подушка шелковая</div>
-                                  <div>• Покрывало шелковое</div>
-                                  <div>• Тапочки похоронные</div>
-                                  <div>• Доставка в морг</div>
-                                </div>
-                              </div>
+                              <span>Помощь в оформлении захоронения</span>
                             </div>
                             <div className="flex items-start gap-3 text-sm text-gray-700">
                               <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
                                 <Check className="h-3 w-3" />
                               </span>
-                              <span>Катафалк — 13 500₽</span>
+                              <span>Базовая подготовка тела</span>
                             </div>
                             <div className="flex items-start gap-3 text-sm text-gray-700">
                               <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
                                 <Check className="h-3 w-3" />
                               </span>
-                              <span>Копка могилы — 24 700₽</span>
+                              <span>Перевозка к месту прощания/захоронения</span>
                             </div>
                             <div className="flex items-start gap-3 text-sm text-gray-700">
                               <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
                                 <Check className="h-3 w-3" />
                               </span>
-                              <div className="space-y-2">
-                                <div>Координатор базовый — 10 400₽</div>
-                                <div className="text-[12px] text-gray-500">• Оформление и сопровождение заказа</div>
-                              </div>
+                              <span>Носильщики</span>
+                            </div>
+                            <div className="flex items-start gap-3 text-sm text-gray-700">
+                              <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                                <Check className="h-3 w-3" />
+                              </span>
+                              <span>Катафалк (стандарт)</span>
+                            </div>
+                            <div className="flex items-start gap-3 text-sm text-gray-700">
+                              <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                                <Check className="h-3 w-3" />
+                              </span>
+                              <span>Гроб для захоронения (сосна)</span>
+                            </div>
+                            <div className="flex items-start gap-3 text-sm text-gray-700">
+                              <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                                <Check className="h-3 w-3" />
+                              </span>
+                              <span>Венок (искусственный)</span>
+                            </div>
+                            <div className="flex items-start gap-3 text-sm text-gray-700">
+                              <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                                <Check className="h-3 w-3" />
+                              </span>
+                              <span>Базовая отделка (обивка)</span>
+                            </div>
+                            <div className="flex items-start gap-3 text-sm text-gray-700">
+                              <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                                <Check className="h-3 w-3" />
+                              </span>
+                              <span>Зал прощания</span>
+                            </div>
+                            <div className="flex items-start gap-3 text-sm text-gray-700">
+                              <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                                <Check className="h-3 w-3" />
+                              </span>
+                              <span>Транспорт для близких (до 5 человек)</span>
+                            </div>
+                            <div className="flex items-start gap-3 text-sm text-gray-700">
+                              <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                                <Check className="h-3 w-3" />
+                              </span>
+                              <span>Координатор в день церемонии</span>
                             </div>
                           </>
                         ) : (
@@ -724,10 +743,10 @@ function OptionRow({
   options: { value: string; label: string; subtitle?: string; delta?: number }[];
   onChange: (value: string) => void;
 }) {
+  const helperText = description ?? label;
   return (
     <div className="flex flex-col gap-2">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500">{label}</div>
-      {description && <div className="text-[12px] text-gray-500 leading-snug">{description}</div>}
+      {helperText && <div className="text-[12px] text-gray-500 leading-snug">{helperText}</div>}
       <div
         className={cn(
           "grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
