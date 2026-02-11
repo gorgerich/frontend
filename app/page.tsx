@@ -476,7 +476,7 @@ function HomeInner() {
     <main className="min-h-screen bg-white flex flex-col">
       <div className="sticky top-0 z-40 w-full">
         <div className="mx-auto w-full max-w-7xl px-4">
-          <div className="flex h-12 w-full items-center justify-between gap-3 rounded-3xl md:rounded-[40px] border border-gray-200 bg-gray-100/90 backdrop-blur overflow-hidden px-2 sm:px-3">
+          <div className="flex h-12 w-full items-center justify-between gap-3 rounded-3xl md:rounded-[40px] border border-gray-200 bg-gray-100/90 backdrop-blur px-2 sm:px-3">
             <div className="flex items-center gap-3">
               <button
                 type="button"

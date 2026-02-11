@@ -4299,7 +4299,7 @@ function formatRub(n: number) {
                 }}
                 className="h-10 w-full flex-1 rounded-xl rounded-b-none !bg-white !text-gray-900 hover:!bg-white/90 px-4 text-sm font-semibold shadow-sm"
               >
-                Получить план действий
+                Что делать, если умер близкий?
               </Button>
             </div>
           </div>

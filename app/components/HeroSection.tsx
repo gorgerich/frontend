@@ -125,21 +125,6 @@ export function HeroSection() {
                     transform: `translateY(${MOBILE_SHIFT})`,
                   }}
                   >
-                <span
-                  className="block text-[clamp(10px,3.2vw,16px)] break-words text-center mt-10 sm:mt-12"
-                  style={{
-                    fontFamily:
-                      "\"Humanist\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
-                    fontWeight: 550,
-                    transform: `translateY(${MOBILE_LINE1_SHIFT})`,
-                    lineHeight: MOBILE_LINE1_LINE_HEIGHT,
-                    marginBottom: MOBILE_LINES_GAP,
-                    maxWidth: "92vw",
-                  }}
-                >
-                  Что делать, если умер близкий человек
-                </span>
-
                   <span
                     className="block text-lg sm:text-xl font-semibold"
                     style={{
@@ -175,21 +160,6 @@ export function HeroSection() {
                     fontWeight: 40,
                   }}
                 >
-                  <span
-                    className="block text-[clamp(10px,3.2vw,16px)] break-words text-center"
-                    style={{
-                      fontFamily:
-                        "\"Humanist\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
-                      letterSpacing: "normal",
-                      fontWeight: 440,
-                      lineHeight: LINE1_LINE_HEIGHT,
-                      transform: `translateY(${LINE1_SHIFT})`,
-                      marginBottom: LINES_GAP,
-                    }}
-                  >
-                    Что делать, если умер близкий человек
-                  </span>
-
                   <span
                     className="block text-2xl lg:text-3xl xl:text-3xl font-semibold"
                     style={{

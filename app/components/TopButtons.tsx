@@ -43,10 +43,10 @@ export function TopSearch() {
   return (
     <div className="relative" ref={searchRef}>
       <div
-        className="flex items-center gap-2.5 rounded-full bg-white/40 px-3 py-2 text-sm font-medium text-gray-700 backdrop-blur-md shadow-lg shadow-white/5 transition"
+        className="flex items-center gap-2.5 rounded-full bg-white/40 px-3 py-2 text-sm font-medium text-gray-800 backdrop-blur-md shadow-lg shadow-white/5 transition"
         onClick={() => searchInputRef.current?.focus()}
       >
-        <Search className="pointer-events-none h-4 w-4 text-gray-600" />
+        <Search className="pointer-events-none h-4 w-4 text-gray-700 drop-shadow-sm" />
         <Input
           ref={searchInputRef}
           id="td-search-input"
@@ -60,7 +60,7 @@ export function TopSearch() {
             if (e.key === "Escape") setSearchOpen(false);
           }}
           placeholder="Поиск"
-          className="h-5 w-full !border-0 !bg-transparent p-0 text-xs font-medium text-gray-900 placeholder:text-gray-500 caret-gray-900 !outline-none !ring-0 focus:!ring-0 focus:!outline-none !shadow-none focus-visible:!ring-0 focus-visible:!ring-offset-0"
+          className="h-5 w-full !border-0 !bg-transparent p-0 text-xs font-medium text-gray-900 placeholder:text-gray-600 caret-gray-900 !outline-none !ring-0 focus:!ring-0 focus:!outline-none !shadow-none focus-visible:!ring-0 focus-visible:!ring-offset-0"
         />
       </div>
       {searchOpen && searchQuery.trim().length > 0 && (
