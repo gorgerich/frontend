@@ -47,7 +47,7 @@ export function PackagesSelection({
     id: "base-minimum",
     name: "Базовый минимум",
     price: BASE_TARIFF_TOTAL,
-    description: "Это готовый базовый план похорон собранный нашей командой. Вы можете оформить его как есть или спокойно изменить нажав кнопку «Настроить» ниже. Ничего не начнётся без вашего подтверждения.",
+    description: "Это минимальный достаточный план похорон. В нём есть всё необходимое, чтобы церемония состоялась без скрытых доплат. Вы можете оформить его как есть или изменить детали ниже. Ничего не начнётся без вашего подтверждения.",
     features: [],
     popular: false,
   };
@@ -152,9 +152,8 @@ export function PackagesSelection({
   return (
     <div className="pt-6 w-full">
       <div className="mx-auto w-full max-w-6xl px-2">
-        <div className="mb-5 text-center text-sm text-gray-500 font-medium">
-          Это готовый базовый план похорон собранный нашей командой. Вы можете оформить его как есть или спокойно изменить
-          нажав кнопку «Настроить» ниже. Ничего не начнётся без вашего подтверждения.
+        <div className="mb-5 text-left text-sm text-gray-500 font-medium">
+          Это минимальный достаточный план похорон. В нём есть всё необходимое, чтобы церемония состоялась без скрытых доплат. Вы можете оформить его как есть, изменить детали или выбрать дополнительные услуги ниже. Ничего не начнётся без вашего подтверждения.
         </div>
         <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-2 -mx-2 px-0 md:px-4 no-scrollbar">
           <div className="shrink-0 snap-start w-full md:w-[92%]">

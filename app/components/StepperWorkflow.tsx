@@ -4156,15 +4156,18 @@ function formatRub(n: number) {
 
                       <div className="space-y-1">
                       <div className="text-[11px] font-semibold tracking-[0.18em] uppercase text-white/60">
-                          Итого к оплате
+                          Депозит:
                         </div>
                         <div className="flex flex-wrap items-end gap-3">
                           <div className="text-[32px] leading-none font-semibold whitespace-nowrap">
-                            {formatRubLocal(effectiveTotalRub)} ₽
+                            {formatRubLocal(effectiveDepositRub)} ₽
                           </div>
-                          <div className="text-[12px] leading-tight text-white/70">
-                            Депозит {formatRubLocal(effectiveDepositRub)} ₽ (включен в итоговую сумму)
+                          <div className="text-[12px] leading-tight text-white/60">
+                            депозит включен в итоговую сумму
                           </div>
+                        </div>
+                        <div className="text-[12px] text-white/60">
+                          Итого: {formatRubLocal(effectiveTotalRub)} ₽
                         </div>
                       </div>
 
@@ -4413,10 +4416,6 @@ function formatRub(n: number) {
                   <div className="text-center text-sm font-semibold text-white/95 sm:text-base">
                     Выберите, как хотите продолжить дальше:
                   </div>
-                  <div className="mt-2 text-center text-[12px] leading-relaxed text-white/80 sm:text-sm">
-                    Оба варианта равнозначны — выбирайте тот, который сейчас спокойнее для вас.
-                    
-                  </div>
                   <div className="mt-3 flex flex-col gap-2 sm:grid sm:grid-cols-2">
                     <Button
                       type="button"
@@ -4452,6 +4451,9 @@ function formatRub(n: number) {
                         </div>
                       </a>
                     </Button>
+                  </div>
+                  <div className="mt-2 text-center text-[12px] leading-relaxed text-white/80 sm:text-sm">
+                    Оба варианта равнозначны — выбирайте тот, который сейчас спокойнее для вас.
                   </div>
                 </div>
               </div>
