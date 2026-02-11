@@ -153,7 +153,9 @@ export function PackagesSelection({
     <div className="pt-6 w-full">
       <div className="mx-auto w-full max-w-6xl px-2">
         <div className="mb-5 text-left text-sm text-gray-500 font-medium">
-          Ниже — базовый вариант организации похорон. Всё необходимое уже включено. Его можно оформить сразу или изменить под себя, нажав кнопку «Настроить». Также можно пролистать влево, чтобы увидеть пакетные наборы услуг.
+          Ниже — базовый вариант организации похорон. Всё необходимое уже включено. Его можно оформить сразу или изменить под себя, нажав кнопку «Настроить». 
+          
+          Также можно пролистать влево, чтобы увидеть пакетные наборы услуг.
         </div>
         <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-2 -mx-2 px-0 md:px-4 no-scrollbar">
           <div className="shrink-0 snap-start w-full md:w-[92%]">
