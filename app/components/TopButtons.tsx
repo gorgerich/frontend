@@ -43,25 +43,28 @@ export function TopSearch() {
   return (
     <div className="relative" ref={searchRef}>
       <div
-        className="flex items-center gap-2.5 rounded-full bg-white/15 px-3 py-2 text-sm font-medium text-white/80 backdrop-blur-md shadow-lg shadow-white/5 hover:text-white transition"
+        className="flex items-center gap-2.5 rounded-full bg-white/40 px-3 py-2 text-sm font-medium text-gray-700 backdrop-blur-md shadow-lg shadow-white/5 transition"
         onClick={() => searchInputRef.current?.focus()}
       >
-        <Search className="pointer-events-none h-4 w-4 text-white/80" />
+        <Search className="pointer-events-none h-4 w-4 text-gray-600" />
         <Input
           ref={searchInputRef}
           id="td-search-input"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setSearchOpen(true);
+          }}
           onFocus={() => setSearchOpen(true)}
           onKeyDown={(e) => {
             if (e.key === "Escape") setSearchOpen(false);
           }}
           placeholder="Поиск"
-          className="h-5 w-full !border-0 !bg-transparent p-0 text-xs font-medium text-white/90 placeholder:text-white/90 !outline-none !ring-0 focus:!ring-0 focus:!outline-none !shadow-none focus-visible:!ring-0 focus-visible:!ring-offset-0"
+          className="h-5 w-full !border-0 !bg-transparent p-0 text-xs font-medium text-gray-900 placeholder:text-gray-500 caret-gray-900 !outline-none !ring-0 focus:!ring-0 focus:!outline-none !shadow-none focus-visible:!ring-0 focus-visible:!ring-offset-0"
         />
       </div>
-      {searchOpen && (
-        <div className="absolute left-0 right-0 mt-2 max-h-64 overflow-auto rounded-xl border border-white/15 bg-white/90 p-2 text-sm text-gray-800 shadow-lg">
+      {searchOpen && searchQuery.trim().length > 0 && (
+        <div className="absolute left-0 right-0 z-50 mt-2 max-h-64 overflow-auto rounded-xl border border-white/40 bg-white/95 p-2 text-sm text-gray-800 shadow-lg">
           {filteredLinks.map((item) => (
             <a
               key={item.href}

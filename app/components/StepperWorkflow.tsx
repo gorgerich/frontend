@@ -4679,7 +4679,6 @@ function formatRub(n: number) {
               </button>
             </div>
           </div>
-          <div ref={bgEndPackagesRef} className="h-0 w-0" />
           {formData.serviceType === "unsure" ? (
             <div className="mt-4 rounded-2xl border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-sm">
               <div className="text-sm font-semibold text-white/95">
@@ -4703,6 +4702,7 @@ function formatRub(n: number) {
           ) : null}
         </>
       )}
+      <div ref={bgEndPackagesRef} className="h-0 w-0" />
       {showScenarioBlock && formData.serviceType === "unsure" ? null : (
         <PackagesSelection
           selectedPackageId=""
