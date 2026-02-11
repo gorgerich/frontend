@@ -16,7 +16,14 @@ interface PackagesSelectionProps {
   selectedPackageId: string;
   onSelectPackage: (pkg: Package) => void;
   packages?: readonly Package[]; // ✅ тоже readonly (можно и Package[])
-  paymentSlot?: (override?: { totalRub?: number }) => React.ReactNode;
+  paymentSlot?: (override?: {
+    totalRub?: number;
+    services?: { name: string; price: number; description?: string; quantity?: number }[];
+    breakdown?: Array<{ category?: string; name?: string; title?: string; description?: string; price?: number | string; quantity?: number; qty?: number }>;
+    formData?: Record<string, unknown>;
+    orderFlow?: string;
+    package?: { id?: string; name?: string; price?: number | string; features?: string[] };
+  }) => React.ReactNode;
   onAllInclusiveOpen?: (open: boolean) => void;
 }
 
@@ -51,6 +58,35 @@ export function PackagesSelection({
     features: [],
     popular: false,
   };
+  const baseLineItems: {
+    key: string;
+    label: string;
+    price: number;
+    subItems?: string[];
+  }[] = [
+    { key: "sanitary", label: "Санитарная обработка и бальзамирование", price: 18000 },
+    {
+      key: "attributes",
+      label: "Атрибутика",
+      price: 20000,
+      subItems: [
+        "Гроб обитый тканью (цвет на Ваш выбор)",
+        "Постель в гроб",
+        "Подушка шелковая",
+        "Покрывало шелковое",
+        "Тапочки похоронные",
+        "Доставка в морг",
+      ],
+    },
+    { key: "hearse", label: "Катафалк", price: 13500 },
+    { key: "digging", label: "Копка могилы", price: 24700 },
+    {
+      key: "coord",
+      label: "Координатор базовый",
+      price: 10400,
+      subItems: ["Оформление и сопровождение заказа"],
+    },
+  ];
 
   const isSelected = selectedPackageId === BASE_MINIMUM.id;
   const pricing = calcTariffTotal(draftConfig);
@@ -148,6 +184,19 @@ export function PackagesSelection({
     },
   ].filter(Boolean) as { key: string; label: string; detail?: string; delta: number }[];
   const isCustomizingPlan = activePanel === "custom" && addedItems.length > 0;
+  const baseServices = baseLineItems.map((line) => ({
+    name: line.label,
+    price: line.price,
+  }));
+  const addedServices = addedItems.map((item) => ({
+    name: item.detail ? `${item.label} (${item.detail})` : item.label,
+    price: item.delta,
+  }));
+  const paymentServices =
+    activePanel === "custom" ? [...baseServices, ...addedServices] : baseServices;
+  const paymentFormData = {
+    serviceType: draftConfig.format,
+  };
 
   return (
     <div className="pt-6 w-full">
@@ -184,43 +233,23 @@ export function PackagesSelection({
 
               <div className="space-y-6">
                 <div className="space-y-4 text-sm text-gray-700">
-                  <div className="grid grid-cols-[1fr_auto] items-center gap-4">
-                    <span>Санитарная обработка и бальзамирование</span>
-                    <span className="font-semibold text-gray-900 whitespace-nowrap">18 000 ₽</span>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="grid grid-cols-[1fr_auto] items-center gap-4">
-                      <span>Атрибутика</span>
-                      <span className="font-semibold text-gray-900 whitespace-nowrap">20 000 ₽</span>
+                  {baseLineItems.map((item) => (
+                    <div key={item.key} className={item.subItems ? "space-y-2" : undefined}>
+                      <div className="grid grid-cols-[1fr_auto] items-center gap-4">
+                        <span>{item.label}</span>
+                        <span className="font-semibold text-gray-900 whitespace-nowrap">
+                          {formatCurrency(item.price)}
+                        </span>
+                      </div>
+                      {item.subItems ? (
+                        <div className="ml-3 space-y-1 text-xs text-gray-500">
+                          {item.subItems.map((subItem) => (
+                            <div key={subItem}>• {subItem}</div>
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
-                    <div className="ml-3 space-y-1 text-xs text-gray-500">
-                      <div>• Гроб обитый тканью (цвет на Ваш выбор)</div>
-                      <div>• Постель в гроб</div>
-                      <div>• Подушка шелковая</div>
-                      <div>• Покрывало шелковое</div>
-                      <div>• Тапочки похоронные</div>
-                      <div>• Доставка в морг</div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-[1fr_auto] items-center gap-4">
-                    <span>Катафалк</span>
-                    <span className="font-semibold text-gray-900 whitespace-nowrap">13 500 ₽</span>
-                  </div>
-
-                  <div className="grid grid-cols-[1fr_auto] items-center gap-4">
-                    <span>Копка могилы</span>
-                    <span className="font-semibold text-gray-900 whitespace-nowrap">24 700 ₽</span>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="grid grid-cols-[1fr_auto] items-center gap-4">
-                      <span>Координатор базовый</span>
-                      <span className="font-semibold text-gray-900 whitespace-nowrap">10 400 ₽</span>
-                    </div>
-                    <div className="ml-3 text-xs text-gray-500">• Оформление и сопровождение заказа</div>
-                  </div>
+                  ))}
 
                   {addedItems.length > 0 && (
                     <div className="flex justify-end pt-3">
@@ -488,7 +517,17 @@ export function PackagesSelection({
                   )}
                   {showInlinePayment && (
                     <div className="pt-4">
-                      {paymentSlot?.({ totalRub: paymentTotal })}
+                      {paymentSlot?.({
+                        totalRub: paymentTotal,
+                        services: paymentServices,
+                        formData: paymentFormData,
+                        orderFlow: activePanel === "custom" ? "custom" : "base_minimum",
+                        package: {
+                          id: BASE_MINIMUM.id,
+                          name: BASE_MINIMUM.name,
+                          price: paymentTotal,
+                        },
+                      })}
                     </div>
                   )}
                 </div>

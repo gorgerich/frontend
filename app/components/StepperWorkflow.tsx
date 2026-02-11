@@ -2269,7 +2269,14 @@ export function StepperWorkflow({
     });
   };
 
-  const handleConfirmBooking = async () => {
+  const handleConfirmBooking = async (override?: {
+    totalRub?: number;
+    breakdown?: Array<{ category?: string; name?: string; title?: string; description?: string; price?: number | string; quantity?: number; qty?: number }>;
+    services?: { name: string; price: number; description?: string; quantity?: number }[];
+    formData?: Record<string, unknown>;
+    orderFlow?: string;
+    package?: { id?: string; name?: string; price?: number | string; features?: string[] };
+  }) => {
     try {
       const orderEmail = (formData.userEmail || "").trim();
       const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(orderEmail);
@@ -2285,17 +2292,23 @@ export function StepperWorkflow({
         `${trackingSessionId}:${trackingFlow}:contacts_filled:${orderEmail}`,
       );
 
-      const total = calculateTotal();
-      const breakdown = calculateBreakdown();
+      const total =
+        typeof override?.totalRub === "number" ? override.totalRub : calculateTotal();
+      const breakdown =
+        override?.breakdown ?? (override?.services ? [] : calculateBreakdown());
 
-      const payloadFormData = {
+      const effectiveFormData = {
         ...formData,
+        ...(override?.formData || {}),
+      };
+      const payloadFormData = {
+        ...effectiveFormData,
         pickupDateTime,
         farewellDateTime,
         burialDateTime,
       };
 
-      const ceremonyDateTime = formData.hasHall ? farewellDateTime : burialDateTime;
+      const ceremonyDateTime = (effectiveFormData as any).hasHall ? farewellDateTime : burialDateTime;
 
       const payload = {
         userEmail: orderEmail,
@@ -2303,25 +2316,28 @@ export function StepperWorkflow({
         formData: payloadFormData,
         total,
         breakdown,
+        services: override?.services,
+        orderFlow: override?.orderFlow,
+        package: override?.package,
         paymentMethod,
         customer: { email: orderEmail },
         deceased: {
-          name: formData.fullName || undefined,
-          birthDate: formData.birthDate || undefined,
-          deathDate: formData.deathDate || undefined,
-          relationship: formData.relationship || undefined,
+          name: (effectiveFormData as any).fullName || undefined,
+          birthDate: (effectiveFormData as any).birthDate || undefined,
+          deathDate: (effectiveFormData as any).deathDate || undefined,
+          relationship: (effectiveFormData as any).relationship || undefined,
         },
         ceremony: {
-          type: formData.ceremonyType || undefined,
-          order: formData.ceremonyOrder || undefined,
-          serviceType: formData.serviceType || undefined,
-          cemetery: formData.cemetery || undefined,
+          type: (effectiveFormData as any).ceremonyType || undefined,
+          order: (effectiveFormData as any).ceremonyOrder || undefined,
+          serviceType: (effectiveFormData as any).serviceType || undefined,
+          cemetery: (effectiveFormData as any).cemetery || undefined,
           date: ceremonyDateTime.date
             ? ceremonyDateTime.date.toLocaleDateString("ru-RU")
             : undefined,
           timeSlot: ceremonyDateTime.timeSlot,
         },
-        notes: formData.specialRequests || undefined,
+        notes: (effectiveFormData as any).specialRequests || undefined,
       };
 
       const res = await fetch("/api/orders", {
@@ -2682,7 +2698,14 @@ function formatRub(n: number) {
   };
   const canSubmit = totalRub > 0 && emailOk;
 
-  const onPayClick = async () => {
+  const onPayClick = async (override?: {
+    totalRub?: number;
+    breakdown?: Array<{ category?: string; name?: string; title?: string; description?: string; price?: number | string; quantity?: number; qty?: number }>;
+    services?: { name: string; price: number; description?: string; quantity?: number }[];
+    formData?: Record<string, unknown>;
+    orderFlow?: string;
+    package?: { id?: string; name?: string; price?: number | string; features?: string[] };
+  }) => {
     if (isSubmittingOrder || !canSubmit) return;
 
     try {
@@ -2700,7 +2723,7 @@ function formatRub(n: number) {
       // "пока письмо не улетит" в реальности невозможно гарантировать на фронте.
       // Но мы держим "Оформление..." ДО момента, пока /api/orders не вернёт success.
       // handleConfirmBooking делает fetch /api/orders и ждёт ответ — это и есть наш триггер.
-      await handleConfirmBooking();
+      await handleConfirmBooking(override);
 
       // если внутри handleConfirmBooking у тебя происходит redirect — сюда код уже не вернётся (и это ок)
     } catch (e) {
@@ -4120,9 +4143,16 @@ function formatRub(n: number) {
     }
   };
 
-  const renderPaymentBlock = (overrideTotalRub?: number) => {
+  const renderPaymentBlock = (override?: {
+    totalRub?: number;
+    breakdown?: Array<{ category?: string; name?: string; title?: string; description?: string; price?: number | string; quantity?: number; qty?: number }>;
+    services?: { name: string; price: number; description?: string; quantity?: number }[];
+    formData?: Record<string, unknown>;
+    orderFlow?: string;
+    package?: { id?: string; name?: string; price?: number | string; features?: string[] };
+  }) => {
     const effectiveTotalRub =
-      typeof overrideTotalRub === "number" ? overrideTotalRub : totalRub;
+      typeof override?.totalRub === "number" ? override.totalRub : totalRub;
     const effectiveDepositRub = Math.round(effectiveTotalRub * 0.1);
     return (
     <>
@@ -4173,7 +4203,7 @@ function formatRub(n: number) {
 
                       <Button
                         type="button"
-                        onClick={onPayClick}
+                        onClick={() => onPayClick(override)}
                         disabled={!canSubmit || isSubmittingOrder}
                         className="w-full rounded-2xl !bg-white !text-gray-900 hover:!bg-gray-100 hover:!text-gray-900 px-5 py-3 text-sm font-semibold disabled:opacity-60 disabled:!text-gray-400"
                       >
@@ -4714,7 +4744,7 @@ function formatRub(n: number) {
             setWorkflowMode("packages");
             setContinueChoice("packages");
           }}
-          paymentSlot={(override) => renderPaymentBlock(override?.totalRub)}
+          paymentSlot={(override) => renderPaymentBlock(override)}
           onAllInclusiveOpen={setShowScenarioBlock}
         />
       )}
