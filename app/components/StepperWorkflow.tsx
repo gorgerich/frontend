@@ -4356,7 +4356,7 @@ function formatRub(n: number) {
                             aria-hidden="true"
                             tabIndex={-1}
                           >
-                            Что это значит?
+                            Подробнее
                             <span
                               className={cn(
                                 "ml-2 inline-block text-[12px] transition-transform",
