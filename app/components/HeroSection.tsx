@@ -1,5 +1,6 @@
 // app/components/HeroSection.tsx
 import { useLayoutEffect, useRef, useState } from "react";
+import { ChevronRight } from "lucide-react";
 import { TopButtons } from "./TopButtons";
 import { Button } from "./ui/button";
 const heroImage = "/hero-forest.jpg";
@@ -68,6 +69,9 @@ export function HeroSection() {
     if (typeof window === "undefined") return;
     window.dispatchEvent(new Event("td:toggle-how-it-works"));
   };
+
+  const planCtaClass =
+    "relative h-14 w-full rounded-[20px] border border-black/10 bg-gradient-to-b from-white to-gray-100/80 px-[18px] text-sm font-semibold text-gray-900 shadow-[0_1px_2px_rgba(0,0,0,0.08),0_8px_20px_rgba(0,0,0,0.10)] transition-shadow duration-200 hover:shadow-[0_2px_6px_rgba(0,0,0,0.12),0_10px_24px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10 active:scale-[0.98] active:shadow-[0_1px_2px_rgba(0,0,0,0.08)]";
 
   return (
     <section className="relative w-full px-4 pt-14 sm:pt-16 pb-16 md:pt-8 md:pb-20 lg:pb-24 md:translate-y-[4%]">
@@ -146,9 +150,10 @@ export function HeroSection() {
               <Button
                 type="button"
                 onClick={handlePlanActionsClick}
-                className="mt-6 h-10 w-full max-w-[22rem] rounded-xl !bg-white !text-gray-900 hover:!bg-white/90 px-4 text-sm font-semibold shadow-sm"
+                className={`${planCtaClass} mt-6 max-w-[22rem]`}
               >
-                Что делать, если умер близкий?
+                <span className="block w-full text-center text-gray-500">Что делать, если умер близкий</span>
+                <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
               </Button>
             </div>
 
@@ -190,9 +195,10 @@ export function HeroSection() {
                 <Button
                   type="button"
                   onClick={handlePlanActionsClick}
-                  className="h-10 w-full max-w-[26rem] rounded-xl !bg-white !text-gray-900 hover:!bg-white/90 px-4 text-sm font-semibold shadow-sm"
+                  className={`${planCtaClass} max-w-[26rem]`}
                 >
-                  Что делать, если умер близкий?
+                  <span className="block w-full text-center text-gray-500">Что делать, если умер близкий</span>
+                  <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
                 </Button>
               </div>
             </div>
