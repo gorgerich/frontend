@@ -1,6 +1,7 @@
 // app/components/HeroSection.tsx
 import { useLayoutEffect, useRef, useState } from "react";
 import { TopButtons } from "./TopButtons";
+import { Button } from "./ui/button";
 const heroImage = "/hero-forest.jpg";
 const heroImageNew = "/heroIMGnew.PNG";
 
@@ -63,6 +64,11 @@ export function HeroSection() {
     };
   }, []);
 
+  const handlePlanActionsClick = () => {
+    if (typeof window === "undefined") return;
+    window.dispatchEvent(new Event("td:toggle-how-it-works"));
+  };
+
   return (
     <section className="relative w-full px-4 pt-14 sm:pt-16 pb-16 md:pt-8 md:pb-20 lg:pb-24 md:translate-y-[4%]">
       <div className="mx-auto max-w-7xl relative" ref={wrapperRef}>
@@ -108,7 +114,7 @@ export function HeroSection() {
           {/* TEXT LAYER */}
           <div className="absolute inset-0 z-10">
             {/* MOBILE */}
-            <div className="flex h-full items-center justify-center px-6 pb-24 text-center sm:pb-32 md:hidden">
+            <div className="flex h-full flex-col items-center justify-center px-6 pb-24 text-center sm:pb-32 md:hidden">
               <h1
                 className="mx-auto mb-4 max-w-[28rem] tracking-tight text-white drop-shadow-2xl sm:max-w-[32rem]"
                 style={{
@@ -137,6 +143,13 @@ export function HeroSection() {
                   </span>
                 </span>
               </h1>
+              <Button
+                type="button"
+                onClick={handlePlanActionsClick}
+                className="mt-6 h-10 w-full max-w-[22rem] rounded-xl !bg-white !text-gray-900 hover:!bg-white/90 px-4 text-sm font-semibold shadow-sm"
+              >
+                Что делать, если умер близкий?
+              </Button>
             </div>
 
             {/* DESKTOP */}
@@ -173,6 +186,15 @@ export function HeroSection() {
                   </span>
                 </span>
               </h1>
+              <div className="mt-8 flex w-full items-center justify-center">
+                <Button
+                  type="button"
+                  onClick={handlePlanActionsClick}
+                  className="h-10 w-full max-w-[26rem] rounded-xl !bg-white !text-gray-900 hover:!bg-white/90 px-4 text-sm font-semibold shadow-sm"
+                >
+                  Что делать, если умер близкий?
+                </Button>
+              </div>
             </div>
           </div>
         </div>

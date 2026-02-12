@@ -199,10 +199,12 @@ export function PackagesSelection({
   };
 
   return (
-    <div className="pt-6 w-full">
+    <div className="pt-2 md:pt-3 w-full">
       <div className="mx-auto w-full max-w-6xl px-2">
         <div className="mb-5 text-left text-sm text-gray-500 font-medium md:hidden">
-          Ниже — базовый вариант организации похорон. Всё необходимое уже включено. Его можно оформить сразу или изменить под себя, нажав кнопку «Настроить». Также можно пролистать влево, чтобы увидеть пакетные наборы услуг.
+          Ниже — базовый вариант организации похорон. Мы уже собрали всё необходимое для проведения прощания.
+Вы видите понятный состав услуг и итоговую стоимость.
+Можно оформить как есть или изменить нажав "Настроить".
         </div>
         <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-2 -mx-2 px-0 md:px-4 no-scrollbar">
           <div className="shrink-0 snap-start w-full md:w-[92%]">
@@ -224,7 +226,9 @@ export function PackagesSelection({
                 </h3>
                 {!isCustomizingPlan && (
                   <p className="mt-3 text-left text-sm text-gray-500 font-medium hidden md:block">
-                    Ниже — базовый вариант организации похорон. Всё необходимое уже включено. Его можно оформить сразу или изменить под себя, нажав кнопку «Настроить». Также можно пролистать влево, чтобы увидеть пакетные наборы услуг.
+                    Ниже — базовый вариант организации похорон. Мы уже собрали всё необходимое для проведения прощания.
+Вы видите понятный состав услуг и итоговую стоимость.
+Можно оформить как есть или изменить состав нажав "Настроить".
                   </p>
                 )}
                 {isCustomizingPlan && (
@@ -510,11 +514,11 @@ export function PackagesSelection({
                     }}
                     className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide !bg-gray-100 !text-gray-900 hover:!bg-gray-50 !border-gray-200"
                   >
-                    Получить договор на почту
+                    Отправить план на почту
                   </Button>
                   {!showInlinePayment && (
                     <div className="text-xs text-gray-500">
-                      Сейчас оплата не требуется. Сначала вы получите договор и сможете спокойно всё проверить.
+                      Сейчас оплата не требуется. Сначала вы получите договор, детали заказа и сможете спокойно всё проверить.
                     </div>
                   )}
                   {showInlinePayment && (

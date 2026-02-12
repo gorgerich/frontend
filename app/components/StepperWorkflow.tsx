@@ -1192,6 +1192,26 @@ export function StepperWorkflow({
   const [openDayId, setOpenDayId] = useState<string | null>(null);
   const howItWorksItemRefs = useRef<Array<HTMLDivElement | null>>([]);
 
+  useEffect(() => {
+    const handler = () => {
+      setShowHowItWorks((prev) => {
+        const next = !prev;
+        if (next) {
+          requestAnimationFrame(() => {
+            howItWorksRef.current?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          });
+        }
+        return next;
+      });
+    };
+
+    window.addEventListener("td:toggle-how-it-works", handler);
+    return () => window.removeEventListener("td:toggle-how-it-works", handler);
+  }, []);
+
   const CopyBlock = ({ value }: { value: string }) => {
     const [copied, setCopied] = useState(false);
 
@@ -4297,7 +4317,7 @@ function formatRub(n: number) {
         {showHowItWorks && (
           <div className="pointer-events-none absolute inset-0 z-0 rounded-3xl border border-white/20 bg-black/20 backdrop-blur-2xl" />
         )}
-        <CardHeader className="relative z-10 pb-4 pt-8 px-6 sm:px-8">
+        <CardHeader className="relative z-10 pb-4 pt-8 px-6 sm:px-8 border-b-0">
           <div className="absolute -top-5 right-8 z-50">
             <button
               type="button"
@@ -4309,30 +4329,7 @@ function formatRub(n: number) {
             </button>
           </div>
 
-          <div id="start-options" className="mt-3 mb-8">
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                onClick={() => {
-                  setShowHowItWorks((prev) => {
-                    const next = !prev;
-                    if (next) {
-                      requestAnimationFrame(() => {
-                        howItWorksRef.current?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "start",
-                        });
-                      });
-                    }
-                    return next;
-                  });
-                }}
-                className="h-10 w-full flex-1 rounded-xl rounded-b-none !bg-white !text-gray-900 hover:!bg-white/90 px-4 text-sm font-semibold shadow-sm"
-              >
-                Что делать, если умер близкий?
-              </Button>
-            </div>
-          </div>
+          <div id="start-options" className="mt-3 mb-8" />
 
           {showHowItWorks && (
             <div
@@ -4490,11 +4487,11 @@ function formatRub(n: number) {
             </div>
           )}
 
-          <div className="mb-5 text-left text-sm text-gray-500 font-medium mb-2">
+          <div className="mb-3 text-left text-lg md:text-xl font-semibold text-gray-800">
             Выберите, как вы хотите начать?
           </div>
-          <div className="flex justify-center md:justify-start mb-6 mt-2">
-            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[520px] min-w-0 flex-nowrap gap-1 md:mx-0 md:mr-auto">
+          <div className="flex w-full justify-center md:justify-start mb-3 mt-2">
+            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 flex w-full max-w-none min-w-0 flex-nowrap gap-1 md:mx-0 md:mr-auto">
               <button
                 type="button"
                 onClick={() => {
@@ -4538,6 +4535,17 @@ function formatRub(n: number) {
                 Пока не знаю
               </button>
             </div>
+          </div>
+          <div className="hidden md:grid md:grid-cols-3 md:gap-3 md:text-left md:text-[12px] md:leading-relaxed md:text-gray-600 md:mb-4">
+            <div>
+              <div>Выбрать уже собранный вариант с понятной стоимостью.</div>
+              <div>Можно оформить сразу или изменить позже.</div>
+            </div>
+            <div>
+              <div>Вы будете выбирать формат прощания, транспорт и другие параметры шаг за шагом.</div>
+              <div>Стоимость обновляется сразу — без скрытых изменений.</div>
+            </div>
+            <div className="hidden md:block" />
           </div>
           {continueChoice === "unsure" && (
             <div className="mt-3 rounded-2xl border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-sm">
