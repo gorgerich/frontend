@@ -201,10 +201,8 @@ export function PackagesSelection({
   return (
     <div className="pt-6 w-full">
       <div className="mx-auto w-full max-w-6xl px-2">
-        <div className="mb-5 text-left text-sm text-gray-500 font-medium">
-          Ниже — базовый вариант организации похорон. Всё необходимое уже включено. Его можно оформить сразу или изменить под себя, нажав кнопку «Настроить». 
-          
-          Также можно пролистать влево, чтобы увидеть пакетные наборы услуг.
+        <div className="mb-5 text-left text-sm text-gray-500 font-medium md:hidden">
+          Ниже — базовый вариант организации похорон. Всё необходимое уже включено. Его можно оформить сразу или изменить под себя, нажав кнопку «Настроить». Также можно пролистать влево, чтобы увидеть пакетные наборы услуг.
         </div>
         <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-2 -mx-2 px-0 md:px-4 no-scrollbar">
           <div className="shrink-0 snap-start w-full md:w-[92%]">
@@ -224,6 +222,11 @@ export function PackagesSelection({
                 )}>
                   {isCustomizingPlan ? "ПРОИСХОДИТ НАСТРОЙКА ПЛАНА" : BASE_MINIMUM.name}
                 </h3>
+                {!isCustomizingPlan && (
+                  <p className="mt-3 text-left text-sm text-gray-500 font-medium hidden md:block">
+                    Ниже — базовый вариант организации похорон. Всё необходимое уже включено. Его можно оформить сразу или изменить под себя, нажав кнопку «Настроить». Также можно пролистать влево, чтобы увидеть пакетные наборы услуг.
+                  </p>
+                )}
                 {isCustomizingPlan && (
                   <p className="mt-3 font-medium text-sm text-gray-400">
                     Вы можете добавлять и убирать услуги. Ничего не фиксируется без вашего подтверждения.
@@ -293,7 +296,8 @@ export function PackagesSelection({
                   <div className="space-y-4">
                     <div>
                       <OptionRow
-                        label="Как будет проходить прощание"
+                        label="Формат"
+                        description="Как будет проходить прощание"
                         value={draftConfig.format}
                         options={[
                           { value: "burial", label: "Захоронение", subtitle: "Традиционное погребение" },
@@ -307,7 +311,7 @@ export function PackagesSelection({
                     </div>
                     <div>
                       <OptionRow
-                        label="Прощание в зале"
+                        label="Зал прощания"
                         description="Церемония прощания с родными"
                         value={draftConfig.hall}
                         options={[
@@ -322,10 +326,10 @@ export function PackagesSelection({
 
                     <div>
                       <OptionRow
-                        label="Как проходит церемония"
+                        label="Тип церемонии"
                         value={draftConfig.ceremonyType}
                         options={[
-                          { value: "secular", label: "Светская", subtitle: "Без религиозных обрядов" },
+                          { value: "secular", label: "Светская", subtitle: "Без религиозных обрядов", delta: 0, showZero: true },
                           {
                             value: "religious",
                             label: "Религиозная",
@@ -354,7 +358,7 @@ export function PackagesSelection({
                         description="Специализированный автомобиль для перевозки гроба"
                         value={draftConfig.hearseTier}
                         options={[
-                          { value: "standard", label: "Стандарт (включено)" },
+                          { value: "standard", label: "Стандарт (включено)", delta: 0, showZero: true },
                           { value: "comfort", label: "Комфорт", delta: 12000 },
                           { value: "premium", label: "Премиум", delta: 35000 },
                         ]}
@@ -404,7 +408,7 @@ export function PackagesSelection({
                         description="Помощь в подборе принадлежностей, расчет сметы, координация похорон"
                         value={draftConfig.coordinationTier}
                         options={[
-                          { value: "base", label: "Оформление заказа и сопровождение (включено)", delta: 10000 },
+                          { value: "base", label: "Оформление заказа и сопровождение (включено)", delta: 0, showZero: true },
                           { value: "comfort", label: "Сопровождение церемонии", delta: 30100 },
                           { value: "premium", label: "Персональный координатор церемонии", delta: 90000 },
                         ]}
@@ -420,7 +424,7 @@ export function PackagesSelection({
                     <div>
                       <OptionRow
                         label="Отпевание"
-                        description="Православный чин погребения"
+                        description="Религиозный обряд"
                         value={draftConfig.churchService}
                         options={[
                           { value: "none", label: "Не нужно" },
@@ -482,9 +486,7 @@ export function PackagesSelection({
                         value={draftConfig.memorialMeal}
                         options={[
                           { value: "none", label: "Не нужно" },
-                          { value: "standard", label: "Стандарт (за человека)", delta: 800 },
-                          { value: "comfort", label: "Комфорт (за человека)", delta: 1500 },
-                          { value: "premium", label: "Премиум (за человека)", delta: 3000 },
+                          { value: "standard", label: "Нужно" },
                         ]}
                         onChange={(value) =>
                           setDraftConfig((prev) => ({
@@ -551,14 +553,11 @@ export function PackagesSelection({
             const isPopular = !!pkg.popular;
             const packageLabel =
               pkg.id === "basic"
-                ? "Базовый минимум"
+                ? "С поддержкой координатора"
                 : pkg.id === "standard"
-                  ? "Ничего не упустить"
-                  : "Передать все заботы";
-            const packagePrice =
-              pkg.id === "basic"
-                ? "200 000 ₽"
-                : formatCurrency(pkg.price);
+                  ? "Расширенное сопровождение"
+                  : "Передать всё координатору";
+            const packagePrice = formatCurrency(pkg.price);
             return (
               <div
                 key={pkg.id}
@@ -586,7 +585,6 @@ export function PackagesSelection({
                     {pkg.features.map((feature, idx) => (
                       <div key={`${pkg.id}-feature-${idx}`} className="grid grid-cols-[1fr_auto] items-start gap-4">
                         <span>{feature}</span>
-                        <span className="text-gray-400 whitespace-nowrap">—</span>
                       </div>
                     ))}
                   </div>
@@ -638,13 +636,17 @@ function OptionRow({
   label: string;
   description?: string;
   value: string;
-  options: { value: string; label: string; subtitle?: string; delta?: number }[];
+  options: { value: string; label: string; subtitle?: string; delta?: number; showZero?: boolean }[];
   onChange: (value: string) => void;
 }) {
-  const helperText = description ?? label;
   return (
     <div className="flex flex-col gap-2">
-      {helperText && <div className="text-[12px] text-gray-500 leading-snug">{helperText}</div>}
+      <div className="space-y-1">
+        <div className="text-[12px] font-semibold text-gray-800 leading-snug">{label}</div>
+        {description ? (
+          <div className="text-[12px] text-gray-500 leading-snug">{description}</div>
+        ) : null}
+      </div>
       <div
         className={cn(
           "grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
@@ -682,7 +684,7 @@ function OptionRow({
                   )}
                 </span>
               </div>
-              {typeof option.delta === "number" && option.delta !== 0 && (
+              {typeof option.delta === "number" && (option.delta !== 0 || option.showZero) && (
                 <span className="text-[11px] sm:text-[12px] font-semibold text-gray-600 whitespace-nowrap">
                   {formatDelta(option.delta)}
                 </span>

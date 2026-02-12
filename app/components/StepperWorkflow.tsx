@@ -163,9 +163,9 @@ const HEARSE_CATEGORY_INFO = {
 const PACKAGES = [
   {
     id: "basic",
-    name: "Тихая церемония",
-    price: 200000,
-    description: "Необходимый минимум",
+    name: "С поддержкой координатора",
+    price: 204928,
+    description: "Координатор помогает точечно, по необходимости",
     features: ["Оформление документов",
       "Помощь в оформлении захоронения",
       "Базовая подготовка тела",
@@ -182,9 +182,9 @@ const PACKAGES = [
   },
   {
     id: "standard",
-    name: "Традиционное прощание",
-    price: 400000,
-    description: "Оптимальный вариант",
+    name: "Расширенное сопровождение",
+    price: 401193,
+    description: "Координатор ведёт процесс и контролирует детали",
     features: [
       "Оформление документов",
       "Помощь в оформлении захоронения",
@@ -203,9 +203,9 @@ const PACKAGES = [
   },
   {
     id: "premium",
-    name: "Особое внимание",
-    price: 600000,
-    description: "Максимальный комфорт",
+    name: "Передать всё координатору",
+    price: 609491,
+    description: "Персональное сопровождение, вы передаёте процесс полностью",
     features: [
       "Оформление документов",
       "Помощь в оформлении захоронения",
@@ -237,9 +237,9 @@ const PACKAGES_BURIAL = PACKAGES;
 const PACKAGES_CREMATION = [
   {
     id: "cremation-standard",
-    name: "Тихая церемония",
+    name: "С поддержкой координатора",
     price: 200000,
-    description: "Базовый комплект услуг для кремации",
+    description: "Координатор помогает точечно, по необходимости",
     features: [
       "Оформление документов",
       "Бронирование места в колумбарии",
@@ -252,9 +252,9 @@ const PACKAGES_CREMATION = [
   },
   {
     id: "cremation-comfort",
-    name: "Традиционное прощание",
+    name: "Расширенное сопровождение",
     price: 400000,
-    description: "Расширенный набор услуг для кремации",
+    description: "Координатор ведёт процесс и контролирует детали",
     features: [
       "Оформление документов",
       "Бронирование места в колумбарии",
@@ -270,9 +270,9 @@ const PACKAGES_CREMATION = [
   },
   {
     id: "cremation-premium",
-    name: "Особое внимание",
+    name: "Передать всё координатору",
     price: 600000,
-    description: "Полный спектр услуг премиум класса",
+    description: "Персональное сопровождение, вы передаёте процесс полностью",
     features: [
       "Оформление документов",
       "Бронирование места в колумбарии премиум",
@@ -4490,11 +4490,11 @@ function formatRub(n: number) {
             </div>
           )}
 
-          <div className="text-left text-sm font-semibold text-white/90 mb-2">
+          <div className="mb-5 text-left text-sm text-gray-500 font-medium mb-2">
             Выберите, как вы хотите начать?
           </div>
-          <div className="flex justify-center mb-6 mt-2">
-            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[520px] min-w-0 flex-nowrap gap-1">
+          <div className="flex justify-center md:justify-start mb-6 mt-2">
+            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[520px] min-w-0 flex-nowrap gap-1 md:mx-0 md:mr-auto">
               <button
                 type="button"
                 onClick={() => {
@@ -4505,7 +4505,7 @@ function formatRub(n: number) {
                   "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
                   continueChoice === "packages"
                     ? "bg-white text-black shadow-lg"
-                    : "text-white hover:bg-white/10",
+                    : "text-gray/700 hover:bg-white/10",
                 )}
               >
                 Готовые решения
@@ -4520,7 +4520,7 @@ function formatRub(n: number) {
                   "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
                   continueChoice === "wizard"
                     ? "bg-white text-black shadow-lg"
-                    : "text-white hover:bg-white/10",
+                    : "text-gray/700 hover:bg-white/10",
                 )}
               >
                 Пошаговый мастер
@@ -4532,7 +4532,7 @@ function formatRub(n: number) {
                 }}
                 className={cn(
                   "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
-                  continueChoice === "unsure" ? "bg-white text-black shadow-lg" : "text-white hover:bg-white/10",
+                  continueChoice === "unsure" ? "bg-white text-black shadow-lg" : "text-gray/700 hover:bg-white/10",
                 )}
               >
                 Пока не знаю
@@ -4541,10 +4541,10 @@ function formatRub(n: number) {
           </div>
           {continueChoice === "unsure" && (
             <div className="mt-3 rounded-2xl border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-sm">
-              <div className="text-sm font-semibold text-white/95">
+              <div className="text-sm font-semibold text-gray-700">
                 Пока не знаете, что выбрать?
               </div>
-              <div className="mt-1 text-[12px] leading-relaxed text-white/80 sm:text-sm">
+              <div className="mt-1 text-[12px] leading-relaxed text-gray-700 sm:text-sm">
                 Это нормально. Координатор поможет определиться и ответит на вопросы.
               </div>
               <div className="mt-3">
@@ -4713,10 +4713,10 @@ function formatRub(n: number) {
           </div>
           {formData.serviceType === "unsure" ? (
             <div className="mt-4 rounded-2xl border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-sm">
-              <div className="text-sm font-semibold text-white/95">
+              <div className="text-sm font-semibold text-gray-900">
                 Пока не знаете, что выбрать?
               </div>
-              <div className="mt-1 text-[12px] leading-relaxed text-white/80 sm:text-sm">
+              <div className="mt-1 text-[12px] leading-relaxed text-gray-700 sm:text-sm">
                 Это нормально. Координатор поможет определиться и ответит на вопросы.
               </div>
               <div className="mt-3">

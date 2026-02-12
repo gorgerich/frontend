@@ -2302,11 +2302,11 @@ const handlePaymentMethodSelect = (method: PaymentMethod) => {
 const breakdown = simplifiedSections;
 const cemeteryCategoryLabel =
 selectedCemeteryCategory === "standard"
-? "Тихая церемония"
+? "С поддержкой координатора"
 : selectedCemeteryCategory === "comfort"
-? "Традиционное прощание"
+? "Расширенное сопровождение"
 : selectedCemeteryCategory === "premium"
-? "Особое внимание"
+? "Передать всё координатору"
 : undefined;
 const orderSummary = buildOrderSummary(safeFormData, {
 totalRub,
