@@ -197,14 +197,26 @@ export function PackagesSelection({
   const paymentFormData = {
     serviceType: draftConfig.format,
   };
+  const openConfigurator = () => {
+    setActivePanel("custom");
+    setShowInlinePayment(false);
+  };
 
   return (
     <div className="pt-2 md:pt-3 w-full">
       <div className="mx-auto w-full max-w-6xl px-2">
-        <div className="mb-5 text-left text-sm text-gray-500 font-medium md:hidden">
+        <div className="mb-5 text-left text-[13px] text-gray-500 font-medium leading-relaxed md:hidden">
           Ниже — базовый вариант организации похорон. Мы уже собрали всё необходимое для проведения прощания.
-Вы видите понятный состав услуг и итоговую стоимость.
-Можно оформить как есть или изменить нажав "Настроить".
+          {" "}Вы видите понятный состав услуг и итоговую стоимость.
+          {" "}Можно оформить как есть или изменить нажав{" "}
+          <button
+            type="button"
+            onClick={openConfigurator}
+            className="font-semibold text-gray-700 underline underline-offset-2 hover:text-gray-900"
+          >
+            Настроить
+          </button>
+          .
         </div>
         <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-2 -mx-2 px-0 md:px-4 no-scrollbar">
           <div className="shrink-0 snap-start w-full md:w-[92%]">
@@ -225,10 +237,18 @@ export function PackagesSelection({
                   {isCustomizingPlan ? "ПРОИСХОДИТ НАСТРОЙКА ПЛАНА" : BASE_MINIMUM.name}
                 </h3>
                 {!isCustomizingPlan && (
-                  <p className="mt-3 text-left text-sm text-gray-500 font-medium hidden md:block">
+                  <p className="mt-3 text-left text-sm text-gray-500 font-medium leading-relaxed hidden md:block">
                     Ниже — базовый вариант организации похорон. Мы уже собрали всё необходимое для проведения прощания.
-Вы видите понятный состав услуг и итоговую стоимость.
-Можно оформить как есть или изменить состав нажав "Настроить".
+                    {" "}Вы видите понятный состав услуг и итоговую стоимость.
+                    {" "}Можно оформить как есть или изменить состав нажав{" "}
+                    <button
+                      type="button"
+                      onClick={openConfigurator}
+                      className="font-semibold text-gray-700 underline underline-offset-2 hover:text-gray-900"
+                    >
+                      Настроить
+                    </button>
+                    .
                   </p>
                 )}
                 {isCustomizingPlan && (

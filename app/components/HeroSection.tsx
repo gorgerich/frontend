@@ -136,7 +136,7 @@ export function HeroSection() {
                   }}
                   >
                   <span
-                    className="block text-lg sm:text-xl font-semibold"
+                    className="block text-lg sm:text-xl font-semibold text-left"
                     style={{
                       fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
                       transform: `translateY(${MOBILE_LINE2_SHIFT})`,
@@ -179,7 +179,7 @@ export function HeroSection() {
                   }}
                 >
                   <span
-                    className="block text-2xl lg:text-3xl xl:text-3xl font-semibold"
+                    className="block text-2xl lg:text-3xl xl:text-3xl font-bold text-center"
                     style={{
                       fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
                       fontWeight: 600,

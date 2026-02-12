@@ -4318,7 +4318,7 @@ function formatRub(n: number) {
           <div className="pointer-events-none absolute inset-0 z-0 rounded-3xl border border-white/20 bg-black/20 backdrop-blur-2xl" />
         )}
         <CardHeader className="relative z-10 pb-4 pt-8 px-6 sm:px-8 border-b-0">
-          <div className="absolute -top-5 right-8 z-50">
+          <div className="absolute -top-5 right-8 z-50 hidden">
             <button
               type="button"
               onClick={() => setIsAccountOpen(true)}
