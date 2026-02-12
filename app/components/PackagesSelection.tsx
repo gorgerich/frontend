@@ -197,9 +197,13 @@ export function PackagesSelection({
   const paymentFormData = {
     serviceType: draftConfig.format,
   };
+  const configuratorRef = React.useRef<HTMLDivElement | null>(null);
   const openConfigurator = () => {
     setActivePanel("custom");
     setShowInlinePayment(false);
+    requestAnimationFrame(() => {
+      configuratorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   };
 
   return (
@@ -317,7 +321,7 @@ export function PackagesSelection({
                   </div>
                 </div>
                 {activePanel === "custom" && (
-                  <div className="space-y-4">
+                  <div ref={configuratorRef} className="space-y-4">
                     <div>
                       <OptionRow
                         label="Формат"
