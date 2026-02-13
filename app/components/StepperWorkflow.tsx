@@ -1345,7 +1345,7 @@ export function StepperWorkflow({
       description:
         "Цель дня: получить официальные документы, зафиксировать дату прощания и подтвердить организацию.",
       details: [
-        { text: "УТРО", strong: true },
+        
         { text: "1. Получить медицинское свидетельство о смерти", strong: true },
         { text: "Документ:", strong: true },
         "Медицинское свидетельство о смерти — форма № 106/у-08.",
@@ -1378,7 +1378,7 @@ export function StepperWorkflow({
         "• если не работал — в МФЦ или органы соцзащиты",
         "Если есть сомнение — уточнить прямо в ЗАГС, куда направлять документы.",
         "⸻",
-        { text: "ДЕНЬ", strong: true },
+        
         { text: "4. Зафиксировать формат и дату прощания", strong: true },
         { text: "Что сделать", strong: true },
         "• Открыть план организации.",
@@ -1426,7 +1426,7 @@ export function StepperWorkflow({
         "• Уточнить в морге требования к обуви или аксессуарам.",
         "• Передать вещи под отметку о приёме.",
         "⸻",
-        { text: "ВЕЧЕР", strong: true },
+        
         { text: "7. Получить подтверждение даты и времени", strong: true },
         "К вечеру у вас должны быть:",
         "• точная дата",
@@ -1466,7 +1466,7 @@ export function StepperWorkflow({
       description:
         "Цель дня: провести церемонию, сохранить документы и не принимать лишних решений. Сегодня не нужно контролировать всё. Достаточно выполнить несколько ключевых шагов.",
       details: [
-        { text: "УТРО", strong: true },
+        
         { text: "1. Проверить документы перед выходом", strong: true },
         "Взять с собой:",
         "• Гербовое свидетельство о смерти",
@@ -1539,7 +1539,7 @@ export function StepperWorkflow({
         "• Попросить подавать блюда постепенно.",
         "• Решить вопрос алкоголя заранее — так, как вам спокойнее.",
         "⸻",
-        { text: "ВЕЧЕР", strong: true },
+        
         { text: "11. Собрать документы в одну папку", strong: true },
         "Положить:",
         "• Гербовое свидетельство о смерти",
@@ -4499,72 +4499,74 @@ function formatRub(n: number) {
             </div>
           )}
 
-          <div className="mb-3 text-left text-lg md:text-xl font-semibold text-gray-600">
-            Выберите, как вы хотите начать?
-          </div>
-          <div className="flex w-full justify-center md:justify-start mb-3 mt-2">
-            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 flex w-full max-w-none min-w-0 flex-nowrap gap-1 md:mx-0 md:mr-auto">
-              <button
-                type="button"
-                onClick={() => {
-                  openPackagesMode();
-                  onModeChange?.("package");
-                }}
-                className={cn(
-                  "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
-                  continueChoice === "packages"
-                    ? "bg-white text-black shadow-lg"
-                    : "text-gray/700 hover:bg-white/10",
-                )}
-              >
-                Готовые решения
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  openWizardMode();
-                  onModeChange?.("wizard");
-                }}
-                className={cn(
-                  "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
-                  continueChoice === "wizard"
-                    ? "bg-white text-black shadow-lg"
-                    : "text-gray/700 hover:bg-white/10",
-                )}
-              >
-                Пошаговый мастер
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setContinueChoice("unsure");
-                }}
-                className={cn(
-                  "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
-                  continueChoice === "unsure" ? "bg-white text-black shadow-lg" : "text-gray/700 hover:bg-white/10",
-                )}
-              >
-                Пока не знаю
-              </button>
+          <div className="rounded-3xl border border-zinc-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)] px-5 py-5 sm:px-7 sm:py-6">
+            <div className="mb-3 text-left text-lg md:text-xl font-semibold text-gray-900">
+              Выберите, как вы хотите начать?
             </div>
-          </div>
-          <div className="hidden md:grid md:grid-cols-3 md:gap-3 md:text-left md:text-[12px] md:leading-relaxed md:text-gray-600 md:mb-4">
-            <div>
-              <div>Выбрать уже собранный вариант с понятной стоимостью.</div>
-              <div>Можно оформить сразу или изменить позже.</div>
+            <div className="flex w-full justify-center md:justify-start mb-3 mt-2">
+              <div className="bg-zinc-100 p-1 rounded-full border border-zinc-200 flex w-full max-w-none min-w-0 flex-nowrap gap-1 md:mx-0 md:mr-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    openPackagesMode();
+                    onModeChange?.("package");
+                  }}
+                  className={cn(
+                    "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
+                    continueChoice === "packages"
+                      ? "bg-white text-black shadow-lg"
+                      : "text-gray-700 hover:bg-white/70",
+                  )}
+                >
+                  Готовые решения
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    openWizardMode();
+                    onModeChange?.("wizard");
+                  }}
+                  className={cn(
+                    "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
+                    continueChoice === "wizard"
+                      ? "bg-white text-black shadow-lg"
+                      : "text-gray-700 hover:bg-white/70",
+                  )}
+                >
+                  Пошаговый мастер
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setContinueChoice("unsure");
+                  }}
+                  className={cn(
+                    "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
+                    continueChoice === "unsure" ? "bg-white text-black shadow-lg" : "text-gray-700 hover:bg-white/70",
+                  )}
+                >
+                  Пока не знаю
+                </button>
+              </div>
             </div>
-            <div>
-              <div>Вы будете выбирать формат прощания, транспорт и другие параметры шаг за шагом.</div>
-              <div>Стоимость обновляется сразу — без скрытых изменений.</div>
+            <div className="hidden md:grid md:grid-cols-3 md:gap-3 md:text-left md:text-[12px] md:leading-relaxed md:text-gray-600">
+              <div>
+                <div>Выбрать уже собранный вариант с понятной стоимостью.</div>
+                <div>Можно оформить сразу или изменить позже.</div>
+              </div>
+              <div>
+                <div>Вы будете выбирать формат прощания, транспорт и другие параметры шаг за шагом.</div>
+                <div>Стоимость обновляется сразу — без скрытых изменений.</div>
+              </div>
+              <div className="hidden md:block" />
             </div>
-            <div className="hidden md:block" />
           </div>
           {continueChoice === "unsure" && (
             <div className="mt-3 rounded-2xl border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-sm">
-              <div className="text-sm font-semibold text-gray-700">
+              <div className="text-sm font-semibold text-white">
                 Пока не знаете, что выбрать?
               </div>
-              <div className="mt-1 text-[12px] leading-relaxed text-gray-700 sm:text-sm">
+              <div className="mt-1 text-[12px] leading-relaxed text-white sm:text-sm">
                 Это нормально. Координатор поможет определиться и ответит на вопросы.
               </div>
               <div className="mt-3">
@@ -4581,68 +4583,61 @@ function formatRub(n: number) {
             </div>
           )}
 
-          {continueChoice !== "unsure" && workflowMode === "wizard" && (
-            <Stepper
-              steps={steps as any}
-              currentStep={currentStep}
-              completedSteps={completedSteps}
-              onStepClick={handleStepClick}
-            />
-          )}
+          {continueChoice !== "unsure" && workflowMode === "wizard" && null}
 
-          {continueChoice !== "unsure" && (
-            <div className="text-center mb-2 mt-4">
-              <div className="w-full">
-                {workflowMode === "wizard" ? (
-                  <div
-                    id="scenario-end"
-                    ref={bgEndWizardRef}
-                    className="relative overflow-hidden rounded-xl border border-white/25 bg-white/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] md:border-zinc-200 md:bg-zinc-55/50 md:shadow-none p-5 transition-all md:hover:bg-zinc-55"
-                  >
-                    <div className="flex gap-4 items-start">
-                      <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
-                        {currentStep === 0 && <Church className="h-5 w-5" />}
-                        {currentStep === 1 && <Car className="h-5 w-5" />}
-                        {currentStep === 2 && <Package className="h-5 w-5" />}
-                        {currentStep === 3 && <FileText className="h-5 w-5" />}
-                        {currentStep === 4 && <CheckCircle2 className="h-5 w-5" />}
-                      </div>
-                      <div className="space-y-1.5 text-left">
-                        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-900 md:text-zinc-500">
-                          <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] text-white">
-                            {currentStep + 1}
-                          </span>
-                          {currentStep === 0 && "Этап 1: Церемония"}
-                          {currentStep === 1 && "Этап 2: Логистика"}
-                          {currentStep === 2 && "Этап 3: Атрибутика"}
-                          {currentStep === 3 && "Этап 4: Документы"}
-                          {currentStep === 4 && "Этап 5: Итог"}
-                        </h4>
-                        <p className="text-[15px] leading-relaxed text-gray-900 md:text-zinc-800 font-normal">
-                          {currentStep === 0 && "Настройте формат прощания: выберите тип церемонии (светская или религиозная) и длительность аренды зала."}
-                          {currentStep === 1 && "Спланируйте логистику: укажите дату и время прощания, выберите транспорт для усопшего и гостей."}
-                          {currentStep === 2 &&
-                            (attributesMode === "preset"
-                              ? "Выберите готовый комплект атрибутики или соберите свой вариант. В наборах включено всё необходимое для достойной церемонии."
-                              : "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности.")}
-                          {currentStep === 3 && "Заполните документы: укажите паспортные данные заявителя и информацию об усопшем для оформления."}
-                          {currentStep === 4 && "Проверьте и подтвердите: внимательно ознакомьтесь со всеми деталями заказа перед финальным оформлением."}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          )}
 </CardHeader>
 
 <CardContent className="relative z-10 px-6 sm:px-8 pb-8">
   {continueChoice === "unsure" ? null : workflowMode === "wizard" ? (
-    <>
+    <div className="rounded-3xl border border-zinc-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)] px-5 py-6 sm:px-7 sm:py-7">
+      <Stepper
+        steps={steps as any}
+        currentStep={currentStep}
+        completedSteps={completedSteps}
+        onStepClick={handleStepClick}
+      />
+      <div className="w-full mt-4">
+        <div
+          id="scenario-end"
+          ref={bgEndWizardRef}
+          className="relative pb-4 border-b border-zinc-200"
+        >
+          <div className="flex gap-4 items-start">
+            <div className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-sm text-zinc-700">
+              {currentStep === 0 && <Church className="h-5 w-5" />}
+              {currentStep === 1 && <Car className="h-5 w-5" />}
+              {currentStep === 2 && <Package className="h-5 w-5" />}
+              {currentStep === 3 && <FileText className="h-5 w-5" />}
+              {currentStep === 4 && <CheckCircle2 className="h-5 w-5" />}
+            </div>
+            <div className="space-y-1.5 text-left">
+              <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-700">
+                <span className="flex md:hidden h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] text-zinc-600">
+                  {currentStep + 1}
+                </span>
+                {currentStep === 0 && "Этап 1: Церемония"}
+                {currentStep === 1 && "Этап 2: Логистика"}
+                {currentStep === 2 && "Этап 3: Атрибутика"}
+                {currentStep === 3 && "Этап 4: Документы"}
+                {currentStep === 4 && "Этап 5: Итог"}
+              </h4>
+              <p className="text-[15px] leading-relaxed text-zinc-800 font-normal">
+                {currentStep === 0 && "Настройте формат прощания: выберите тип церемонии (светская или религиозная) и длительность аренды зала."}
+                {currentStep === 1 && "Спланируйте логистику: укажите дату и время прощания, выберите транспорт для усопшего и гостей."}
+                {currentStep === 2 &&
+                  (attributesMode === "preset"
+                    ? "Выберите готовый комплект атрибутики или соберите свой вариант. В наборах включено всё необходимое для достойной церемонии."
+                    : "Подберите атрибутику: выберите гроб, внутреннее убранство и другие ритуальные принадлежности.")}
+                {currentStep === 3 && "Заполните документы: укажите паспортные данные заявителя и информацию об усопшем для оформления."}
+                {currentStep === 4 && "Проверьте и подтвердите: внимательно ознакомьтесь со всеми деталями заказа перед финальным оформлением."}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
       <div
         className={cn(
-          "transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          "mt-4 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]",
           isTransitioning
             ? "opacity-0 translate-y-8 scale-[0.96] blur-sm"
             : "opacity-100 translate-y-0 scale-100 blur-0",
@@ -4675,7 +4670,7 @@ function formatRub(n: number) {
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
-    </>
+    </div>
   ) : (
     <div className="space-y-8">
       {showScenarioBlock && (
@@ -4733,10 +4728,10 @@ function formatRub(n: number) {
           </div>
           {formData.serviceType === "unsure" ? (
             <div className="mt-4 rounded-2xl border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-sm">
-              <div className="text-sm font-semibold text-gray-900">
+              <div className="text-sm font-semibold text-white">
                 Пока не знаете, что выбрать?
               </div>
-              <div className="mt-1 text-[12px] leading-relaxed text-gray-700 sm:text-sm">
+              <div className="mt-1 text-[12px] leading-relaxed text-white sm:text-sm">
                 Это нормально. Координатор поможет определиться и ответит на вопросы.
               </div>
               <div className="mt-3">
