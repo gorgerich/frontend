@@ -152,7 +152,12 @@ export function HeroSection() {
                 onClick={handlePlanActionsClick}
                 className={`${planCtaClass} mt-6 max-w-[22rem]`}
               >
-                <span className="block w-full text-center text-gray-500">Что делать, если умер близкий</span>
+                <span className="flex w-full flex-col items-center text-center">
+                  <span className="text-gray-800">Что делать, если умер близкий</span>
+                  <span className="mt-0.5 text-[11px] font-normal text-gray-500">
+                    Нажмите, чтобы показать
+                  </span>
+                </span>
                 <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
               </Button>
             </div>
@@ -197,7 +202,12 @@ export function HeroSection() {
                   onClick={handlePlanActionsClick}
                   className={`${planCtaClass} max-w-[26rem]`}
                 >
-                  <span className="block w-full text-center text-gray-500">Что делать, если умер близкий</span>
+                  <span className="flex w-full flex-col items-center text-center">
+                    <span className="text-gray-800">Что делать, если умер близкий</span>
+                    <span className="mt-0.5 text-[11px] font-normal text-gray-500">
+                      Нажмите, чтобы показать
+                    </span>
+                  </span>
                   <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
                 </Button>
               </div>
