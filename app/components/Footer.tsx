@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Phone, Mail, Shield, Clock } from "./Icons";
+import { Phone, Mail, Shield, Clock, MessageCircle } from "./Icons";
 import { HelpModal } from "./HelpModal";
-import { PUBLIC_OFFER_HREF } from "@/lib/legalLinks";
+import { PUBLIC_OFFER_HREF, TELEGRAM_URL } from "@/lib/legalLinks";
 
 export function Footer() {
   const [helpOpen, setHelpOpen] = useState(false);
@@ -30,7 +30,11 @@ export function Footer() {
           {/* Navigation / Contacts Grid */}
           <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-8">
             {/* Contacts */}
-            <div className="space-y-4">
+            <div
+              id="contacts"
+              data-highlight="false"
+              className="space-y-4 rounded-xl ring-2 ring-transparent transition duration-300 data-[highlight=true]:ring-neutral-300 data-[highlight=true]:bg-white/70"
+            >
               <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-neutral-400">Связь</h3>
               <div className="space-y-3">
                 <a 
@@ -42,6 +46,18 @@ export function Footer() {
                     <span className="font-mono text-lg">+7 (985) 248-94-25</span>
                   </div>
                   <span className="text-xs text-neutral-400 ml-6">Круглосуточно</span>
+                </a>
+                <a
+                  href={TELEGRAM_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block group"
+                >
+                  <div className="flex items-center gap-2 text-neutral-900 group-hover:text-neutral-600 transition-colors">
+                    <MessageCircle className="w-4 h-4" />
+                    <span className="text-sm font-medium">Написать в чат</span>
+                  </div>
+                  <span className="text-xs text-neutral-400 ml-6">Telegram</span>
                 </a>
                 <a 
                   href="mailto:info@tihiydom.com" 

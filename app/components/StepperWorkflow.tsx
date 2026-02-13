@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 
 import { User, CircleDot } from "lucide-react";
 import { PackagesSelection, type Package as PackagesSelectionPackage } from "./PackagesSelection";
@@ -1186,7 +1186,7 @@ export function StepperWorkflow({
       method,
     });
 
-  const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [showHowItWorks, setShowHowItWorks] = useState(true);
   const [showDocumentsHelp, setShowDocumentsHelp] = useState(false);
   const howItWorksRef = useRef<HTMLDivElement | null>(null);
   const [openDayId, setOpenDayId] = useState<string | null>(null);
@@ -1194,17 +1194,12 @@ export function StepperWorkflow({
 
   useEffect(() => {
     const handler = () => {
-      setShowHowItWorks((prev) => {
-        const next = !prev;
-        if (next) {
-          requestAnimationFrame(() => {
-            howItWorksRef.current?.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          });
-        }
-        return next;
+      setShowHowItWorks(true);
+      requestAnimationFrame(() => {
+        howItWorksRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
       });
     };
 
@@ -1267,7 +1262,7 @@ export function StepperWorkflow({
   }> = [
     {
       id: "day1",
-      title: "День 1 — обнаружение смерти и обязательные действия",
+      title: "Обнаружение смерти и обязательные действия",
       description: "Цель дня: официально зафиксировать факт смерти и не потерять документы и данные.",
       details: [
         
@@ -1346,7 +1341,7 @@ export function StepperWorkflow({
     },
     {
       id: "day2",
-      title: "День 2 — документы и подтверждение даты",
+      title: "Документы и подтверждение даты",
       description:
         "Цель дня: получить официальные документы, зафиксировать дату прощания и подтвердить организацию.",
       details: [
@@ -1467,7 +1462,7 @@ export function StepperWorkflow({
     },
     {
       id: "day3",
-      title: "День 3 — прощание и завершение формальностей",
+      title: "Прощание и завершение формальностей",
       description:
         "Цель дня: провести церемонию, сохранить документы и не принимать лишних решений. Сегодня не нужно контролировать всё. Достаточно выполнить несколько ключевых шагов.",
       details: [
@@ -2569,7 +2564,7 @@ export function StepperWorkflow({
     setShowCemeteryResults(false);
   };
 
-  const openPackagesMode = () => {
+  const openPackagesMode = useCallback(() => {
     setWorkflowMode("packages");
     setContinueChoice("packages");
     if (formData.packageType) {
@@ -2578,7 +2573,20 @@ export function StepperWorkflow({
     if (selectedPackageForSimplified) {
       setSelectedPackageForSimplified(null);
     }
-  };
+  }, [formData.packageType, handleInputChange, selectedPackageForSimplified]);
+
+  useEffect(() => {
+    const handler = () => {
+      openPackagesMode();
+      setShowScenarioBlock(true);
+      requestAnimationFrame(() => {
+        const packagesEl = document.getElementById("packages");
+        packagesEl?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    };
+    window.addEventListener("td:open-packages", handler);
+    return () => window.removeEventListener("td:open-packages", handler);
+  }, [openPackagesMode]);
 
   const openWizardMode = () => {
     setWorkflowMode("wizard");
@@ -4338,6 +4346,10 @@ function formatRub(n: number) {
               className="relative mb-6 -mt-3 overflow-hidden rounded-2xl rounded-t-none border border-white/25 bg-black/15 px-4 py-4 backdrop-blur-2xl shadow-[0_16px_36px_rgba(15,23,42,0.3)]"
             >
               <div className="flex flex-col gap-4">
+                <div className="text-[12px] leading-relaxed text-white/85 sm:text-sm">
+                  Ниже — пошаговая инструкция на первые дни после смерти, чтобы вам было легче.
+                  Внутри — конкретные действия, документы и важные нюансы, которые помогут ничего не упустить.
+                </div>
                 {howItWorksDays.map((day, index) => {
                   const isOpen = openDayId === day.id;
                   return (
@@ -4443,11 +4455,11 @@ function formatRub(n: number) {
                   <div className="text-center text-sm font-semibold text-white/95 sm:text-base">
                     Выберите, как хотите продолжить дальше:
                   </div>
-                  <div className="mt-3 flex flex-col gap-2 sm:grid sm:grid-cols-2">
+                  <div className="mt-3 flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
                     <Button
                       type="button"
                       onClick={() => setShowHowItWorks(false)}
-                      className="h-auto w-full rounded-xl !bg-white !text-gray-900 hover:!bg-white/80 px-4 py-3 text-center text-sm font-semibold shadow-sm"
+                      className="h-auto w-fit rounded-xl !bg-white !text-gray-900 hover:!bg-white/80 px-5 py-3 text-center text-sm font-semibold shadow-sm"
                     >
                       <div className="flex flex-col items-center gap-1">
                         <div className="whitespace-normal break-words text-center">
@@ -4461,7 +4473,7 @@ function formatRub(n: number) {
                     <Button
                       asChild
                       variant="outline"
-                      className="h-auto w-full rounded-xl !bg-white !text-gray-900 hover:!bg-white/80 px-4 py-3 text-center text-sm font-semibold shadow-sm"
+                      className="h-auto w-fit rounded-xl !bg-white !text-gray-900 hover:!bg-white/80 px-5 py-3 text-center text-sm font-semibold shadow-sm"
                     >
                       <a
                         href={SUPPORT_TELEGRAM_URL}
@@ -4487,7 +4499,7 @@ function formatRub(n: number) {
             </div>
           )}
 
-          <div className="mb-3 text-left text-lg md:text-xl font-semibold text-gray-800">
+          <div className="mb-3 text-left text-lg md:text-xl font-semibold text-gray-600">
             Выберите, как вы хотите начать?
           </div>
           <div className="flex w-full justify-center md:justify-start mb-3 mt-2">
@@ -4743,19 +4755,21 @@ function formatRub(n: number) {
         </>
       )}
       <div ref={bgEndPackagesRef} className="h-0 w-0" />
-      {showScenarioBlock && formData.serviceType === "unsure" ? null : (
-        <PackagesSelection
-          selectedPackageId=""
-          packages={formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES_BURIAL}
-          onSelectPackage={(pkg) => {
-            setSelectedPackageForSimplified(pkg);
-            setWorkflowMode("packages");
-            setContinueChoice("packages");
-          }}
-          paymentSlot={(override) => renderPaymentBlock(override)}
-          onAllInclusiveOpen={setShowScenarioBlock}
-        />
-      )}
+      <div id="packages">
+        {showScenarioBlock && formData.serviceType === "unsure" ? null : (
+          <PackagesSelection
+            selectedPackageId=""
+            packages={formData.serviceType === "cremation" ? PACKAGES_CREMATION : PACKAGES_BURIAL}
+            onSelectPackage={(pkg) => {
+              setSelectedPackageForSimplified(pkg);
+              setWorkflowMode("packages");
+              setContinueChoice("packages");
+            }}
+            paymentSlot={(override) => renderPaymentBlock(override)}
+            onAllInclusiveOpen={setShowScenarioBlock}
+          />
+        )}
+      </div>
     </div>
   )}
 </CardContent>

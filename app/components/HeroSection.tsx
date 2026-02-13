@@ -184,7 +184,7 @@ export function HeroSection() {
                   }}
                 >
                   <span
-                    className="block text-2xl lg:text-3xl xl:text-3xl font-bold text-center"
+                    className="mx-auto block max-w-[56rem] text-2xl lg:text-3xl xl:text-3xl font-bold text-center"
                     style={{
                       fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
                       fontWeight: 600,

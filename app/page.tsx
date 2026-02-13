@@ -541,6 +541,31 @@ function HomeInner() {
     router.push('/faq');
   };
 
+  const handleTopPlanActions = () => {
+    setTopMenuOpen(false);
+    window.dispatchEvent(new Event("td:toggle-how-it-works"));
+  };
+
+  const handleTopPackages = () => {
+    setTopMenuOpen(false);
+    window.dispatchEvent(new Event("td:open-packages"));
+    const packagesEl = document.getElementById("packages");
+    if (packagesEl) {
+      packagesEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const handleTopContacts = () => {
+    setTopMenuOpen(false);
+    const contactsEl = document.getElementById("contacts");
+    if (!contactsEl) return;
+    contactsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    contactsEl.setAttribute("data-highlight", "true");
+    window.setTimeout(() => {
+      contactsEl.setAttribute("data-highlight", "false");
+    }, 1500);
+  };
+
   return (
     <main className="min-h-screen bg-white flex flex-col">
       <div className="sticky top-0 z-40 w-full">
@@ -569,21 +594,37 @@ function HomeInner() {
               </button>
               {topMenuOpen && (
                 <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
-                  {[
-                    { label: 'План действий', href: '#how-it-works' },
-                    { label: 'Тариф/настройка', href: '#packages' },
-                    { label: 'Частые вопросы', href: '/faq' },
-                    { label: 'Контакты', href: '#contacts' },
-                  ].map((item) => (
-                    <a
-                      key={item.href}
-                      href={item.href}
-                      className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setTopMenuOpen(false)}
-                    >
-                      {item.label}
-                    </a>
-                  ))}
+                  <button
+                    type="button"
+                    onClick={handleTopPlanActions}
+                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    План действий
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleTopPackages}
+                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Тариф/настройка
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTopMenuOpen(false);
+                      handleTopFaq();
+                    }}
+                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Частые вопросы
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleTopContacts}
+                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Контакты
+                  </button>
                 </div>
               )}
             </div>
