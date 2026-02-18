@@ -2,13 +2,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { articles, getArticleBySlug, type ArticleBlock } from "@/lib/articles";
+import { TELEGRAM_URL } from "@/lib/legalLinks";
+
+export const dynamicParams = true;
 
 type ArticlePageProps = {
-  params: { slug: string };
+  params?: unknown;
+  searchParams?: unknown;
 };
 
-export function generateMetadata({ params }: ArticlePageProps) {
-  const article = getArticleBySlug(params.slug);
+export function generateMetadata({ params }: { params?: { slug?: string } }) {
+  const slug = params?.slug ?? "";
+  const article = getArticleBySlug(slug);
   if (!article) {
     return {
       title: "Статья не найдена — Тихий дом",
@@ -34,8 +39,6 @@ export function generateMetadata({ params }: ArticlePageProps) {
 export function generateStaticParams() {
   return articles.map((article) => ({ slug: article.slug }));
 }
-
-export const dynamicParams = true;
 
 const renderBlock = (block: ArticleBlock, index: number) => {
   switch (block.type) {
@@ -69,8 +72,38 @@ const renderBlock = (block: ArticleBlock, index: number) => {
           key={index}
           className="list-disc space-y-1 pl-5 text-base text-gray-700"
         >
+          {block.content.map((item, itemIndex) => {
+            if (typeof item === "string") {
+              return <li key={itemIndex}>{item}</li>;
+            }
+            return (
+              <li key={itemIndex}>
+                <a
+                  href={item.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center rounded-full border border-neutral-200 bg-white/70 px-2.5 py-1 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-white"
+                >
+                  {item.label}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      );
+    case "linkList":
+      return (
+        <ul key={index} className="space-y-2 text-base text-gray-700">
           {block.content.map((item, itemIndex) => (
-            <li key={itemIndex}>{item}</li>
+            <li key={itemIndex} className="flex items-center gap-2">
+              <span className="text-gray-400">•</span>
+              <Link
+                href={item.href}
+                className="inline-flex items-center rounded-full border border-neutral-200 bg-white/70 px-3 py-1 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-white"
+              >
+                {item.label}
+              </Link>
+            </li>
           ))}
         </ul>
       );
@@ -90,8 +123,14 @@ const renderBlock = (block: ArticleBlock, index: number) => {
   }
 };
 
-export default function ArticlePage({ params }: ArticlePageProps) {
-  const article = getArticleBySlug(params.slug);
+export default async function Page(props: ArticlePageProps) {
+  const resolvedParams = await Promise.resolve(props?.params as any);
+  const slugRaw = resolvedParams?.slug;
+  const slug = Array.isArray(slugRaw)
+    ? slugRaw.join("/")
+    : String(slugRaw ?? "");
+
+  const article = getArticleBySlug(slug);
   if (!article) return notFound();
 
   return (
@@ -127,6 +166,20 @@ export default function ArticlePage({ params }: ArticlePageProps) {
         <article className="mt-8 space-y-6 text-gray-700 leading-7">
           {article.content.map((block, index) => renderBlock(block, index))}
         </article>
+
+        <div className="mt-10 rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
+          <p className="text-sm text-gray-700">
+            Если нужна поддержка или уточнение — напишите нам в Telegram.
+          </p>
+          <a
+            href={TELEGRAM_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex items-center justify-center rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800"
+          >
+            Написать в Telegram
+          </a>
+        </div>
       </div>
     </main>
   );
