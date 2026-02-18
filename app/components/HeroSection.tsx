@@ -153,7 +153,7 @@ export function HeroSection() {
                 className={`${planCtaClass} mt-6 max-w-[22rem]`}
               >
                 <span className="flex w-full flex-col items-center text-center">
-                  <span className="text-gray-800">Что делать, если умер близкий</span>
+                  <span className="text-gray-800">Что делать, если умер человек</span>
                   <span className="mt-0.5 text-[11px] font-normal text-gray-500">
                     Нажмите, чтобы показать
                   </span>
@@ -203,7 +203,7 @@ export function HeroSection() {
                   className={`${planCtaClass} max-w-[26rem]`}
                 >
                   <span className="flex w-full flex-col items-center text-center">
-                    <span className="text-gray-800">Что делать, если умер близкий</span>
+                    <span className="text-gray-800">Что делать, если умер человек</span>
                     <span className="mt-0.5 text-[11px] font-normal text-gray-500">
                       Нажмите, чтобы показать
                     </span>

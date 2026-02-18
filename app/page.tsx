@@ -541,6 +541,11 @@ function HomeInner() {
     router.push('/faq');
   };
 
+  const handleTopArticles = () => {
+    setTopMenuOpen(false);
+    router.push('/articles');
+  };
+
   const handleTopPlanActions = () => {
     setTopMenuOpen(false);
     window.dispatchEvent(new Event("td:toggle-how-it-works"));
@@ -617,6 +622,13 @@ function HomeInner() {
                     className="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
                   >
                     Частые вопросы
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleTopArticles}
+                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Статьи
                   </button>
                   <button
                     type="button"
