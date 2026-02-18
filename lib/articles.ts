@@ -38,9 +38,9 @@ const TELEGRAM_PLAN_TEXT = `Пошаговая инструкция по дня�
 
 Если нужна поддержка — напишите в «Тихий дом».`;
 
-const TELEGRAM_PLAN_SHARE_URL = `https://t.me/share/url?text=${encodeURIComponent(
-  TELEGRAM_PLAN_TEXT,
-)}`;
+const TELEGRAM_PLAN_SHARE_URL = `https://t.me/share/url?url=${encodeURIComponent(
+  "https://t.me/tihiydominfo",
+)}&text=${encodeURIComponent(TELEGRAM_PLAN_TEXT)}`;
 
 export const articles: Article[] = [
   {
