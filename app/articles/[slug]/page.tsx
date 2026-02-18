@@ -35,6 +35,8 @@ export function generateStaticParams() {
   return articles.map((article) => ({ slug: article.slug }));
 }
 
+export const dynamicParams = true;
+
 const renderBlock = (block: ArticleBlock, index: number) => {
   switch (block.type) {
     case "lead":
