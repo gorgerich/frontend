@@ -16,7 +16,9 @@ export function Footer() {
           {/* Brand Column */}
           <div className="md:col-span-4 flex flex-col justify-between h-full">
             <div>
-              <h2 className="text-lg font-semibold tracking-tight text-neutral-900 mb-4">Тихий дом</h2>
+              <Link href="/" className="text-lg font-semibold tracking-tight text-neutral-900 mb-4 inline-block hover:text-neutral-700 transition-colors">
+                Тихий дом
+              </Link>
               <p className="text-sm text-neutral-500 leading-relaxed mb-6 max-w-sm">
                 Цифровой сервис ритуальных услуг. Мы обеспечиваем прозрачность, фиксацию цен и полную юридическую защиту на каждом этапе.
               </p>

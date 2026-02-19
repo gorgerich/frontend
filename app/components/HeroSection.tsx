@@ -143,7 +143,8 @@ export function HeroSection() {
                       lineHeight: MOBILE_LINE2_LINE_HEIGHT,
                     }}
                   >
-                    «Тихий дом» — это онлайн сервис для самостоятельной организации похорон без давления, посредников и скрытых наценок.
+                    «Тихий дом» — это онлайн сервис для самостоятельной организации похорон
+                    <br className="hidden md:block" /> без давления, посредников и скрытых наценок.
                   </span>
                 </span>
               </h1>
@@ -184,7 +185,7 @@ export function HeroSection() {
                   }}
                 >
                   <span
-                    className="mx-auto block max-w-[56rem] text-2xl lg:text-3xl xl:text-3xl font-bold text-center"
+                    className="mx-auto block max-w-[56rem] text-xl lg:text-2xl xl:text-2xl font-bold text-center"
                     style={{
                       fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
                       fontWeight: 600,
@@ -192,7 +193,8 @@ export function HeroSection() {
                       lineHeight: LINE2_LINE_HEIGHT,
                     }}
                   >
-                    «Тихий дом» — это онлайн сервис для самостоятельной организации похорон без давления, посредников и скрытых наценок.
+                    «Тихий дом» — это онлайн сервис по самостоятельной организации 
+                    <br className="hidden md:block" /> похорон без давления, посредников и скрытых наценок.
                   </span>
                 </span>
               </h1>
