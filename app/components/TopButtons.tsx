@@ -170,24 +170,21 @@ export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTML
           </motion.button>
         </div>
 
-        {/* Desktop: без поиска и написать (перенесены в sticky панель) */}
-        <div className="relative hidden md:block w-full pointer-events-auto">
-          {/* Левая зона: О сервисе + Поиск */}
-          <div className="absolute left-0 top-0 flex items-center gap-3">
+        {/* Desktop: кнопки в одну линию, центрированы как группа */}
+        <div className="hidden md:block w-full pointer-events-auto">
+          <div className="flex w-full items-center justify-center gap-4">
             <motion.button
-              whileHover={{ scale: 1.1, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsAboutOpen(true)}
-              className="group relative w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 hover:bg-white/20 hover:shadow-white/10 hover:border-white/30 flex items-center justify-center"
-              aria-label="О сервисе"
-            >
-              <div className="absolute inset-0 rounded-full bg-white/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <Info className="relative w-7 h-7 md:w-8 md:h-8 text-white/90 group-hover:text-white transition-colors" />
+            whileHover={{ scale: 1.1, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsAboutOpen(true)}
+            className="group relative w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 hover:bg-white/20 hover:shadow-white/10 hover:border-white/30 flex items-center justify-center"
+            aria-label="О сервисе"
+          >
+            <div className="absolute inset-0 rounded-full bg-white/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <Info className="relative w-7 h-7 md:w-8 md:h-8 text-white/90 group-hover:text-white transition-colors" />
             </motion.button>
-          </div>
 
-          {/* Центральная кнопка: Как начать */}
-          <motion.button
+            <motion.button
             animate={
               shouldReduceMotion
                 ? undefined
@@ -204,7 +201,7 @@ export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTML
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsDeathGuideOpen(true)}
             ref={questionButtonRef}
-            className="group absolute left-1/2 top-0 w-20 h-20 md:w-28 md:h-28 -translate-x-1/2 rounded-full bg-gradient-to-b from-white/20 to-white/5 backdrop-blur-2xl border-2 border-white/30 shadow-2xl flex items-center justify-center transition-all duration-300 hover:border-white/50"
+            className="group relative w-20 h-20 md:w-28 md:h-28 rounded-full bg-gradient-to-b from-white/20 to-white/5 backdrop-blur-2xl border-2 border-white/30 shadow-2xl flex items-center justify-center transition-all duration-300 hover:border-white/50"
             aria-label="Первые действия"
           >
             <div className="absolute inset-0 rounded-full bg-white/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -214,22 +211,20 @@ export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTML
             >
               ?
             </span>
-          </motion.button>
+            </motion.button>
 
-          {/* Правая зона: Написать + AI */}
-          <div className="absolute right-0 top-0 flex items-center gap-3">
             <motion.button
-              whileHover={{ scale: 1.1, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsAIChatOpen(true)}
-              className="group w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 hover:bg-white/20 hover:shadow-white/10 hover:border-white/30 flex items-center justify-center"
-              aria-label="Создать с ИИ"
-            >
-              <div className="absolute inset-0 rounded-full bg-white/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <Sparkles className="relative w-6 h-6 md:w-8 md:h-8 text-white/90 group-hover:text-white transition-colors" />
-              <div className="absolute -top-1 -right-1 w-5 h-5 md:w-6 md:h-6 bg-gradient-to-br from-gray-800 to-black rounded-full flex items-center justify-center text-white text-[9px] md:text-[10px] shadow-lg border border-gray-600/30">
-                Ai
-              </div>
+            whileHover={{ scale: 1.1, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsAIChatOpen(true)}
+            className="group relative w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 hover:bg-white/20 hover:shadow-white/10 hover:border-white/30 flex items-center justify-center"
+            aria-label="Создать с ИИ"
+          >
+            <div className="absolute inset-0 rounded-full bg-white/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <Sparkles className="relative w-6 h-6 md:w-8 md:h-8 text-white/90 group-hover:text-white transition-colors" />
+            <div className="absolute -top-1 -right-1 w-5 h-5 md:w-6 md:h-6 bg-gradient-to-br from-gray-800 to-black rounded-full flex items-center justify-center text-white text-[9px] md:text-[10px] shadow-lg border border-gray-600/30">
+              Ai
+            </div>
             </motion.button>
           </div>
         </div>

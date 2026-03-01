@@ -136,9 +136,10 @@ export function HeroSection() {
                   }}
                   >
                   <span
-                    className="block text-lg sm:text-xl font-semibold text-left"
+                    className="block text-lg sm:text-xl font-extrabold text-left"
                     style={{
                       fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
+                      fontWeight: 800,
                       transform: `translateY(${MOBILE_LINE2_SHIFT})`,
                       lineHeight: MOBILE_LINE2_LINE_HEIGHT,
                     }}
@@ -147,13 +148,14 @@ export function HeroSection() {
                     
                   </span>
                   <span
-                    className="mt-3 block text-sm sm:text-base font-medium text-left text-white/90"
+                    className="mt-3 block text-sm sm:text-base font-normal text-left text-white/90"
                     style={{
                       fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
+                      fontWeight: 400,
                       lineHeight: 1.3,
                     }}
                   >
-                    Фиксированная цена до подписания договора. Никаких скрытых платежей, доплат в морге и навязывания услуг.
+                    Мы фиксируем цену до подписания договора. Никаких скрытых платежей, доплат в морге и навязывания услуг.
                   </span>
                 </span>
               </h1>
@@ -194,10 +196,10 @@ export function HeroSection() {
                   }}
                 >
                   <span
-                    className="mx-auto block max-w-[56rem] text-xl lg:text-2xl xl:text-2xl font-bold text-center"
+                    className="mx-auto block max-w-[56rem] text-xl lg:text-2xl xl:text-2xl font-extrabold text-center"
                     style={{
                       fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
-                      fontWeight: 600,
+                      fontWeight: 1000,
                       transform: `translateY(${LINE2_SHIFT})`,
                       lineHeight: LINE2_LINE_HEIGHT,
                     }}
@@ -206,13 +208,14 @@ export function HeroSection() {
                    
                   </span>
                   <span
-                    className="mx-auto mt-3 block max-w-[56rem] text-base lg:text-lg font-medium text-center text-white/90"
+                    className="mx-auto mt-3 block max-w-[56rem] text-base lg:text-lg font-bold text-center text-white/90"
                     style={{
                       fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
+                      fontWeight: 400,
                       lineHeight: 1.35,
                     }}
                   >
-                    Фиксированная цена до подписания договора. Никаких скрытых платежей, доплат в морге и навязывания услуг.
+                  Мы фиксируем цену до подписания договора. Никаких скрытых платежей, доплат в морге и навязывания услуг.
                   </span>
                 </span>
               </h1>

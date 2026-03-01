@@ -4183,10 +4183,10 @@ function formatRub(n: number) {
               Выберите, как вам комфортнее организовать прощание
             </div>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
-              Можно собрать план самостоятельно из базовых услуг или выбрать готовое решение, где наш координатор возьмет всё на себя.
+              Можно собрать план самостоятельно или выбрать готовое решение с расширенным пакетом услуг.
             </p>
-            <div className="flex w-full justify-center md:justify-start mb-3 mt-2">
-              <div className="bg-zinc-100 p-1 rounded-full border border-zinc-200 flex w-full max-w-none min-w-0 flex-nowrap gap-1 md:mx-0 md:mr-auto">
+            <div className="mb-3 mt-2 flex w-full justify-center md:justify-start">
+              <div className="flex w-full min-w-0 max-w-none flex-wrap rounded-2xl border border-zinc-200 bg-zinc-100 p-1 md:flex-nowrap md:rounded-full md:mx-0 md:mr-auto">
                 <button
                   type="button"
                   onClick={() => {
@@ -4195,14 +4195,18 @@ function formatRub(n: number) {
                     setContinueChoice("self");
                   }}
                   className={cn(
-                    "flex-1 min-w-0 h-9 px-2 sm:px-3 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap inline-flex items-center justify-center gap-1",
+                    "basis-[calc(50%-2px)] md:basis-0 md:flex-1 min-w-0 w-full min-h-10 py-1.5 md:h-9 md:min-h-0 md:py-0 rounded-full px-1 sm:px-2 inline-flex items-center justify-center gap-1 text-[9px] sm:text-[13px] md:text-sm font-medium transition-all duration-200",
                     continueChoice === "self"
                       ? "bg-white text-black shadow-lg"
                       : "text-gray-700 hover:bg-white/70",
                   )}
                 >
-                  <span>{continueChoice === "self" && workflowMode !== "wizard" ? "🔘" : "⚪"}</span>
-                  <span>Собрать самостоятельно</span>
+                  <span className="inline-flex w-5 shrink-0 justify-center leading-none">
+                    {continueChoice === "self" && workflowMode !== "wizard" ? "🔘" : ""}
+                  </span>
+                  <span className="min-w-0 whitespace-nowrap text-center leading-none">
+                    Собрать самостоятельно
+                  </span>
                 </button>
                 <button
                   type="button"
@@ -4212,14 +4216,18 @@ function formatRub(n: number) {
                     setContinueChoice("solutions");
                   }}
                   className={cn(
-                    "flex-1 min-w-0 h-9 px-2 sm:px-3 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap inline-flex items-center justify-center gap-1",
+                    "basis-[calc(50%-2px)] md:basis-0 md:flex-1 min-w-0 w-full min-h-10 py-1.5 md:h-9 md:min-h-0 md:py-0 rounded-full px-1 sm:px-2 inline-flex items-center justify-center gap-1 text-[10px] sm:text-[13px] md:text-sm font-medium transition-all duration-200",
                     continueChoice === "solutions"
                       ? "bg-white text-black shadow-lg"
                       : "text-gray-700 hover:bg-white/70",
                   )}
                 >
-                  <span>{continueChoice === "solutions" && workflowMode !== "wizard" ? "🔘" : "⚪"}</span>
-                  <span>Готовые решения</span>
+                  <span className="inline-flex w-5 shrink-0 justify-center leading-none">
+                    {continueChoice === "solutions" && workflowMode !== "wizard" ? "🔘" : ""}
+                  </span>
+                  <span className="min-w-0 whitespace-normal text-center leading-tight md:whitespace-nowrap">
+                    Готовые решения
+                  </span>
                 </button>
                 <button
                   type="button"
@@ -4228,14 +4236,18 @@ function formatRub(n: number) {
                     onModeChange?.("wizard");
                   }}
                   className={cn(
-                    "flex-1 min-w-0 h-9 px-2 sm:px-3 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap inline-flex items-center justify-center gap-1",
+                    "basis-full md:basis-0 md:flex-1 min-w-0 w-full min-h-10 py-1.5 md:h-9 md:min-h-0 md:py-0 rounded-full px-1 sm:px-2 inline-flex items-center justify-center gap-1 text-[10px] sm:text-[13px] md:text-sm font-medium transition-all duration-200",
                     workflowMode === "wizard"
                       ? "bg-white text-black shadow-lg"
                       : "text-gray-700 hover:bg-white/70",
                   )}
                 >
-                  <span>{workflowMode === "wizard" ? "🔘" : "⚪"}</span>
-                  <span>Пошаговый мастер</span>
+                  <span className="inline-flex w-5 shrink-0 justify-center leading-none">
+                    {workflowMode === "wizard" ? "🔘" : ""}
+                  </span>
+                  <span className="min-w-0 whitespace-normal text-center leading-tight md:whitespace-nowrap">
+                    Пошаговый мастер
+                  </span>
                 </button>
               </div>
             </div>

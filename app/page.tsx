@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { HeroSection } from './components/HeroSection';
 import { StepperWorkflow } from './components/StepperWorkflow';
@@ -16,8 +17,7 @@ import {
   trackEvent,
 } from './components/calculationUtils';
 import { TELEGRAM_URL } from '../lib/legalLinks';
-import { HelpCircle, Menu } from 'lucide-react';
-import { TopSearch, TopTelegramButton } from './components/TopButtons';
+import { Menu, X } from 'lucide-react';
 
 type BreakdownItem = { name: string; price?: number };
 type BreakdownSection = { category: string; price: number; items?: BreakdownItem[] };
@@ -273,7 +273,7 @@ function HomeInner() {
   const searchParams = useSearchParams();
   const lastCtaRef = useRef<string | null>(null);
   const [topMenuOpen, setTopMenuOpen] = useState(false);
-  const topMenuRef = useRef<HTMLDivElement | null>(null);
+  const [isDesktopNav, setIsDesktopNav] = useState(false);
   const teamCarouselRef = useRef<HTMLDivElement | null>(null);
   const teamFirstSetRef = useRef<HTMLDivElement | null>(null);
   const teamSetWidthRef = useRef(0);
@@ -702,38 +702,21 @@ function HomeInner() {
   }, [ctaParam]);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!topMenuRef.current) return;
-      if (!topMenuRef.current.contains(event.target as Node)) {
-        setTopMenuOpen(false);
-      }
+    if (!topMenuOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setTopMenuOpen(false);
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleTopFaq = () => {
-    router.push('/faq');
-  };
-
-  const handleTopArticles = () => {
-    setTopMenuOpen(false);
-    router.push('/articles');
-  };
-
-  const handleTopPlanActions = () => {
-    setTopMenuOpen(false);
-    window.dispatchEvent(new Event("td:toggle-how-it-works"));
-  };
-
-  const handleTopPackages = () => {
-    setTopMenuOpen(false);
-    window.dispatchEvent(new Event("td:open-packages"));
-    const packagesEl = document.getElementById("packages");
-    if (packagesEl) {
-      packagesEl.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.body.style.overflow = prevBodyOverflow;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [topMenuOpen]);
 
   const handleTopContacts = () => {
     setTopMenuOpen(false);
@@ -746,78 +729,181 @@ function HomeInner() {
     }, 1500);
   };
 
+  const handleTopOpenPackages = () => {
+    setTopMenuOpen(false);
+    window.dispatchEvent(new Event("td:open-packages"));
+    window.setTimeout(() => {
+      const packagesEl = document.getElementById("packages");
+      packagesEl?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+  };
+
+  const topNavItems: Array<
+    | { id: string; label: string; href: string }
+    | { id: string; label: string; onClick: () => void }
+  > = [
+    { id: 'faq', label: 'Частые вопросы', href: '/faq' },
+    { id: 'contacts', label: 'Контакты', onClick: handleTopContacts },
+    { id: 'articles', label: 'Статьи', href: '/articles' },
+  ];
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const media = window.matchMedia('(min-width: 768px)');
+    const applyMediaState = (matches: boolean) => {
+      setIsDesktopNav(matches);
+      if (matches) setTopMenuOpen(false);
+    };
+    const handleMediaChange = (event: MediaQueryListEvent) => {
+      applyMediaState(event.matches);
+    };
+    applyMediaState(media.matches);
+    media.addEventListener('change', handleMediaChange);
+    return () => media.removeEventListener('change', handleMediaChange);
+  }, []);
+
   return (
     <main className="min-h-screen bg-white flex flex-col">
-      <div className="sticky top-0 z-40 w-full">
-        <div className="mx-auto w-full max-w-7xl px-4">
-          <div className="flex h-12 w-full items-center justify-between gap-3 rounded-3xl md:rounded-[40px] border border-gray-200 bg-gray-100/90 backdrop-blur px-2 sm:px-3">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleTopFaq}
-                className="inline-flex h-9 items-center gap-2 rounded-full border border-gray-300 bg-white/70 px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-white"
+      <div className="sticky top-0 z-40 w-full bg-white">
+        <div className="w-full px-6 sm:px-7">
+          <div className="flex h-16 w-full items-center gap-4">
+            <Link
+              href="/"
+              onClick={() => setTopMenuOpen(false)}
+              className="mr-0 inline-flex shrink-0 items-center gap-3 text-gray-900 transition hover:text-gray-700"
+            >
+              <Image
+                src="/logo.PNG"
+                alt="Тихий дом"
+                width={33}
+                height={33}
+                className="h-[33px] w-[33px] rounded-[7px]"
+              />
+              <span className="inline-flex h-[33px] items-center text-2xl leading-none font-semibold">
+                Тихий дом
+              </span>
+            </Link>
+            {isDesktopNav ? (
+              <nav
+                className="ml-auto flex items-center justify-end gap-6"
+                style={{ marginRight: 0 }}
               >
-                <HelpCircle className="h-4 w-4" />
-                <span className="hidden md:inline">Частые вопросы</span>
-              </button>
-              <TopSearch />
-            </div>
-            <div className="relative flex items-center gap-3" ref={topMenuRef}>
-              <TopTelegramButton className="inline-flex h-9 items-center gap-2 rounded-full border border-gray-300 bg-white/70 px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-white [&>span]:hidden md:[&>span]:inline" />
+                {topNavItems.map((item) =>
+                  'href' in item ? (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      className="text-sm font-medium text-gray-700 transition hover:text-black whitespace-nowrap"
+                      style={{ marginRight: 0 }}
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={item.onClick}
+                      className="text-sm font-medium text-gray-700 transition hover:text-black whitespace-nowrap"
+                      style={{ marginRight: 0 }}
+                    >
+                      {item.label}
+                    </button>
+                  ),
+                )}
+              </nav>
+            ) : (
               <button
                 type="button"
                 onClick={() => setTopMenuOpen((prev) => !prev)}
-                className="inline-flex h-9 items-center gap-2 rounded-full border border-gray-300 bg-white/70 px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-white"
+                className="ml-auto inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/40 bg-white/60 text-gray-700 shadow-sm transition hover:bg-white/85"
+                aria-expanded={topMenuOpen}
+                aria-label="Открыть меню"
               >
                 <Menu className="h-4 w-4" />
-                <span className="hidden md:inline">Меню</span>
               </button>
-              {topMenuOpen && (
-                <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
-                  <button
-                    type="button"
-                    onClick={handleTopPlanActions}
-                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    План действий
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleTopPackages}
-                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Тариф/настройка
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setTopMenuOpen(false);
-                      handleTopFaq();
-                    }}
-                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Частые вопросы
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleTopArticles}
-                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Статьи
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleTopContacts}
-                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Контакты
-                  </button>
-                </div>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>
+      {topMenuOpen && !isDesktopNav && (
+        <div className="fixed inset-0 z-[9999] transition-opacity duration-300">
+          <button
+            type="button"
+            aria-label="Закрыть меню"
+            onClick={() => setTopMenuOpen(false)}
+            className="absolute inset-0 bg-black/25 backdrop-blur-[2px]"
+          />
+          <div className="relative mx-auto w-full max-w-7xl px-4 transition-all duration-300 ease-out translate-y-0">
+            <div className="min-h-[230px] rounded-b-3xl border border-white/45 bg-white/95 px-5 pb-6 pt-5 shadow-[0_24px_48px_rgba(15,23,42,0.22)] backdrop-blur-xl">
+              <div className="flex items-center justify-between">
+                <Link
+                  href="/"
+                  onClick={() => setTopMenuOpen(false)}
+                  className="inline-flex items-center gap-2 rounded-full px-1 py-1 text-base font-semibold text-gray-900 transition hover:text-gray-700"
+                >
+                  <Image
+                    src="/logo.PNG"
+                    alt="Тихий дом"
+                    width={22}
+                    height={22}
+                    className="h-[22px] w-[22px] rounded-[5px]"
+                  />
+                  <span>Тихий дом</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setTopMenuOpen(false)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white/80 text-gray-700 shadow-sm transition hover:bg-white"
+                  aria-label="Закрыть меню"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <nav className="mt-5 flex flex-col gap-1">
+                {topNavItems.map((item) =>
+                  'href' in item ? (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      onClick={() => setTopMenuOpen(false)}
+                      className="rounded-xl px-3 py-3 text-base font-medium text-gray-800 transition hover:bg-gray-100/80"
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={item.onClick}
+                      className="rounded-xl px-3 py-3 text-left text-base font-medium text-gray-800 transition hover:bg-gray-100/80"
+                    >
+                      {item.label}
+                    </button>
+                  ),
+                )}
+              </nav>
+              <div className="mt-4 grid gap-2">
+                <a
+                  href={TELEGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setTopMenuOpen(false)}
+                  className="inline-flex w-full items-center justify-center rounded-xl bg-[#63ADEC] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0077ED]"
+                >
+                  Написать координатору
+                </a>
+                <button
+                  type="button"
+                  onClick={handleTopOpenPackages}
+                  className="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 transition hover:bg-gray-50"
+                >
+                  Рассчитать стоимость
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex-1">
         <div className="relative">
           <section className="relative z-0 overflow-visible">
