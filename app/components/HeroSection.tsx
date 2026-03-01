@@ -120,9 +120,8 @@ export function HeroSection() {
             {/* MOBILE */}
             <div className="flex h-full flex-col items-center justify-center px-6 pb-24 text-center sm:pb-32 md:hidden">
               <h1
-                className="mx-auto mb-4 max-w-[28rem] tracking-tight text-white drop-shadow-2xl sm:max-w-[32rem]"
+                className="font-heading mx-auto mb-4 max-w-[28rem] tracking-tight text-white drop-shadow-2xl sm:max-w-[32rem]"
                 style={{
-                  fontFamily: "var(--font-family-serif)",
                   textShadow:
                     "0 4px 20px rgba(0,0,0,0.8), 0 0px 0px rgba(0,0,0,0.6)",
                 }}
@@ -136,9 +135,8 @@ export function HeroSection() {
                   }}
                   >
                   <span
-                    className="block text-lg sm:text-xl font-extrabold text-left"
+                    className="font-heading block text-lg sm:text-xl font-extrabold text-left"
                     style={{
-                      fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
                       fontWeight: 800,
                       transform: `translateY(${MOBILE_LINE2_SHIFT})`,
                       lineHeight: MOBILE_LINE2_LINE_HEIGHT,
@@ -148,9 +146,8 @@ export function HeroSection() {
                     
                   </span>
                   <span
-                    className="mt-3 block text-sm sm:text-base font-normal text-left text-white/90"
+                    className="font-body mt-3 block text-sm sm:text-base font-normal text-left text-white/90"
                     style={{
-                      fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
                       fontWeight: 400,
                       lineHeight: 1.3,
                     }}
@@ -165,8 +162,8 @@ export function HeroSection() {
                 className={`${planCtaClass} mt-6 max-w-[22rem]`}
               >
                 <span className="flex w-full flex-col items-center text-center">
-                  <span className="text-gray-600">Что делать, если умер человек</span>
-                  <span className="mt-0.5 text-[11px] font-normal text-gray-500">
+                  <span className="font-subheading text-gray-600">Что делать, если умер человек</span>
+                  <span className="font-micro mt-0.5 text-[11px] font-normal text-gray-500">
                     Нажмите, чтобы показать
                   </span>
                 </span>
@@ -181,9 +178,8 @@ export function HeroSection() {
             >
               <h1
                 ref={titleRef}
-                className="mx-auto mb-4 max-w-3xl tracking-tight text-white drop-shadow-2xl"
+                className="font-heading mx-auto mb-4 max-w-3xl tracking-tight text-white drop-shadow-2xl"
                 style={{
-                  fontFamily: "var(--font-family-serif)",
                   textShadow:
                     "0 4px 20px rgba(0,0,0,0.8), 0 0px 0px rgba(0,0,0,0.6)",
                 }}
@@ -191,15 +187,13 @@ export function HeroSection() {
                 <span
                   className="block"
                   style={{
-                    fontFamily: "var(--font-family-display)",
                     fontWeight: 40,
                   }}
                 >
                   <span
-                    className="mx-auto block max-w-[56rem] text-xl lg:text-2xl xl:text-2xl font-extrabold text-center"
+                    className="font-heading mx-auto block max-w-[56rem] text-xl lg:text-2xl xl:text-2xl font-extrabold text-center"
                     style={{
-                      fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
-                      fontWeight: 1000,
+                      fontWeight: 900,
                       transform: `translateY(${LINE2_SHIFT})`,
                       lineHeight: LINE2_LINE_HEIGHT,
                     }}
@@ -208,9 +202,8 @@ export function HeroSection() {
                    
                   </span>
                   <span
-                    className="mx-auto mt-3 block max-w-[56rem] text-base lg:text-lg font-bold text-center text-white/90"
+                    className="font-body mx-auto mt-3 block max-w-[56rem] text-base lg:text-lg font-bold text-center text-white/90"
                     style={{
-                      fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
                       fontWeight: 400,
                       lineHeight: 1.35,
                     }}
@@ -226,8 +219,8 @@ export function HeroSection() {
                   className={`${planCtaClass} max-w-[26rem]`}
                 >
                   <span className="flex w-full flex-col items-center text-center">
-                    <span className="text-gray-600">Что делать, если умер человек</span>
-                    <span className="mt-0.5 text-[11px] font-normal text-gray-500">
+                    <span className="font-subheading text-gray-600">Что делать, если умер человек</span>
+                    <span className="font-micro mt-0.5 text-[11px] font-normal text-gray-500">
                       Нажмите, чтобы показать
                     </span>
                   </span>

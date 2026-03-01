@@ -1,24 +1,66 @@
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap");
-@import url("https://fonts.cdnfonts.com/css/spirits-sharp");
 @import "tailwindcss";
 @source "../**/*.{js,ts,jsx,tsx,mdx}";
 
 @font-face {
-  font-family: "Spirits Sharp";
-  src: local("Spirits Sharp"), local("SpiritsSharp");
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Humanist";
-  src: local("Humanist"), local("Humanist 521"), local("Humanist 521 BT");
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Golos";
+  font-family: "Golos Text";
   src: url("/fonts/GolosText-Regular.woff") format("woff");
   font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Golos UI";
+  src: url("/fonts/golos-ui_medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Golos UI";
+  src: url("/fonts/golos-ui_bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Golos UI VF";
+  src: url("/fonts/golos-ui_vf.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PT Root UI";
+  src: url("/fonts/pt-root-ui_regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PT Root UI";
+  src: url("/fonts/pt-root-ui_bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Lato Local";
+  src: url("/fonts/Lato-Heavy.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Lato Local";
+  src: url("/fonts/Lato-Black.woff2") format("woff2");
+  font-weight: 900;
   font-style: normal;
   font-display: swap;
 }
@@ -6375,9 +6417,13 @@
 
 
 :root {
-  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
-  --font-family-serif: "Playfair Display", Georgia, serif;
-  --font-family-display: "Spirits Sharp", "Playfair Display", Georgia, serif;
+  --font-heading: "Lato Local", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-subheading: "PT Root UI", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-body: "Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-micro: "Golos UI", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-family-base: var(--font-body);
+  --font-family-serif: var(--font-subheading);
+  --font-family-display: var(--font-heading);
   --font-size: 16px;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
@@ -6449,6 +6495,26 @@
   --z-modal: 1050;
   --z-popover: 1060;
   --z-tooltip: 1070;
+}
+
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-subheading {
+  font-family: var(--font-subheading);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.font-micro {
+  font-family: var(--font-micro);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-heading);
 }
 
 .dark {
