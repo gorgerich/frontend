@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { HeroSection } from './components/HeroSection';
 import { StepperWorkflow } from './components/StepperWorkflow';
@@ -132,6 +133,65 @@ const TRUST_REVIEWS = [
   },
 ];
 
+const TEAM_MEMBERS = [
+  {
+    id: 'member-1',
+    name: 'Михаил',
+    role: 'Координатор',
+    imageSrc: '/team/male-2.jpg',
+    description: 'Сопровождаю организационные вопросы и координирую день прощания.',
+  },
+  {
+    id: 'member-2',
+name: 'Елена',
+    role: 'Координатор',
+    imageSrc: '/team/elena-2.jpg',
+    description: 'Согласовываю этапы с площадками и веду организацию в спокойном ритме.',
+  },
+  {
+    id: 'member-3',
+    name: 'Денис',
+    role: 'Координатор',
+    imageSrc: '/team/male-1.jpg',
+    description: 'Проверяю документы, фиксирую план и держу связь без давления.',
+  },
+  {
+    id: 'member-4',
+    name: 'Анна',
+    role: 'Координатор',
+    imageSrc: '/team/female-1.jpg',
+    description: 'Помогаю собрать маршрут церемонии и заранее проверить важные детали.',
+  },
+  {
+    id: 'member-5',
+    name: 'Сергей',
+    role: 'Координатор',
+    imageSrc: '/team/male-3.jpg',
+    description: 'Контролирую транспорт и тайминг, чтобы в день прощания всё прошло ровно.',
+  },
+  {
+    id: 'member-6',
+    name: 'Ольга',
+    role: 'Координатор',
+    imageSrc: '/team/female-3.jpg',
+    description: 'Подсказываю по документам и остаюсь на связи до полного подтверждения плана.',
+  },
+  {
+    id: 'member-7',
+    name: 'Павел',
+    role: 'Координатор',
+    imageSrc: '/team/male-4.jpg',
+    description: 'Помогаю согласовать услуги без спешки и лишних решений.',
+  },
+  {
+    id: 'member-8',
+    name: 'Наталья',
+    role: 'Координатор',
+    imageSrc: '/team/female-4.jpg',
+    description: 'Веду коммуникацию с родственниками и фиксирую все договорённости прозрачно.',
+  },
+] as const;
+
 const TRUST_METRICS = [
   { label: 'Средняя оценка', value: '4.9/5' },
   { label: 'Рекомендации', value: '97%' },
@@ -214,6 +274,13 @@ function HomeInner() {
   const lastCtaRef = useRef<string | null>(null);
   const [topMenuOpen, setTopMenuOpen] = useState(false);
   const topMenuRef = useRef<HTMLDivElement | null>(null);
+  const teamCarouselRef = useRef<HTMLDivElement | null>(null);
+  const teamFirstSetRef = useRef<HTMLDivElement | null>(null);
+  const teamSetWidthRef = useRef(0);
+  const teamPauseTimeoutRef = useRef<number | null>(null);
+  const teamIsInteractingRef = useRef(false);
+  const teamDragStateRef = useRef({ isDown: false, startX: 0, startScrollLeft: 0 });
+  const [isTeamDragging, setIsTeamDragging] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -224,6 +291,94 @@ function HomeInner() {
     requestAnimationFrame(() => {
       window.scrollTo(0, 0);
     });
+  }, []);
+
+  const pauseTeamAutoscroll = () => {
+    teamIsInteractingRef.current = true;
+    if (teamPauseTimeoutRef.current) {
+      window.clearTimeout(teamPauseTimeoutRef.current);
+    }
+    teamPauseTimeoutRef.current = window.setTimeout(() => {
+      teamIsInteractingRef.current = false;
+    }, 1500);
+  };
+
+  useEffect(() => {
+    const firstSet = teamFirstSetRef.current;
+    const container = teamCarouselRef.current;
+    if (!firstSet || !container) return;
+
+    const updateSetWidth = () => {
+      teamSetWidthRef.current = firstSet.scrollWidth;
+    };
+
+    updateSetWidth();
+    container.scrollLeft = 1;
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateSetWidth();
+    });
+    resizeObserver.observe(firstSet);
+
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const container = teamCarouselRef.current;
+    if (!container) return;
+
+    let rafId = 0;
+    let lastTs = performance.now();
+    const speedPxPerMs = 0.05;
+
+    const animate = (ts: number) => {
+      const dt = ts - lastTs;
+      lastTs = ts;
+
+      if (!teamIsInteractingRef.current) {
+        const setWidth = teamSetWidthRef.current;
+        if (setWidth > 0) {
+          container.scrollLeft += dt * speedPxPerMs;
+
+          if (container.scrollLeft >= setWidth) {
+            container.scrollLeft -= setWidth;
+          } else if (container.scrollLeft < 0) {
+            container.scrollLeft += setWidth;
+          }
+        }
+      }
+
+      rafId = window.requestAnimationFrame(animate);
+    };
+
+    rafId = window.requestAnimationFrame(animate);
+    return () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+      if (teamPauseTimeoutRef.current) {
+        window.clearTimeout(teamPauseTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const container = teamCarouselRef.current;
+    if (!container) return;
+
+    const onWheel = (event: WheelEvent) => {
+      if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+        event.preventDefault();
+        pauseTeamAutoscroll();
+        container.scrollLeft += event.deltaY;
+        return;
+      }
+
+      if (event.deltaX !== 0) {
+        pauseTeamAutoscroll();
+      }
+    };
+
+    container.addEventListener('wheel', onWheel, { passive: false });
+    return () => container.removeEventListener('wheel', onWheel);
   }, []);
 
   useEffect(() => {
@@ -677,21 +832,129 @@ function HomeInner() {
         <section className="mt-12 md:mt-16 mb-12 md:mb-16">
           <div className="mx-auto w-full max-w-6xl px-4">
             <div className="flex flex-col gap-2">
-              <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">Нам доверяют</h2>
+              <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">
+                Кто будет вам помогать
+              </h2>
+            </div>
+            <div className="relative left-1/2 right-1/2 mt-5 w-screen -ml-[50vw] -mr-[50vw]">
+              <div className="px-2 sm:px-3 md:px-4">
+                <div
+                  ref={teamCarouselRef}
+                  onMouseDown={(event) => {
+                    const container = teamCarouselRef.current;
+                    if (!container) return;
+                    teamDragStateRef.current = {
+                      isDown: true,
+                      startX: event.clientX,
+                      startScrollLeft: container.scrollLeft,
+                    };
+                    setIsTeamDragging(true);
+                    pauseTeamAutoscroll();
+                  }}
+                  onMouseMove={(event) => {
+                    const container = teamCarouselRef.current;
+                    if (!container || !teamDragStateRef.current.isDown) return;
+                    event.preventDefault();
+                    pauseTeamAutoscroll();
+                    const delta = event.clientX - teamDragStateRef.current.startX;
+                    container.scrollLeft = teamDragStateRef.current.startScrollLeft - delta;
+                  }}
+                  onMouseUp={() => {
+                    teamDragStateRef.current.isDown = false;
+                    setIsTeamDragging(false);
+                  }}
+                  onMouseLeave={() => {
+                    teamDragStateRef.current.isDown = false;
+                    setIsTeamDragging(false);
+                  }}
+                  onTouchStart={() => {
+                    pauseTeamAutoscroll();
+                  }}
+                  onTouchMove={() => {
+                    pauseTeamAutoscroll();
+                  }}
+                  onPointerDown={() => {
+                    pauseTeamAutoscroll();
+                  }}
+                  className={`overflow-x-auto overscroll-x-contain touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${isTeamDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+                >
+                  <div className="flex w-max gap-2.5 py-1 md:gap-3">
+                    <div ref={teamFirstSetRef} className="flex gap-2.5 md:gap-3">
+                      {TEAM_MEMBERS.map((member) => (
+                        <article
+                          key={`${member.id}-set-1`}
+                          className="w-[148px] rounded-xl border border-gray-200 bg-white p-2 shadow-sm md:w-[164px]"
+                        >
+                          {/* TODO: replace with real photo */}
+                          <div className="relative aspect-[3/5] overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
+                            <Image
+                              src={member.imageSrc}
+                              alt={`${member.name}, ${member.role}`}
+                              fill
+                              sizes="(max-width: 768px) 148px, 164px"
+                              className="object-cover"
+                            />
+                          </div>
+                          <div className="mt-2 text-[13px] font-semibold text-gray-900 leading-tight">
+                            {member.name} — {member.role.toLowerCase()}
+                          </div>
+                          <p className="mt-1.5 text-[11px] leading-snug text-gray-600">
+                            {member.description}
+                          </p>
+                        </article>
+                      ))}
+                    </div>
+                    <div className="flex gap-2.5 md:gap-3" aria-hidden="true">
+                      {TEAM_MEMBERS.map((member) => (
+                        <article
+                          key={`${member.id}-set-2`}
+                          className="w-[148px] rounded-xl border border-gray-200 bg-white p-2 shadow-sm md:w-[164px]"
+                        >
+                          {/* TODO: replace with real photo */}
+                          <div className="relative aspect-[3/5] overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
+                            <Image
+                              src={member.imageSrc}
+                              alt=""
+                              fill
+                              sizes="(max-width: 768px) 148px, 164px"
+                              className="object-cover"
+                            />
+                          </div>
+                          <div className="mt-2 text-[13px] font-semibold text-gray-900 leading-tight">
+                            {member.name} — {member.role.toLowerCase()}
+                          </div>
+                          <p className="mt-1.5 text-[11px] leading-snug text-gray-600">
+                            {member.description}
+                          </p>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 flex flex-col gap-2">
+              <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">Почему нам доверяют</h2>
               <p className="text-sm text-gray-500 md:text-base">
                 Реальный опыт клиентов: что получилось, что волновало и как всё прошло в итоге.
               </p>
             </div>
             <div className="mt-6 grid gap-4 md:grid-cols-3">
               {TRUST_REVIEWS.map((review) => (
-                <div key={review.id} className="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                <div
+                  key={review.id}
+                  className="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+                >
                   <div className="absolute right-4 top-4 rounded-full border border-gray-200 bg-white/90 px-2.5 py-1 text-xs font-semibold text-gray-700">
-                  {review.rating}
+                    {review.rating}
                   </div>
                   <div className="flex items-center gap-3">
                     <div>
                       <div className="text-sm font-semibold text-gray-900">{review.name}</div>
-                      <div className="text-xs text-gray-500">{review.date} · {review.service}</div>
+                      <div className="text-xs text-gray-500">
+                        {review.date} · {review.service}
+                      </div>
                     </div>
                   </div>
                   <p className="mt-3 text-sm text-gray-600 leading-relaxed">{review.text}</p>

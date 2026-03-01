@@ -1189,8 +1189,9 @@ export function StepperWorkflow({
   const [showHowItWorks, setShowHowItWorks] = useState(true);
   const [showDocumentsHelp, setShowDocumentsHelp] = useState(false);
   const howItWorksRef = useRef<HTMLDivElement | null>(null);
-  const [openDayId, setOpenDayId] = useState<string | null>(null);
-  const howItWorksItemRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const [activeEmergencyTab, setActiveEmergencyTab] = useState<
+    "home" | "hospital" | "other-city"
+  >("home");
 
   useEffect(() => {
     const handler = () => {
@@ -1207,365 +1208,124 @@ export function StepperWorkflow({
     return () => window.removeEventListener("td:toggle-how-it-works", handler);
   }, []);
 
-  const CopyBlock = ({ value }: { value: string }) => {
-    const [copied, setCopied] = useState(false);
-
-    const copyToClipboard = async () => {
-      try {
-        if (navigator?.clipboard?.writeText) {
-          await navigator.clipboard.writeText(value);
-        } else {
-          const textarea = document.createElement("textarea");
-          textarea.value = value;
-          textarea.setAttribute("readonly", "true");
-          textarea.style.position = "fixed";
-          textarea.style.opacity = "0";
-          document.body.appendChild(textarea);
-          textarea.select();
-          document.execCommand("copy");
-          document.body.removeChild(textarea);
-        }
-        setCopied(true);
-        window.setTimeout(() => setCopied(false), 1500);
-      } catch {
-        // ignore copy errors
-      }
-    };
-
-    return (
-      <div className="relative rounded-xl border border-white/30 bg-white/80 px-3 py-3 text-[12px] text-gray-900 shadow-sm">
-        <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">
-          text
-        </div>
-        <button
-          type="button"
-          onClick={copyToClipboard}
-          className="absolute right-3 top-2 rounded-full border border-gray-200 bg-white/90 px-2.5 py-1 text-[10px] font-semibold text-gray-700 shadow-sm"
-        >
-          {copied ? "Скопировано" : "Скопировать"}
-        </button>
-        <div className="whitespace-pre-line">{value}</div>
-      </div>
-    );
+  type EmergencyChecklistTabId = "home" | "hospital" | "other-city";
+  type EmergencyChecklistStep = {
+    title: string;
+    details: string[];
+  };
+  type EmergencyChecklistTab = {
+    id: EmergencyChecklistTabId;
+    title: string;
+    steps: EmergencyChecklistStep[];
+    ctaLabel: string;
+    ctaHint: string;
+    ctaPrefill?: string;
   };
 
-  const howItWorksDays: Array<{
-    id: string;
-    title: string;
-    description: string;
-    details: Array<
-      | string
-      | { text: string; strong?: boolean }
-      | { type: "copy"; value: string }
-    >;
-    numberLabel?: string;
-  }> = [
+  const buildTelegramChatUrl = (prefilledText?: string) => {
+    if (!prefilledText) return SUPPORT_TELEGRAM_URL;
+    const username = SUPPORT_TELEGRAM_URL.match(/t\.me\/([^/?#]+)/)?.[1];
+    if (!username) return SUPPORT_TELEGRAM_URL;
+    return `https://t.me/${username}?text=${encodeURIComponent(prefilledText)}`;
+  };
+
+  const emergencyChecklistTabs: EmergencyChecklistTab[] = [
     {
-      id: "day1",
-      title: "Обнаружение смерти и обязательные действия",
-      description: "Цель дня: официально зафиксировать факт смерти и не потерять документы и данные.",
-      details: [
-        
-        
-        { text: "1. Вызвать экстренные службы", strong: true },
-        { text: "Что сделать", strong: true },
-        "• Позвонить 112 и сообщить о смерти.",
-        "• Не трогать тело и не предпринимать никаких действий до инструкций диспетчера.",
-        { text: "Важно", strong: true },
-        "• Следовать указаниям по телефону.",
-        "• Не перемещать предметы вокруг тела без необходимости.",
-        "⸻",
-        { text: "2. Дождаться служб и оформления документов", strong: true },
-        { text: "Что происходит", strong: true },
-        "• Скорая и другие службы фиксируют факт смерти.",
-        "• Оформляются первичные документы.",
-        { text: "Важно", strong: true },
-        "• Не уходить, пока оформление не завершено.",
-        "• Уточнить, какие документы оформлены и кем.",
-        "⸻",
-        { text: "3. Зафиксировать данные морга", strong: true },
-        { text: "Что обязательно записать или сфотографировать", strong: true },
-        "• Название морга",
-        "• Адрес",
-        "• Телефон",
-        "• Любой номер / талон / документ, который выдали службы (если выдали)",
-        "• Фамилию сотрудника (если сообщили)",
-        { text: "Зачем", strong: true },
-        "Устные объяснения и бумажки часто теряются.",
-        "Эти данные понадобятся уже завтра.",
-        "⸻",
-        { text: "4. Проконтролировать паспорт умершего", strong: true },
-        { text: "Что проверить", strong: true },
-        "• Где сейчас находится паспорт.",
-        "• Не передавать паспорт «на словах» без фиксации.",
-        { text: "Когда паспорт могут забрать", strong: true },
-        "• Для установления личности и оформления первичных документов.",
-        "• Если смерть произошла вне медучреждения (часто с участием полиции).",
-        "• При проверке личности или обстоятельств смерти.",
-        "• При оформлении материалов проверки / следственных действий.",
-        { text: "Если паспорт забирают — зафиксировать:", strong: true },
-        "• ФИО и должность сотрудника.",
-        "• Куда именно передают паспорт (организация, адрес).",
-        "• Основание (коротко: «для оформления», «для проверки» и т.д.).",
-        "• Номер обращения / проверки и контакт для связи.",
-        "• По возможности — расписку, отметку или фото документа.",
-        "⸻",
-        { text: "5. Оповестить родных и близких", strong: true },
-        { text: "Что сделать", strong: true },
-        "• Коротко сообщить о смерти.",
-        "• Пообещать сообщить детали позже.",
-        { text: "Важно", strong: true },
-        "• В этот день не обсуждать организацию и время прощания.",
-        "• Не принимать финансовых решений в состоянии шока.",
-        { text: "Сообщения для копирования", strong: true },
-        "(скопировать → заменить <…> → отправить)",
-        { text: "Вариант 1 — тёплый", strong: true },
-        "Здравствуй. Пишу с тяжёлой новостью: сегодня не стало <имя/родство>.",
-        "Мы сейчас занимаемся всем необходимым, позже напишу время и место прощания.",
-        "Если сможешь — просто будь на связи.",
-        { text: "Вариант 2 — спокойный", strong: true },
-        "Здравствуй. Сегодня не стало <имя/родство>.",
-        "Детали прощания пришлю позже, как всё подтвердим.",
-        "Если нужно — напиши, отвечу, как будет возможность.",
-        { text: "Вариант 3 — краткий", strong: true },
-        "Здравствуй. Сообщаю, что сегодня не стало <имя/родство>.",
-        "Информацию о времени и месте прощания направлю после подтверждения.",
-        "⸻",
-        { text: "Контрольная точка дня", strong: true },
-        "К концу дня у вас должно быть:",
-        "• данные морга + любой номер / талон / документ от служб (если выдали);",
-        "• понимание, где находится паспорт и кто за него отвечает;",
-        "• контакт 1–2 близких, которые помогут завтра.",
+      id: "home",
+      title: "Случилось дома",
+      steps: [
+        {
+          title: "Вызовите скорую (103)",
+          details: [
+            "Врачи констатируют факт смерти и выдадут бланк.",
+            "Без него нельзя двигаться дальше.",
+          ],
+        },
+        {
+          title: "Вызовите полицию (102)",
+          details: [
+            "Сотрудник должен осмотреть тело и составить протокол (это обязательная процедура для всех).",
+          ],
+        },
+        {
+          title: "Не пускайте посторонних и не отдавайте документы",
+          details: [
+            "Врачи и полиция обязаны передавать данные. К вам могут приехать ритуальные агенты, которых вы не вызывали. Не открывайте им дверь и ничего не подписывайте - это защитит вас от психологического давления и скрытых долгов.",
+            "Вызовите бесплатную службу перевозки в морг (это сделает полиция или скорая).",
+          ],
+        },
       ],
-      numberLabel: "1",
+      ctaLabel: "Написать дежурному координатору",
+      ctaHint:
+        "Денис на связи. Поможем вызвать службы и подскажем, какие документы подготовить прямо сейчас.",
     },
     {
-      id: "day2",
-      title: "Документы и подтверждение даты",
-      description:
-        "Цель дня: получить официальные документы, зафиксировать дату прощания и подтвердить организацию.",
-      details: [
-        
-        { text: "1. Получить медицинское свидетельство о смерти", strong: true },
-        { text: "Документ:", strong: true },
-        "Медицинское свидетельство о смерти — форма № 106/у-08.",
-        { text: "Что сделать", strong: true },
-        "• Приехать в морг в назначенное время.",
-        "• Получить форму № 106/у-08.",
-        "• Сразу проверить:",
-        "– ФИО",
-        "– дату рождения",
-        "– дату смерти",
-        "– место смерти",
-        "Если есть ошибка — попросить исправить на месте.",
-        "⸻",
-        { text: "2. Обратиться в ЗАГС", strong: true },
-        { text: "Взять с собой", strong: true },
-        "• форму № 106/у-08",
-        "• паспорт умершего",
-        "• свой паспорт",
-        { text: "Куда идти", strong: true },
-        "В ЗАГС по месту смерти или по месту жительства умершего.",
-        { text: "Что получить", strong: true },
-        "• Гербовое свидетельство о смерти",
-        "• Справку о смерти (форма № 11 — для пособия)",
-        "Сразу проверить правильность данных в свидетельстве.",
-        "⸻",
-        { text: "3. Определить порядок получения пособия", strong: true },
-        "После получения формы № 11 уточнить, куда обращаться:",
-        "• если умерший работал — по месту работы",
-        "• если пенсионер — в Социальный фонд",
-        "• если не работал — в МФЦ или органы соцзащиты",
-        "Если есть сомнение — уточнить прямо в ЗАГС, куда направлять документы.",
-        "⸻",
-        
-        { text: "4. Зафиксировать формат и дату прощания", strong: true },
-        { text: "Что сделать", strong: true },
-        "• Открыть план организации.",
-        "• Выбрать формат: захоронение или кремация.",
-        "• Указать желаемую дату (обычно через 2–4 дня).",
-        "• Выбрать ориентировочное время (утро / день).",
-        "• Отправить план на подтверждение.",
-        { text: "Что происходит дальше", strong: true },
-        "• Проверяется доступность даты и места.",
-        "• Возвращается подтверждение или предлагается ближайший вариант.",
-        "• После подтверждения дата фиксируется.",
-        "Не сообщать дату приглашённым до получения подтверждения.",
-        "⸻",
-        { text: "5. Проверить обязательный состав услуг", strong: true },
-        "В этот день важно не выбирать детали, а убедиться, что закрыта база.",
-        { text: "Обязательные элементы", strong: true },
-        "• Подготовка тела",
-        "• Гроб и базовый комплект",
-        "• Транспорт",
-        "• Место захоронения или кремация",
-        "• Координация в день церемонии",
-        "Эти позиции составляют основу организации.",
-        "Они уже объединены в стартовом плане «Базовый минимум».",
-        "Дополнительные услуги (венки, декор, фото, банкет) можно добавлять позже.",
-        "Их отсутствие не делает церемонию неправильной.",
-        "⸻",
-        { text: "6. Подготовить одежду (если требуется)", strong: true },
-        { text: "Для мужчины", strong: true },
-        "• Нижнее бельё",
-        "• Носки",
-        "• Рубашка",
-        "• Брюки",
-        "• Пиджак (по желанию)",
-        "• Обувь или тапочки",
-        "• Бритва",
-        { text: "Для женщины", strong: true },
-        "• Нижнее бельё",
-        "• Чулки или колготки",
-        "• Платье или костюм",
-        "• Обувь или тапочки",
-        "• Расчёска",
-        { text: "Перед передачей:", strong: true },
-        "• Проверить чистоту одежды.",
-        "• При необходимости постирать и высушить.",
-        "• Уточнить в морге требования к обуви или аксессуарам.",
-        "• Передать вещи под отметку о приёме.",
-        "⸻",
-        
-        { text: "7. Получить подтверждение даты и времени", strong: true },
-        "К вечеру у вас должны быть:",
-        "• точная дата",
-        "• точное время",
-        "• адрес",
-        "• ориентировочное время прибытия транспорта",
-        "Только после этого переходить к уведомлению людей.",
-        "⸻",
-        { text: "8. Сообщить приглашённым", strong: true },
-        { text: "Нейтральный вариант", strong: true },
+      id: "hospital",
+      title: "Случилось в больнице",
+      steps: [
         {
-          type: "copy",
-          value:
-            "Здравствуй.\nПрощание с <имя/родство> состоится <дата> в <время> по адресу <адрес>.\nЕсли будут изменения, я дополнительно сообщу.",
+          title: "Никуда не нужно ехать прямо сейчас",
+          details: [
+            "Тело перевезут в патологоанатомическое отделение (морг) при больнице автоматически. У вас есть время, чтобы прийти в себя.",
+          ],
         },
-        { text: "Краткий вариант", strong: true },
         {
-          type: "copy",
-          value:
-            "Прощание с <имя/родство> — <дата>, <время>, <адрес>.\nСпасибо, что будешь рядом.",
+          title: "Узнайте адрес морга и график работы",
+          details: [
+            "Позвоните в справочную больницы. Запишите, в какой именно морг перевезли близкого.",
+          ],
         },
-        "⸻",
-        { text: "Контрольная точка Дня 2", strong: true },
-        "К концу дня у вас должно быть:",
-        "• Гербовое свидетельство о смерти",
-        "• Справка по форме № 11",
-        "• Понимание порядка получения пособия",
-        "• Подтверждённая дата и время прощания",
-        "• Зафиксированный базовый план",
-        "• Подготовленная одежда (если требуется)",
+        {
+          title: "Подготовьте паспорта для получения справки",
+          details: [
+            "В ближайший рабочий день вам нужно будет приехать в регистратуру морга с вашим паспортом и паспортом умершего, чтобы получить медицинское свидетельство о смерти.",
+          ],
+        },
+        {
+          title: "Возьмите паузу перед решениями",
+          details: [
+            "В морге вам могут настойчиво предлагать «оформить всё на месте». Вы имеете полное право отказаться, забрать бесплатные документы и организовать прощание позже, в спокойной обстановке.",
+          ],
+        },
       ],
-      numberLabel: "2",
+      ctaLabel: "Получить список вещей для морга (в чат)",
+      ctaHint: "Пришлем памятку, что нужно отвезти в больницу в ближайшие дни.",
+      ctaPrefill: "Пришлите список вещей для морга",
     },
     {
-      id: "day3",
-      title: "Прощание и завершение формальностей",
-      description:
-        "Цель дня: провести церемонию, сохранить документы и не принимать лишних решений. Сегодня не нужно контролировать всё. Достаточно выполнить несколько ключевых шагов.",
-      details: [
-        
-        { text: "1. Проверить документы перед выходом", strong: true },
-        "Взять с собой:",
-        "• Гербовое свидетельство о смерти",
-        "• Паспорт",
-        "• Договор (если заключён)",
-        "• Квитанции или чеки (если есть)",
-        "Документы лучше сложить в одну папку.",
-        "⸻",
-        { text: "2. Подготовить себя физически", strong: true },
-        "• Поесть лёгкую еду.",
-        "• Выпить воды.",
-        "• Взять необходимые лекарства (если принимаете).",
-        "В день прощания часто кружится голова — это нормальная реакция на стресс.",
-        "⸻",
-        { text: "3. Взять минимум необходимого", strong: true },
-        "• Вода",
-        "• Салфетки",
-        "• Телефон и зарядное устройство / power bank",
-        "Этого достаточно.",
-        "⸻",
-        { text: "ПЕРЕД НАЧАЛОМ ЦЕРЕМОНИИ", strong: true },
-        { text: "4. Приехать заранее", strong: true },
-        "Приехать за 30–40 минут до начала.",
-        "Уточнить у ответственного лица:",
-        "• где вы получите итоговые документы;",
-        "• куда подойти после завершения;",
-        "• порядок действий после церемонии.",
-        "Не решать новые финансовые вопросы в этот момент.",
-        "Все дополнительные предложения можно перенести на другой день.",
-        "⸻",
-        { text: "ПОСЛЕ ПРОЩАНИЯ", strong: true },
-        { text: "5. Если было захоронение", strong: true },
-        "Попросить выдать документ:",
-        "• Паспорт захоронения (удостоверение о захоронении).",
-        "Проверить:",
-        "• ФИО",
-        "• дату",
-        "• номер участка",
-        "Сразу убрать документ в папку.",
-        "⸻",
-        { text: "6. Если была кремация", strong: true },
-        "Уточнить и записать:",
-        "• дату и время выдачи урны;",
-        "• адрес получения;",
-        "• какой документ выдаётся при получении урны;",
-        "• кто должен приехать за урной.",
-        "Эту информацию лучше сохранить в заметках телефона.",
-        "⸻",
-        { text: "ПОМИНКИ", strong: true },
-        { text: "7. Организовать прибытие людей", strong: true },
-        "Если люди едут отдельно:",
-        "• отправить адрес сообщением;",
-        "• назначить одного человека, который приедет раньше и сориентирует остальных.",
-        "⸻",
-        { text: "8. Если тяжело говорить", strong: true },
-        "Не нужно готовить речь.",
-        "Достаточно одной фразы:",
+      id: "other-city",
+      title: "В другом городе",
+      steps: [
         {
-          type: "copy",
-          value: "Спасибо, что вы пришли. Давайте просто побудем вместе.",
+          title: "Получите документы на месте",
+          details: [
+            "Медицинское свидетельство о смерти необходимо получить в том городе, где констатирована смерть (в морге или больнице).",
+          ],
         },
-        "Никаких обязательных слов не существует.",
-        "⸻",
-        { text: "9. Если поминки дома", strong: true },
-        "• Поставить воду и чай.",
-        "• Подать простую горячую еду.",
-        "• Не готовить сложные блюда в этот день.",
-        "⸻",
-        { text: "10. Если поминки в кафе", strong: true },
-        "• Попросить подавать блюда постепенно.",
-        "• Решить вопрос алкоголя заранее — так, как вам спокойнее.",
-        "⸻",
-        
-        { text: "11. Собрать документы в одну папку", strong: true },
-        "Положить:",
-        "• Гербовое свидетельство о смерти",
-        "• Справку по форме № 11",
-        "• Паспорт захоронения или информацию о выдаче урны",
-        "• Договор и чеки",
-        "Убрать папку в конкретное место дома.",
-        "⸻",
-        { text: "12. Не принимать новых решений", strong: true },
-        "Вечером не нужно:",
-        "• решать вопросы наследства;",
-        "• выбирать памятник;",
-        "• оформлять дополнительные услуги;",
-        "• принимать новые финансовые обязательства.",
-        "Эти вопросы можно отложить на несколько дней.",
-        "⸻",
-        { text: "Контрольная точка Дня 3", strong: true },
-        "К вечеру достаточно, чтобы:",
-        "• церемония состоялась;",
-        "• все документы собраны в одну папку;",
-        "• вы знаете следующий шаг (например, дату получения урны);",
-        "• вы не обязаны решать ничего сверх этого.",
+        {
+          title: "Выберите формат возвращения",
+          details: [
+            "(Транспортировка)",
+            "У вас есть два пути: организовать перевозку тела (так называемый «Груз 200» - машиной, поездом или самолетом) или провести кремацию на месте и перевезти только урну с прахом. Второй вариант логистически проще и значительно дешевле.",
+          ],
+        },
+        {
+          title: "Не пытайтесь организовать логистику в одиночку",
+          details: [
+            "Междугородняя перевозка требует оформления специфических справок (например, из СЭС) и согласования транспорта.",
+          ],
+        },
       ],
-      numberLabel: "3",
+      ctaLabel: "Рассчитать маршрут и логистику",
+      ctaHint:
+        "Координатор оценит стоимость перевозки из нужного региона и предложит варианты.",
+      ctaPrefill: "Нужен расчёт маршрута и логистики (город/регион: ___)",
     },
   ];
+
+  const activeEmergencyChecklistTab =
+    emergencyChecklistTabs.find((tab) => tab.id === activeEmergencyTab) ??
+    emergencyChecklistTabs[0];
 
   const PACKAGE_ID_BY_SLUG: Record<
     "quiet" | "traditional" | "special",
@@ -1621,15 +1381,19 @@ export function StepperWorkflow({
     if (routeFlow !== "how-it-works" || !routeHowItWorksStep) return;
     const idx = Math.min(
       Math.max(routeHowItWorksStep - 1, 0),
-      howItWorksDays.length - 1,
+      emergencyChecklistTabs.length - 1,
     );
+    const nextTab = emergencyChecklistTabs[idx];
+    if (nextTab) {
+      setActiveEmergencyTab(nextTab.id);
+    }
     requestAnimationFrame(() => {
-      howItWorksItemRefs.current[idx]?.scrollIntoView({
+      howItWorksRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
     });
-  }, [routeFlow, routeHowItWorksStep, howItWorksDays.length]);
+  }, [routeFlow, routeHowItWorksStep]);
 
   const resetOrderConfirmation = () => {
     if (!orderConfirmation) return;
@@ -4346,153 +4110,73 @@ function formatRub(n: number) {
               className="relative mb-6 -mt-3 overflow-hidden rounded-2xl rounded-t-none border border-white/25 bg-black/15 px-4 py-4 backdrop-blur-2xl shadow-[0_16px_36px_rgba(15,23,42,0.3)]"
             >
               <div className="flex flex-col gap-4">
-                <div className="text-[12px] leading-relaxed text-white/85 sm:text-sm">
-                  Ниже — пошаговая инструкция на первые дни после смерти, чтобы вам было легче.
-                  Внутри — конкретные действия, документы и важные нюансы, которые помогут ничего не упустить.
+                <div className="text-lg font-semibold text-white/95 sm:text-xl">
+                  Экстренный чек-лист
                 </div>
-                {howItWorksDays.map((day, index) => {
-                  const isOpen = openDayId === day.id;
-                  return (
-                    <div
-                      key={day.id}
-                      ref={(el) => {
-                        howItWorksItemRefs.current[index] = el;
-                      }}
-                      className="flex items-start gap-4"
-                    >
-                      <div className="relative flex w-10 flex-col items-center">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-white/10 text-xs font-medium text-white/80">
-                          {day.numberLabel ?? (index + 1 < 10 ? `0${index + 1}` : index + 1)}
-                        </div>
-                        <div className="mt-1 text-[11px] text-white/70">день</div>
-                        {index !== howItWorksDays.length - 1 && (
-                          <span className="absolute top-11 bottom-0 w-px bg-white/15" />
+                <div className="text-[12px] leading-relaxed text-white/85 sm:text-sm">
+                  Первые шаги на ближайшие 1–2 часа. Спокойно, по порядку.
+                </div>
+                <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <div className="inline-flex min-w-full gap-1 rounded-full border border-white/20 bg-white/10 p-1">
+                    {emergencyChecklistTabs.map((tab) => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setActiveEmergencyTab(tab.id)}
+                        className={cn(
+                          "h-9 shrink-0 rounded-full px-4 text-sm font-medium transition-all duration-200",
+                          activeEmergencyTab === tab.id
+                            ? "bg-white text-gray-900 shadow-[0_8px_22px_rgba(15,23,42,0.22)]"
+                            : "text-white/85 hover:bg-white/10",
                         )}
-                      </div>
-                      <div className="flex-1 rounded-2xl border border-white/20 bg-black/12 px-4 py-3 backdrop-blur-xl">
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          aria-expanded={isOpen}
-                          aria-controls={`how-it-works-${day.id}`}
-                          onClick={() =>
-                            setOpenDayId((prev) => (prev === day.id ? null : day.id))
-                          }
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter" || event.key === " ") {
-                              event.preventDefault();
-                              setOpenDayId((prev) => (prev === day.id ? null : day.id));
-                            }
-                          }}
-                          className="cursor-pointer"
-                        >
-                          <div className="text-sm font-semibold text-white/95 sm:text-base">
-                            {day.title}
-                          </div>
-                          <div className="mt-2 text-[12px] leading-relaxed text-white/85 sm:text-sm">
-                            {day.description}
-                          </div>
-                          <button
-                            type="button"
-                            className="mt-3 flex w-full items-center justify-between text-left text-[12px] font-semibold text-white/80 sm:text-sm"
-                            aria-hidden="true"
-                            tabIndex={-1}
-                          >
-                            Подробнее
-                            <span
-                              className={cn(
-                                "ml-2 inline-block text-[12px] transition-transform",
-                                isOpen ? "rotate-180" : "rotate-0",
-                              )}
-                            >
-                              ▾
-                            </span>
-                          </button>
-                        </div>
-                        {isOpen && (
-                          <div
-                            id={`how-it-works-${day.id}`}
-                            className="mt-2 text-[12px] leading-relaxed text-white/80 sm:text-sm space-y-2"
-                          >
-                            {day.details.map((detail, detailIndex) => {
-                              if (typeof detail !== "string") {
-                                if ("type" in detail) {
-                                  return (
-                                    <CopyBlock
-                                      key={`${day.id}-detail-${detailIndex}`}
-                                      value={detail.value}
-                                    />
-                                  );
-                                }
-                                return (
-                                  <p
-                                    key={`${day.id}-detail-${detailIndex}`}
-                                    className={detail.strong ? "font-semibold text-white/90" : undefined}
-                                  >
-                                    {detail.text}
-                                  </p>
-                                );
-                              }
-                              if (detail === "⸻") {
-                                return (
-                                  <div
-                                    key={`${day.id}-detail-${detailIndex}`}
-                                    className="h-px w-full bg-white/15 my-1"
-                                  />
-                                );
-                              }
-                              return <p key={`${day.id}-detail-${detailIndex}`}>{detail}</p>;
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-                
-                
-                <div className="px-2 py-1">
-                  <div className="text-center text-sm font-semibold text-white/95 sm:text-base">
-                    Выберите, как хотите продолжить дальше:
+                      >
+                        {tab.title}
+                      </button>
+                    ))}
                   </div>
-                  <div className="mt-3 flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
-                    <Button
-                      type="button"
-                      onClick={() => setShowHowItWorks(false)}
-                      className="h-auto w-fit rounded-xl !bg-white !text-gray-900 hover:!bg-white/80 px-5 py-3 text-center text-sm font-semibold shadow-sm"
-                    >
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="whitespace-normal break-words text-center">
-                          Продолжить самостоятельно
+                </div>
+                <div className="px-1 py-1 sm:px-2">
+                  <ol className="space-y-4">
+                    {activeEmergencyChecklistTab.steps.map((step, index) => (
+                      <li key={`${activeEmergencyChecklistTab.id}-step-${index}`} className="space-y-1.5">
+                        <div className="flex items-start gap-3">
+                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/10 text-xs font-semibold text-white/90">
+                            {index + 1}
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-sm font-semibold text-white/95 sm:text-base">
+                              {step.title}
+                            </p>
+                            {step.details.map((detail, detailIndex) => (
+                              <p
+                                key={`${activeEmergencyChecklistTab.id}-step-${index}-detail-${detailIndex}`}
+                                className="text-[12px] leading-relaxed text-white/85 sm:text-sm"
+                              >
+                                {detail}
+                              </p>
+                            ))}
+                          </div>
                         </div>
-                        <div className="text-[12px] font-normal text-gray-600 whitespace-normal break-words text-center">
-                          Пошагово, в удобном темпе. Можно изменить детали в любой момент.
-                        </div>
-                      </div>
-                    </Button>
+                      </li>
+                    ))}
+                  </ol>
+                  <div className="mt-5">
                     <Button
                       asChild
-                      variant="outline"
-                      className="h-auto w-fit rounded-xl !bg-white !text-gray-900 hover:!bg-white/80 px-5 py-3 text-center text-sm font-semibold shadow-sm"
+                      className="h-11 w-full rounded-xl !bg-white !text-gray-900 hover:!bg-white/85 text-sm font-semibold shadow-sm"
                     >
                       <a
-                        href={SUPPORT_TELEGRAM_URL}
+                        href={buildTelegramChatUrl(activeEmergencyChecklistTab.ctaPrefill)}
                         target="_blank"
                         rel="noreferrer"
                         onClick={() => handleEntryMethod("telegram")}
-                        className="flex flex-col items-center gap-1 text-center"
                       >
-                        <div className="whitespace-normal break-words text-center">
-                          Написать координатору
-                        </div>
-                        <div className="text-[12px] font-normal text-gray-600 whitespace-normal break-words text-center">
-                          Ответит на вопросы в чате. Без давления и навязывания услуг.
-                        </div>
+                        {activeEmergencyChecklistTab.ctaLabel}
                       </a>
                     </Button>
-                  </div>
-                  <div className="mt-2 text-center text-[12px] leading-relaxed text-white/80 sm:text-sm">
-                    Оба варианта равнозначны — выбирайте тот, который сейчас спокойнее для вас.
+                    <p className="mt-2 text-[12px] leading-relaxed text-white/80 sm:text-sm">
+                      {activeEmergencyChecklistTab.ctaHint}
+                    </p>
                   </div>
                 </div>
               </div>
