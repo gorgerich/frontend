@@ -48,7 +48,7 @@ const TRUST_REVIEWS = [
     name: 'Марина С.',
     date: '03 февраля 2026',
     service: 'Кремация',
-    rating: '4.8/5',
+    rating: '4.9/5',
     text: `Сомневалась, можно ли вообще всё оформить онлайн. Оказалось — можно.
 
 Собрала план на сайте, отправила себе на почту, позже всё проверила ещё раз. Удобно, что никто не торопил и не уговаривал на лучше и дороже.
@@ -116,7 +116,7 @@ const TRUST_REVIEWS = [
     name: 'Алексей М.',
     date: '04 сентября 2025',
     service: 'Захоронение',
-    rating: '4.8/5',
+    rating: '4.9/5',
     text: `Спасибо за прозрачность.
 
 Когда смотришь предложения других компаний, сложно понять финальную сумму. Здесь сразу видно итог и из чего он складывается.
@@ -309,18 +309,32 @@ function HomeInner() {
     if (!firstSet || !container) return;
 
     const updateSetWidth = () => {
-      teamSetWidthRef.current = firstSet.scrollWidth;
+      const measured = firstSet.scrollWidth || Math.round(firstSet.getBoundingClientRect().width);
+      teamSetWidthRef.current = measured;
     };
 
     updateSetWidth();
     container.scrollLeft = 1;
+    const raf = window.requestAnimationFrame(updateSetWidth);
+    const timeout = window.setTimeout(updateSetWidth, 250);
+    window.addEventListener('resize', updateSetWidth);
+    window.addEventListener('orientationchange', updateSetWidth);
 
-    const resizeObserver = new ResizeObserver(() => {
-      updateSetWidth();
-    });
-    resizeObserver.observe(firstSet);
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        updateSetWidth();
+      });
+      resizeObserver.observe(firstSet);
+    }
 
-    return () => resizeObserver.disconnect();
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.clearTimeout(timeout);
+      window.removeEventListener('resize', updateSetWidth);
+      window.removeEventListener('orientationchange', updateSetWidth);
+      resizeObserver?.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -336,7 +350,13 @@ function HomeInner() {
       lastTs = ts;
 
       if (!teamIsInteractingRef.current) {
-        const setWidth = teamSetWidthRef.current;
+        let setWidth = teamSetWidthRef.current;
+        if (setWidth <= 0 && teamFirstSetRef.current) {
+          setWidth =
+            teamFirstSetRef.current.scrollWidth
+            || Math.round(teamFirstSetRef.current.getBoundingClientRect().width);
+          teamSetWidthRef.current = setWidth;
+        }
         if (setWidth > 0) {
           container.scrollLeft += dt * speedPxPerMs;
 
@@ -873,6 +893,9 @@ function HomeInner() {
                   onTouchMove={() => {
                     pauseTeamAutoscroll();
                   }}
+                  onTouchEnd={() => {
+                    pauseTeamAutoscroll();
+                  }}
                   onPointerDown={() => {
                     pauseTeamAutoscroll();
                   }}
@@ -932,6 +955,16 @@ function HomeInner() {
                   </div>
                 </div>
               </div>
+            </div>
+            <div className="mt-4 flex justify-center">
+              <a
+                href={TELEGRAM_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-gray-200 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
+              >
+                Написать дежурному координатору
+              </a>
             </div>
 
             <div className="mt-8 flex flex-col gap-2">

@@ -143,8 +143,17 @@ export function HeroSection() {
                       lineHeight: MOBILE_LINE2_LINE_HEIGHT,
                     }}
                   >
-                    Организация похорон под вашим полным контролем. 
-                    <br className="hidden md:block" /> Мы берем на себя всю работу, вы принимаете решения без давления
+                    Организация похорон под вашим полным контролем
+                    
+                  </span>
+                  <span
+                    className="mt-3 block text-sm sm:text-base font-medium text-left text-white/90"
+                    style={{
+                      fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    Фиксированная цена до подписания договора. Никаких скрытых платежей, доплат в морге и навязывания услуг.
                   </span>
                 </span>
               </h1>
@@ -154,7 +163,7 @@ export function HeroSection() {
                 className={`${planCtaClass} mt-6 max-w-[22rem]`}
               >
                 <span className="flex w-full flex-col items-center text-center">
-                  <span className="text-gray-800">Что делать, если умер человек</span>
+                  <span className="text-gray-600">Что делать, если умер человек</span>
                   <span className="mt-0.5 text-[11px] font-normal text-gray-500">
                     Нажмите, чтобы показать
                   </span>
@@ -193,8 +202,17 @@ export function HeroSection() {
                       lineHeight: LINE2_LINE_HEIGHT,
                     }}
                   >
-                    Организация похорон под вашим полным контролем. 
-                    <br className="hidden md:block" /> Мы берем на себя всю работу, вы принимаете решения без давления
+                    Организация похорон под вашим полным контролем:
+                   
+                  </span>
+                  <span
+                    className="mx-auto mt-3 block max-w-[56rem] text-base lg:text-lg font-medium text-center text-white/90"
+                    style={{
+                      fontFamily: "\"Golos\", \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    Фиксированная цена до подписания договора. Никаких скрытых платежей, доплат в морге и навязывания услуг.
                   </span>
                 </span>
               </h1>
@@ -205,7 +223,7 @@ export function HeroSection() {
                   className={`${planCtaClass} max-w-[26rem]`}
                 >
                   <span className="flex w-full flex-col items-center text-center">
-                    <span className="text-gray-800">Что делать, если умер человек</span>
+                    <span className="text-gray-600">Что делать, если умер человек</span>
                     <span className="mt-0.5 text-[11px] font-normal text-gray-500">
                       Нажмите, чтобы показать
                     </span>

@@ -1120,19 +1120,15 @@ export function StepperWorkflow({
 
   const [showHearseDialog, setShowHearseDialog] = useState(false);
   const [continueChoice, setContinueChoice] =
-    useState<"packages" | "wizard" | "unsure">("packages");
+    useState<"self" | "solutions">("self");
 
   useLayoutEffect(() => {
     const calc = () => {
       requestAnimationFrame(() => {
         const wrap = wrapRef.current;
         const end =
-          continueChoice === "unsure"
-            ? bgEndContinueUnsureRef.current
-            : workflowMode === "wizard"
+          workflowMode === "wizard"
             ? bgEndWizardRef.current
-            : formData.serviceType === "unsure"
-            ? bgEndPackagesUnsureRef.current
             : bgEndPackagesRef.current;
         if (!wrap || !end) return;
         const wrapTop = wrap.getBoundingClientRect().top;
@@ -1146,7 +1142,7 @@ export function StepperWorkflow({
     calc();
     window.addEventListener("resize", calc);
     return () => window.removeEventListener("resize", calc);
-  }, [workflowMode, currentStep, selectedPackageForSimplified, formData.serviceType, continueChoice]);
+  }, [workflowMode, currentStep, selectedPackageForSimplified, continueChoice]);
 
   useEffect(() => {
     if (workflowMode !== "wizard") return;
@@ -2330,7 +2326,7 @@ export function StepperWorkflow({
 
   const openPackagesMode = useCallback(() => {
     setWorkflowMode("packages");
-    setContinueChoice("packages");
+    setContinueChoice("self");
     if (formData.packageType) {
       handleInputChange("packageType", "");
     }
@@ -2342,7 +2338,7 @@ export function StepperWorkflow({
   useEffect(() => {
     const handler = () => {
       openPackagesMode();
-      setShowScenarioBlock(true);
+      setShowScenarioBlock(false);
       requestAnimationFrame(() => {
         const packagesEl = document.getElementById("packages");
         packagesEl?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -2354,7 +2350,6 @@ export function StepperWorkflow({
 
   const openWizardMode = () => {
     setWorkflowMode("wizard");
-    setContinueChoice("wizard");
     setSelectedPackageForSimplified(null);
     setCurrentStep(0);
     setCompletedSteps([]);
@@ -4185,8 +4180,11 @@ function formatRub(n: number) {
 
           <div className="rounded-3xl border border-zinc-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)] px-5 py-5 sm:px-7 sm:py-6">
             <div className="mb-3 text-left text-lg md:text-xl font-semibold text-gray-900">
-              Выберите, как вы хотите начать?
+              Выберите, как вам комфортнее организовать прощание
             </div>
+            <p className="mb-4 text-sm leading-relaxed text-gray-600">
+              Можно собрать план самостоятельно из базовых услуг или выбрать готовое решение, где наш координатор возьмет всё на себя.
+            </p>
             <div className="flex w-full justify-center md:justify-start mb-3 mt-2">
               <div className="bg-zinc-100 p-1 rounded-full border border-zinc-200 flex w-full max-w-none min-w-0 flex-nowrap gap-1 md:mx-0 md:mr-auto">
                 <button
@@ -4194,15 +4192,34 @@ function formatRub(n: number) {
                   onClick={() => {
                     openPackagesMode();
                     onModeChange?.("package");
+                    setContinueChoice("self");
                   }}
                   className={cn(
-                    "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
-                    continueChoice === "packages"
+                    "flex-1 min-w-0 h-9 px-2 sm:px-3 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap inline-flex items-center justify-center gap-1",
+                    continueChoice === "self"
                       ? "bg-white text-black shadow-lg"
                       : "text-gray-700 hover:bg-white/70",
                   )}
                 >
-                  Готовые решения
+                  <span>{continueChoice === "self" && workflowMode !== "wizard" ? "🔘" : "⚪"}</span>
+                  <span>Собрать самостоятельно</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    openPackagesMode();
+                    onModeChange?.("package");
+                    setContinueChoice("solutions");
+                  }}
+                  className={cn(
+                    "flex-1 min-w-0 h-9 px-2 sm:px-3 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap inline-flex items-center justify-center gap-1",
+                    continueChoice === "solutions"
+                      ? "bg-white text-black shadow-lg"
+                      : "text-gray-700 hover:bg-white/70",
+                  )}
+                >
+                  <span>{continueChoice === "solutions" && workflowMode !== "wizard" ? "🔘" : "⚪"}</span>
+                  <span>Готовые решения</span>
                 </button>
                 <button
                   type="button"
@@ -4211,68 +4228,23 @@ function formatRub(n: number) {
                     onModeChange?.("wizard");
                   }}
                   className={cn(
-                    "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
-                    continueChoice === "wizard"
+                    "flex-1 min-w-0 h-9 px-2 sm:px-3 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap inline-flex items-center justify-center gap-1",
+                    workflowMode === "wizard"
                       ? "bg-white text-black shadow-lg"
                       : "text-gray-700 hover:bg-white/70",
                   )}
                 >
-                  Пошаговый мастер
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setContinueChoice("unsure");
-                  }}
-                  className={cn(
-                    "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center whitespace-nowrap",
-                    continueChoice === "unsure" ? "bg-white text-black shadow-lg" : "text-gray-700 hover:bg-white/70",
-                  )}
-                >
-                  Пока не знаю
+                  <span>{workflowMode === "wizard" ? "🔘" : "⚪"}</span>
+                  <span>Пошаговый мастер</span>
                 </button>
               </div>
-            </div>
-            <div className="hidden md:grid md:grid-cols-3 md:gap-3 md:text-left md:text-[12px] md:leading-relaxed md:text-gray-600">
-              <div>
-                <div>Выбрать уже собранный вариант с понятной стоимостью.</div>
-                <div>Можно оформить сразу или изменить позже.</div>
-              </div>
-              <div>
-                <div>Вы будете выбирать формат прощания, транспорт и другие параметры шаг за шагом.</div>
-                <div>Стоимость обновляется сразу — без скрытых изменений.</div>
-              </div>
-              <div className="hidden md:block" />
             </div>
           </div>
-          {continueChoice === "unsure" && (
-            <div className="mt-3 rounded-2xl border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-sm">
-              <div className="text-sm font-semibold text-white">
-                Пока не знаете, что выбрать?
-              </div>
-              <div className="mt-1 text-[12px] leading-relaxed text-white sm:text-sm">
-                Это нормально. Координатор поможет определиться и ответит на вопросы.
-              </div>
-              <div className="mt-3">
-                <a
-                  href={SUPPORT_TELEGRAM_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex w-full items-center justify-center rounded-xl bg-white text-gray-900 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-white/90"
-                >
-                  Написать координатору
-                </a>
-              </div>
-              <div ref={bgEndContinueUnsureRef} className="h-0 w-0" />
-            </div>
-          )}
-
-          {continueChoice !== "unsure" && workflowMode === "wizard" && null}
 
 </CardHeader>
 
 <CardContent className="relative z-10 px-6 sm:px-8 pb-8">
-  {continueChoice === "unsure" ? null : workflowMode === "wizard" ? (
+  {workflowMode === "wizard" ? (
     <div className="rounded-3xl border border-zinc-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)] px-5 py-6 sm:px-7 sm:py-7">
       <Stepper
         steps={steps as any}
@@ -4442,10 +4414,11 @@ function formatRub(n: number) {
             onSelectPackage={(pkg) => {
               setSelectedPackageForSimplified(pkg);
               setWorkflowMode("packages");
-              setContinueChoice("packages");
+              setContinueChoice("solutions");
             }}
             paymentSlot={(override) => renderPaymentBlock(override)}
             onAllInclusiveOpen={setShowScenarioBlock}
+            viewMode={continueChoice === "self" ? "self" : "solutions"}
           />
         )}
       </div>

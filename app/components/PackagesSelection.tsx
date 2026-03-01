@@ -25,6 +25,7 @@ interface PackagesSelectionProps {
     package?: { id?: string; name?: string; price?: number | string; features?: string[] };
   }) => React.ReactNode;
   onAllInclusiveOpen?: (open: boolean) => void;
+  viewMode?: "self" | "solutions";
 }
 
 export function PackagesSelection({
@@ -33,6 +34,7 @@ export function PackagesSelection({
   packages,
   paymentSlot,
   onAllInclusiveOpen,
+  viewMode = "self",
 }: PackagesSelectionProps) {
   const [activePanel, setActivePanel] = React.useState<"base" | "custom">("base");
   const [showInlinePayment, setShowInlinePayment] = React.useState(false);
@@ -52,9 +54,10 @@ export function PackagesSelection({
 
   const BASE_MINIMUM: Package = {
     id: "base-minimum",
-    name: "Базовый минимум",
+    name: "Базовая организация",
     price: BASE_TARIFF_TOTAL,
-    description: "Это базовый план для проведения похорон. Все необходимое уже включено. Вы можете оформить или изменить его под себя нажав кнопку «Настроить» ниже",
+    description:
+      "Только самые необходимые услуги для проведения достойного прощания. Вы сможете добавить нужный транспорт, атрибутику и помощь координатора на следующем шаге.",
     features: [],
     popular: false,
   };
@@ -93,6 +96,72 @@ export function PackagesSelection({
   const paymentTotal =
     activePanel === "custom" ? pricing.total : BASE_TARIFF_TOTAL;
   const allInclusivePackages = (packages ?? []).filter((pkg) => !pkg.id.startsWith("cremation"));
+  const isSelfMode = viewMode === "self";
+  const solutionCardContent: Record<
+    string,
+    {
+      title: string;
+      priceLabel: string;
+      description: string;
+      coordinatorHelp: string[];
+      included: string[];
+      popular?: boolean;
+    }
+  > = {
+    basic: {
+      title: "Традиционный формат с дистанционной поддержкой",
+      priceLabel: "204 900 ₽",
+      description:
+        "Мы выстраиваем маршрут, заказываем транспорт и готовим документы, чтобы вам не пришлось искать подрядчиков самостоятельно.",
+      coordinatorHelp: [
+        "Дистанционный контроль логистики и времени.",
+        "Взаимодействие со всеми инстанциями по телефону (морги, кладбища/крематории).",
+        "Подробная маршрутизация: где, во сколько и какие документы вам нужно получить.",
+      ],
+      included: [
+        "Базовая санитарно-косметическая подготовка.",
+        "Драпированный гроб (цвет и текстура ткани на ваш выбор).",
+        "Классический транспорт (катафалк) до места прощания.",
+        "Традиционное цветочное оформление (искусственная флористика).",
+      ],
+    },
+    standard: {
+      title: "Расширенный формат с личным присутствием",
+      priceLabel: "401 100 ₽",
+      description:
+        "Мы физически находимся рядом на каждом этапе. Координатор защитит вас от навязанных услуг, очередей и организационного хаоса в день прощания.",
+      coordinatorHelp: [
+        "Личный выезд в морг: ограждение от давления сотрудников, контроль подготовки.",
+        "Сопровождение семьи в день прощания от начала до конца.",
+        "Управление транспортом, грузчиками и таймингом церемонии на месте.",
+      ],
+      included: [
+        "Расширенная санитарно-косметическая подготовка.",
+        "Гроб из массива дерева (сосна, дуб — классическая полировка).",
+        "Транспорт комфорт-класса для близких (до 10 человек).",
+        "Улучшенное оформление (премиальная искусственная или базовая живая флористика).",
+      ],
+      popular: true,
+    },
+    premium: {
+      title: "Премиальный формат и полное делегирование",
+      priceLabel: "609 400 ₽",
+      description:
+        "Максимальное снятие нагрузки. Вы передаете нам все задачи по доверенности и только присутствуете на церемонии прощания с близким.",
+      coordinatorHelp: [
+        "Оформление без вашего участия: сбор всех справок (ЗАГС, морг) по доверенности.",
+        "Организация поминального обеда и навигация гостей.",
+        "Выделенный старший координатор, который доступен 24/7 для решения любых нестандартных запросов.",
+      ],
+      included: [
+        "Сложная косметическая подготовка.",
+        "Элитный гроб (двухкрышечный, из ценных пород дерева).",
+        "Премиальный VIP-катафалк и микроавтобусы высшего класса для семьи.",
+        "Авторские композиции из свежих живых цветов.",
+        "Расширенное время аренды зала для приватного прощания.",
+      ],
+    },
+  };
   const addedItems = [
     draftConfig.hearseTier !== "standard" && {
       key: "hearseTier",
@@ -209,20 +278,19 @@ export function PackagesSelection({
   return (
     <div className="pt-2 md:pt-3 w-full">
       <div className="mx-auto w-full max-w-6xl px-2">
+        {isSelfMode && (
         <div className="mb-5 text-left text-[13px] text-gray-500 font-medium leading-relaxed md:hidden">
-          Ниже — базовый вариант организации похорон. Мы уже собрали всё необходимое для проведения прощания.
-          {" "}Вы видите понятный состав услуг и итоговую стоимость.
-          {" "}Можно оформить как есть или изменить нажав{" "}
-          <button
-            type="button"
-            onClick={openConfigurator}
-            className="font-semibold text-gray-700 underline underline-offset-2 hover:text-gray-900"
-          >
-            Настроить
-          </button>
-          .
+          {BASE_MINIMUM.description}
         </div>
-        <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-2 -mx-2 px-0 md:px-4 no-scrollbar">
+        )}
+        <div
+          className={cn(
+            isSelfMode
+              ? "flex gap-6 overflow-x-auto snap-x snap-mandatory pb-2 -mx-2 px-0 md:px-4 no-scrollbar"
+              : "grid gap-4 md:grid-cols-3 pb-2"
+          )}
+        >
+          {isSelfMode && (
           <div className="shrink-0 snap-start w-full md:w-[92%]">
             <div
               data-package-card
@@ -242,17 +310,7 @@ export function PackagesSelection({
                 </h3>
                 {!isCustomizingPlan && (
                   <p className="mt-3 text-left text-sm text-gray-500 font-medium leading-relaxed hidden md:block">
-                    Ниже — базовый вариант организации похорон. Мы уже собрали всё необходимое для проведения прощания.
-                    {" "}Вы видите понятный состав услуг и итоговую стоимость.
-                    {" "}Можно оформить как есть или изменить состав нажав{" "}
-                    <button
-                      type="button"
-                      onClick={openConfigurator}
-                      className="font-semibold text-gray-700 underline underline-offset-2 hover:text-gray-900"
-                    >
-                      Настроить
-                    </button>
-                    .
+                    {BASE_MINIMUM.description}
                   </p>
                 )}
                 {isCustomizingPlan && (
@@ -531,12 +589,11 @@ export function PackagesSelection({
               <div className="flex flex-col gap-3">
                 <div className="space-y-1.5">
                   <Button
-                    variant="outline"
                     onClick={() => {
                       setActivePanel("base");
                       setShowInlinePayment((v) => !v);
                     }}
-                    className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide !bg-gray-100 !text-gray-900 hover:!bg-gray-50 !border-gray-200"
+                    className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide bg-gray-900 text-white hover:bg-gray-800"
                   >
                     Отправить план на почту
                   </Button>
@@ -562,13 +619,14 @@ export function PackagesSelection({
                   )}
                 </div>
                 <Button
+                  variant="outline"
                   onClick={() => {
                     setActivePanel((prev) => (prev === "custom" ? "base" : "custom"));
                     setShowInlinePayment(false);
                   }}
-                  className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide bg-gray-900 text-white hover:bg-gray-800"
+                  className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide !bg-gray-100 !text-gray-900 hover:!bg-gray-50 !border-gray-200"
                 >
-                  Настроить
+                  Изменить детали
                 </Button>
                 <div className="text-xs text-gray-500">
                   Изменить формат, зал, транспорт и другие детали
@@ -576,22 +634,23 @@ export function PackagesSelection({
               </div>
             </div>
           </div>
+          )}
 
-          {allInclusivePackages.map((pkg) => {
-            const isPopular = !!pkg.popular;
-            const packageLabel =
-              pkg.id === "basic"
-                ? "С поддержкой координатора"
-                : pkg.id === "standard"
-                  ? "Расширенное сопровождение"
-                  : "Передать всё координатору";
-            const packagePrice = formatCurrency(pkg.price);
+          {!isSelfMode && allInclusivePackages.map((pkg) => {
+            const card = solutionCardContent[pkg.id] ?? {
+              title: pkg.name,
+              priceLabel: formatCurrency(pkg.price),
+              description: pkg.description,
+              coordinatorHelp: [],
+              included: pkg.features.map((feature) => `${feature}`),
+            };
+            const isPopular = Boolean(card.popular);
             return (
               <div
                 key={pkg.id}
-                className="shrink-0 snap-start w-full md:w-[92%]"
+                className="w-full"
               >
-                <div className="relative mx-auto w-full max-w-5xl rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm h-full flex flex-col">
+                <div className="relative mx-auto w-full rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm h-full flex flex-col">
                   {isPopular && (
                     <div className="absolute left-1/2 -translate-x-1/2 -top-4 rounded-full bg-gray-900 px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white whitespace-nowrap">
                       Популярный выбор
@@ -599,21 +658,34 @@ export function PackagesSelection({
                   )}
                   <div className="text-center">
                     <div className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
-                      {packageLabel}
+                      {card.title}
                     </div>
                     <div className="mt-4 text-4xl font-semibold text-gray-900 whitespace-nowrap leading-none">
-                      {packagePrice}
+                      {card.priceLabel}
                     </div>
-                    <div className="mt-2 text-sm text-gray-500">
-                      {pkg.description}
+                    <div className="mt-2 text-xs text-gray-500">
+                      Смета окончательная и фиксируется в договоре
+                    </div>
+                    <div className="mt-3 text-sm text-gray-600 leading-relaxed">
+                      {card.description}
                     </div>
                   </div>
 
-                  <div className="mt-6 space-y-3 text-sm text-gray-700">
-                    {pkg.features.map((feature, idx) => (
-                      <div key={`${pkg.id}-feature-${idx}`} className="grid grid-cols-[1fr_auto] items-start gap-4">
-                        <span>{feature}</span>
-                      </div>
+                  <div className="mt-6 space-y-2 text-sm text-gray-700">
+                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">
+                      Как помогает координатор
+                    </div>
+                    {card.coordinatorHelp.map((line, idx) => (
+                      <p key={`${pkg.id}-help-${idx}`}>{line}</p>
+                    ))}
+                  </div>
+
+                  <div className="mt-5 space-y-2 text-sm text-gray-700">
+                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">
+                      Что входит в стоимость
+                    </div>
+                    {card.included.map((line, idx) => (
+                      <p key={`${pkg.id}-included-${idx}`}>{line}</p>
                     ))}
                   </div>
 
@@ -642,7 +714,14 @@ export function PackagesSelection({
                       onSelectPackage(pkg);
                     }}
                   >
-                    Настроить
+                    Выбрать этот план
+                  </Button>
+                  <Button
+                    variant="outline"
+                    disabled
+                    className="mt-3 w-full rounded-2xl h-11 text-sm font-semibold tracking-wide"
+                  >
+                    Сохранить план на почту
                   </Button>
                 </div>
               </div>
