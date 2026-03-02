@@ -77,7 +77,7 @@ export function HeroSection() {
     <section className="relative w-full px-4 pt-14 sm:pt-16 pb-16 md:pt-8 md:pb-20 lg:pb-24 md:translate-y-[4%]">
       <div className="mx-auto max-w-7xl relative" ref={wrapperRef}>
         <div
-          className="pointer-events-none absolute left-6 right-6 top-0 z-30"
+          className="pointer-events-none absolute left-6 right-6 top-0 z-40"
           style={{ transform: "translateY(-44px)" }}
         >
           <div className="pointer-events-auto">

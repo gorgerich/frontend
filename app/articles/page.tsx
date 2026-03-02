@@ -83,6 +83,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         summary:
           "Правило 6 месяцев, нотариус и базовые действия для защиты имущества.",
         readTimeMin: 4,
+        slug: "nasledstvo-pervye-shagi-i-sroki",
       },
       {
         id: "real-cost",
@@ -121,6 +122,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         summary:
           "Практичная схема: формат, бюджет, меню и контроль расходов.",
         readTimeMin: 4,
+        slug: "organizaciya-pominok-bez-pereplat",
       },
       {
         id: "cargo-200",
@@ -151,6 +153,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         summary:
           "Как мягко отстаивать границы и согласовать формат прощания без ссор.",
         readTimeMin: 4,
+        slug: "tradicii-starshego-pokoleniya-i-sovremennye-realii",
       },
       {
         id: "support-phrases",
@@ -158,6 +161,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         summary:
           "Короткая памятка по экологичному общению в период острого горя.",
         readTimeMin: 3,
+        slug: "slova-podderzhki-vmesto-derzhis",
       },
       {
         id: "self-care",

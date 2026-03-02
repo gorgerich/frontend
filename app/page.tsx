@@ -219,6 +219,27 @@ const TRUST_PARTNERS = [
   
 ];
 
+const TRUST_BLOCK_CARDS = [
+  {
+    id: 'trust-card-1',
+    icon: '🛡️',
+    title: 'Единый организатор, а не биржа заявок',
+    text: 'Мы не передаем ваш номер телефона сторонним агентствам или случайным ритуальщикам. За вами закрепляется личный координатор «Тихого дома». Он управляет всем процессом — от морга до транспорта',
+  },
+  {
+    id: 'trust-card-2',
+    icon: '📄',
+    title: 'Юридическая фиксация сметы',
+    text: 'Никаких переводов на личные карты и внезапных доплат наличными в морге. После согласования плана мы присылаем вам официальный договор. Итоговая сумма замораживается. Оплата проходит через защищенный банковский шлюз с выдачей электронного чека.',
+  },
+  {
+    id: 'trust-card-3',
+    icon: '💬',
+    title: 'Право на тишину и ваше расписание',
+    text: 'Ритуальная сфера часто ассоциируется с агрессивными продажами и постоянными звонками. У нас вы можете выбрать формат «Общаться только текстом в чате». Никто не будет вас торопить, навязывать ненужные услуги или тревожить в моменты, когда вы хотите побыть с близкими.',
+  },
+] as const;
+
 const applyHearseCategoryToCalculator = (
   total: number,
   breakdown: BreakdownSection[],
@@ -849,8 +870,54 @@ function HomeInner() {
               </a>
             </div>
 
-            <div className="mt-8 flex flex-col gap-2">
+            <section className="mt-10 rounded-3xl border border-gray-200 bg-[#f6f6f4] p-5 shadow-sm md:p-8">
               <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">Почему нам доверяют</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-relaxed text-gray-600 md:text-base">
+                Наша цель — не просто оказать услугу, а стать вашим щитом от бюрократии, скрытых наценок и давления в дни прощания.
+              </p>
+
+              <div className="mt-5 grid gap-4 md:mt-6 md:grid-cols-3">
+                {TRUST_BLOCK_CARDS.map((card) => (
+                  <article
+                    key={card.id}
+                    className="rounded-2xl border border-gray-200 bg-white/90 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)]"
+                  >
+                    <div className="text-lg" aria-hidden="true">
+                      {card.icon}
+                    </div>
+                    <h3 className="mt-2 text-base font-semibold leading-snug text-gray-900">
+                      {card.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                      {card.text}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <div className="mt-6 bg-white">
+              <p className="mb-3 whitespace-normal break-words text-sm font-medium text-gray-900">
+                Михаил Семенов, старший координатор сервиса «Тихий дом»:
+              </p>
+              <div className="flex flex-row items-start gap-3 md:gap-4">
+                <Image
+                  src="/team/male-2(bg).PNG"
+                  alt="Денис, старший координатор сервиса Тихий дом"
+                  width={220}
+                  height={260}
+                  className="h-[120px] w-[96px] shrink-0 rounded-xl object-cover md:h-[260px] md:w-[220px]"
+                />
+                <div className="min-w-0 flex-1 border-l border-gray-200 pl-3">
+                  <p className="whitespace-normal break-words text-sm leading-relaxed text-gray-700 md:text-base">
+                    «Каждый день мы видим, как люди теряются, сталкиваясь с системой моргов и кладбищ. Моя личная задача и задача моей команды — забрать у вас этот стресс. Мы создали «Тихий дом» для того, чтобы в самые тяжелые дни вы могли сфокусироваться на семье и памяти о близком, а не на спорах с грузчиками и поиске правильных справок. Я лично гарантирую, что мы проведем прощание достойно и честно».
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 flex flex-col gap-2">
+              <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">Отзывы клиентов</h2>
               <p className="text-sm text-gray-500 md:text-base">
                 Реальный опыт клиентов: что получилось, что волновало и как всё прошло в итоге.
               </p>
