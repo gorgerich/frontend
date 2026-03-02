@@ -44,7 +44,8 @@ const GUIDE_SECTIONS: GuideSection[] = [
         title: "Как общаться с ритуальными агентами, которые приехали без вызова",
         summary:
           "Права семьи, фразы для отказа, защита личных данных и безопасный сценарий действий.",
-        readTimeMin: 4,
+        readTimeMin: 3,
+        slug: "kak-obshatsya-s-ritualnymi-agentami-bez-vyzova",
       },
       {
         id: "morgue-clothes",
@@ -68,6 +69,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         summary:
           "Пошаговый маршрут: куда обращаться, какие документы подготовить и как получить выплату.",
         readTimeMin: 5,
+        slug: "kak-poluchit-posobie-na-pogrebenie-v-2026-godu",
       },
       {
         id: "morgue-payments",
@@ -110,13 +112,6 @@ const GUIDE_SECTIONS: GuideSection[] = [
         slug: "kremaciya-ili-zahoronenie-kak-vybrat",
       },
       {
-        id: "how-cremation-works",
-        title: "Как проходит кремация: пошаговое описание процедуры",
-        summary:
-          "Что происходит на каждом этапе, когда выдают урну и как устроен процесс на практике.",
-        readTimeMin: 4,
-      },
-      {
         id: "memorial-meal",
         title: "Организация поминок: как составить меню и выбрать зал без переплат",
         summary:
@@ -129,7 +124,8 @@ const GUIDE_SECTIONS: GuideSection[] = [
         title: "Транспортировка из другого города (Груз 200): как перевезти близкого домой",
         summary:
           "Справки, документы, выбор транспорта и ключевые организационные этапы.",
-        readTimeMin: 6,
+        readTimeMin: 4,
+        slug: "transportirovka-gruz-200-iz-drugogo-goroda",
       },
     ],
   },
@@ -168,7 +164,8 @@ const GUIDE_SECTIONS: GuideSection[] = [
         title: "Как позаботиться о себе: физиология горя в первые недели",
         summary:
           "Бессонница, потеря аппетита и «туннельное зрение»: что нормально и как помочь себе.",
-        readTimeMin: 4,
+        readTimeMin: 3,
+        slug: "kak-pozabotitsya-o-sebe-v-pervye-nedeli-gorya",
       },
     ],
   },
