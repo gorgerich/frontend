@@ -182,7 +182,7 @@ export const calcTariffTotal = (config: TariffDraftConfig) => {
 
   breakdown.push({
     key: "base",
-    label: "Традиционный — 86 600 ₽",
+    label: "Традиционный",
     price: TARIFF_PRICING.basePrice,
     delta: 0,
   });

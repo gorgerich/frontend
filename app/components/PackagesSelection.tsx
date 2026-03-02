@@ -54,7 +54,7 @@ export function PackagesSelection({
 
   const BASE_MINIMUM: Package = {
     id: "base-minimum",
-    name: "Традиционный — 86 600 ₽",
+    name: "Традиционный",
     price: BASE_TARIFF_TOTAL,
     description:
       "Только самые необходимые услуги для проведения достойного прощания. Вы сможете добавить нужный транспорт, атрибутику и помощь координатора на следующем шаге.",
