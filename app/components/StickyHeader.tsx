@@ -83,7 +83,7 @@ export function StickyHeader() {
   const topNavItems: NavItem[] = [
     { id: 'faq', label: 'Частые вопросы', href: '/faq' },
     { id: 'contacts', label: 'Контакты', onClick: handleTopContacts },
-    { id: 'articles', label: 'Статьи', href: '/articles' },
+    { id: 'articles', label: 'Справочник', href: '/articles' },
   ];
 
   return (
@@ -229,4 +229,3 @@ export function StickyHeader() {
     </>
   );
 }
-

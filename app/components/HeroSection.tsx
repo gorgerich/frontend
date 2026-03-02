@@ -120,7 +120,7 @@ export function HeroSection() {
             {/* MOBILE */}
             <div className="flex h-full flex-col items-center justify-center px-4 pb-24 text-center sm:px-6 sm:pb-32 md:hidden">
               <h1
-                className="font-heading mx-auto mb-4 w-full max-w-full whitespace-normal break-words tracking-tight text-white [text-wrap:balance]"
+                className="font-heading mx-auto mb-0 w-full max-w-full whitespace-normal break-words tracking-tight text-white [text-wrap:balance]"
                 style={{
                   textShadow: "0 10px 24px rgba(0,0,0,0.24)",
                 }}
@@ -142,29 +142,31 @@ export function HeroSection() {
                     Организация похорон под вашим полным контролем
                     
                   </span>
-                  <span
-                    className="font-body mt-3 block w-full max-w-full text-[12px] min-[375px]:text-[13px] leading-[1.4] font-normal text-center text-white/80"
-                    style={{
-                      fontWeight: 400,
-                    }}
-                  >
-                    Мы фиксируем цену до подписания договора. Никаких скрытых платежей, доплат в морге и навязывания услуг.
-                  </span>
                 </span>
               </h1>
-              <Button
-                type="button"
-                onClick={handlePlanActionsClick}
-                className={`${planCtaClass} mt-6 w-full max-w-[22rem]`}
-              >
-                <span className="flex w-full flex-col items-center text-center">
-                  <span className="font-subheading text-gray-600">Что делать, если умер человек</span>
-                  <span className="font-micro mt-0.5 text-[11px] font-normal text-gray-500">
-                    Нажмите, чтобы показать
+              <div className="flex w-full flex-col items-center">
+                <Button
+                  type="button"
+                  onClick={handlePlanActionsClick}
+                  className={`${planCtaClass} order-1 md:order-2 mt-0 w-full max-w-[22rem]`}
+                >
+                  <span className="flex w-full flex-col items-center text-center">
+                    <span className="font-subheading text-gray-600">Что делать, если умер человек</span>
+                    <span className="font-micro mt-0.5 text-[11px] font-normal text-gray-500">
+                      Нажмите, чтобы показать
+                    </span>
                   </span>
-                </span>
-                <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-              </Button>
+                  <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                </Button>
+                <p
+                  className="font-body order-2 md:order-1 mt-6 w-full max-w-[22rem] text-[12px] min-[375px]:text-[13px] leading-[1.4] font-normal text-center text-white/80"
+                  style={{
+                    fontWeight: 400,
+                  }}
+                >
+                  Мы фиксируем цену до подписания договора. Никаких скрытых платежей, доплат в морге и навязывания услуг.
+                </p>
+              </div>
             </div>
 
             {/* DESKTOP */}

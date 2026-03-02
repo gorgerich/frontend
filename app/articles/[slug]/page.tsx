@@ -140,7 +140,7 @@ export default async function Page(props: ArticlePageProps) {
           href="/articles"
           className="text-sm font-medium text-gray-500 hover:text-gray-900"
         >
-          ← К статьям
+          ← К справочнику
         </Link>
         <h1 className="mt-3 text-3xl font-semibold text-gray-900">
           {article.title}
