@@ -54,7 +54,7 @@ export function PackagesSelection({
 
   const BASE_MINIMUM: Package = {
     id: "base-minimum",
-    name: "Базовая организация",
+    name: "Традиционный — 86 600 ₽",
     price: BASE_TARIFF_TOTAL,
     description:
       "Только самые необходимые услуги для проведения достойного прощания. Вы сможете добавить нужный транспорт, атрибутику и помощь координатора на следующем шаге.",
@@ -67,13 +67,13 @@ export function PackagesSelection({
     price: number;
     subItems?: string[];
   }[] = [
-    { key: "sanitary", label: "Санитарная обработка и бальзамирование", price: 18000 },
+    { key: "sanitary", label: "Санитарно-косметическая подготовка в морге", price: 18000 },
     {
       key: "attributes",
       label: "Атрибутика",
       price: 20000,
       subItems: [
-        "Гроб обитый тканью (цвет на Ваш выбор)",
+        "Драпированный гроб (цвет на выбор)",
         "Постель в гроб",
         "Подушка шелковая",
         "Покрывало шелковое",
@@ -82,7 +82,7 @@ export function PackagesSelection({
       ],
     },
     { key: "hearse", label: "Катафалк", price: 13500 },
-    { key: "digging", label: "Копка могилы", price: 24700 },
+    { key: "digging", label: "Подготовка места захоронения", price: 24700 },
     {
       key: "coord",
       label: "Координатор базовый",

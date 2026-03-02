@@ -240,6 +240,30 @@ const TRUST_BLOCK_CARDS = [
   },
 ] as const;
 
+const HOT_GUIDE_ARTICLES = [
+  {
+    id: 'hot-morgue-clothes',
+    title: 'Одежда и вещи для морга: точный список',
+    description:
+      'Что нужно передать в морг, в какие сроки и как ничего не забыть в самый тяжелый день.',
+    href: '/articles/odezhda-i-veshi-dlya-morga',
+  },
+  {
+    id: 'hot-benefit',
+    title: 'Как получить пособие?',
+    description:
+      'Пошаговый маршрут: куда обращаться, какие документы подготовить и как получить выплату.',
+    href: '/articles/kak-poluchit-posobie-na-pogrebenie-v-2026-godu',
+  },
+  {
+    id: 'hot-morgue-payments',
+    title: 'Морг требует деньги: за что вы обязаны платить, а за что — нет',
+    description:
+      'Граница между бесплатными и платными услугами морга и защита от навязанных доплат.',
+    href: '/articles/morg-trebuet-dengi',
+  },
+] as const;
+
 const applyHearseCategoryToCalculator = (
   total: number,
   breakdown: BreakdownSection[],
@@ -758,6 +782,9 @@ function HomeInner() {
               <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">
                 Кто будет вам помогать
               </h2>
+              <p className="text-sm leading-relaxed text-gray-600 md:text-base">
+                За каждой заявкой в «Тихом доме» стоит не робот, а ваш личный координатор. Мы берем на себя всю бюрократию и защиту от скрытых наценок.
+              </p>
             </div>
             <div className="relative left-1/2 right-1/2 mt-5 w-screen -ml-[50vw] -mr-[50vw]">
               <div className="px-2 sm:px-3 md:px-4">
@@ -915,6 +942,45 @@ function HomeInner() {
                 </div>
               </div>
             </div>
+
+            <section className="mt-10 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:p-7">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">
+                  Ответы на сложные вопросы
+                </h2>
+                <p className="mt-1 text-sm leading-relaxed text-gray-600 md:text-base">
+                  
+                </p>
+              </div>
+
+              <div className="mt-5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:overflow-x-visible md:overflow-y-visible">
+                <div className="flex w-max gap-4 pb-1 md:grid md:w-full md:grid-cols-3 md:justify-items-center md:pb-0">
+                {HOT_GUIDE_ARTICLES.map((article) => (
+                  <Link
+                    key={article.id}
+                    href={article.href}
+                    className="w-[280px] max-w-[320px] shrink-0 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:w-[320px] sm:max-w-[360px] md:min-w-0 md:shrink md:w-full md:max-w-[260px] lg:max-w-[300px] xl:max-w-[340px] md:break-words"
+                  >
+                    <h3 className="text-base font-semibold leading-snug text-gray-900">
+                      {article.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                      {article.description}
+                    </p>
+                  </Link>
+                ))}
+                </div>
+              </div>
+
+              <div className="mt-5 flex justify-center">
+                <Link
+                  href="/articles"
+                  className="inline-flex h-10 items-center justify-center rounded-xl border border-gray-200 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
+                >
+                  Перейти в справочник
+                </Link>
+              </div>
+            </section>
 
             <div className="mt-8 flex flex-col gap-2">
               <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">Отзывы клиентов</h2>

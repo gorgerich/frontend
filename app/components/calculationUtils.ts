@@ -170,10 +170,10 @@ export const TARIFF_PRICING = {
 
 export const BASE_TARIFF_TOTAL = 86600;
 export const BASE_TARIFF_LINES = [
-  { key: "sanitary", label: "Санитарная обработка и бальзамирование", price: 18000 },
+  { key: "sanitary", label: "Санитарно-косметическая подготовка в морге", price: 18000 },
   { key: "attributes", label: "Атрибутика", price: 20000 },
   { key: "hearse", label: "Катафалк", price: 13500 },
-  { key: "digging", label: "Копка могилы", price: 24700 },
+  { key: "digging", label: "Подготовка места захоронения", price: 24700 },
   { key: "coord", label: "Координатор базовый", price: 10400 },
 ] as const;
 
@@ -182,7 +182,7 @@ export const calcTariffTotal = (config: TariffDraftConfig) => {
 
   breakdown.push({
     key: "base",
-    label: "Базовый минимум",
+    label: "Традиционный — 86 600 ₽",
     price: TARIFF_PRICING.basePrice,
     delta: 0,
   });
