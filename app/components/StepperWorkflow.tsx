@@ -4082,7 +4082,7 @@ function formatRub(n: number) {
       <div ref={containerRef}>
       <Card className="relative z-10 bg-white/10 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30">
         {showHowItWorks && (
-          <div className="pointer-events-none absolute inset-0 z-0 rounded-3xl border border-white/20 bg-black/20 backdrop-blur-2xl" />
+          <div className="pointer-events-none absolute inset-0 z-0 rounded-3xl border border-white/22 bg-black/12 backdrop-blur-2xl" />
         )}
         <CardHeader className="relative z-10 pb-4 pt-8 px-6 sm:px-8 border-b-0">
           <div className="absolute -top-5 right-8 z-50 hidden">
@@ -4102,7 +4102,7 @@ function formatRub(n: number) {
             <div
               id="how-it-works"
               ref={howItWorksRef}
-              className="relative mb-6 -mt-3 overflow-hidden rounded-2xl rounded-t-none border border-white/25 bg-black/15 px-4 py-4 backdrop-blur-2xl shadow-[0_16px_36px_rgba(15,23,42,0.3)]"
+              className="relative mb-6 -mt-3 overflow-hidden rounded-2xl rounded-t-none border border-white/28 bg-white/10 px-4 py-4 backdrop-blur-2xl shadow-[0_16px_36px_rgba(15,23,42,0.24)]"
             >
               <div className="flex flex-col gap-4">
                 <div className="text-lg font-semibold text-white/95 sm:text-xl">
@@ -4112,7 +4112,7 @@ function formatRub(n: number) {
                   Первые шаги на ближайшие 1–2 часа. Спокойно, по порядку.
                 </div>
                 <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  <div className="inline-flex min-w-full gap-1 rounded-full border border-white/20 bg-white/10 p-1">
+                  <div className="inline-flex min-w-full gap-1 rounded-full border border-white/24 bg-white/12 p-1">
                     {emergencyChecklistTabs.map((tab) => (
                       <button
                         key={tab.id}
@@ -4122,7 +4122,7 @@ function formatRub(n: number) {
                           "h-9 shrink-0 rounded-full px-4 text-sm font-medium transition-all duration-200",
                           activeEmergencyTab === tab.id
                             ? "bg-white text-gray-900 shadow-[0_8px_22px_rgba(15,23,42,0.22)]"
-                            : "text-white/85 hover:bg-white/10",
+                            : "text-white/90 hover:bg-white/12",
                         )}
                       >
                         {tab.title}
@@ -4135,7 +4135,7 @@ function formatRub(n: number) {
                     {activeEmergencyChecklistTab.steps.map((step, index) => (
                       <li key={`${activeEmergencyChecklistTab.id}-step-${index}`} className="space-y-1.5">
                         <div className="flex items-start gap-3">
-                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/10 text-xs font-semibold text-white/90">
+                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/14 text-xs font-semibold text-white/95">
                             {index + 1}
                           </div>
                           <div className="space-y-1">
@@ -4145,7 +4145,7 @@ function formatRub(n: number) {
                             {step.details.map((detail, detailIndex) => (
                               <p
                                 key={`${activeEmergencyChecklistTab.id}-step-${index}-detail-${detailIndex}`}
-                                className="text-[12px] leading-relaxed text-white/85 sm:text-sm"
+                                className="text-[12px] leading-relaxed text-white/90 sm:text-sm"
                               >
                                 {detail}
                               </p>
@@ -4169,7 +4169,7 @@ function formatRub(n: number) {
                         {activeEmergencyChecklistTab.ctaLabel}
                       </a>
                     </Button>
-                    <p className="mt-2 text-[12px] leading-relaxed text-white/80 sm:text-sm">
+                    <p className="mt-2 text-[12px] leading-relaxed text-white/85 sm:text-sm">
                       {activeEmergencyChecklistTab.ctaHint}
                     </p>
                   </div>
@@ -4179,14 +4179,14 @@ function formatRub(n: number) {
           )}
 
           <div className="rounded-3xl border border-zinc-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)] px-5 py-5 sm:px-7 sm:py-6">
-            <div className="mb-3 text-left text-lg md:text-xl font-semibold text-gray-900">
+            <div className="mb-3 max-w-full break-words text-left text-[15px] min-[375px]:text-[18px] md:text-2xl font-semibold text-gray-900">
               Выберите, как вам комфортнее организовать прощание
             </div>
-            <p className="mb-4 text-sm leading-relaxed text-gray-600">
+            <p className="mb-4 max-w-full break-words text-[13px] min-[375px]:text-[14px] md:text-base leading-[1.4] text-gray-600">
               Можно собрать план самостоятельно или выбрать готовое решение с расширенным пакетом услуг.
             </p>
             <div className="mb-3 mt-2 flex w-full justify-center md:justify-start">
-              <div className="flex w-full min-w-0 max-w-none flex-wrap rounded-2xl border border-zinc-200 bg-zinc-100 p-1 md:flex-nowrap md:rounded-full md:mx-0 md:mr-auto">
+              <div className="flex w-full max-w-full min-w-0 flex-wrap gap-1 rounded-2xl border border-zinc-200 bg-zinc-100 p-1 md:gap-0 md:rounded-full md:mx-0 md:mr-auto">
                 <button
                   type="button"
                   onClick={() => {
@@ -4195,16 +4195,16 @@ function formatRub(n: number) {
                     setContinueChoice("self");
                   }}
                   className={cn(
-                    "basis-[calc(50%-2px)] md:basis-0 md:flex-1 min-w-0 w-full min-h-10 py-1.5 md:h-9 md:min-h-0 md:py-0 rounded-full px-1 sm:px-2 inline-flex items-center justify-center gap-1 text-[9px] sm:text-[13px] md:text-sm font-medium transition-all duration-200",
+                    "basis-[calc(50%-2px)] md:basis-0 md:flex-1 min-w-0 w-full h-10 md:h-9 rounded-full px-1 min-[360px]:px-2 inline-flex items-center justify-center gap-0.5 text-[10px] min-[360px]:text-[11px] sm:text-[12px] md:text-sm font-medium tracking-[-0.01em] whitespace-nowrap transition-all duration-200",
                     continueChoice === "self"
                       ? "bg-white text-black shadow-lg"
                       : "text-gray-700 hover:bg-white/70",
                   )}
                 >
-                  <span className="inline-flex w-5 shrink-0 justify-center leading-none">
-                    {continueChoice === "self" && workflowMode !== "wizard" ? "🔘" : ""}
-                  </span>
-                  <span className="min-w-0 whitespace-nowrap text-center leading-none">
+                  {continueChoice === "self" && workflowMode !== "wizard" ? (
+                    <span className="shrink-0 leading-none">🔘</span>
+                  ) : null}
+                  <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
                     Собрать самостоятельно
                   </span>
                 </button>
@@ -4216,16 +4216,16 @@ function formatRub(n: number) {
                     setContinueChoice("solutions");
                   }}
                   className={cn(
-                    "basis-[calc(50%-2px)] md:basis-0 md:flex-1 min-w-0 w-full min-h-10 py-1.5 md:h-9 md:min-h-0 md:py-0 rounded-full px-1 sm:px-2 inline-flex items-center justify-center gap-1 text-[10px] sm:text-[13px] md:text-sm font-medium transition-all duration-200",
+                    "basis-[calc(50%-2px)] md:basis-0 md:flex-1 min-w-0 w-full h-10 md:h-9 rounded-full px-1 min-[360px]:px-2 inline-flex items-center justify-center gap-0.5 text-[10px] min-[360px]:text-[11px] sm:text-[12px] md:text-sm font-medium tracking-[-0.01em] whitespace-nowrap transition-all duration-200",
                     continueChoice === "solutions"
                       ? "bg-white text-black shadow-lg"
                       : "text-gray-700 hover:bg-white/70",
                   )}
                 >
-                  <span className="inline-flex w-5 shrink-0 justify-center leading-none">
-                    {continueChoice === "solutions" && workflowMode !== "wizard" ? "🔘" : ""}
-                  </span>
-                  <span className="min-w-0 whitespace-normal text-center leading-tight md:whitespace-nowrap">
+                  {continueChoice === "solutions" && workflowMode !== "wizard" ? (
+                    <span className="shrink-0 leading-none">🔘</span>
+                  ) : null}
+                  <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
                     Готовые решения
                   </span>
                 </button>
@@ -4236,16 +4236,16 @@ function formatRub(n: number) {
                     onModeChange?.("wizard");
                   }}
                   className={cn(
-                    "basis-full md:basis-0 md:flex-1 min-w-0 w-full min-h-10 py-1.5 md:h-9 md:min-h-0 md:py-0 rounded-full px-1 sm:px-2 inline-flex items-center justify-center gap-1 text-[10px] sm:text-[13px] md:text-sm font-medium transition-all duration-200",
+                    "basis-full md:basis-0 md:flex-1 min-w-0 w-full h-10 md:h-9 rounded-full px-1 min-[360px]:px-2 inline-flex items-center justify-center gap-0.5 text-[10px] min-[360px]:text-[11px] sm:text-[12px] md:text-sm font-medium tracking-[-0.01em] whitespace-nowrap transition-all duration-200",
                     workflowMode === "wizard"
                       ? "bg-white text-black shadow-lg"
                       : "text-gray-700 hover:bg-white/70",
                   )}
                 >
-                  <span className="inline-flex w-5 shrink-0 justify-center leading-none">
-                    {workflowMode === "wizard" ? "🔘" : ""}
-                  </span>
-                  <span className="min-w-0 whitespace-normal text-center leading-tight md:whitespace-nowrap">
+                  {workflowMode === "wizard" ? (
+                    <span className="shrink-0 leading-none">🔘</span>
+                  ) : null}
+                  <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
                     Пошаговый мастер
                   </span>
                 </button>

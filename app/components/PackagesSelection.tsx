@@ -666,7 +666,7 @@ export function PackagesSelection({
                     <div className="mt-2 text-xs text-gray-500">
                       Смета окончательная и фиксируется в договоре
                     </div>
-                    <div className="mt-3 text-sm text-gray-600 leading-relaxed">
+                    <div className="mt-3 text-sm text-gray-600 leading-relaxed text-left">
                       {card.description}
                     </div>
                   </div>

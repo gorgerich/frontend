@@ -5,6 +5,7 @@ import "./globals.css";
 
 import { Footer } from "./components/Footer";
 import { ClientErrorBoundary } from "./components/ClientErrorBoundary";
+import { StickyHeader } from "./components/StickyHeader";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://tihiydom.com"),
@@ -88,6 +89,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe>`,
         {/* ВАЖНО: одна общая колонка на всю страницу */}
         <ClientErrorBoundary>
           <div className="min-h-screen flex flex-col">
+            <StickyHeader />
             <div className="flex-1">{children}</div>
             <Footer />
           </div>

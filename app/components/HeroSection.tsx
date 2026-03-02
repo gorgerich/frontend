@@ -7,7 +7,7 @@ const heroImage = "/hero-forest.jpg";
 const heroImageNew = "/heroIMGnew.PNG";
 
 // DESKTOP controls
-const DESKTOP_TOP = "14%"; // опускай/поднимай весь заголовок на десктопе
+const DESKTOP_TOP = "12%"; // опускай/поднимай весь заголовок на десктопе
 const LINE1_SHIFT = "0px"; // сдвиг первой строки
 const LINE2_SHIFT = "6px"; // сдвиг второй строки
 const LINE1_LINE_HEIGHT = 1.15; // межстрочное 1-й строки
@@ -15,7 +15,7 @@ const LINE2_LINE_HEIGHT = 1.12; // межстрочное 2-й строки
 const LINES_GAP = "140px"; // расстояние между строками/предложениями
 
 // MOBILE controls
-const MOBILE_SHIFT = "20%"; // общий сдвиг мобайл-заголовка (как было translateY(20%))
+const MOBILE_SHIFT = "-60%"; // общий сдвиг мобайл-заголовка
 const MOBILE_LINE1_SHIFT = "0px"; // сдвиг 1-й строки
 const MOBILE_LINE2_SHIFT = "0px"; // сдвиг 2-й строки
 const MOBILE_LINE1_LINE_HEIGHT = 1.18;
@@ -71,7 +71,7 @@ export function HeroSection() {
   };
 
   const planCtaClass =
-    "relative h-14 w-full rounded-[20px] border border-black/10 bg-gradient-to-b from-white to-gray-100/80 px-[18px] text-sm font-semibold text-gray-900 shadow-[0_1px_2px_rgba(0,0,0,0.08),0_8px_20px_rgba(0,0,0,0.10)] transition-shadow duration-200 hover:shadow-[0_2px_6px_rgba(0,0,0,0.12),0_10px_24px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10 active:scale-[0.98] active:shadow-[0_1px_2px_rgba(0,0,0,0.08)]";
+    "relative h-14 rounded-[20px] border border-black/10 bg-gradient-to-b from-white to-gray-100/80 px-[18px] text-sm font-semibold text-gray-900 shadow-[0_1px_2px_rgba(0,0,0,0.08),0_8px_20px_rgba(0,0,0,0.10)] transition-shadow duration-200 hover:shadow-[0_2px_6px_rgba(0,0,0,0.12),0_10px_24px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10 active:scale-[0.98] active:shadow-[0_1px_2px_rgba(0,0,0,0.08)]";
 
   return (
     <section className="relative w-full px-4 pt-14 sm:pt-16 pb-16 md:pt-8 md:pb-20 lg:pb-24 md:translate-y-[4%]">
@@ -116,40 +116,36 @@ export function HeroSection() {
           </div>
 
           {/* TEXT LAYER */}
-          <div className="absolute inset-0 z-10">
+          <div className="absolute inset-0 z-30">
             {/* MOBILE */}
-            <div className="flex h-full flex-col items-center justify-center px-6 pb-24 text-center sm:pb-32 md:hidden">
+            <div className="flex h-full flex-col items-center justify-center px-4 pb-24 text-center sm:px-6 sm:pb-32 md:hidden">
               <h1
-                className="font-heading mx-auto mb-4 max-w-[28rem] tracking-tight text-white drop-shadow-2xl sm:max-w-[32rem]"
+                className="font-heading mx-auto mb-4 w-full max-w-full whitespace-normal break-words tracking-tight text-white [text-wrap:balance]"
                 style={{
-                  textShadow:
-                    "0 4px 20px rgba(0,0,0,0.8), 0 0px 0px rgba(0,0,0,0.6)",
+                  textShadow: "0 10px 24px rgba(0,0,0,0.24)",
                 }}
               >
                 <span
-                  className="mx-auto block text-2xl font-semibold"
+                  className="mx-auto block w-full"
                   style={{
-                    maxWidth: "340px",
-                    fontWeight: 100,
+                    maxWidth: "100%",
                     transform: `translateY(${MOBILE_SHIFT})`,
                   }}
                   >
                   <span
-                    className="font-heading block text-lg sm:text-xl font-extrabold text-left"
+                    className="font-heading block text-[24px] min-[375px]:text-[29px] sm:text-[32px] font-extrabold text-center whitespace-normal break-words leading-[1.05]"
                     style={{
                       fontWeight: 800,
                       transform: `translateY(${MOBILE_LINE2_SHIFT})`,
-                      lineHeight: MOBILE_LINE2_LINE_HEIGHT,
                     }}
                   >
                     Организация похорон под вашим полным контролем
                     
                   </span>
                   <span
-                    className="font-body mt-3 block text-sm sm:text-base font-normal text-left text-white/90"
+                    className="font-body mt-3 block w-full max-w-full text-[12px] min-[375px]:text-[13px] leading-[1.4] font-normal text-center text-white/80"
                     style={{
                       fontWeight: 400,
-                      lineHeight: 1.3,
                     }}
                   >
                     Мы фиксируем цену до подписания договора. Никаких скрытых платежей, доплат в морге и навязывания услуг.
@@ -159,7 +155,7 @@ export function HeroSection() {
               <Button
                 type="button"
                 onClick={handlePlanActionsClick}
-                className={`${planCtaClass} mt-6 max-w-[22rem]`}
+                className={`${planCtaClass} mt-6 w-full max-w-[22rem]`}
               >
                 <span className="flex w-full flex-col items-center text-center">
                   <span className="font-subheading text-gray-600">Что делать, если умер человек</span>
@@ -173,50 +169,42 @@ export function HeroSection() {
 
             {/* DESKTOP */}
             <div
-              className="absolute left-0 right-0 hidden px-6 text-center md:block"
+              className="absolute left-0 right-0 hidden px-6 text-center md:block z-30"
               style={{ top: DESKTOP_TOP }}
             >
               <h1
                 ref={titleRef}
-                className="font-heading mx-auto mb-4 max-w-3xl tracking-tight text-white drop-shadow-2xl"
+                className="font-heading mx-auto mb-4 w-full max-w-full md:max-w-[26ch] lg:max-w-[20ch] whitespace-normal break-words tracking-tight text-white [text-wrap:balance]"
                 style={{
-                  textShadow:
-                    "0 4px 20px rgba(0,0,0,0.8), 0 0px 0px rgba(0,0,0,0.6)",
+                  textShadow: "0 10px 24px rgba(0,0,0,0.24)",
                 }}
               >
-                <span
-                  className="block"
-                  style={{
-                    fontWeight: 40,
-                  }}
-                >
+                <span className="block">
                   <span
-                    className="font-heading mx-auto block max-w-[56rem] text-xl lg:text-2xl xl:text-2xl font-extrabold text-center"
+                    className="font-heading mx-auto block w-full text-[42px] lg:text-[52px] xl:text-[58px] font-extrabold text-center leading-[1.03] whitespace-normal break-words"
                     style={{
-                      fontWeight: 900,
+                      fontWeight: 800,
                       transform: `translateY(${LINE2_SHIFT})`,
-                      lineHeight: LINE2_LINE_HEIGHT,
                     }}
                   >
-                    Организация похорон под вашим полным контролем:
+                    Организация похорон под вашим полным контролем
                    
                   </span>
                   <span
-                    className="font-body mx-auto mt-3 block max-w-[56rem] text-base lg:text-lg font-bold text-center text-white/90"
+                    className="font-body relative left-1/2 -translate-x-1/2 mt-4 block w-full md:w-[60ch] lg:w-[72ch] max-w-full text-[14px] lg:text-[16px] xl:text-[18px] leading-[1.4] font-normal text-center text-white/80"
                     style={{
                       fontWeight: 400,
-                      lineHeight: 1.35,
                     }}
                   >
                   Мы фиксируем цену до подписания договора. Никаких скрытых платежей, доплат в морге и навязывания услуг.
                   </span>
                 </span>
               </h1>
-              <div className="mt-8 flex w-full items-center justify-center">
+              <div className="mt-3 flex w-full items-center justify-center">
                 <Button
                   type="button"
                   onClick={handlePlanActionsClick}
-                  className={`${planCtaClass} max-w-[26rem]`}
+                  className={`${planCtaClass} w-full max-w-[26rem]`}
                 >
                   <span className="flex w-full flex-col items-center text-center">
                     <span className="font-subheading text-gray-600">Что делать, если умер человек</span>
