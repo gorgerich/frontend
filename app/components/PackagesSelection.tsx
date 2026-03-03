@@ -26,6 +26,7 @@ interface PackagesSelectionProps {
   }) => React.ReactNode;
   onAllInclusiveOpen?: (open: boolean) => void;
   viewMode?: "self" | "solutions";
+  embedded?: boolean;
 }
 
 export function PackagesSelection({
@@ -35,6 +36,7 @@ export function PackagesSelection({
   paymentSlot,
   onAllInclusiveOpen,
   viewMode = "self",
+  embedded = false,
 }: PackagesSelectionProps) {
   const [activePanel, setActivePanel] = React.useState<"base" | "custom">("base");
   const [showInlinePayment, setShowInlinePayment] = React.useState(false);
@@ -276,8 +278,8 @@ export function PackagesSelection({
   };
 
   return (
-    <div className="pt-2 md:pt-3 w-full">
-      <div className="mx-auto w-full max-w-6xl px-2">
+    <div className={cn("w-full", embedded ? "pt-0" : "pt-2 md:pt-3")}>
+      <div className={cn("mx-auto w-full max-w-6xl", embedded ? "px-0" : "px-2")}>
         {isSelfMode && (
         <div className="mb-5 text-left text-[13px] text-gray-500 font-medium leading-relaxed md:hidden">
           {BASE_MINIMUM.description}
@@ -295,10 +297,14 @@ export function PackagesSelection({
             <div
               data-package-card
               className={cn(
-                "group relative mx-auto flex w-full max-w-5xl flex-col gap-8 rounded-3xl border transition-all duration-300 bg-white p-8",
-                isSelected
-                  ? "border-gray-900 shadow-2xl scale-[1.01] z-10"
-                  : "border-gray-100 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1"
+                "group relative mx-auto flex w-full max-w-5xl flex-col",
+                embedded
+                  ? "gap-6 rounded-none border-0 bg-transparent p-0 shadow-none"
+                  : "gap-8 rounded-3xl border bg-white p-8 transition-all duration-300",
+                !embedded &&
+                  (isSelected
+                    ? "border-gray-900 shadow-2xl scale-[1.01] z-10"
+                    : "border-gray-100 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1")
               )}
             >
               <div className="text-center">

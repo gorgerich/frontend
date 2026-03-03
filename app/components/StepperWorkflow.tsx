@@ -4067,6 +4067,14 @@ function formatRub(n: number) {
     );
   }
 
+  const isSelfScenarioActive = workflowMode !== "wizard" && continueChoice === "self";
+  const isSolutionsScenarioActive = workflowMode !== "wizard" && continueChoice === "solutions";
+  const isWizardScenarioActive = workflowMode === "wizard";
+  const baseSegmentBtn =
+    "min-w-0 w-full h-10 md:h-9 rounded-full px-0.5 min-[360px]:px-1.5 inline-flex items-center justify-center gap-0 min-[360px]:gap-0.5 text-[11px] min-[360px]:text-[12px] sm:text-[13px] md:text-sm font-medium tracking-[-0.005em] whitespace-nowrap transition-all duration-200 overflow-hidden";
+  const activeSegmentBtn = "bg-white text-slate-900 shadow-sm ring-1 ring-zinc-200";
+  const inactiveSegmentBtn = "bg-transparent text-slate-600 hover:bg-zinc-200/70";
+
   return (
     <div ref={wrapRef} className="relative max-w-5xl mx-auto -translate-y-12 pb-12">
       <div
@@ -4084,7 +4092,7 @@ function formatRub(n: number) {
         {showHowItWorks && (
           <div className="pointer-events-none absolute inset-0 z-0 rounded-3xl border border-white/22 bg-black/12 backdrop-blur-2xl" />
         )}
-        <CardHeader className="relative z-10 pb-4 pt-8 px-6 sm:px-8 border-b-0">
+        <CardHeader className="relative z-10 pb-4 pt-8 px-6 sm:px-8">
           <div className="absolute -top-5 right-8 z-50 hidden">
             <button
               type="button"
@@ -4178,86 +4186,84 @@ function formatRub(n: number) {
             </div>
           )}
 
-          <div className="rounded-3xl border border-zinc-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)] px-5 py-5 sm:px-7 sm:py-6">
-            <div className="mb-3 max-w-full break-words text-left text-[15px] min-[375px]:text-[18px] md:text-2xl font-semibold text-gray-900">
-              Выберите, как вам комфортнее организовать прощание
-            </div>
-            <p className="mb-4 max-w-full break-words text-[13px] min-[375px]:text-[14px] md:text-base leading-[1.4] text-gray-600">
-              Можно собрать план самостоятельно или выбрать готовое решение с расширенным пакетом услуг.
-            </p>
-            <div className="mb-3 mt-2 flex w-full justify-center md:justify-start">
-              <div className="flex w-full max-w-full min-w-0 flex-wrap gap-1 rounded-2xl border border-zinc-200 bg-zinc-100 p-1 md:gap-0 md:rounded-full md:mx-0 md:mr-auto">
-                <button
-                  type="button"
-                  onClick={() => {
-                    openPackagesMode();
-                    onModeChange?.("package");
-                    setContinueChoice("self");
-                  }}
-                  className={cn(
-                    "basis-[calc(50%-2px)] md:basis-0 md:flex-1 min-w-0 w-full h-10 md:h-9 rounded-full px-1 min-[360px]:px-2 inline-flex items-center justify-center gap-0.5 text-[10px] min-[360px]:text-[11px] sm:text-[12px] md:text-sm font-medium tracking-[-0.01em] whitespace-nowrap transition-all duration-200",
-                    continueChoice === "self"
-                      ? "bg-white text-black shadow-lg"
-                      : "text-gray-700 hover:bg-white/70",
-                  )}
-                >
-                  {continueChoice === "self" && workflowMode !== "wizard" ? (
-                    <span className="shrink-0 leading-none">🔘</span>
-                  ) : null}
-                  <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
-                    Собрать самостоятельно
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    openPackagesMode();
-                    onModeChange?.("package");
-                    setContinueChoice("solutions");
-                  }}
-                  className={cn(
-                    "basis-[calc(50%-2px)] md:basis-0 md:flex-1 min-w-0 w-full h-10 md:h-9 rounded-full px-1 min-[360px]:px-2 inline-flex items-center justify-center gap-0.5 text-[10px] min-[360px]:text-[11px] sm:text-[12px] md:text-sm font-medium tracking-[-0.01em] whitespace-nowrap transition-all duration-200",
-                    continueChoice === "solutions"
-                      ? "bg-white text-black shadow-lg"
-                      : "text-gray-700 hover:bg-white/70",
-                  )}
-                >
-                  {continueChoice === "solutions" && workflowMode !== "wizard" ? (
-                    <span className="shrink-0 leading-none">🔘</span>
-                  ) : null}
-                  <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
-                    Готовые решения
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    openWizardMode();
-                    onModeChange?.("wizard");
-                  }}
-                  className={cn(
-                    "basis-full md:basis-0 md:flex-1 min-w-0 w-full h-10 md:h-9 rounded-full px-1 min-[360px]:px-2 inline-flex items-center justify-center gap-0.5 text-[10px] min-[360px]:text-[11px] sm:text-[12px] md:text-sm font-medium tracking-[-0.01em] whitespace-nowrap transition-all duration-200",
-                    workflowMode === "wizard"
-                      ? "bg-white text-black shadow-lg"
-                      : "text-gray-700 hover:bg-white/70",
-                  )}
-                >
-                  {workflowMode === "wizard" ? (
-                    <span className="shrink-0 leading-none">🔘</span>
-                  ) : null}
-                  <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
-                    Пошаговый мастер
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-
 </CardHeader>
 
-<CardContent className="relative z-10 px-6 sm:px-8 pb-8">
+<CardContent className="relative z-10 px-6 sm:px-8 pb-8 pt-0">
+  <div className="rounded-3xl border border-zinc-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+    <div className="px-5 py-5 sm:px-7 sm:py-6">
+      <div className="mb-3 max-w-full break-words text-left text-[15px] min-[375px]:text-[18px] md:text-2xl font-semibold text-gray-900">
+        Выберите, как вам комфортнее организовать прощание
+      </div>
+      <p className="mb-4 max-w-full break-words text-[13px] min-[375px]:text-[14px] md:text-base leading-[1.4] text-gray-600">
+        Можно собрать план самостоятельно или выбрать готовое решение с расширенным пакетом услуг.
+      </p>
+      <div className="mb-1 mt-2 flex w-full justify-center md:justify-start">
+        <div className="flex w-full max-w-full min-w-0 flex-wrap gap-1 rounded-2xl border border-zinc-200 bg-zinc-100 p-1 md:gap-0 md:rounded-full md:mx-0 md:mr-auto">
+          <button
+            type="button"
+            onClick={() => {
+              openPackagesMode();
+              onModeChange?.("package");
+              setContinueChoice("self");
+            }}
+            className={cn(
+              "basis-[calc(58%-2px)] min-[360px]:basis-[calc(52%-2px)] md:basis-0 md:flex-1",
+              baseSegmentBtn,
+              isSelfScenarioActive ? activeSegmentBtn : inactiveSegmentBtn,
+            )}
+          >
+            {isSelfScenarioActive ? (
+              <span className="shrink-0 leading-none">🔘</span>
+            ) : null}
+            <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
+              Собрать самостоятельно
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              openPackagesMode();
+              onModeChange?.("package");
+              setContinueChoice("solutions");
+            }}
+            className={cn(
+              "basis-[calc(42%-2px)] min-[360px]:basis-[calc(48%-2px)] md:basis-0 md:flex-1",
+              baseSegmentBtn,
+              isSolutionsScenarioActive ? activeSegmentBtn : inactiveSegmentBtn,
+            )}
+          >
+            {isSolutionsScenarioActive ? (
+              <span className="shrink-0 leading-none">🔘</span>
+            ) : null}
+            <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
+              Готовые решения
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              openWizardMode();
+              onModeChange?.("wizard");
+            }}
+            className={cn(
+              "basis-full md:basis-0 md:flex-1",
+              baseSegmentBtn,
+              isWizardScenarioActive ? activeSegmentBtn : inactiveSegmentBtn,
+            )}
+          >
+            {isWizardScenarioActive ? (
+              <span className="shrink-0 leading-none">🔘</span>
+            ) : null}
+            <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
+              Пошаговый мастер
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div className="px-5 pb-6 pt-4 sm:px-7 sm:pb-7 sm:pt-5">
   {workflowMode === "wizard" ? (
-    <div className="rounded-3xl border border-zinc-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)] px-5 py-6 sm:px-7 sm:py-7">
+    <div>
       <Stepper
         steps={steps as any}
         currentStep={currentStep}
@@ -4340,7 +4346,7 @@ function formatRub(n: number) {
       </div>
     </div>
   ) : (
-    <div className="space-y-8">
+    <div className={cn(showScenarioBlock ? "space-y-8" : "space-y-0")}>
       {showScenarioBlock && (
         <>
           <div className="flex justify-center">
@@ -4431,11 +4437,14 @@ function formatRub(n: number) {
             paymentSlot={(override) => renderPaymentBlock(override)}
             onAllInclusiveOpen={setShowScenarioBlock}
             viewMode={continueChoice === "self" ? "self" : "solutions"}
+            embedded
           />
         )}
       </div>
     </div>
   )}
+  </div>
+  </div>
 </CardContent>
 </Card>
 

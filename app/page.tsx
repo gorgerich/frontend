@@ -909,12 +909,14 @@ function HomeInner() {
                     key={card.id}
                     className="rounded-2xl border border-gray-200 bg-white/90 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)]"
                   >
-                    <div className="text-lg" aria-hidden="true">
-                      {card.icon}
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-base leading-none shrink-0" aria-hidden="true">
+                        {card.icon}
+                      </span>
+                      <h3 className="min-w-0 flex-1 whitespace-nowrap text-[clamp(11px,3.2vw,16px)] font-semibold leading-none tracking-[-0.01em] text-gray-900">
+                        {card.title}
+                      </h3>
                     </div>
-                    <h3 className="mt-2 text-base font-semibold leading-snug text-gray-900">
-                      {card.title}
-                    </h3>
                     <p className="mt-2 text-sm leading-relaxed text-gray-600">
                       {card.text}
                     </p>
@@ -959,7 +961,7 @@ function HomeInner() {
                   <Link
                     key={article.id}
                     href={article.href}
-                    className="w-[280px] max-w-[320px] shrink-0 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:w-[320px] sm:max-w-[360px] md:min-w-0 md:shrink md:w-full md:max-w-[260px] lg:max-w-[300px] xl:max-w-[340px] md:break-words"
+                    className="w-[280px] max-w-[320px] shrink-0 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:w-[320px] sm:max-w-[360px] md:min-w-0 md:shrink md:w-full md:max-w-[230px] lg:max-w-[270px] xl:max-w-[300px] md:break-words"
                   >
                     <h3 className="text-base font-semibold leading-snug text-gray-900">
                       {article.title}
