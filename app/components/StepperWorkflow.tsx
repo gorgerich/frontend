@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 
 import { User, CircleDot } from "lucide-react";
 import { PackagesSelection, type Package as PackagesSelectionPackage } from "./PackagesSelection";
@@ -1208,6 +1209,11 @@ export function StepperWorkflow({
   type EmergencyChecklistStep = {
     title: string;
     details: string[];
+    reference?: {
+      prefix: string;
+      label: string;
+      href: string;
+    };
   };
   type EmergencyChecklistTab = {
     id: EmergencyChecklistTabId;
@@ -1233,8 +1239,8 @@ export function StepperWorkflow({
         {
           title: "Вызовите скорую (103)",
           details: [
-            "Врачи констатируют факт смерти и выдадут бланк.",
-            "Без него нельзя двигаться дальше.",
+            "Врачи констатируют факт смерти и выдадут бланк. Без него нельзя двигаться дальше.",
+            
           ],
         },
         {
@@ -1244,11 +1250,21 @@ export function StepperWorkflow({
           ],
         },
         {
-          title: "Не пускайте посторонних и не отдавайте документы",
+          title: "Перевозка в морг",
           details: [
-            "Врачи и полиция обязаны передавать данные. К вам могут приехать ритуальные агенты, которых вы не вызывали. Не открывайте им дверь и ничего не подписывайте - это защитит вас от психологического давления и скрытых долгов.",
-            "Вызовите бесплатную службу перевозки в морг (это сделает полиция или скорая).",
+            "Дождитесь бригаду транспортировки (ее вызовут врачи или полиция бесплатно). Обязательно запишите адрес морга, куда увозят близкого.",
           ],
+        },
+        {
+          title: "Защитите себя от посторонних",
+          details: [
+            "Не открывайте дверь ритуальным агентам, которых вы не вызывали, не отдавайте им паспорта и ничего не подписывайте. Это защитит вас от психологического давления и навязанных услуг.",
+          ],
+          reference: {
+            prefix: "👉 Читать в Справочнике:",
+            label: "Как безопасно выпроводить агентов и защитить свои деньги",
+            href: "/articles/kak-obshatsya-s-ritualnymi-agentami-bez-vyzova",
+          },
         },
       ],
       ctaLabel: "Написать дежурному координатору",
@@ -1318,10 +1334,45 @@ export function StepperWorkflow({
       ctaPrefill: "Нужен расчёт маршрута и логистики (город/регион: ___)",
     },
   ];
+  const emergencyCoordinatorNames = [
+    "Денис",
+    "Михаил",
+    "Анна",
+    "Елена",
+    "Сергей",
+    "Ольга",
+    "Павел",
+    "Наталья",
+  ] as const;
+  const [emergencyCoordinatorName, setEmergencyCoordinatorName] = useState<string>(
+    emergencyCoordinatorNames[0],
+  );
+
+  useEffect(() => {
+    const totalNames = emergencyCoordinatorNames.length;
+    let nextIndex = Math.floor(Math.random() * totalNames);
+
+    try {
+      const previousIndexRaw = window.localStorage.getItem("td_emergency_coordinator_idx");
+      const previousIndex = previousIndexRaw ? Number(previousIndexRaw) : NaN;
+      if (Number.isFinite(previousIndex) && totalNames > 1 && nextIndex === previousIndex) {
+        nextIndex = (nextIndex + 1) % totalNames;
+      }
+      window.localStorage.setItem("td_emergency_coordinator_idx", String(nextIndex));
+    } catch {
+      // ignore localStorage access errors
+    }
+
+    setEmergencyCoordinatorName(emergencyCoordinatorNames[nextIndex]);
+  }, []);
 
   const activeEmergencyChecklistTab =
     emergencyChecklistTabs.find((tab) => tab.id === activeEmergencyTab) ??
     emergencyChecklistTabs[0];
+  const emergencyCtaHint =
+    activeEmergencyChecklistTab.id === "home"
+      ? `${emergencyCoordinatorName} на связи. Поможем вызвать службы и подскажем, какие документы подготовить прямо сейчас.`
+      : activeEmergencyChecklistTab.ctaHint;
 
   const PACKAGE_ID_BY_SLUG: Record<
     "quiet" | "traditional" | "special",
@@ -4158,6 +4209,17 @@ function formatRub(n: number) {
                                 {detail}
                               </p>
                             ))}
+                            {step.reference ? (
+                              <p className="text-[12px] leading-relaxed text-white/90 sm:text-sm">
+                                {step.reference.prefix}{" "}
+                                <Link
+                                  href={step.reference.href}
+                                  className="font-medium text-white underline decoration-white/70 underline-offset-2 hover:text-white"
+                                >
+                                  {step.reference.label}
+                                </Link>
+                              </p>
+                            ) : null}
                           </div>
                         </div>
                       </li>
@@ -4178,7 +4240,7 @@ function formatRub(n: number) {
                       </a>
                     </Button>
                     <p className="mt-2 text-[12px] leading-relaxed text-white/85 sm:text-sm">
-                      {activeEmergencyChecklistTab.ctaHint}
+                      {emergencyCtaHint}
                     </p>
                   </div>
                 </div>
