@@ -15,7 +15,7 @@ const LINE2_LINE_HEIGHT = 1.12; // межстрочное 2-й строки
 const LINES_GAP = "140px"; // расстояние между строками/предложениями
 
 // MOBILE controls
-const MOBILE_SHIFT = "-60%"; // общий сдвиг мобайл-заголовка
+const MOBILE_SHIFT = "-210%"; // общий сдвиг мобайл-заголовка
 const MOBILE_LINE1_SHIFT = "0px"; // сдвиг 1-й строки
 const MOBILE_LINE2_SHIFT = "0px"; // сдвиг 2-й строки
 const MOBILE_LINE1_LINE_HEIGHT = 1.18;
@@ -148,7 +148,7 @@ export function HeroSection() {
                 <Button
                   type="button"
                   onClick={handlePlanActionsClick}
-                  className={`${planCtaClass} order-1 md:order-2 -mt-5 w-full max-w-[22rem]`}
+                  className={`${planCtaClass} order-1 md:order-2 -mt-30 w-full max-w-[22rem]`}
                 >
                   <span className="flex w-full flex-col items-center text-center">
                     <span className="font-subheading text-gray-600">Что делать, если умер человек</span>
