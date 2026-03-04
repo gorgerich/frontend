@@ -136,7 +136,7 @@ const TEAM_MEMBERS = [
   {
     id: 'member-1',
     name: 'Михаил',
-    role: 'Координатор',
+    role: 'Старший координатор',
     imageSrc: '/team/male-2.jpg',
     description: 'Сопровождаю организационные вопросы и координирую день прощания.',
   },

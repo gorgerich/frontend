@@ -148,7 +148,7 @@ export function HeroSection() {
                 <Button
                   type="button"
                   onClick={handlePlanActionsClick}
-                  className={`${planCtaClass} order-1 md:order-2 mt-0 w-full max-w-[22rem]`}
+                  className={`${planCtaClass} order-1 md:order-2 -mt-5 w-full max-w-[22rem]`}
                 >
                   <span className="flex w-full flex-col items-center text-center">
                     <span className="font-subheading text-gray-600">Что делать, если умер человек</span>
