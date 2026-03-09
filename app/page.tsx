@@ -36,18 +36,20 @@ const HEARSE_CATEGORY_LABELS = {
 const TRUST_REVIEWS = [
   {
     id: 'review-1',
-    name: 'Оксана Т.',
+    name: 'Константин В.',
     date: '11 февраля 2026',
     service: 'Захоронение',
     rating: '5/5',
+    headline: 'Оградили от агрессии морга и скрытых платежей',
     text: `Смерть произошла дома поздно вечером. Сначала была скорая, потом полиция, всё очень долго. Ночью почти не спали. Утром нужно было уже решать, что дальше, а я не понимала даже, какие документы должны быть на руках. Через сайт удалось спокойно собрать базовый вариант. Хорошо, что можно было не принимать все решения сразу. Отдельный момент — паспорт. Нам его забрали для оформления, и я переживала, что что-то потеряется. В итоге всё выдали корректно, данные проверили заранее, в документах ошибок не было. В день прощания всё прошло без накладок. Транспорт приехал вовремя, на кладбище никаких доплат на месте не возникло. Это было важно, потому что сил спорить уже не было. Не скажу, что это было легко. Но по крайней мере организационная часть прошла спокойно и предсказуемо. В такой ситуации это многое значит.`,
   },
   {
     id: 'review-2',
-    name: 'Марина С.',
+    name: 'Ирина Л.',
     date: '03 февраля 2026',
     service: 'Кремация',
     rating: '4.9/5',
+    headline: 'Никто не торопил и не навязывал лишнего',
     text: `Сомневалась, можно ли вообще всё оформить онлайн. Оказалось — можно.
 
 Собрала план на сайте, отправила себе на почту, позже всё проверила ещё раз. Удобно, что никто не торопил и не уговаривал на лучше и дороже.
@@ -60,6 +62,7 @@ const TRUST_REVIEWS = [
     date: '27 января 2026',
     service: 'Захоронение',
     rating: '5/5',
+    headline: 'Удобно было согласовывать всё в чате',
     text: `Михаил, спасибо за вашу помощь. Самое тяжёлое были не эмоции даже, а необходимость сразу что-то решать. Сначала звонили знакомые, советовали своих людей, но от этих разговоров становилось только хуже. В итоге решила попробовать оформить всё через сайт.
 
 Понравилось, что можно было спокойно читать и выбирать, без давления. Я несколько раз меняла детали — формат, транспорт, даже зал. Никто не говорил, что так уже нельзя. Всё подтверждали только после моего согласия.
@@ -72,6 +75,7 @@ const TRUST_REVIEWS = [
     date: '19 января 2026',
     service: 'Захоронение',
     rating: '4.9/5',
+    headline: 'Скепсис ушел, когда увидела понятный процесс',
     text: `Сначала отнеслась с недоверием — всё онлайн, без личной встречи. В такой ситуации хочется, чтобы всё было “по-старому”, через живое общение.
 
 Были переживания, что что-то упущу или неправильно выберу. Но в процессе стало понятно, что структура продумана, всё проверяется, итог виден заранее.
@@ -84,6 +88,7 @@ const TRUST_REVIEWS = [
     date: '05 января 2026',
     service: 'Организация похорон',
     rating: '4.9/5',
+    headline: 'Помогли решить конфликт с моргом без переплат',
     text: `Если кто-то хоть раз сталкивался с нашими моргами, тот знает, что с ними общий язык не найти. В конце года хоронил отца, так мне тупо тело не отдавали. Мол хороните через нас и все. Насчитали мне космическую сумму за их услуги. Начал искать другие варианты, сравнил цены, разница оказалась ощутимой. Рассказал ребятам из тихого дома про конфликт с моргом, сказали не я первый. В итоге сами разобрались с моргом, похороны организовали, прошло без заминок.`,
   },
   {
@@ -92,6 +97,7 @@ const TRUST_REVIEWS = [
     date: '03 декабря 2025',
     service: 'Организация церемонии',
     rating: '5/5',
+    headline: 'Человечное сопровождение без формальности и давления',
     text: `Мне было важно, чтобы к маме отнеслись уважительно. Это звучит просто, но на практике часто чувствуется формальность. Здесь я этого не почувствовала.
 
 Все вопросы решались без лишней драматизации. Я могла написать и уточнить любую мелочь от времени до одежды. Никто не торопил и не подталкивал к более дорогим решениям.
@@ -104,6 +110,7 @@ const TRUST_REVIEWS = [
     date: '11 ноября 2025',
     service: 'Организация церемонии',
     rating: '5/5',
+    headline: 'Можно было всё оформить спокойно и без звонков',
     text: `Когда умер папа, я не могла нормально разговаривать по телефону. Поэтому искала вариант без постоянных звонков.
 
 Собрала всё на сайте, получила договор на почту, спокойно всё перечитала. Только после этого подтвердили.
@@ -116,6 +123,7 @@ const TRUST_REVIEWS = [
     date: '04 сентября 2025',
     service: 'Захоронение',
     rating: '4.9/5',
+    headline: 'Прозрачная смета: сразу видно финальную сумму',
     text: `Спасибо за прозрачность.
 
 Когда смотришь предложения других компаний, сложно понять финальную сумму. Здесь сразу видно итог и из чего он складывается.
@@ -128,6 +136,7 @@ const TRUST_REVIEWS = [
     date: '14 июля 2025',
     service: 'Кремация',
     rating: '4.9/5',
+    headline: 'Поддержали в самый тяжелый момент без лишнего давления',
     text: `Денис, хочу ещё раз сказать спасибо. В тот день я вообще плохо соображала, и если бы не ваши спокойные ответы на мои бесконечные вопросы, я бы просто растерялась. Всё объяснили, ничего не навязывали, дали время подумать. Для меня это было важно.`,
   },
 ];
@@ -317,12 +326,10 @@ function HomeInner() {
   const searchParams = useSearchParams();
   const lastCtaRef = useRef<string | null>(null);
   const teamCarouselRef = useRef<HTMLDivElement | null>(null);
-  const teamFirstSetRef = useRef<HTMLDivElement | null>(null);
-  const teamSetWidthRef = useRef(0);
   const teamPauseTimeoutRef = useRef<number | null>(null);
-  const teamIsInteractingRef = useRef(false);
   const teamDragStateRef = useRef({ isDown: false, startX: 0, startScrollLeft: 0 });
   const [isTeamDragging, setIsTeamDragging] = useState(false);
+  const [isTeamPaused, setIsTeamPaused] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -335,92 +342,24 @@ function HomeInner() {
     });
   }, []);
 
-  const pauseTeamAutoscroll = () => {
-    teamIsInteractingRef.current = true;
+  const pauseTeamAutoscroll = (resumeDelay = 1500) => {
+    setIsTeamPaused(true);
     if (teamPauseTimeoutRef.current) {
       window.clearTimeout(teamPauseTimeoutRef.current);
     }
-    teamPauseTimeoutRef.current = window.setTimeout(() => {
-      teamIsInteractingRef.current = false;
-    }, 1500);
+    if (resumeDelay > 0) {
+      teamPauseTimeoutRef.current = window.setTimeout(() => {
+        setIsTeamPaused(false);
+      }, resumeDelay);
+    }
   };
 
-  useEffect(() => {
-    const firstSet = teamFirstSetRef.current;
-    const container = teamCarouselRef.current;
-    if (!firstSet || !container) return;
-
-    const updateSetWidth = () => {
-      const measured = firstSet.scrollWidth || Math.round(firstSet.getBoundingClientRect().width);
-      teamSetWidthRef.current = measured;
-    };
-
-    updateSetWidth();
-    container.scrollLeft = 1;
-    const raf = window.requestAnimationFrame(updateSetWidth);
-    const timeout = window.setTimeout(updateSetWidth, 250);
-    window.addEventListener('resize', updateSetWidth);
-    window.addEventListener('orientationchange', updateSetWidth);
-
-    let resizeObserver: ResizeObserver | null = null;
-    if (typeof ResizeObserver !== 'undefined') {
-      resizeObserver = new ResizeObserver(() => {
-        updateSetWidth();
-      });
-      resizeObserver.observe(firstSet);
+  const resumeTeamAutoscroll = () => {
+    if (teamPauseTimeoutRef.current) {
+      window.clearTimeout(teamPauseTimeoutRef.current);
     }
-
-    return () => {
-      window.cancelAnimationFrame(raf);
-      window.clearTimeout(timeout);
-      window.removeEventListener('resize', updateSetWidth);
-      window.removeEventListener('orientationchange', updateSetWidth);
-      resizeObserver?.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    const container = teamCarouselRef.current;
-    if (!container) return;
-
-    let rafId = 0;
-    let lastTs = performance.now();
-    const speedPxPerMs = 0.05;
-
-    const animate = (ts: number) => {
-      const dt = ts - lastTs;
-      lastTs = ts;
-
-      if (!teamIsInteractingRef.current) {
-        let setWidth = teamSetWidthRef.current;
-        if (setWidth <= 0 && teamFirstSetRef.current) {
-          setWidth =
-            teamFirstSetRef.current.scrollWidth
-            || Math.round(teamFirstSetRef.current.getBoundingClientRect().width);
-          teamSetWidthRef.current = setWidth;
-        }
-        if (setWidth > 0) {
-          container.scrollLeft += dt * speedPxPerMs;
-
-          if (container.scrollLeft >= setWidth) {
-            container.scrollLeft -= setWidth;
-          } else if (container.scrollLeft < 0) {
-            container.scrollLeft += setWidth;
-          }
-        }
-      }
-
-      rafId = window.requestAnimationFrame(animate);
-    };
-
-    rafId = window.requestAnimationFrame(animate);
-    return () => {
-      if (rafId) window.cancelAnimationFrame(rafId);
-      if (teamPauseTimeoutRef.current) {
-        window.clearTimeout(teamPauseTimeoutRef.current);
-      }
-    };
-  }, []);
+    setIsTeamPaused(false);
+  };
 
   useEffect(() => {
     const container = teamCarouselRef.current;
@@ -790,6 +729,7 @@ function HomeInner() {
               <div className="px-2 sm:px-3 md:px-4">
                 <div
                   ref={teamCarouselRef}
+                  onMouseEnter={() => pauseTeamAutoscroll(0)}
                   onMouseDown={(event) => {
                     const container = teamCarouselRef.current;
                     if (!container) return;
@@ -799,40 +739,42 @@ function HomeInner() {
                       startScrollLeft: container.scrollLeft,
                     };
                     setIsTeamDragging(true);
-                    pauseTeamAutoscroll();
+                    pauseTeamAutoscroll(0);
                   }}
                   onMouseMove={(event) => {
                     const container = teamCarouselRef.current;
                     if (!container || !teamDragStateRef.current.isDown) return;
                     event.preventDefault();
-                    pauseTeamAutoscroll();
+                    pauseTeamAutoscroll(0);
                     const delta = event.clientX - teamDragStateRef.current.startX;
                     container.scrollLeft = teamDragStateRef.current.startScrollLeft - delta;
                   }}
                   onMouseUp={() => {
                     teamDragStateRef.current.isDown = false;
                     setIsTeamDragging(false);
+                    pauseTeamAutoscroll(800);
                   }}
                   onMouseLeave={() => {
                     teamDragStateRef.current.isDown = false;
                     setIsTeamDragging(false);
+                    resumeTeamAutoscroll();
                   }}
                   onTouchStart={() => {
-                    pauseTeamAutoscroll();
+                    pauseTeamAutoscroll(0);
                   }}
                   onTouchMove={() => {
-                    pauseTeamAutoscroll();
+                    pauseTeamAutoscroll(0);
                   }}
                   onTouchEnd={() => {
-                    pauseTeamAutoscroll();
+                    pauseTeamAutoscroll(800);
                   }}
                   onPointerDown={() => {
-                    pauseTeamAutoscroll();
+                    pauseTeamAutoscroll(0);
                   }}
                   className={`overflow-x-auto overscroll-x-contain touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${isTeamDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
                 >
-                  <div className="flex w-max gap-2.5 py-1 md:gap-3">
-                    <div ref={teamFirstSetRef} className="flex gap-2.5 md:gap-3">
+                  <div className={`flex w-max gap-2.5 py-1 md:gap-3 coordinatorMarqueeTrack${isTeamPaused ? ' isPaused' : ''}`}>
+                    <div className="flex gap-2.5 md:gap-3">
                       {TEAM_MEMBERS.map((member) => (
                         <article
                           key={`${member.id}-set-1`}
@@ -926,7 +868,7 @@ function HomeInner() {
             </section>
 
             <div className="mt-6 bg-white">
-              <p className="mb-3 whitespace-normal break-words text-sm font-medium text-gray-900">
+              <p className="mb-3 whitespace-nowrap text-[clamp(9px,2.6vw,14px)] font-medium leading-tight tracking-[-0.02em] text-gray-900">
                 Михаил Семенов, старший координатор сервиса «Тихий дом»:
               </p>
               <div className="flex flex-row items-start gap-3 md:gap-4">
@@ -1007,7 +949,12 @@ function HomeInner() {
                       </div>
                     </div>
                   </div>
-                  <p className="mt-3 text-sm text-gray-600 leading-relaxed">{review.text}</p>
+                  {review.headline ? (
+                    <p className="mt-3 mb-2 text-sm font-bold text-gray-900">
+                      {review.headline}
+                    </p>
+                  ) : null}
+                  <p className="text-sm text-gray-600 leading-relaxed">{review.text}</p>
                 </div>
               ))}
             </div>

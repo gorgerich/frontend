@@ -6965,6 +6965,31 @@ html {
   }
 }
 
+@keyframes coordinator-marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.coordinatorMarqueeTrack {
+  animation: coordinator-marquee 28s linear infinite;
+  will-change: transform;
+}
+
+.coordinatorMarqueeTrack.isPaused {
+  animation-play-state: paused;
+}
+
+@media (hover: hover) {
+  .coordinatorMarqueeTrack:hover {
+    animation-play-state: paused;
+  }
+}
+
 /* Custom scrollbar styles for time pickers and calendars */
 .custom-scrollbar::-webkit-scrollbar,
 .custom-time-scrollbar::-webkit-scrollbar {
@@ -6986,4 +7011,23 @@ html {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover,
 .custom-time-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
+}
+
+/* Keep emergency checklist legible on iOS/Safari even when blur is inconsistent. */
+.emergencyChecklistCard {
+  background-color: rgba(15, 23, 42, 0.9);
+}
+
+@supports ((-webkit-backdrop-filter: blur(2px)) or (backdrop-filter: blur(2px))) {
+  .emergencyChecklistCard {
+    background-color: rgba(15, 23, 42, 0.78);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+  }
+}
+
+@media (prefers-contrast: more) {
+  .emergencyChecklistCard {
+    background-color: rgba(15, 23, 42, 0.94);
+  }
 }

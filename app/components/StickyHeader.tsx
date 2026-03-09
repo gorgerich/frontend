@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
@@ -15,6 +15,8 @@ export function StickyHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const [topMenuOpen, setTopMenuOpen] = useState(false);
+  const [topMenuVisible, setTopMenuVisible] = useState(false);
+  const [topMenuActive, setTopMenuActive] = useState(false);
   const [isDesktopNav, setIsDesktopNav] = useState(false);
 
   useEffect(() => {
@@ -32,6 +34,22 @@ export function StickyHeader() {
       document.documentElement.style.overflow = prevHtmlOverflow;
       document.removeEventListener('keydown', handleEscape);
     };
+  }, [topMenuOpen]);
+
+  useEffect(() => {
+    if (topMenuOpen) {
+      setTopMenuVisible(true);
+      setTopMenuActive(false);
+      const activate = window.setTimeout(() => {
+        setTopMenuActive(true);
+      }, 20);
+      return () => window.clearTimeout(activate);
+    }
+    setTopMenuActive(false);
+    const timeout = window.setTimeout(() => {
+      setTopMenuVisible(false);
+    }, 300);
+    return () => window.clearTimeout(timeout);
   }, [topMenuOpen]);
 
   useEffect(() => {
@@ -82,8 +100,8 @@ export function StickyHeader() {
 
   const topNavItems: NavItem[] = [
     { id: 'faq', label: 'Частые вопросы', href: '/faq' },
-    { id: 'contacts', label: 'Контакты', onClick: handleTopContacts },
     { id: 'articles', label: 'Справочник', href: '/articles' },
+    { id: 'contacts', label: 'Контакты', onClick: handleTopContacts },
   ];
 
   return (
@@ -147,16 +165,31 @@ export function StickyHeader() {
         </div>
       </div>
 
-      {topMenuOpen && !isDesktopNav && (
-        <div className="fixed inset-0 z-[9999] transition-opacity duration-300">
+      {topMenuVisible && !isDesktopNav && (
+        <div
+          className={`fixed inset-0 z-[9999] transition-opacity duration-200 ${
+            topMenuActive ? 'opacity-100' : 'pointer-events-none opacity-0'
+          }`}
+        >
           <button
             type="button"
             aria-label="Закрыть меню"
             onClick={() => setTopMenuOpen(false)}
             className="absolute inset-0 bg-black/25 backdrop-blur-[2px]"
           />
-          <div className="relative mx-auto w-full max-w-7xl px-4 transition-all duration-300 ease-out translate-y-0">
-            <div className="min-h-[230px] rounded-b-3xl border border-white/45 bg-white/95 px-5 pb-6 pt-5 shadow-[0_24px_48px_rgba(15,23,42,0.22)] backdrop-blur-xl">
+          <div
+            className={`relative mx-auto w-full max-w-7xl px-4 transition-all duration-200 ease-out ${
+              topMenuActive ? 'translate-y-0 opacity-100' : '-translate-y-12 opacity-0'
+            }`}
+          >
+            <div
+              className={`overflow-hidden transition-[max-height,opacity,transform] duration-200 ease-out ${
+                topMenuActive
+                  ? 'max-h-[80vh] translate-y-0 opacity-100'
+                  : 'max-h-0 -translate-y-10 opacity-0'
+              }`}
+            >
+              <div className="min-h-[230px] rounded-b-3xl border border-white/45 bg-white/95 px-5 pb-6 pt-5 shadow-[0_24px_48px_rgba(15,23,42,0.22)] backdrop-blur-xl">
               <div className="flex items-center justify-between">
                 <Link
                   href="/"
@@ -223,9 +256,11 @@ export function StickyHeader() {
                 </button>
               </div>
             </div>
+            </div>
           </div>
         </div>
       )}
     </>
   );
 }
+

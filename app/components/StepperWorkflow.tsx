@@ -1234,7 +1234,7 @@ export function StepperWorkflow({
   const emergencyChecklistTabs: EmergencyChecklistTab[] = [
     {
       id: "home",
-      title: "Случилось дома",
+      title: "Дома",
       steps: [
         {
           title: "Вызовите скорую (103)",
@@ -1273,7 +1273,7 @@ export function StepperWorkflow({
     },
     {
       id: "hospital",
-      title: "Случилось в больнице",
+      title: "В больнице",
       steps: [
         {
           title: "Никуда не нужно ехать прямо сейчас",
@@ -4160,17 +4160,17 @@ function formatRub(n: number) {
             <div
               id="how-it-works"
               ref={howItWorksRef}
-              className="relative mb-6 -mt-3 overflow-hidden rounded-2xl rounded-t-none border border-white/28 bg-white/10 px-4 py-4 backdrop-blur-2xl shadow-[0_16px_36px_rgba(15,23,42,0.24)]"
+              className="emergencyChecklistCard relative mb-6 -mt-3 overflow-hidden rounded-2xl rounded-t-none border border-white/32 px-4 py-4 shadow-[0_16px_36px_rgba(15,23,42,0.34)]"
             >
               <div className="flex flex-col gap-4">
-                <div className="text-lg font-semibold text-white/95 sm:text-xl">
+                <div className="text-lg font-semibold text-white sm:text-xl">
                   Экстренный чек-лист
                 </div>
-                <div className="text-[12px] leading-relaxed text-white/85 sm:text-sm">
+                <div className="text-[12px] leading-relaxed text-white/95 sm:text-sm">
                   Первые шаги на ближайшие 1–2 часа. Спокойно, по порядку.
                 </div>
                 <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  <div className="inline-flex min-w-full gap-1 rounded-full border border-white/24 bg-white/12 p-1">
+                  <div className="inline-flex min-w-full gap-1 rounded-full border border-white/35 bg-white/18 p-1">
                     {emergencyChecklistTabs.map((tab) => (
                       <button
                         key={tab.id}
@@ -4180,7 +4180,7 @@ function formatRub(n: number) {
                           "h-9 shrink-0 rounded-full px-4 text-sm font-medium transition-all duration-200",
                           activeEmergencyTab === tab.id
                             ? "bg-white text-gray-900 shadow-[0_8px_22px_rgba(15,23,42,0.22)]"
-                            : "text-white/90 hover:bg-white/12",
+                            : "text-white/95 hover:bg-white/20",
                         )}
                       >
                         {tab.title}
@@ -4193,23 +4193,23 @@ function formatRub(n: number) {
                     {activeEmergencyChecklistTab.steps.map((step, index) => (
                       <li key={`${activeEmergencyChecklistTab.id}-step-${index}`} className="space-y-1.5">
                         <div className="flex items-start gap-3">
-                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/14 text-xs font-semibold text-white/95">
+                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/24 text-xs font-semibold text-white">
                             {index + 1}
                           </div>
                           <div className="space-y-1">
-                            <p className="text-sm font-semibold text-white/95 sm:text-base">
+                            <p className="text-sm font-semibold text-white sm:text-base">
                               {step.title}
                             </p>
                             {step.details.map((detail, detailIndex) => (
                               <p
                                 key={`${activeEmergencyChecklistTab.id}-step-${index}-detail-${detailIndex}`}
-                                className="text-[12px] leading-relaxed text-white/90 sm:text-sm"
+                                className="text-[12px] leading-relaxed text-white/95 sm:text-sm"
                               >
                                 {detail}
                               </p>
                             ))}
                             {step.reference ? (
-                              <p className="text-[12px] leading-relaxed text-white/90 sm:text-sm">
+                              <p className="text-[12px] leading-relaxed text-white/95 sm:text-sm">
                                 {step.reference.prefix}{" "}
                                 <Link
                                   href={step.reference.href}
@@ -4238,7 +4238,7 @@ function formatRub(n: number) {
                         {activeEmergencyChecklistTab.ctaLabel}
                       </a>
                     </Button>
-                    <p className="mt-2 text-[12px] leading-relaxed text-white/85 sm:text-sm">
+                    <p className="mt-2 text-[12px] leading-relaxed text-white/92 sm:text-sm">
                       {emergencyCtaHint}
                     </p>
                   </div>
