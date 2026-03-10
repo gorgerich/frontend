@@ -32,7 +32,7 @@ export function AboutServiceModal({ isOpen, onClose }: { isOpen: boolean; onClos
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden"
+          className="fixed inset-0 z-[1300] flex items-center justify-center overflow-hidden"
         >
           {/* Фоновое размытие */}
           <div 
@@ -45,6 +45,7 @@ export function AboutServiceModal({ isOpen, onClose }: { isOpen: boolean; onClos
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            data-td-topbuttons-overlay-content="true"
             className="relative w-full h-full md:h-auto md:max-w-5xl md:max-h-[90vh] md:rounded-[40px] overflow-hidden md:overflow-y-auto bg-slate-900/40 shadow-2xl ring-1 ring-white/10"
           >
             {/* Кнопка закрытия (крестик) */}
@@ -52,7 +53,7 @@ export function AboutServiceModal({ isOpen, onClose }: { isOpen: boolean; onClos
               type="button"
               onClick={onClose}
               aria-label="Закрыть модальное окно"
-              className="absolute top-6 right-6 z-50 p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white/80 hover:text-white transition-all duration-200 border border-white/10"
+              className="absolute top-6 right-6 z-50 inline-flex min-h-12 min-w-12 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white/80 hover:text-white transition-all duration-200 border border-white/10"
             >
               <X className="w-6 h-6" />
             </button>
@@ -70,10 +71,10 @@ export function AboutServiceModal({ isOpen, onClose }: { isOpen: boolean; onClos
                   transition={{ delay: 0.1 }}
                   className="relative mb-10 md:mb-12 text-center"
                 >
-                  <h2 className="text-4xl md:text-6xl lg:text-7xl font-light text-white mb-6 tracking-tight">
+                  <h2 className="text-4xl md:text-6xl lg:text-7xl font-semibold text-white mb-6 tracking-tight">
                   Как это <span className="font-serif italic text-blue-200/90">работает?</span>
                   </h2>
-                  <p className="text-lg md:text-2xl text-blue-100/80 font-light max-w-3xl mx-auto leading-relaxed tracking-wide">
+                  <p className="text-lg md:text-2xl text-blue-100/90 font-normal max-w-3xl mx-auto leading-relaxed tracking-wide">
                     «Тихий дом» — это цифровой сервис для дистанционной организации прощания. Вы полностью контролируете процесс, а мы защищаем вас от давления посредников и скрытых наценок.
                   </p>
                 </motion.div>
@@ -96,7 +97,7 @@ export function AboutServiceModal({ isOpen, onClose }: { isOpen: boolean; onClos
                           <h3 className="text-xl text-white font-medium mb-2 tracking-wide">
                             {feature.title}
                           </h3>
-                          <p className="text-base text-blue-100/70 font-light leading-relaxed group-hover:text-blue-100/90 transition-colors">
+                          <p className="text-base text-blue-100/90 font-normal leading-relaxed group-hover:text-blue-100/90 transition-colors">
                             {feature.description}
                           </p>
                         </div>

@@ -1,5 +1,6 @@
 // app/components/HeroSection.tsx
 import { useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ChevronRight } from "lucide-react";
 import { TopButtons } from "./TopButtons";
 import { Button } from "./ui/button";
@@ -53,9 +54,9 @@ export function HeroSection() {
       const height = Math.max(0, t.top - q.bottom);
       const left = q.left + q.width / 2 - w.left;
       setTopButtonsStyle({
-        // Keep the same visual Y as before: top 0 with translateY(-44px)
-        top: w.top - 44,
-        left: w.left + 24,
+        // Keep the exact same visual offset as current design.
+        top: window.scrollY + w.top - 44,
+        left: window.scrollX + w.left + 24,
         width: Math.max(0, w.width - 48),
         visible: true,
       });
@@ -73,11 +74,9 @@ export function HeroSection() {
     resizeObserver.observe(title);
     resizeObserver.observe(wrapper);
     window.addEventListener("resize", measure);
-    window.addEventListener("scroll", measure, { passive: true });
     return () => {
       resizeObserver.disconnect();
       window.removeEventListener("resize", measure);
-      window.removeEventListener("scroll", measure);
     };
   }, []);
 
@@ -91,20 +90,7 @@ export function HeroSection() {
 
   return (
     <section className="relative w-full px-4 pt-14 sm:pt-16 pb-5 md:pt-8 md:pb-7 lg:pb-9">
-      <div className="mx-auto max-w-7xl relative" ref={wrapperRef}>
-        <div
-          className="pointer-events-none fixed z-[1100]"
-          style={{
-            top: topButtonsStyle.top,
-            left: topButtonsStyle.left,
-            width: topButtonsStyle.width,
-            visibility: topButtonsStyle.visible ? "visible" : "hidden",
-          }}
-        >
-          <div className="pointer-events-auto">
-            <TopButtons questionButtonRef={questionRef} />
-          </div>
-        </div>
+      <div className="mx-auto max-w-7xl relative overflow-visible" ref={wrapperRef}>
         <div
           className="pointer-events-none absolute hidden md:block"
           style={{
@@ -242,6 +228,23 @@ export function HeroSection() {
           </div>
         </div>
       </div>
+      {typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="pointer-events-none absolute z-[1200]"
+            style={{
+              top: topButtonsStyle.top,
+              left: topButtonsStyle.left,
+              width: topButtonsStyle.width,
+              visibility: topButtonsStyle.visible ? "visible" : "hidden",
+            }}
+          >
+            <div className="pointer-events-auto">
+              <TopButtons questionButtonRef={questionRef} />
+            </div>
+          </div>,
+          document.body,
+        )}
     </section>
   );
 }

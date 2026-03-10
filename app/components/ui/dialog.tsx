@@ -202,7 +202,7 @@ const DialogContent = React.forwardRef<
         }}
         className={cn(
           "fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)]",
-          "translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border bg-white p-6 shadow-lg",
+          "translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border bg-[#f8f8f7] p-6 shadow-lg",
           "duration-200 sm:max-w-lg",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
@@ -218,7 +218,7 @@ const DialogContent = React.forwardRef<
         {children}
         <DialogClose
           aria-label="Закрыть диалог"
-          className="absolute top-4 right-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none"
+          className="absolute top-3 right-3 inline-flex min-h-12 min-w-12 items-center justify-center rounded-full opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none"
         >
           <X className="h-4 w-4" />
           <span className="sr-only">Закрыть</span>
@@ -262,7 +262,7 @@ function DialogTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingEl
 function DialogDescription({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
-      className={cn("text-sm text-gray-600", className)}
+      className={cn("text-base text-gray-700", className)}
       {...props}
     />
   );

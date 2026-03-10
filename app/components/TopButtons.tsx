@@ -102,26 +102,46 @@ export function TopTelegramButton({ className }: { className?: string }) {
 }
 
 export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTMLButtonElement> }) {
-  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
-  const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const [isDeathGuideOpen, setIsDeathGuideOpen] = useState(false);
+  const [activeOverlay, setActiveOverlay] = useState<"ai" | "about" | "death" | null>(null);
   const [selectedTariff, setSelectedTariff] = useState<string | null>(null);
+  const interactiveRootRef = useRef<HTMLDivElement | null>(null);
   const shouldReduceMotion = useReducedMotion();
 
   const handleOpenStepper = (tariffName: string) => {
     setSelectedTariff(tariffName);
-    setIsAIChatOpen(false);
+    setActiveOverlay(null);
   };
+
+  useEffect(() => {
+    if (!activeOverlay) return;
+
+    const handlePointerDownOutside = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+      if (!target) return;
+
+      const root = interactiveRootRef.current;
+      if (root?.contains(target)) return;
+
+      if (target instanceof Element && target.closest('[data-td-topbuttons-overlay-content="true"]')) {
+        return;
+      }
+
+      setActiveOverlay(null);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDownOutside);
+    return () => document.removeEventListener("pointerdown", handlePointerDownOutside);
+  }, [activeOverlay]);
 
   return (
     <>
-      <>
+      <div ref={interactiveRootRef}>
         {/* Mobile: только 3 круглые кнопки по центру */}
         <div className="flex items-center justify-center gap-4 pointer-events-auto md:hidden">
           <motion.button
             whileHover={{ scale: 1.1, y: -2 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsAboutOpen(true)}
+            onClick={() => setActiveOverlay((prev) => (prev === "about" ? null : "about"))}
             className="group relative w-16 h-16 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 hover:bg-white/20 hover:shadow-white/10 hover:border-white/30 flex items-center justify-center"
             aria-label="О сервисе"
           >
@@ -143,7 +163,7 @@ export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTML
             }
             whileHover={{ scale: 1.1, y: -2 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsDeathGuideOpen(true)}
+            onClick={() => setActiveOverlay((prev) => (prev === "death" ? null : "death"))}
             className="group relative w-20 h-20 rounded-full bg-gradient-to-b from-white/20 to-white/5 backdrop-blur-2xl border-2 border-white/30 shadow-2xl flex items-center justify-center transition-all duration-300 hover:border-white/50"
             aria-label="Первые действия"
           >
@@ -158,7 +178,7 @@ export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTML
           <motion.button
             whileHover={{ scale: 1.1, y: -2 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsAIChatOpen(true)}
+            onClick={() => setActiveOverlay((prev) => (prev === "ai" ? null : "ai"))}
             className="group relative w-16 h-16 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 hover:bg-white/20 hover:shadow-white/10 hover:border-white/30 flex items-center justify-center"
             aria-label="Создать с ИИ"
           >
@@ -171,12 +191,12 @@ export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTML
         </div>
 
         {/* Desktop: кнопки в одну линию, центрированы как группа */}
-        <div className="hidden md:block w-full pointer-events-auto">
+        <div className="hidden w-full pointer-events-auto md:block">
           <div className="flex w-full items-center justify-center gap-4">
             <motion.button
             whileHover={{ scale: 1.1, y: -2 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsAboutOpen(true)}
+            onClick={() => setActiveOverlay((prev) => (prev === "about" ? null : "about"))}
             className="group relative w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 hover:bg-white/20 hover:shadow-white/10 hover:border-white/30 flex items-center justify-center"
             aria-label="О сервисе"
           >
@@ -199,7 +219,7 @@ export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTML
             }
             whileHover={{ scale: 1.1, y: -2 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsDeathGuideOpen(true)}
+            onClick={() => setActiveOverlay((prev) => (prev === "death" ? null : "death"))}
             ref={questionButtonRef}
             className="group relative w-20 h-20 md:w-28 md:h-28 rounded-full bg-gradient-to-b from-white/20 to-white/5 backdrop-blur-2xl border-2 border-white/30 shadow-2xl flex items-center justify-center transition-all duration-300 hover:border-white/50"
             aria-label="Первые действия"
@@ -216,7 +236,7 @@ export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTML
             <motion.button
             whileHover={{ scale: 1.1, y: -2 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsAIChatOpen(true)}
+            onClick={() => setActiveOverlay((prev) => (prev === "ai" ? null : "ai"))}
             className="group relative w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 hover:bg-white/20 hover:shadow-white/10 hover:border-white/30 flex items-center justify-center"
             aria-label="Создать с ИИ"
           >
@@ -228,24 +248,24 @@ export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTML
             </motion.button>
           </div>
         </div>
-      </>
+      </div>
 
       {/* Модальные окна рендерим через портал прямо в body */}
       {typeof document !== "undefined" &&
         createPortal(
           <>
             <AboutServiceModal
-              isOpen={isAboutOpen}
-              onClose={() => setIsAboutOpen(false)}
+              isOpen={activeOverlay === "about"}
+              onClose={() => setActiveOverlay(null)}
             />
             <AIChatModal
-              isOpen={isAIChatOpen}
-              onClose={() => setIsAIChatOpen(false)}
+              isOpen={activeOverlay === "ai"}
+              onClose={() => setActiveOverlay(null)}
               onOpenStepper={handleOpenStepper}
             />
             <DeathActionGuideModal
-              isOpen={isDeathGuideOpen}
-              onClose={() => setIsDeathGuideOpen(false)}
+              isOpen={activeOverlay === "death"}
+              onClose={() => setActiveOverlay(null)}
             />
           </>,
           document.body

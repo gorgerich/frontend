@@ -1269,7 +1269,7 @@ export function StepperWorkflow({
       ],
       ctaLabel: "Написать дежурному координатору",
       ctaHint:
-        "Денис на связи. Поможем вызвать службы и подскажем, какие документы подготовить прямо сейчас.",
+        "Координатор Денис на связи. Поможем вызвать службы и подскажем, какие документы подготовить прямо сейчас.",
     },
     {
       id: "hospital",
@@ -1370,7 +1370,7 @@ export function StepperWorkflow({
     emergencyChecklistTabs[0];
   const emergencyCtaHint =
     activeEmergencyChecklistTab.id === "home"
-      ? `${emergencyCoordinatorName} на связи. Поможем вызвать службы и подскажем, какие документы подготовить прямо сейчас.`
+      ? `Координатор ${emergencyCoordinatorName} на связи. Поможем вызвать службы и подскажем, какие документы подготовить прямо сейчас.`
       : activeEmergencyChecklistTab.ctaHint;
 
   const PACKAGE_ID_BY_SLUG: Record<
@@ -3993,7 +3993,7 @@ function formatRub(n: number) {
     const effectiveDepositRub = Math.round(effectiveTotalRub * 0.1);
     return (
     <>
-      <div className="mb-4 text-sm text-gray-600">
+      <div className="mb-4 text-base leading-relaxed text-gray-700">
         На этом этапе оплата не требуется, цена указана для вашего понимания.
 После нажатия «Оформить» вы получите договор на почту. Координатор свяжется с вами в течение 30 минут для подтверждения.
       </div>
@@ -4010,11 +4010,11 @@ function formatRub(n: number) {
 	                          inputMode="email"
 	                        />
 	                        {!emailOk && (
-	                          <div className="mt-2 text-xs text-red-200">
+	                          <div className="mt-2 text-sm text-red-200">
 	                            Проверьте корректность e-mail.
 	                          </div>
 	                        )}
-	                        <div className="mt-2 text-xs text-white/60">
+	                        <div className="mt-2 text-sm text-white/85">
 	                          На этот адрес придёт подтверждение заказа, детали церемонии и договор.
 	                        </div>
 	                      </div>
@@ -4022,18 +4022,18 @@ function formatRub(n: number) {
 	                      <div className="h-px bg-white/15" />
 
                       <div className="space-y-1">
-                      <div className="text-[11px] font-semibold tracking-[0.18em] uppercase text-white/60">
+                      <div className="text-sm font-semibold tracking-[0.12em] uppercase text-white/80">
                           Депозит:
                         </div>
                         <div className="flex flex-wrap items-end gap-3">
                           <div className="text-[32px] leading-none font-semibold whitespace-nowrap">
                             {formatRubLocal(effectiveDepositRub)} ₽
                           </div>
-                          <div className="text-[12px] leading-tight text-white/60">
+                          <div className="text-sm leading-tight text-white/85">
                             депозит включен в итоговую сумму
                           </div>
                         </div>
-                        <div className="text-[12px] text-white/60">
+                        <div className="text-sm text-white/85">
                           Итого: {formatRubLocal(effectiveTotalRub)} ₽
                         </div>
                       </div>
@@ -4047,7 +4047,7 @@ function formatRub(n: number) {
                         {isSubmittingOrder ? "Оформление..." : "Оформить"}
                       </Button>
 
-                      <div className="text-xs text-white/70 leading-relaxed">
+                      <div className="text-sm text-white/85 leading-relaxed">
                         После оформления мы отправим договор, детали заказа и ссылку на оплату на указанный email.
                       </div>
 
@@ -4065,14 +4065,14 @@ function formatRub(n: number) {
                         >
                           Написать координатору
                         </a>
-                        <div className="mt-1 text-xs text-white/60">Координатор ответит на вопросы в чате. Без давления и навязывания услуг</div>
+                        <div className="mt-1 text-sm text-white/85">Координатор ответит на вопросы в чате. Без давления и навязывания услуг</div>
                       </div>
 
                       <div className="mt-1 border-t border-white/15 pt-3">
-                        <div className="text-xs font-semibold text-white/60 uppercase tracking-wide">
+                        <div className="text-sm font-semibold text-white/80 uppercase tracking-wide">
                           Документы
                         </div>
-                        <div className="mt-2 flex flex-wrap gap-3 text-xs text-white/70">
+                        <div className="mt-2 flex flex-wrap gap-3 text-sm text-white/85">
                           <a href="/info" className="underline hover:text-white">
                             Политика конфиденциальности
                           </a>
@@ -4121,7 +4121,7 @@ function formatRub(n: number) {
   const isSolutionsScenarioActive = workflowMode !== "wizard" && continueChoice === "solutions";
   const isWizardScenarioActive = workflowMode === "wizard";
   const baseSegmentBtn =
-    "min-w-0 w-full h-10 md:h-9 rounded-full px-0.5 min-[360px]:px-1.5 inline-flex items-center justify-center gap-0 min-[360px]:gap-0.5 text-[11px] min-[360px]:text-[12px] sm:text-[13px] md:text-sm font-medium tracking-[-0.005em] whitespace-nowrap transition-all duration-200 overflow-hidden";
+    "min-w-0 w-full min-h-12 rounded-full px-1.5 inline-flex items-center justify-center gap-1 text-sm font-medium tracking-[-0.005em] whitespace-nowrap transition-all duration-200 overflow-hidden";
   const activeSegmentBtn = "bg-white text-slate-900 shadow-sm ring-1 ring-zinc-200";
   const inactiveSegmentBtn = "bg-transparent text-slate-600 hover:bg-zinc-200/70";
 
@@ -4166,7 +4166,7 @@ function formatRub(n: number) {
                 <div className="text-lg font-semibold text-white sm:text-xl">
                   Экстренный чек-лист
                 </div>
-                <div className="text-[12px] leading-relaxed text-white/95 sm:text-sm">
+                <div className="text-sm leading-relaxed text-white/95">
                   Первые шаги на ближайшие 1–2 часа. Спокойно, по порядку.
                 </div>
                 <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -4186,7 +4186,7 @@ function formatRub(n: number) {
                         aria-controls="emergency-checklist-panel"
                         tabIndex={activeEmergencyTab === tab.id ? 0 : -1}
                         className={cn(
-                          "h-9 shrink-0 rounded-full px-4 text-sm font-medium transition-all duration-200",
+                          "min-h-12 shrink-0 rounded-full px-4 text-sm font-medium transition-all duration-200",
                           activeEmergencyTab === tab.id
                             ? "bg-white text-gray-900 shadow-[0_8px_22px_rgba(15,23,42,0.22)]"
                             : "text-white/95 hover:bg-white/20",
@@ -4217,13 +4217,13 @@ function formatRub(n: number) {
                             {step.details.map((detail, detailIndex) => (
                               <p
                                 key={`${activeEmergencyChecklistTab.id}-step-${index}-detail-${detailIndex}`}
-                                className="text-[12px] leading-relaxed text-white/95 sm:text-sm"
+                                className="text-sm leading-relaxed text-white/95"
                               >
                                 {detail}
                               </p>
                             ))}
                             {step.reference ? (
-                              <p className="text-[12px] leading-relaxed text-white/95 sm:text-sm">
+                              <p className="text-sm leading-relaxed text-white/95">
                                 {step.reference.prefix}{" "}
                                 <Link
                                   href={step.reference.href}
@@ -4252,7 +4252,7 @@ function formatRub(n: number) {
                         {activeEmergencyChecklistTab.ctaLabel}
                       </a>
                     </Button>
-                    <p className="mt-2 text-[12px] leading-relaxed text-white/92 sm:text-sm">
+                    <p className="mt-2 text-sm leading-relaxed text-white/95">
                       {emergencyCtaHint}
                     </p>
                   </div>
@@ -4330,7 +4330,7 @@ function formatRub(n: number) {
               <span className="shrink-0 leading-none">🔘</span>
             ) : null}
             <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
-              Собрать самостоятельно
+              Собрать свой план
             </span>
           </button>
         </div>
@@ -4430,7 +4430,7 @@ function formatRub(n: number) {
                 type="button"
                 onClick={() => handleInputChange("serviceType", "burial")}
                 className={cn(
-                  "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[12px] sm:text-sm font-medium transition-all duration-200 text-center",
+                  "flex-1 min-w-0 min-h-12 px-3 sm:px-4 rounded-full text-sm font-medium transition-all duration-200 text-center",
                   formData.serviceType === "burial"
                     ? "bg-white text-black shadow-lg"
                     : "text-white hover:bg-white/10",
@@ -4446,7 +4446,7 @@ function formatRub(n: number) {
                 type="button"
                 onClick={() => handleInputChange("serviceType", "cremation")}
                 className={cn(
-                  "flex-1 min-w-0 h-9 px-3 sm:px-4 rounded-full text-[12px] sm:text-sm font-medium transition-all duration-200 text-center",
+                  "flex-1 min-w-0 min-h-12 px-3 sm:px-4 rounded-full text-sm font-medium transition-all duration-200 text-center",
                   formData.serviceType === "cremation"
                     ? "bg-white text-black shadow-lg"
                     : "text-white hover:bg-white/10",
@@ -4462,7 +4462,7 @@ function formatRub(n: number) {
                 type="button"
                 onClick={() => handleInputChange("serviceType", "unsure")}
                 className={cn(
-                  "flex-1 min-w-0 h-9 px-2.5 sm:px-4 rounded-full text-[11px] sm:text-sm font-medium transition-all duration-200 text-center",
+                  "flex-1 min-w-0 min-h-12 px-2.5 sm:px-4 rounded-full text-sm font-medium transition-all duration-200 text-center",
                   formData.serviceType === "unsure"
                     ? "bg-white text-black shadow-lg"
                     : "text-white hover:bg-white/10",
@@ -4480,7 +4480,7 @@ function formatRub(n: number) {
               <div className="text-sm font-semibold text-white">
                 Пока не знаете, что выбрать?
               </div>
-              <div className="mt-1 text-[12px] leading-relaxed text-white sm:text-sm">
+              <div className="mt-1 text-sm leading-relaxed text-white/95">
                 Это нормально. Координатор поможет определиться и ответит на вопросы.
               </div>
               <div className="mt-3">

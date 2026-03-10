@@ -84,7 +84,7 @@ function Calendar({
         nav: "hidden",
         table: "w-full border-collapse",
         head_row: "grid grid-cols-7 gap-1 mb-2",
-        head_cell: "text-[11px] font-medium text-indigo-300 text-center",
+        head_cell: "text-sm font-medium text-indigo-400 text-center",
         row: "grid grid-cols-7 gap-1",
         cell: cn(
           "p-0 text-center flex items-center justify-center",
@@ -92,7 +92,7 @@ function Calendar({
             ? "[&:has(>.day-range-end)]:rounded-md [&:has(>.day-range-start)]:rounded-md first:[&:has([aria-selected])]:rounded-md last:[&:has([aria-selected])]:rounded-md"
             : "[&:has([aria-selected])]:rounded-md",
         ),
-        day: "h-10 w-10 rounded-xl font-medium text-indigo-900 hover:bg-indigo-50 aria-selected:opacity-100",
+        day: "h-12 w-12 rounded-xl font-medium text-indigo-900 hover:bg-indigo-50 aria-selected:opacity-100",
         day_range_start: "day-range-start",
         day_range_end: "day-range-end",
         day_selected:
@@ -122,14 +122,14 @@ function Calendar({
                 <button
                   type="button"
                   onClick={handlePreviousMonth}
-                  className="h-8 w-8 rounded-full border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50"
+                  className="h-12 w-12 rounded-full border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50"
                 >
                   <ChevronLeft className="h-4 w-4 mx-auto" />
                 </button>
                 <button
                   type="button"
                   onClick={handleNextMonth}
-                  className="h-8 w-8 rounded-full border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50"
+                  className="h-12 w-12 rounded-full border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50"
                 >
                   <ChevronRight className="h-4 w-4 mx-auto" />
                 </button>

@@ -185,13 +185,13 @@ export default function ArticlesPage() {
   const availableSlugs = new Set(articles.map((article) => article.slug));
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-[#f6f5f3]">
       <div className="mx-auto w-full max-w-6xl px-4 py-12 md:py-16">
         <div className="mb-10 rounded-3xl border border-white/40 bg-white/70 p-6 backdrop-blur-xl shadow-[0_12px_30px_rgba(15,23,42,0.08)] md:p-8">
           <h1 className="max-w-[20ch] text-3xl font-semibold leading-tight text-gray-900 text-pretty md:text-4xl">
             Справочник
           </h1>
-          <p className="mt-3 max-w-[72ch] text-sm leading-relaxed text-gray-700 md:text-base">
+          <p className="mt-3 max-w-[72ch] text-base leading-relaxed text-gray-700">
             Короткие и понятные инструкции: как защитить себя от обмана,
             оформить документы и организовать всё без лишнего стресса.
           </p>
@@ -213,7 +213,7 @@ export default function ArticlesPage() {
                     <h2 className="max-w-[24ch] text-xl font-semibold leading-tight text-gray-900 text-pretty md:text-2xl">
                       {widontRu(section.title)}
                     </h2>
-                    <p className="mt-1 max-w-[68ch] text-sm leading-relaxed text-gray-600 md:text-base">
+                    <p className="mt-1 max-w-[68ch] text-base leading-relaxed text-gray-600">
                       {widontRu(section.subtitle)}
                     </p>
                   </div>
@@ -241,14 +241,14 @@ export default function ArticlesPage() {
                           </div>
                         </div>
                         <div className="p-4">
-                          <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-600">
+                          <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-sm font-medium text-slate-600">
                             <Clock3 className="h-3.5 w-3.5" />
                             Время чтения: {card.readTimeMin} мин.
                           </div>
                           <h3 className="mt-3 max-w-[34ch] text-base font-semibold leading-snug text-slate-900 text-pretty">
                             {widontRu(card.title)}
                           </h3>
-                          <p className="mt-2 max-w-[60ch] text-sm leading-relaxed text-slate-600">
+                          <p className="mt-2 max-w-[60ch] text-base leading-relaxed text-slate-600">
                             {widontRu(card.summary)}
                           </p>
                           <div className="mt-4 text-sm font-semibold text-slate-900">

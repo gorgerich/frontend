@@ -6433,7 +6433,7 @@
   --font-size: 16px;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --background: #F2F2F2;
+  --background: #F6F5F3;
   --foreground: #171717;
   --card: #fff;
   --card-foreground: #171717;
@@ -6523,6 +6523,11 @@ h1, h2, h3 {
   font-family: var(--font-heading);
 }
 
+.font-thin,
+.font-light {
+  font-weight: 400 !important;
+}
+
 .dark {
   --background: oklch(.145 0 0);
   --foreground: oklch(.985 0 0);
@@ -6545,6 +6550,10 @@ h1, h2, h3 {
   --ring: oklch(.439 0 0);
   --font-weight-medium: 500;
   --font-weight-normal: 400;
+  --text-xs: .875rem;
+  --text-xs--line-height: calc(1.25 / .875);
+  --text-sm: 1rem;
+  --text-sm--line-height: calc(1.5 / 1);
   --chart-1: oklch(.488 .243 264.376);
   --chart-2: oklch(.696 .17 162.48);
   --chart-3: oklch(.769 .188 70.08);

@@ -24,10 +24,10 @@ export class ClientErrorBoundary extends React.Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen w-full bg-white text-gray-900">
+        <div className="min-h-screen w-full bg-[#f6f5f3] text-gray-900">
           <div className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-6 text-center">
             <h1 className="text-xl font-semibold">Что-то пошло не так</h1>
-            <p className="mt-2 text-sm text-gray-600">Обновите страницу и попробуйте снова.</p>
+            <p className="mt-2 text-base text-gray-600">Обновите страницу и попробуйте снова.</p>
           </div>
         </div>
       );

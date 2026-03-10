@@ -41,7 +41,7 @@ export function DeathActionGuideModal({ isOpen, onClose }: { isOpen: boolean; on
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden"
+          className="fixed inset-0 z-[1300] flex items-center justify-center overflow-hidden"
         >
           {/* Фоновое размытие */}
           <div 
@@ -54,6 +54,7 @@ export function DeathActionGuideModal({ isOpen, onClose }: { isOpen: boolean; on
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            data-td-topbuttons-overlay-content="true"
             className="relative w-full h-full md:h-auto md:max-w-5xl md:max-h-[90vh] md:rounded-[40px] overflow-hidden md:overflow-y-auto bg-slate-900/40 shadow-2xl ring-1 ring-white/10"
           >
             {/* Кнопка закрытия */}

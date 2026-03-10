@@ -86,7 +86,7 @@ const renderBlock = (block: ArticleBlock, index: number) => {
                   href={item.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex min-h-11 items-center rounded-full border border-neutral-200 bg-white/70 px-2.5 py-1 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20"
+                  className="inline-flex min-h-12 items-center rounded-full border border-neutral-200 bg-white/70 px-2.5 py-1 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20"
                 >
                   {widontRu(item.label)}
                 </a>
@@ -103,7 +103,7 @@ const renderBlock = (block: ArticleBlock, index: number) => {
               <span className="text-gray-400">•</span>
               <Link
                 href={item.href}
-                className="inline-flex min-h-11 items-center rounded-full border border-neutral-200 bg-white/70 px-3 py-1 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20"
+                className="inline-flex min-h-12 items-center rounded-full border border-neutral-200 bg-white/70 px-3 py-1 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20"
               >
                 {widontRu(item.label)}
               </Link>
@@ -138,11 +138,11 @@ export default async function Page(props: ArticlePageProps) {
   if (!article) return notFound();
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-[#f6f5f3]">
       <div className="mx-auto w-full max-w-3xl px-4 py-10 md:py-14">
         <Link
           href="/articles"
-          className="inline-flex min-h-11 items-center text-sm font-medium text-gray-500 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20"
+          className="inline-flex min-h-12 items-center text-sm font-medium text-gray-500 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20"
         >
           ← К справочнику
         </Link>
@@ -179,7 +179,7 @@ export default async function Page(props: ArticlePageProps) {
             href={TELEGRAM_URL}
             target="_blank"
             rel="noreferrer"
-            className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/25"
+            className="mt-4 inline-flex min-h-12 items-center justify-center rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/25"
           >
             Написать в Telegram
           </a>

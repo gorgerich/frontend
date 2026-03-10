@@ -114,7 +114,7 @@ export function TabsTrigger({
       aria-selected={isActive}
       data-state={isActive ? "active" : "inactive"}
       className={cn(
-        "px-6 py-2 text-sm rounded-full transition-all outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20 focus-visible:ring-offset-1",
+        "min-h-12 px-6 py-2 text-base font-medium rounded-full transition-all outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20 focus-visible:ring-offset-1",
         isActive
           ? "bg-gray-900 text-white shadow"
           : "text-gray-700 hover:bg-white",

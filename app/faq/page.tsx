@@ -177,7 +177,7 @@ export default function FaqPage() {
                     {widontRu(item.q)}
                   </span>
                 </summary>
-                <div className="mt-2 space-y-1 text-sm leading-relaxed text-slate-700">
+                <div className="mt-2 space-y-1 text-base leading-relaxed text-slate-700">
                   {item.a.map((line, idx) => (
                     <p key={`${item.q}-${idx}`}>{widontRu(line)}</p>
                   ))}

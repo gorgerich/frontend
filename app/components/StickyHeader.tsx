@@ -106,7 +106,7 @@ export function StickyHeader() {
 
   return (
     <>
-      <div className="sticky top-0 z-20 w-full bg-white">
+      <div className="sticky top-0 z-20 w-full bg-[#f6f5f3]">
         <div className="w-full px-6 sm:px-7">
           <div className="flex h-16 w-full items-center gap-4">
             <Link

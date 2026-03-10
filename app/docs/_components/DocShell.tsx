@@ -15,22 +15,22 @@ type DocShellProps = {
 
 export function DocShell({ title, updatedAt, sections }: DocShellProps) {
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-[#f6f5f3]">
       <div className="max-w-3xl mx-auto px-4 py-10 text-gray-800">
         <header>
-          <p className="text-xs uppercase tracking-wider text-gray-500">Документ</p>
+          <p className="text-sm uppercase tracking-wider text-gray-500">Документ</p>
           <h1 className="mt-2 max-w-[24ch] text-3xl font-semibold leading-tight text-gray-900 text-pretty">{widontRu(title)}</h1>
-          <p className="mt-2 text-sm text-gray-500">Дата обновления: {updatedAt}</p>
+          <p className="mt-2 text-base text-gray-600">Дата обновления: {updatedAt}</p>
         </header>
 
         <nav className="mt-6 rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
-          <div className="text-xs font-semibold uppercase tracking-wider text-neutral-500">Оглавление</div>
+          <div className="text-sm font-semibold uppercase tracking-wider text-neutral-600">Оглавление</div>
           <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar">
             {sections.map((section) => (
               <a
                 key={section.id}
                 href={`#${section.id}`}
-                className="inline-flex min-h-11 items-center whitespace-nowrap rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-sm transition hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20"
+                className="inline-flex min-h-12 items-center whitespace-nowrap rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-sm font-semibold text-neutral-700 shadow-sm transition hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20"
               >
                 {widontRu(section.label)}
               </a>

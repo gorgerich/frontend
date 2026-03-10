@@ -387,7 +387,7 @@ className="w-full h-full object-cover transition-transform duration-700 group-ho
 <div className="space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0">
 <Label className="text-base font-medium text-gray-900">Порода дерева</Label>
-<span className="text-xs text-gray-500 uppercase tracking-wider font-medium">Материал корпуса</span>
+<span className="text-sm text-gray-500 uppercase tracking-wider font-medium">Материал корпуса</span>
 </div>
 
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
@@ -419,7 +419,7 @@ className="w-full h-full object-cover transition-transform duration-700 group-ho
 
 <div className="absolute bottom-3 left-3 right-3">
 <div className="text-white font-medium text-sm truncate">{wood.name}</div>
-<div className="text-white/80 text-xs font-light">
+<div className="text-white/90 text-sm font-normal">
 {(wood as any).price === 0 ? 'Включено' : `+${(wood as any).price.toLocaleString('ru-RU')} ₽`}
 </div>
 </div>
@@ -433,7 +433,7 @@ className="w-full h-full object-cover transition-transform duration-700 group-ho
 <div className="space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0">
 <Label className="text-base font-medium text-gray-900">Внутренняя отделка</Label>
-<span className="text-xs text-gray-500 uppercase tracking-wider font-medium">Ткань и цвет</span>
+<span className="text-sm text-gray-500 uppercase tracking-wider font-medium">Ткань и цвет</span>
 </div>
 
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
@@ -465,7 +465,7 @@ className="w-full h-full object-cover transition-transform duration-700 group-ho
 
 <div className="absolute bottom-0 inset-x-0 p-3 bg-white/90 backdrop-blur-sm border-t border-white/50">
 <div className="text-gray-900 font-medium text-sm truncate">{lining.name}</div>
-<div className="text-gray-500 text-xs">
+<div className="text-gray-600 text-sm">
 {(lining as any).price === 0 ? 'Включено' : `+${(lining as any).price.toLocaleString('ru-RU')} ₽`}
 </div>
 </div>
@@ -481,7 +481,7 @@ className="w-full h-full object-cover transition-transform duration-700 group-ho
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0">
                 <Label className="text-base font-medium text-gray-900">Фурнитура</Label>
-                <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">Ручки и декор</span>
+                <span className="text-sm text-gray-500 uppercase tracking-wider font-medium">Ручки и декор</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                 {hardwareOptions.map((hardware) => (
@@ -516,7 +516,7 @@ className="w-full h-full object-cover transition-transform duration-700 group-ho
                     </div>
                     <div className="p-3 border-t border-gray-100">
                       <div className="text-gray-900 font-medium text-sm truncate">{hardware.name}</div>
-                      <div className="text-gray-500 text-xs">
+                      <div className="text-gray-600 text-sm">
                         {hardware.price === 0 ? 'Включено' : `+${hardware.price.toLocaleString('ru-RU')} ₽`}
                       </div>
                     </div>
@@ -534,7 +534,7 @@ className="w-full h-full object-cover transition-transform duration-700 group-ho
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
                   <div className="flex-1">
                     <div className="text-blue-200 text-sm mb-1 font-medium">Итоговая стоимость комплектации</div>
-                    <div className="text-3xl font-light tracking-tight">
+                    <div className="text-3xl font-semibold tracking-tight">
                       {getCoffinPrice().toLocaleString('ru-RU')} ₽
                     </div>
                   </div>
@@ -641,7 +641,7 @@ className="w-full h-24 object-cover rounded-lg"
 
 <div className="text-center">
 <div className="text-sm text-gray-900">{type.name}</div>
-<div className="text-xs text-gray-500">от {type.price?.toLocaleString('ru-RU')} ₽</div>
+<div className="text-sm text-gray-600">от {type.price?.toLocaleString('ru-RU')} ₽</div>
 </div>
 </Label>
 </div>
@@ -666,8 +666,8 @@ wreathSize === size.id
 }`}
 >
 <div className="text-lg text-gray-900">{size.id}</div>
-<div className="text-xs text-gray-500">{size.name}</div>
-{size.price > 0 && <div className="text-xs text-green-600 mt-1">+{size.price} ₽</div>}
+<div className="text-sm text-gray-600">{size.name}</div>
+{size.price > 0 && <div className="text-sm text-green-700 mt-1">+{size.price} ₽</div>}
 </button>
 ))}
 </div>
@@ -686,7 +686,7 @@ placeholder="Например: Вечная память"
 className="rounded-xl"
 maxLength={50}
 />
-<p className="text-xs text-gray-500">{wreathText.length}/50 символов</p>
+<p className="text-sm text-gray-600">{wreathText.length}/50 символов</p>
 </div>
 
 <div className="space-y-3">
@@ -704,7 +704,7 @@ className="h-10 w-10 rounded-xl"
 
 <div className="flex-1 text-center">
 <div className="text-2xl text-gray-900">{wreathQuantity}</div>
-<div className="text-xs text-gray-500">шт.</div>
+<div className="text-sm text-gray-600">шт.</div>
 </div>
 
 <Button
@@ -722,7 +722,7 @@ className="h-10 w-10 rounded-xl"
 <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-2xl p-4 border border-green-200">
 <div className="flex items-center justify-between">
 <div>
-<div className="text-xs text-green-600 mb-1">Стоимость венка</div>
+<div className="text-sm text-green-700 mb-1">Стоимость венка</div>
 <div className="text-2xl text-green-900">{getWreathPrice().toLocaleString('ru-RU')} ₽</div>
 </div>
 
@@ -736,7 +736,7 @@ className="h-10 w-10 rounded-xl"
 <div className="bg-white rounded-2xl p-4 border border-gray-200">
 <div className="flex items-center justify-between">
 <div>
-<div className="text-xs text-gray-500 mb-1">Итого (гроб + венок)</div>
+<div className="text-sm text-gray-600 mb-1">Итого (гроб + венок)</div>
 <div className="text-2xl text-gray-900">{getTotalPrice().toLocaleString('ru-RU')} ₽</div>
 </div>
 <Button type="button" onClick={handleConfirm} className="rounded-xl">

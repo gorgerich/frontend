@@ -302,7 +302,8 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-[9999] bg-white flex flex-col overflow-hidden"
+        data-td-topbuttons-overlay-content="true"
+        className="fixed inset-0 z-[9999] bg-[#f8f8f7] flex flex-col overflow-hidden"
       >
         {/* Заголовок с кнопкой закрытия */}
         <div className="flex-shrink-0 flex items-center justify-between p-4 md:p-6 border-b border-zinc-100 bg-white/80 backdrop-blur-md z-20">
@@ -315,7 +316,7 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
               <h2 className="text-xl font-medium text-zinc-900 tracking-tight">AI-Помощник</h2>
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                <p className="text-sm text-zinc-500 font-light">Онлайн консультант</p>
+                <p className="text-base text-zinc-600 font-medium">Онлайн консультант</p>
               </div>
             </div>
           </div>
@@ -325,14 +326,14 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
             whileTap={{ scale: 0.95 }}
             onClick={onClose}
             aria-label="Закрыть чат"
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-transparent hover:bg-zinc-100 text-zinc-400 hover:text-zinc-900 transition-all duration-200"
+            className="w-12 h-12 flex items-center justify-center rounded-full bg-transparent hover:bg-zinc-100 text-zinc-400 hover:text-zinc-900 transition-all duration-200"
           >
             <X className="w-6 h-6" />
           </motion.button>
         </div>
 
         {/* Область сообщений */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-white relative min-h-0 scrollbar-thin scrollbar-thumb-zinc-200 scrollbar-track-transparent">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-[#f8f8f7] relative min-h-0 scrollbar-thin scrollbar-thumb-zinc-200 scrollbar-track-transparent">
           {/* Фоновые декоративные элементы - Subtle or Removed */}
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-40">
             <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-zinc-100 blur-[120px] rounded-full mix-blend-multiply" />
@@ -350,12 +351,12 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
               >
                 {message.isUser ? (
                   <div className="max-w-[85%] md:max-w-[70%] rounded-2xl rounded-tr-sm px-6 py-4 bg-zinc-900 text-white shadow-sm">
-                    <p className="text-sm md:text-base leading-relaxed font-light tracking-wide">{message.text}</p>
+                    <p className="text-base leading-relaxed font-normal tracking-wide">{message.text}</p>
                   </div>
                 ) : (
                   <div className="max-w-[90%] space-y-4 w-full">
                     <div className="rounded-2xl rounded-tl-sm px-6 py-5 bg-white border border-zinc-100 shadow-sm text-zinc-800">
-                      <p className="text-sm md:text-base leading-relaxed font-light tracking-wide">{message.text}</p>
+                      <p className="text-base leading-relaxed font-normal tracking-wide">{message.text}</p>
                       
                       {/* Кнопка "Перейти" для выбранного тарифа */}
                       {message.type === 'tariff-selected' && (
@@ -387,8 +388,8 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
                             className="group relative p-6 rounded-2xl bg-white hover:bg-zinc-50 border border-zinc-200 hover:border-zinc-300 transition-all duration-300 text-left overflow-hidden shadow-sm hover:shadow-md"
                           >
                             <h3 className="relative text-lg font-medium text-zinc-900 mb-1">{tariff.name}</h3>
-                            <p className="relative text-xl font-light text-zinc-900 mb-3">{tariff.price.toLocaleString('ru-RU')} ₽</p>
-                            <p className="relative text-xs text-zinc-500 font-light leading-relaxed">{tariff.description}</p>
+                            <p className="relative text-xl font-semibold text-zinc-900 mb-3">{tariff.price.toLocaleString('ru-RU')} ₽</p>
+                            <p className="relative text-sm text-zinc-600 font-normal leading-relaxed">{tariff.description}</p>
                           </motion.button>
                         ))}
                       </div>
@@ -398,19 +399,19 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
                     {message.type === 'tariff-details' && message.tariffData && (
                       <div className="p-6 md:p-8 rounded-3xl bg-white border border-zinc-200 shadow-xl">
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-zinc-100 pb-6">
-                          <h3 className="text-2xl text-zinc-900 font-light">{message.tariffData.name}</h3>
+                          <h3 className="text-2xl text-zinc-900 font-semibold">{message.tariffData.name}</h3>
                           <div className="px-4 py-1.5 rounded-full bg-zinc-50 border border-zinc-100">
-                            <p className="text-xl text-zinc-900 font-light">{message.tariffData.price.toLocaleString('ru-RU')} ₽</p>
+                            <p className="text-xl text-zinc-900 font-semibold">{message.tariffData.price.toLocaleString('ru-RU')} ₽</p>
                           </div>
                         </div>
-                        <p className="text-base text-zinc-600 font-light mb-6 leading-relaxed">{message.tariffData.description}</p>
+                        <p className="text-base text-zinc-700 font-normal mb-6 leading-relaxed">{message.tariffData.description}</p>
                         <div className="mb-8">
                           <h4 className="text-sm text-zinc-400 font-medium uppercase tracking-widest mb-4">Что входит в тариф</h4>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {message.tariffData.services.map((service, index) => (
                               <div key={index} className="flex items-start gap-3 p-3 rounded-xl bg-zinc-50 border border-zinc-100/50">
                                 <Check className="w-4 h-4 text-zinc-900 flex-shrink-0 mt-1" />
-                                <span className="text-sm text-zinc-700 font-light">{service}</span>
+                                <span className="text-base text-zinc-700 font-normal">{service}</span>
                               </div>
                             ))}
                           </div>
@@ -443,7 +444,7 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
                           <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-zinc-200">
                             <Check className="w-4 h-4 text-zinc-900" />
                           </div>
-                          <p className="text-sm text-zinc-700 font-light">Тариф успешно выбран!</p>
+                          <p className="text-base text-zinc-700 font-normal">Тариф успешно выбран!</p>
                         </div>
                       </div>
                     )}
@@ -501,7 +502,7 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleQuickAction(action.text, action.id)}
-                      className="px-3 py-1.5 bg-white border border-zinc-200 rounded-full text-zinc-600 text-xs hover:bg-zinc-50 hover:text-zinc-900 hover:border-zinc-300 transition-all duration-200 flex-shrink-0 snap-start whitespace-nowrap shadow-sm"
+                      className="px-3 py-2 bg-white border border-zinc-200 rounded-full text-zinc-700 text-sm hover:bg-zinc-50 hover:text-zinc-900 hover:border-zinc-300 transition-all duration-200 flex-shrink-0 snap-start whitespace-nowrap shadow-sm"
                     >
                       {action.text}
                     </motion.button>
@@ -517,13 +518,13 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Напишите ваш вопрос..."
-                  className="flex-1 bg-transparent text-zinc-900 placeholder-zinc-400 focus:outline-none text-sm md:text-base font-light tracking-wide"
+                  className="flex-1 bg-transparent text-zinc-900 placeholder-zinc-500 focus:outline-none text-base font-normal tracking-wide"
                 />
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleSendMessage}
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-zinc-900 text-white hover:bg-zinc-800 transition-all duration-200 flex-shrink-0"
+                  className="w-12 h-12 flex items-center justify-center rounded-full bg-zinc-900 text-white hover:bg-zinc-800 transition-all duration-200 flex-shrink-0"
                 >
                   <Send className="w-4 h-4" />
                 </motion.button>

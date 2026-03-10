@@ -17,6 +17,7 @@ import {
   trackEvent,
 } from './components/calculationUtils';
 import { TELEGRAM_URL } from '../lib/legalLinks';
+import { widontRu } from '@/lib/typography';
 
 type BreakdownItem = { name: string; price?: number };
 type BreakdownSection = { category: string; price: number; items?: BreakdownItem[] };
@@ -683,7 +684,7 @@ function HomeInner() {
   }, [ctaParam]);
 
   return (
-    <main className="min-h-screen bg-white flex flex-col overflow-x-hidden">
+    <main className="min-h-screen bg-[#f6f5f3] flex flex-col overflow-x-hidden">
       <div className="flex-1">
         <div className="relative">
           <section className="relative overflow-visible">
@@ -740,10 +741,10 @@ function HomeInner() {
               <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">
                 Кто будет вам помогать
               </h2>
-              <p className="text-sm leading-relaxed text-gray-600 md:text-base">
-                За каждой заявкой в «Тихом доме» стоит не робот, а ваш личный координатор. Мы берем на себя всю бюрократию и защиту от скрытых наценок.
-              </p>
-            </div>
+                <p className="text-base leading-relaxed text-gray-700">
+                  {widontRu('За каждой заявкой в «Тихом доме» стоит не робот, а ваш личный координатор. Мы берем на себя всю бюрократию и защиту от скрытых наценок.')}
+                </p>
+              </div>
             <div className="relative left-1/2 right-1/2 mt-5 w-screen -ml-[50vw] -mr-[50vw]">
               <div className="px-2 sm:px-3 md:px-4">
                 <div
@@ -809,11 +810,11 @@ function HomeInner() {
                               className="object-cover"
                             />
                           </div>
-                          <div className="mt-2 text-[13px] font-semibold text-gray-900 leading-tight">
-                            {member.name} — {member.role.toLowerCase()}
+                          <div className="mt-2 text-sm font-semibold text-gray-900 leading-tight">
+                            {widontRu(`${member.name} — ${member.role.toLowerCase()}`)}
                           </div>
-                          <p className="mt-1.5 text-[11px] leading-snug text-gray-600">
-                            {member.description}
+                          <p className="mt-1.5 text-sm leading-snug text-gray-700">
+                            {widontRu(member.description)}
                           </p>
                         </article>
                       ))}
@@ -834,11 +835,11 @@ function HomeInner() {
                               className="object-cover"
                             />
                           </div>
-                          <div className="mt-2 text-[13px] font-semibold text-gray-900 leading-tight">
-                            {member.name} — {member.role.toLowerCase()}
+                          <div className="mt-2 text-sm font-semibold text-gray-900 leading-tight">
+                            {widontRu(`${member.name} — ${member.role.toLowerCase()}`)}
                           </div>
-                          <p className="mt-1.5 text-[11px] leading-snug text-gray-600">
-                            {member.description}
+                          <p className="mt-1.5 text-sm leading-snug text-gray-700">
+                            {widontRu(member.description)}
                           </p>
                         </article>
                       ))}
@@ -852,7 +853,7 @@ function HomeInner() {
                 href={TELEGRAM_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex h-10 items-center justify-center rounded-xl border border-gray-200 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
+                className="inline-flex min-h-12 items-center justify-center rounded-xl border border-gray-200 bg-white px-5 text-base font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
               >
                 Написать дежурному координатору
               </a>
@@ -860,8 +861,8 @@ function HomeInner() {
 
             <section className="mt-10 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:p-8">
               <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">Почему нам доверяют</h2>
-              <p className="mt-2 max-w-3xl text-sm leading-relaxed text-gray-600 md:text-base">
-                Наша цель — не просто оказать услугу, а стать вашим щитом от бюрократии, скрытых наценок и давления в дни прощания.
+              <p className="mt-2 max-w-3xl text-base leading-relaxed text-gray-700">
+                {widontRu('Наша цель — не просто оказать услугу, а стать вашим щитом от бюрократии, скрытых наценок и давления в дни прощания.')}
               </p>
 
               <div className="mt-5 grid gap-4 md:mt-6 md:grid-cols-3">
@@ -874,12 +875,12 @@ function HomeInner() {
                       <span className="text-base leading-none shrink-0" aria-hidden="true">
                         {card.icon}
                       </span>
-                      <h3 className="min-w-0 flex-1 whitespace-nowrap text-[clamp(11px,3.2vw,16px)] font-semibold leading-none tracking-[-0.01em] text-gray-900">
-                        {card.title}
+                      <h3 className="min-w-0 flex-1 whitespace-nowrap text-[clamp(14px,3.2vw,16px)] font-semibold leading-none tracking-[-0.01em] text-gray-900">
+                        {widontRu(card.title)}
                       </h3>
                     </div>
-                    <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                      {card.text}
+                    <p className="mt-2 text-base leading-relaxed text-gray-700">
+                      {widontRu(card.text)}
                     </p>
                   </article>
                 ))}
@@ -888,8 +889,8 @@ function HomeInner() {
 
             <div className="mt-8 flex flex-col gap-2">
               <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">Отзывы клиентов</h2>
-              <p className="text-sm text-gray-500 md:text-base">
-                Реальный опыт клиентов: что получилось, что волновало и как всё прошло в итоге.
+              <p className="text-base text-gray-600">
+                {widontRu('Реальный опыт клиентов: что получилось, что волновало и как всё прошло в итоге.')}
               </p>
             </div>
             <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -898,23 +899,23 @@ function HomeInner() {
                   key={review.id}
                   className="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
                 >
-                  <div className="absolute right-4 top-4 rounded-full border border-gray-200 bg-white/90 px-2.5 py-1 text-xs font-semibold text-gray-700">
+                  <div className="absolute right-4 top-4 rounded-full border border-gray-200 bg-white/90 px-2.5 py-1 text-sm font-semibold text-gray-700">
                     {review.rating}
                   </div>
                   <div className="flex items-center gap-3">
                     <div>
-                      <div className="text-sm font-semibold text-gray-900">{review.name}</div>
-                      <div className="text-xs text-gray-500">
-                        {review.date} · {review.service}
+                      <div className="text-base font-semibold text-gray-900">{widontRu(review.name)}</div>
+                      <div className="text-sm text-gray-600">
+                        {widontRu(`${review.date} · ${review.service}`)}
                       </div>
                     </div>
                   </div>
                   {review.headline ? (
-                    <p className="mt-3 mb-2 text-sm font-bold text-gray-900">
-                      {review.headline}
+                    <p className="mt-3 mb-2 text-base font-bold text-gray-900">
+                      {widontRu(review.headline)}
                     </p>
                   ) : null}
-                  <p className="text-sm text-gray-600 leading-relaxed">{review.text}</p>
+                  <p className="text-base text-gray-700 leading-relaxed">{widontRu(review.text)}</p>
                 </div>
               ))}
             </div>
@@ -924,7 +925,7 @@ function HomeInner() {
                 <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">
                   Ответы на сложные вопросы
                 </h2>
-                <p className="mt-1 text-sm leading-relaxed text-gray-600 md:text-base">
+                <p className="mt-1 text-base leading-relaxed text-gray-600">
                   
                 </p>
               </div>
@@ -938,10 +939,10 @@ function HomeInner() {
                     className="w-[280px] max-w-[320px] shrink-0 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:w-[320px] sm:max-w-[360px] md:min-w-0 md:shrink md:w-full md:max-w-[230px] lg:max-w-[270px] xl:max-w-[300px] md:break-words"
                   >
                     <h3 className="text-base font-semibold leading-snug text-gray-900">
-                      {article.title}
+                      {widontRu(article.title)}
                     </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                      {article.description}
+                    <p className="mt-2 text-base leading-relaxed text-gray-700">
+                      {widontRu(article.description)}
                     </p>
                   </Link>
                 ))}
@@ -951,7 +952,7 @@ function HomeInner() {
               <div className="mt-5 flex justify-center">
                 <Link
                   href="/articles"
-                  className="inline-flex h-10 items-center justify-center rounded-xl border border-gray-200 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
+                  className="inline-flex min-h-12 items-center justify-center rounded-xl border border-gray-200 bg-white px-5 text-base font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
                 >
                   Перейти в справочник
                 </Link>
