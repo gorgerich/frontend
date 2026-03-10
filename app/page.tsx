@@ -717,7 +717,7 @@ function HomeInner() {
         )}
         <section className="mt-12 md:mt-16 mb-12 md:mb-16">
           <div className="mx-auto w-full max-w-6xl px-4">
-            <div className="mt-6 bg-white">
+            <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm md:p-5">
               <p className="mb-3 whitespace-nowrap text-[clamp(9px,2.6vw,14px)] font-medium leading-tight tracking-[-0.02em] text-gray-900">
                 Михаил Семенов, старший координатор сервиса «Тихий дом»:
               </p>
@@ -727,7 +727,7 @@ function HomeInner() {
                   alt="Денис, старший координатор сервиса Тихий дом"
                   width={220}
                   height={260}
-                  className="h-[120px] w-[96px] shrink-0 rounded-xl object-cover md:h-[260px] md:w-[220px]"
+                  className="-mt-1 h-[120px] w-[96px] shrink-0 rounded-xl object-cover object-top md:-mt-2 md:h-[260px] md:w-[220px]"
                 />
                 <div className="min-w-0 flex-1 border-l border-gray-200 pl-3">
                   <p className="whitespace-normal break-words text-sm leading-relaxed text-gray-700 md:text-base">
@@ -858,7 +858,7 @@ function HomeInner() {
               </a>
             </div>
 
-            <section className="mt-10 rounded-3xl border border-gray-200 bg-[#f6f6f4] p-5 shadow-sm md:p-8">
+            <section className="mt-10 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:p-8">
               <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">Почему нам доверяют</h2>
               <p className="mt-2 max-w-3xl text-sm leading-relaxed text-gray-600 md:text-base">
                 Наша цель — не просто оказать услугу, а стать вашим щитом от бюрократии, скрытых наценок и давления в дни прощания.
@@ -885,6 +885,39 @@ function HomeInner() {
                 ))}
               </div>
             </section>
+
+            <div className="mt-8 flex flex-col gap-2">
+              <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">Отзывы клиентов</h2>
+              <p className="text-sm text-gray-500 md:text-base">
+                Реальный опыт клиентов: что получилось, что волновало и как всё прошло в итоге.
+              </p>
+            </div>
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {TRUST_REVIEWS.map((review) => (
+                <div
+                  key={review.id}
+                  className="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+                >
+                  <div className="absolute right-4 top-4 rounded-full border border-gray-200 bg-white/90 px-2.5 py-1 text-xs font-semibold text-gray-700">
+                    {review.rating}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <div className="text-sm font-semibold text-gray-900">{review.name}</div>
+                      <div className="text-xs text-gray-500">
+                        {review.date} · {review.service}
+                      </div>
+                    </div>
+                  </div>
+                  {review.headline ? (
+                    <p className="mt-3 mb-2 text-sm font-bold text-gray-900">
+                      {review.headline}
+                    </p>
+                  ) : null}
+                  <p className="text-sm text-gray-600 leading-relaxed">{review.text}</p>
+                </div>
+              ))}
+            </div>
 
             <section className="mt-10 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:p-7">
               <div>
@@ -924,39 +957,6 @@ function HomeInner() {
                 </Link>
               </div>
             </section>
-
-            <div className="mt-8 flex flex-col gap-2">
-              <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">Отзывы клиентов</h2>
-              <p className="text-sm text-gray-500 md:text-base">
-                Реальный опыт клиентов: что получилось, что волновало и как всё прошло в итоге.
-              </p>
-            </div>
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
-              {TRUST_REVIEWS.map((review) => (
-                <div
-                  key={review.id}
-                  className="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
-                >
-                  <div className="absolute right-4 top-4 rounded-full border border-gray-200 bg-white/90 px-2.5 py-1 text-xs font-semibold text-gray-700">
-                    {review.rating}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <div className="text-sm font-semibold text-gray-900">{review.name}</div>
-                      <div className="text-xs text-gray-500">
-                        {review.date} · {review.service}
-                      </div>
-                    </div>
-                  </div>
-                  {review.headline ? (
-                    <p className="mt-3 mb-2 text-sm font-bold text-gray-900">
-                      {review.headline}
-                    </p>
-                  ) : null}
-                  <p className="text-sm text-gray-600 leading-relaxed">{review.text}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </section>
         {currentStep >= 1 && !isOrderConfirmed && (

@@ -59,7 +59,7 @@ export function PackagesSelection({
     name: "Традиционный",
     price: BASE_TARIFF_TOTAL,
     description:
-      "Только самые необходимые услуги для проведения достойного прощания. Вы сможете добавить нужный транспорт, атрибутику и помощь координатора на следующем шаге.",
+      "Ниже — только самые необходимые услуги для проведения достойного прощания. Вы сможете добавить нужный транспорт, расширенную атрибутику и услуги по кнопке ниже.",
     features: [],
     popular: false,
   };
@@ -593,13 +593,26 @@ export function PackagesSelection({
               </div>
 
               <div className="flex flex-col gap-3">
+                <Button
+                  onClick={() => {
+                    setActivePanel((prev) => (prev === "custom" ? "base" : "custom"));
+                    setShowInlinePayment(false);
+                  }}
+                  className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide bg-gray-900 text-white hover:bg-gray-800"
+                >
+                  Изменить детали
+                </Button>
+                <div className="text-xs text-gray-500">
+                  Изменить формат, зал, транспорт и другие детали
+                </div>
                 <div className="space-y-1.5">
                   <Button
+                    variant="outline"
                     onClick={() => {
                       setActivePanel("base");
                       setShowInlinePayment((v) => !v);
                     }}
-                    className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide bg-gray-900 text-white hover:bg-gray-800"
+                    className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide !bg-gray-100 !text-gray-900 hover:!bg-gray-50 !border-gray-200"
                   >
                     Отправить план на почту
                   </Button>
@@ -623,19 +636,6 @@ export function PackagesSelection({
                       })}
                     </div>
                   )}
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setActivePanel((prev) => (prev === "custom" ? "base" : "custom"));
-                    setShowInlinePayment(false);
-                  }}
-                  className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide !bg-gray-100 !text-gray-900 hover:!bg-gray-50 !border-gray-200"
-                >
-                  Изменить детали
-                </Button>
-                <div className="text-xs text-gray-500">
-                  Изменить формат, зал, транспорт и другие детали
                 </div>
               </div>
             </div>

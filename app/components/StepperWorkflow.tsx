@@ -4291,7 +4291,7 @@ function formatRub(n: number) {
               <span className="shrink-0 leading-none">🔘</span>
             ) : null}
             <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
-              Собрать самостоятельно
+              Базовый план
             </span>
           </button>
           <button
@@ -4311,7 +4311,7 @@ function formatRub(n: number) {
               <span className="shrink-0 leading-none">🔘</span>
             ) : null}
             <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
-              Готовые решения
+              Под ключ
             </span>
           </button>
           <button
@@ -4330,7 +4330,7 @@ function formatRub(n: number) {
               <span className="shrink-0 leading-none">🔘</span>
             ) : null}
             <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
-              Пошаговый мастер
+              Собрать самостоятельно
             </span>
           </button>
         </div>
