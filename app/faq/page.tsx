@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DocShell } from "../docs/_components/DocShell";
+import { widontRu } from "@/lib/typography";
 
 export const metadata: Metadata = {
   title: "Частые вопросы — Тихий дом",
@@ -170,15 +171,15 @@ export default function FaqPage() {
                     : "border border-black/10 bg-white/70"
                 }`}
               >
-                <summary className="cursor-pointer list-none text-base font-semibold text-slate-900">
+                <summary className="cursor-pointer list-none rounded-lg text-base font-semibold text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20">
                   <span className="inline-flex items-center gap-2">
                     {item.hot ? <span aria-hidden="true">🛡️</span> : null}
-                    {item.q}
+                    {widontRu(item.q)}
                   </span>
                 </summary>
                 <div className="mt-2 space-y-1 text-sm leading-relaxed text-slate-700">
                   {item.a.map((line, idx) => (
-                    <p key={`${item.q}-${idx}`}>{line}</p>
+                    <p key={`${item.q}-${idx}`}>{widontRu(line)}</p>
                   ))}
                 </div>
               </details>

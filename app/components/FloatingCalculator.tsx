@@ -50,6 +50,7 @@ export function FloatingCalculator({ total, breakdown }: FloatingCalculatorProps
                 </span>
               </div>
               <button
+                type="button"
                 onClick={() => setIsExpanded(true)}
                 className="group relative flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-b from-[#fff] to-[#eef5f5] text-slate-600 shadow-[0_8px_16px_-6px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,1)] border border-white/60 transition-all duration-300 hover:scale-105 hover:shadow-[0_12px_20px_-8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,1)] active:scale-95"
               >
@@ -71,6 +72,7 @@ export function FloatingCalculator({ total, breakdown }: FloatingCalculatorProps
               <div className="flex items-center justify-between pb-4 border-b border-slate-200/60">
                 <h3 className="text-sm font-bold text-slate-700 tracking-widest uppercase drop-shadow-sm">Детализация</h3>
                 <button
+                  type="button"
                   onClick={() => setIsExpanded(false)}
                   className="h-8 w-8 rounded-full bg-white/40 hover:bg-white/80 flex items-center justify-center transition-all text-slate-400 hover:text-slate-700 backdrop-blur-sm border border-white/50 shadow-sm"
                 >

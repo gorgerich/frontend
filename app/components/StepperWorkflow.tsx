@@ -4101,7 +4101,7 @@ function formatRub(n: number) {
   // simplified workflow
   if (selectedPackageForSimplified) {
     return (
-      <div ref={wrapRef} className="relative max-w-5xl mx-auto -translate-y-12 pb-12">
+      <div ref={wrapRef} className="relative max-w-5xl mx-auto pb-12">
         <div ref={containerRef}>
           <SimplifiedStepperWorkflow
             selectedPackage={selectedPackageForSimplified as any}
@@ -4126,7 +4126,7 @@ function formatRub(n: number) {
   const inactiveSegmentBtn = "bg-transparent text-slate-600 hover:bg-zinc-200/70";
 
   return (
-    <div ref={wrapRef} className="relative max-w-5xl mx-auto -translate-y-12 pb-12">
+    <div ref={wrapRef} className="relative max-w-5xl mx-auto pb-12">
       <div
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 rounded-3xl"
         style={bgH ? { height: `${bgH}px` } : undefined}
@@ -4142,7 +4142,7 @@ function formatRub(n: number) {
         {showHowItWorks && (
           <div className="pointer-events-none absolute inset-0 z-0 rounded-3xl border border-white/22 bg-black/12 backdrop-blur-2xl" />
         )}
-        <CardHeader className="relative z-10 pb-4 pt-8 px-6 sm:px-8">
+        <CardHeader className="relative z-10 border-b-0 pb-4 pt-8 px-6 sm:px-8">
           <div className="absolute -top-5 right-8 z-50 hidden">
             <button
               type="button"
@@ -4160,7 +4160,7 @@ function formatRub(n: number) {
             <div
               id="how-it-works"
               ref={howItWorksRef}
-              className="emergencyChecklistCard relative mb-6 -mt-3 overflow-hidden rounded-2xl rounded-t-none border border-white/32 px-4 py-4 shadow-[0_16px_36px_rgba(15,23,42,0.34)]"
+              className="emergencyChecklistCard relative mb-6 overflow-hidden rounded-2xl rounded-t-none border border-white/32 px-4 py-4 shadow-[0_16px_36px_rgba(15,23,42,0.34)]"
             >
               <div className="flex flex-col gap-4">
                 <div className="text-lg font-semibold text-white sm:text-xl">
@@ -4170,12 +4170,21 @@ function formatRub(n: number) {
                   Первые шаги на ближайшие 1–2 часа. Спокойно, по порядку.
                 </div>
                 <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  <div className="inline-flex min-w-full gap-1 rounded-full border border-white/35 bg-white/18 p-1">
+                  <div
+                    role="tablist"
+                    aria-label="Сценарии экстренного чек-листа"
+                    className="inline-flex min-w-full gap-1 rounded-full border border-white/35 bg-white/18 p-1"
+                  >
                     {emergencyChecklistTabs.map((tab) => (
                       <button
                         key={tab.id}
                         type="button"
                         onClick={() => setActiveEmergencyTab(tab.id)}
+                        id={`emergency-checklist-tab-${tab.id}`}
+                        role="tab"
+                        aria-selected={activeEmergencyTab === tab.id}
+                        aria-controls="emergency-checklist-panel"
+                        tabIndex={activeEmergencyTab === tab.id ? 0 : -1}
                         className={cn(
                           "h-9 shrink-0 rounded-full px-4 text-sm font-medium transition-all duration-200",
                           activeEmergencyTab === tab.id
@@ -4188,7 +4197,12 @@ function formatRub(n: number) {
                     ))}
                   </div>
                 </div>
-                <div className="px-1 py-1 sm:px-2">
+                <div
+                  id="emergency-checklist-panel"
+                  role="tabpanel"
+                  aria-labelledby={`emergency-checklist-tab-${activeEmergencyChecklistTab.id}`}
+                  className="px-1 py-1 sm:px-2"
+                >
                   <ol className="space-y-4">
                     {activeEmergencyChecklistTab.steps.map((step, index) => (
                       <li key={`${activeEmergencyChecklistTab.id}-step-${index}`} className="space-y-1.5">

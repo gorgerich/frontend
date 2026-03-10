@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { articles } from "@/lib/articles";
 import { Clock3, FileText, Landmark, Shield, type LucideIcon } from "lucide-react";
+import { widontRu } from "@/lib/typography";
 
 export const metadata = {
   title: "Справочник — Тихий дом",
@@ -54,6 +55,15 @@ const GUIDE_SECTIONS: GuideSection[] = [
           "Что передавать, в каком виде и в какие сроки, чтобы избежать лишней суеты.",
         readTimeMin: 2,
         slug: "odezhda-i-veshi-dlya-morga",
+      },
+      {
+        id: "locked-door-inside",
+        title:
+          "Близкий не открывает дверь, а квартира заперта изнутри. Пошаговая инструкция, как действовать",
+        summary:
+          "Юридически безопасный алгоритм: как вызвать службы, подготовить основания для вскрытия и не допустить ошибок в первые минуты.",
+        readTimeMin: 3,
+        slug: "blizkiy-ne-otkryvaet-dver-zaperta-iznutri",
       },
     ],
   },
@@ -178,10 +188,10 @@ export default function ArticlesPage() {
     <main className="min-h-screen bg-white">
       <div className="mx-auto w-full max-w-6xl px-4 py-12 md:py-16">
         <div className="mb-10 rounded-3xl border border-white/40 bg-white/70 p-6 backdrop-blur-xl shadow-[0_12px_30px_rgba(15,23,42,0.08)] md:p-8">
-          <h1 className="text-3xl font-semibold text-gray-900 md:text-4xl">
+          <h1 className="max-w-[20ch] text-3xl font-semibold leading-tight text-gray-900 text-pretty md:text-4xl">
             Справочник
           </h1>
-          <p className="mt-3 max-w-4xl text-sm text-gray-700 md:text-base">
+          <p className="mt-3 max-w-[72ch] text-sm leading-relaxed text-gray-700 md:text-base">
             Короткие и понятные инструкции: как защитить себя от обмана,
             оформить документы и организовать всё без лишнего стресса.
           </p>
@@ -200,11 +210,11 @@ export default function ArticlesPage() {
                     <SectionIcon className="h-4 w-4" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">
-                      {section.title}
+                    <h2 className="max-w-[24ch] text-xl font-semibold leading-tight text-gray-900 text-pretty md:text-2xl">
+                      {widontRu(section.title)}
                     </h2>
-                    <p className="mt-1 text-sm text-gray-600 md:text-base">
-                      {section.subtitle}
+                    <p className="mt-1 max-w-[68ch] text-sm leading-relaxed text-gray-600 md:text-base">
+                      {widontRu(section.subtitle)}
                     </p>
                   </div>
                 </div>
@@ -235,11 +245,11 @@ export default function ArticlesPage() {
                             <Clock3 className="h-3.5 w-3.5" />
                             Время чтения: {card.readTimeMin} мин.
                           </div>
-                          <h3 className="mt-3 text-base font-semibold leading-snug text-slate-900">
-                            {card.title}
+                          <h3 className="mt-3 max-w-[34ch] text-base font-semibold leading-snug text-slate-900 text-pretty">
+                            {widontRu(card.title)}
                           </h3>
-                          <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                            {card.summary}
+                          <p className="mt-2 max-w-[60ch] text-sm leading-relaxed text-slate-600">
+                            {widontRu(card.summary)}
                           </p>
                           <div className="mt-4 text-sm font-semibold text-slate-900">
                             {isAvailable ? "Читать" : "Скоро"}
@@ -253,7 +263,7 @@ export default function ArticlesPage() {
                         <Link
                           key={card.id}
                           href={`/articles/${card.slug}`}
-                          className="group block h-full"
+                          className="group block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20"
                         >
                           {cardInner}
                         </Link>

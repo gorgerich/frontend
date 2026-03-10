@@ -658,12 +658,18 @@
   }
 
   .stepper-overlay-position {
-    margin-top: -35%;
+    margin-top: -112px;
   }
 
-  @media (width >= 768px) {
+  @media (min-width: 768px) {
     .stepper-overlay-position {
-      margin-top: -25%;
+      margin-top: -168px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .stepper-overlay-position {
+      margin-top: -196px;
     }
   }
 

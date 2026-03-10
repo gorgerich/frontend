@@ -7,7 +7,7 @@ const heroImage = "/hero-forest.jpg";
 const heroImageNew = "/heroIMGnew.PNG";
 
 // DESKTOP controls
-const DESKTOP_TOP = "12%"; // опускай/поднимай весь заголовок на десктопе
+const DESKTOP_TOP = "17%"; // опускай/поднимай весь заголовок на десктопе
 const LINE1_SHIFT = "0px"; // сдвиг первой строки
 const LINE2_SHIFT = "6px"; // сдвиг второй строки
 const LINE1_LINE_HEIGHT = 1.15; // межстрочное 1-й строки
@@ -15,7 +15,7 @@ const LINE2_LINE_HEIGHT = 1.12; // межстрочное 2-й строки
 const LINES_GAP = "140px"; // расстояние между строками/предложениями
 
 // MOBILE controls
-const MOBILE_SHIFT = "-75%"; // общий сдвиг мобайл-заголовка
+const MOBILE_SHIFT = "-14%"; // общий сдвиг мобайл-заголовка
 const MOBILE_LINE1_SHIFT = "0px"; // сдвиг 1-й строки
 const MOBILE_LINE2_SHIFT = "0px"; // сдвиг 2-й строки
 const MOBILE_LINE1_LINE_HEIGHT = 1.18;
@@ -26,6 +26,12 @@ export function HeroSection() {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const questionRef = useRef<HTMLButtonElement | null>(null);
   const titleRef = useRef<HTMLHeadingElement | null>(null);
+  const [topButtonsStyle, setTopButtonsStyle] = useState<{ top: number; left: number; width: number; visible: boolean }>({
+    top: 0,
+    left: 0,
+    width: 0,
+    visible: false,
+  });
   const [connectorStyle, setConnectorStyle] = useState<{ top: number; left: number; height: number; opacity: number }>({
     top: 0,
     left: 0,
@@ -46,6 +52,13 @@ export function HeroSection() {
       const top = q.bottom - w.top;
       const height = Math.max(0, t.top - q.bottom);
       const left = q.left + q.width / 2 - w.left;
+      setTopButtonsStyle({
+        // Keep the same visual Y as before: top 0 with translateY(-44px)
+        top: w.top - 44,
+        left: w.left + 24,
+        width: Math.max(0, w.width - 48),
+        visible: true,
+      });
       setConnectorStyle({
         top,
         left,
@@ -58,10 +71,13 @@ export function HeroSection() {
     const resizeObserver = new ResizeObserver(measure);
     resizeObserver.observe(question);
     resizeObserver.observe(title);
+    resizeObserver.observe(wrapper);
     window.addEventListener("resize", measure);
+    window.addEventListener("scroll", measure, { passive: true });
     return () => {
       resizeObserver.disconnect();
       window.removeEventListener("resize", measure);
+      window.removeEventListener("scroll", measure);
     };
   }, []);
 
@@ -74,11 +90,16 @@ export function HeroSection() {
     "relative h-14 rounded-[20px] border border-black/10 bg-gradient-to-b from-white to-gray-100/80 px-[18px] text-sm font-semibold text-gray-900 shadow-[0_1px_2px_rgba(0,0,0,0.08),0_8px_20px_rgba(0,0,0,0.10)] transition-shadow duration-200 hover:shadow-[0_2px_6px_rgba(0,0,0,0.12),0_10px_24px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10 active:scale-[0.98] active:shadow-[0_1px_2px_rgba(0,0,0,0.08)]";
 
   return (
-    <section className="relative w-full px-4 pt-14 sm:pt-16 pb-16 md:pt-8 md:pb-20 lg:pb-24 md:translate-y-[4%]">
+    <section className="relative w-full px-4 pt-14 sm:pt-16 pb-5 md:pt-8 md:pb-7 lg:pb-9">
       <div className="mx-auto max-w-7xl relative" ref={wrapperRef}>
         <div
-          className="pointer-events-none absolute left-6 right-6 top-0 z-40"
-          style={{ transform: "translateY(-44px)" }}
+          className="pointer-events-none fixed z-[1100]"
+          style={{
+            top: topButtonsStyle.top,
+            left: topButtonsStyle.left,
+            width: topButtonsStyle.width,
+            visibility: topButtonsStyle.visible ? "visible" : "hidden",
+          }}
         >
           <div className="pointer-events-auto">
             <TopButtons questionButtonRef={questionRef} />
@@ -97,7 +118,7 @@ export function HeroSection() {
             transform: "translateX(-50%)",
           }}
         />
-        <div className="relative h-[80vh] w-full overflow-hidden rounded-3xl md:h-[82vh] lg:h-[88vh] md:rounded-[40px]">
+        <div className="relative h-[68vh] w-full overflow-hidden rounded-3xl md:h-[70vh] lg:h-[74vh] md:rounded-[40px]">
           {/* Background (hero only) */}
           <div className="pointer-events-none absolute inset-0 z-0">
             <img
@@ -118,7 +139,7 @@ export function HeroSection() {
           {/* TEXT LAYER */}
           <div className="absolute inset-0 z-30">
             {/* MOBILE */}
-            <div className="flex h-full flex-col items-center justify-center px-4 pb-24 text-center sm:px-6 sm:pb-32 md:hidden">
+            <div className="flex h-full flex-col items-center justify-center px-4 pt-10 pb-16 text-center sm:px-6 sm:pt-12 sm:pb-20 md:hidden">
               <h1
                 className="font-heading mx-auto mb-0 w-full max-w-full whitespace-normal break-words tracking-tight text-white [text-wrap:balance]"
                 style={{
@@ -148,7 +169,7 @@ export function HeroSection() {
                 <Button
                   type="button"
                   onClick={handlePlanActionsClick}
-                  className={`${planCtaClass} order-1 md:order-2 -mt-8 w-full max-w-[22rem]`}
+                  className={`${planCtaClass} mt-4 w-full max-w-[22rem]`}
                 >
                   <span className="flex w-full flex-col items-center text-center">
                     <span className="font-subheading text-gray-600">Что делать, если умер человек</span>
@@ -159,7 +180,7 @@ export function HeroSection() {
                   <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
                 </Button>
                 <p
-                  className="font-body order-2 md:order-1 mt-6 w-full max-w-[22rem] text-[12px] min-[375px]:text-[13px] leading-[1.4] font-normal text-center text-white/80"
+                  className="font-body mt-5 w-full max-w-[22rem] text-[12px] min-[375px]:text-[13px] leading-[1.4] font-normal text-center text-white/80"
                   style={{
                     fontWeight: 400,
                   }}

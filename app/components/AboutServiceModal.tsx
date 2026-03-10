@@ -49,7 +49,9 @@ export function AboutServiceModal({ isOpen, onClose }: { isOpen: boolean; onClos
           >
             {/* Кнопка закрытия (крестик) */}
             <button
+              type="button"
               onClick={onClose}
+              aria-label="Закрыть модальное окно"
               className="absolute top-6 right-6 z-50 p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white/80 hover:text-white transition-all duration-200 border border-white/10"
             >
               <X className="w-6 h-6" />
@@ -111,6 +113,7 @@ export function AboutServiceModal({ isOpen, onClose }: { isOpen: boolean; onClos
                   className="flex justify-center"
                 >
                   <button
+                    type="button"
                     onClick={() => {
                       onClose();
                       const element = document.querySelector('.stepper-overlay-position');

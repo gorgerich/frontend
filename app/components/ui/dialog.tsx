@@ -7,6 +7,8 @@ import { cn } from "./utils";
 interface DialogContextValue {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  triggerElement: HTMLElement | null;
+  setTriggerElement: (element: HTMLElement | null) => void;
 }
 
 const DialogContext = React.createContext<DialogContextValue | undefined>(undefined);
@@ -27,12 +29,15 @@ interface DialogProps {
 
 function Dialog({ children, open: controlledOpen, onOpenChange }: DialogProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false);
+  const [triggerElement, setTriggerElement] = React.useState<HTMLElement | null>(null);
   
   const open = controlledOpen !== undefined ? controlledOpen : uncontrolledOpen;
   const handleOpenChange = onOpenChange || setUncontrolledOpen;
 
   return (
-    <DialogContext.Provider value={{ open, onOpenChange: handleOpenChange }}>
+    <DialogContext.Provider
+      value={{ open, onOpenChange: handleOpenChange, triggerElement, setTriggerElement }}
+    >
       {children}
     </DialogContext.Provider>
   );
@@ -41,25 +46,32 @@ function Dialog({ children, open: controlledOpen, onOpenChange }: DialogProps) {
 const DialogTrigger = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }
->(({ children, asChild, onClick, ...props }, ref) => {
-  const { onOpenChange } = useDialog();
+>(({ children, asChild, onClick, type, ...props }, ref) => {
+  const { onOpenChange, setTriggerElement } = useDialog();
   
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setTriggerElement(e.currentTarget);
     onOpenChange(true);
     onClick?.(e);
   };
 
   if (asChild && React.isValidElement(children)) {
-  return React.cloneElement(
-    children as React.ReactElement<any>,
-    {
-      onClick: handleClick,
-    } as React.HTMLAttributes<HTMLElement>
-  );
-}
+    const child = children as React.ReactElement<{
+      onClick?: (event: React.MouseEvent<HTMLElement>) => void;
+    }>;
+    return React.cloneElement(child, {
+      onClick: (event: React.MouseEvent<HTMLElement>) => {
+        setTriggerElement(event.currentTarget);
+        child.props.onClick?.(event);
+        if (!event.defaultPrevented) {
+          onOpenChange(true);
+        }
+      },
+    });
+  }
 
   return (
-    <button ref={ref} onClick={handleClick} {...props}>
+    <button ref={ref} type={type ?? "button"} onClick={handleClick} {...props}>
       {children}
     </button>
   );
@@ -72,7 +84,7 @@ function DialogPortal({ children }: { children: React.ReactNode }) {
   if (!open) return null;
   
   return typeof document !== "undefined" 
-    ? ReactDOM.createPortal(children, document.body)
+    ? ReactDOM?.createPortal?.(children, document.body) ?? null
     : null;
 }
 
@@ -88,13 +100,17 @@ const ReactDOM = (() => {
 const DialogClose = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement>
->((props, ref) => {
+>(({ onClick, type, ...props }, ref) => {
   const { onOpenChange } = useDialog();
   
   return (
     <button
       ref={ref}
-      onClick={() => onOpenChange(false)}
+      type={type ?? "button"}
+      onClick={(e) => {
+        onOpenChange(false);
+        onClick?.(e);
+      }}
       {...props}
     />
   );
@@ -116,6 +132,7 @@ const DialogOverlay = React.forwardRef<
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         className
       )}
+      aria-hidden="true"
       onClick={() => onOpenChange(false)}
       {...props}
     />
@@ -127,25 +144,62 @@ const DialogContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => {
-  const { open } = useDialog();
+  const { open, onOpenChange, triggerElement } = useDialog();
+  const contentRef = React.useRef<HTMLDivElement | null>(null);
+  const previousActiveElementRef = React.useRef<HTMLElement | null>(null);
   
   React.useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
+    if (!open) {
       document.body.style.overflow = "";
+      return;
     }
+
+    previousActiveElementRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    document.body.style.overflow = "hidden";
+
+    const frame = window.requestAnimationFrame(() => {
+      const root = contentRef.current;
+      if (!root) return;
+      const firstFocusable = root.querySelector<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      (firstFocusable ?? root).focus();
+    });
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onOpenChange(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
     
     return () => {
+      window.cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", handleEscape);
       document.body.style.overflow = "";
+      const focusTarget = triggerElement ?? previousActiveElementRef.current;
+      if (focusTarget && document.contains(focusTarget)) {
+        focusTarget.focus();
+      }
     };
-  }, [open]);
+  }, [open, onOpenChange, triggerElement]);
 
   return (
     <DialogPortal>
       <DialogOverlay />
       <div
-        ref={ref}
+        ref={(node) => {
+          contentRef.current = node;
+          if (typeof ref === "function") {
+            ref(node);
+          } else if (ref) {
+            (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+          }
+        }}
         className={cn(
           "fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)]",
           "translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border bg-white p-6 shadow-lg",
@@ -155,13 +209,19 @@ const DialogContent = React.forwardRef<
           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
           className
         )}
+        role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         {...props}
       >
         {children}
-        <DialogClose className="absolute top-4 right-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none">
+        <DialogClose
+          aria-label="Закрыть диалог"
+          className="absolute top-4 right-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none"
+        >
           <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">Закрыть</span>
         </DialogClose>
       </div>
     </DialogPortal>

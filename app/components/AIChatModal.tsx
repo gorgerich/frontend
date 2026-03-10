@@ -320,9 +320,11 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
             </div>
           </div>
           <motion.button
+            type="button"
             whileHover={{ scale: 1.05, rotate: 90 }}
             whileTap={{ scale: 0.95 }}
             onClick={onClose}
+            aria-label="Закрыть чат"
             className="w-10 h-10 flex items-center justify-center rounded-full bg-transparent hover:bg-zinc-100 text-zinc-400 hover:text-zinc-900 transition-all duration-200"
           >
             <X className="w-6 h-6" />

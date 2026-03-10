@@ -135,7 +135,7 @@ const TRUST_REVIEWS = [
     name: 'Ольга С.',
     date: '14 июля 2025',
     service: 'Кремация',
-    rating: '4.9/5',
+    rating: '5/5',
     headline: 'Поддержали в самый тяжелый момент без лишнего давления',
     text: `Денис, хочу ещё раз сказать спасибо. В тот день я вообще плохо соображала, и если бы не ваши спокойные ответы на мои бесконечные вопросы, я бы просто растерялась. Всё объяснили, ничего не навязывали, дали время подумать. Для меня это было важно.`,
   },
@@ -686,7 +686,7 @@ function HomeInner() {
     <main className="min-h-screen bg-white flex flex-col overflow-x-hidden">
       <div className="flex-1">
         <div className="relative">
-          <section className="relative z-0 overflow-visible">
+          <section className="relative overflow-visible">
             <HeroSection />
             <div className="relative z-20 stepper-overlay-position">
               <StepperWorkflow
@@ -717,7 +717,26 @@ function HomeInner() {
         )}
         <section className="mt-12 md:mt-16 mb-12 md:mb-16">
           <div className="mx-auto w-full max-w-6xl px-4">
-            <div className="flex flex-col gap-2">
+            <div className="mt-6 bg-white">
+              <p className="mb-3 whitespace-nowrap text-[clamp(9px,2.6vw,14px)] font-medium leading-tight tracking-[-0.02em] text-gray-900">
+                Михаил Семенов, старший координатор сервиса «Тихий дом»:
+              </p>
+              <div className="flex flex-row items-start gap-3 md:gap-4">
+                <Image
+                  src="/team/male-2(bg).PNG"
+                  alt="Денис, старший координатор сервиса Тихий дом"
+                  width={220}
+                  height={260}
+                  className="h-[120px] w-[96px] shrink-0 rounded-xl object-cover md:h-[260px] md:w-[220px]"
+                />
+                <div className="min-w-0 flex-1 border-l border-gray-200 pl-3">
+                  <p className="whitespace-normal break-words text-sm leading-relaxed text-gray-700 md:text-base">
+                    «Каждый день мы видим, как люди теряются, сталкиваясь с системой моргов и кладбищ. Моя личная задача и задача моей команды — забрать у вас этот стресс. Мы создали «Тихий дом» для того, чтобы в самые тяжелые дни вы могли сфокусироваться на семье и памяти о близком, а не на спорах с грузчиками и поиске правильных справок. Я лично гарантирую, что мы проведем прощание достойно и честно».
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-6 flex flex-col gap-2">
               <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">
                 Кто будет вам помогать
               </h2>
@@ -866,26 +885,6 @@ function HomeInner() {
                 ))}
               </div>
             </section>
-
-            <div className="mt-6 bg-white">
-              <p className="mb-3 whitespace-nowrap text-[clamp(9px,2.6vw,14px)] font-medium leading-tight tracking-[-0.02em] text-gray-900">
-                Михаил Семенов, старший координатор сервиса «Тихий дом»:
-              </p>
-              <div className="flex flex-row items-start gap-3 md:gap-4">
-                <Image
-                  src="/team/male-2(bg).PNG"
-                  alt="Денис, старший координатор сервиса Тихий дом"
-                  width={220}
-                  height={260}
-                  className="h-[120px] w-[96px] shrink-0 rounded-xl object-cover md:h-[260px] md:w-[220px]"
-                />
-                <div className="min-w-0 flex-1 border-l border-gray-200 pl-3">
-                  <p className="whitespace-normal break-words text-sm leading-relaxed text-gray-700 md:text-base">
-                    «Каждый день мы видим, как люди теряются, сталкиваясь с системой моргов и кладбищ. Моя личная задача и задача моей команды — забрать у вас этот стресс. Мы создали «Тихий дом» для того, чтобы в самые тяжелые дни вы могли сфокусироваться на семье и памяти о близком, а не на спорах с грузчиками и поиске правильных справок. Я лично гарантирую, что мы проведем прощание достойно и честно».
-                  </p>
-                </div>
-              </div>
-            </div>
 
             <section className="mt-10 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:p-7">
               <div>

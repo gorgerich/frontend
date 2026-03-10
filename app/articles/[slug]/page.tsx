@@ -1,8 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import CopyTextBlock from "@/app/components/CopyTextBlock";
 import { articles, getArticleBySlug, type ArticleBlock } from "@/lib/articles";
 import { TELEGRAM_URL } from "@/lib/legalLinks";
+import { widontRu } from "@/lib/typography";
 
 export const dynamicParams = true;
 
@@ -44,37 +46,39 @@ const renderBlock = (block: ArticleBlock, index: number) => {
   switch (block.type) {
     case "lead":
       return (
-        <p key={index} className="text-lg font-medium text-gray-800">
-          {block.content}
+        <p key={index} className="max-w-[66ch] text-lg font-medium leading-relaxed text-gray-800">
+          {widontRu(block.content)}
         </p>
       );
     case "h2":
       return (
-        <h2 key={index} className="text-xl font-semibold text-gray-900">
-          {block.content}
+        <h2 key={index} className="max-w-[28ch] text-xl font-semibold leading-tight text-gray-900 text-pretty">
+          {widontRu(block.content)}
         </h2>
       );
     case "h3":
       return (
-        <h3 key={index} className="text-lg font-semibold text-gray-900">
-          {block.content}
+        <h3 key={index} className="max-w-[34ch] text-lg font-semibold leading-tight text-gray-900 text-pretty">
+          {widontRu(block.content)}
         </h3>
       );
     case "p":
       return (
-        <p key={index} className="text-base text-gray-700">
-          {block.content}
+        <p key={index} className="max-w-[72ch] text-base leading-relaxed text-gray-700">
+          {widontRu(block.content)}
         </p>
       );
+    case "copyBlock":
+      return <CopyTextBlock key={index} text={block.content} />;
     case "ul":
       return (
         <ul
           key={index}
-          className="list-disc space-y-1 pl-5 text-base text-gray-700"
+          className="max-w-[72ch] list-disc space-y-1.5 pl-5 text-base leading-relaxed text-gray-700"
         >
           {block.content.map((item, itemIndex) => {
             if (typeof item === "string") {
-              return <li key={itemIndex}>{item}</li>;
+              return <li key={itemIndex}>{widontRu(item)}</li>;
             }
             return (
               <li key={itemIndex}>
@@ -82,9 +86,9 @@ const renderBlock = (block: ArticleBlock, index: number) => {
                   href={item.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center rounded-full border border-neutral-200 bg-white/70 px-2.5 py-1 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-white"
+                  className="inline-flex min-h-11 items-center rounded-full border border-neutral-200 bg-white/70 px-2.5 py-1 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20"
                 >
-                  {item.label}
+                  {widontRu(item.label)}
                 </a>
               </li>
             );
@@ -93,15 +97,15 @@ const renderBlock = (block: ArticleBlock, index: number) => {
       );
     case "linkList":
       return (
-        <ul key={index} className="space-y-2 text-base text-gray-700">
+        <ul key={index} className="max-w-[72ch] space-y-2 text-base leading-relaxed text-gray-700">
           {block.content.map((item, itemIndex) => (
             <li key={itemIndex} className="flex items-center gap-2">
               <span className="text-gray-400">•</span>
               <Link
                 href={item.href}
-                className="inline-flex items-center rounded-full border border-neutral-200 bg-white/70 px-3 py-1 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-white"
+                className="inline-flex min-h-11 items-center rounded-full border border-neutral-200 bg-white/70 px-3 py-1 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20"
               >
-                {item.label}
+                {widontRu(item.label)}
               </Link>
             </li>
           ))}
@@ -111,10 +115,10 @@ const renderBlock = (block: ArticleBlock, index: number) => {
       return (
         <ol
           key={index}
-          className="list-decimal space-y-1 pl-5 text-base text-gray-700"
+          className="max-w-[72ch] list-decimal space-y-1.5 pl-5 text-base leading-relaxed text-gray-700"
         >
           {block.content.map((item, itemIndex) => (
-            <li key={itemIndex}>{item}</li>
+            <li key={itemIndex}>{widontRu(item)}</li>
           ))}
         </ol>
       );
@@ -138,16 +142,16 @@ export default async function Page(props: ArticlePageProps) {
       <div className="mx-auto w-full max-w-3xl px-4 py-10 md:py-14">
         <Link
           href="/articles"
-          className="text-sm font-medium text-gray-500 hover:text-gray-900"
+          className="inline-flex min-h-11 items-center text-sm font-medium text-gray-500 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20"
         >
           ← К справочнику
         </Link>
-        <h1 className="mt-3 text-3xl font-semibold text-gray-900">
-          {article.title}
+        <h1 className="mt-3 max-w-[24ch] text-3xl font-semibold leading-tight text-gray-900 text-pretty">
+          {widontRu(article.title)}
         </h1>
         {article.description && (
-          <p className="mt-3 text-base text-gray-600">
-            {article.description}
+          <p className="mt-3 max-w-[72ch] text-base leading-relaxed text-gray-600">
+            {widontRu(article.description)}
           </p>
         )}
         <div className="mt-6 overflow-hidden rounded-3xl border border-white/40 bg-white/70 shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
@@ -168,14 +172,14 @@ export default async function Page(props: ArticlePageProps) {
         </article>
 
         <div className="mt-10 rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
-          <p className="text-sm text-gray-700">
-            Если нужна поддержка или уточнение — напишите нам в Telegram.
+          <p className="max-w-[68ch] text-sm leading-relaxed text-gray-700">
+            {widontRu("Если нужна поддержка или уточнение — напишите нам в Telegram.")}
           </p>
           <a
             href={TELEGRAM_URL}
             target="_blank"
             rel="noreferrer"
-            className="mt-4 inline-flex items-center justify-center rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800"
+            className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/25"
           >
             Написать в Telegram
           </a>

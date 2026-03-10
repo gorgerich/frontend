@@ -325,7 +325,9 @@ export function PersonalAccountModal({ open, onOpenChange }: PersonalAccountModa
             <Button
               variant="ghost"
               size="icon"
+              type="button"
               onClick={close}
+              aria-label="Закрыть личный кабинет"
               className="rounded-full hover:bg-stone-100"
             >
               <X className="h-5 w-5" />

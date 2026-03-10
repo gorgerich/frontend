@@ -1,4 +1,5 @@
 import React from "react";
+import { widontRu } from "@/lib/typography";
 
 type DocSection = {
   id: string;
@@ -18,7 +19,7 @@ export function DocShell({ title, updatedAt, sections }: DocShellProps) {
       <div className="max-w-3xl mx-auto px-4 py-10 text-gray-800">
         <header>
           <p className="text-xs uppercase tracking-wider text-gray-500">Документ</p>
-          <h1 className="mt-2 text-3xl font-semibold text-gray-900">{title}</h1>
+          <h1 className="mt-2 max-w-[24ch] text-3xl font-semibold leading-tight text-gray-900 text-pretty">{widontRu(title)}</h1>
           <p className="mt-2 text-sm text-gray-500">Дата обновления: {updatedAt}</p>
         </header>
 
@@ -29,9 +30,9 @@ export function DocShell({ title, updatedAt, sections }: DocShellProps) {
               <a
                 key={section.id}
                 href={`#${section.id}`}
-                className="whitespace-nowrap rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-sm transition hover:bg-neutral-100"
+                className="inline-flex min-h-11 items-center whitespace-nowrap rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-sm transition hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20"
               >
-                {section.label}
+                {widontRu(section.label)}
               </a>
             ))}
           </div>
@@ -40,8 +41,8 @@ export function DocShell({ title, updatedAt, sections }: DocShellProps) {
         <div className="mt-8 space-y-8">
           {sections.map((section) => (
             <section key={section.id} id={section.id} className="scroll-mt-24">
-              <h2 className="text-xl font-semibold text-gray-900">{section.label}</h2>
-              <div className="mt-3 space-y-3 leading-7 text-gray-700">{section.content}</div>
+              <h2 className="max-w-[26ch] text-xl font-semibold leading-tight text-gray-900 text-pretty">{widontRu(section.label)}</h2>
+              <div className="mt-3 max-w-[72ch] space-y-3 leading-7 text-gray-700">{section.content}</div>
             </section>
           ))}
         </div>

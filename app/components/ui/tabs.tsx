@@ -3,6 +3,7 @@
 import React, {
   createContext,
   useContext,
+  useId,
   useState,
   ReactNode,
 } from "react";
@@ -12,6 +13,7 @@ import { cn } from "./utils";
 type TabsContextType = {
   value: string;
   setValue: (value: string) => void;
+  baseId: string;
 };
 
 const TabsContext = createContext<TabsContextType | null>(null);
@@ -41,6 +43,7 @@ export function Tabs({
   className,
 }: TabsProps) {
   const [internalValue, setInternalValue] = useState(defaultValue);
+  const baseId = useId();
 
   const currentValue = value ?? internalValue;
 
@@ -56,7 +59,7 @@ export function Tabs({
   return (
     <div className={className}>
       <TabsContext.Provider
-        value={{ value: currentValue, setValue }}
+        value={{ value: currentValue, setValue, baseId }}
       >
         {children}
       </TabsContext.Provider>
@@ -73,6 +76,7 @@ interface TabsListProps {
 export function TabsList({ children, className }: TabsListProps) {
   return (
     <div
+      role="tablist"
       className={cn(
         "inline-flex items-center gap-1 rounded-full bg-gray-100 p-1",
         className
@@ -95,16 +99,22 @@ export function TabsTrigger({
   children,
   className,
 }: TabsTriggerProps) {
-  const { value: currentValue, setValue } = useTabsContext();
+  const { value: currentValue, setValue, baseId } = useTabsContext();
   const isActive = currentValue === value;
+  const triggerId = `${baseId}-trigger-${value}`;
+  const contentId = `${baseId}-content-${value}`;
 
   return (
     <button
       type="button"
       onClick={() => setValue(value)}
+      role="tab"
+      id={triggerId}
+      aria-controls={contentId}
+      aria-selected={isActive}
       data-state={isActive ? "active" : "inactive"}
       className={cn(
-        "px-6 py-2 text-sm rounded-full transition-all",
+        "px-6 py-2 text-sm rounded-full transition-all outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20 focus-visible:ring-offset-1",
         isActive
           ? "bg-gray-900 text-white shadow"
           : "text-gray-700 hover:bg-white",
@@ -128,8 +138,17 @@ export function TabsContent({
   children,
   className,
 }: TabsContentProps) {
-  const { value: currentValue } = useTabsContext();
+  const { value: currentValue, baseId } = useTabsContext();
   if (currentValue !== value) return null;
 
-  return <div className={className}>{children}</div>;
+  return (
+    <div
+      role="tabpanel"
+      id={`${baseId}-content-${value}`}
+      aria-labelledby={`${baseId}-trigger-${value}`}
+      className={className}
+    >
+      {children}
+    </div>
+  );
 }

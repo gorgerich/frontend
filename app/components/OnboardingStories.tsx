@@ -74,7 +74,9 @@ export function OnboardingStories({ isOpen, onClose }: { isOpen: boolean; onClos
 
           {/* Кнопка закрытия */}
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Закрыть истории"
             className="absolute top-6 right-6 z-50 p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white/80 hover:text-white transition-all duration-200 border border-white/10"
           >
             <X className="w-6 h-6" />
@@ -125,6 +127,7 @@ export function OnboardingStories({ isOpen, onClose }: { isOpen: boolean; onClos
                       {/* Кнопка на последнем слайде */}
                       {currentStory === stories.length - 1 && (
                         <motion.button
+                          type="button"
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2 }}
@@ -143,7 +146,9 @@ export function OnboardingStories({ isOpen, onClose }: { isOpen: boolean; onClos
               {/* Навигационные кнопки */}
               {currentStory > 0 && (
                 <button
+                  type="button"
                   onClick={handlePrev}
+                  aria-label="Предыдущая история"
                   className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 text-white/50 hover:text-white transition-all duration-300 z-30 group"
                 >
                   <ChevronLeft className="w-6 h-6 group-hover:-translate-x-0.5 transition-transform" />
@@ -152,7 +157,9 @@ export function OnboardingStories({ isOpen, onClose }: { isOpen: boolean; onClos
 
               {currentStory < stories.length - 1 && (
                 <button
+                  type="button"
                   onClick={handleNext}
+                  aria-label="Следующая история"
                   className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 text-white/50 hover:text-white transition-all duration-300 z-30 group"
                 >
                   <ChevronRight className="w-6 h-6 group-hover:translate-x-0.5 transition-transform" />
