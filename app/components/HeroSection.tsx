@@ -4,36 +4,25 @@ import { createPortal } from "react-dom";
 import { ChevronRight } from "lucide-react";
 import { TopButtons } from "./TopButtons";
 import { Button } from "./ui/button";
+
 const heroImage = "/hero-forest.jpg";
 const heroImageNew = "/heroIMGnew.PNG";
-
-// DESKTOP controls
-const DESKTOP_TOP = "17%"; // опускай/поднимай весь заголовок на десктопе
-const LINE1_SHIFT = "0px"; // сдвиг первой строки
-const LINE2_SHIFT = "6px"; // сдвиг второй строки
-const LINE1_LINE_HEIGHT = 1.15; // межстрочное 1-й строки
-const LINE2_LINE_HEIGHT = 1.12; // межстрочное 2-й строки
-const LINES_GAP = "140px"; // расстояние между строками/предложениями
-
-// MOBILE controls
-const MOBILE_SHIFT = "-14%"; // общий сдвиг мобайл-заголовка
-const MOBILE_LINE1_SHIFT = "0px"; // сдвиг 1-й строки
-const MOBILE_LINE2_SHIFT = "0px"; // сдвиг 2-й строки
-const MOBILE_LINE1_LINE_HEIGHT = 1.18;
-const MOBILE_LINE2_LINE_HEIGHT = 1.12;
-const MOBILE_LINES_GAP = "8px"; // расстояние между строками на мобайле
+const DESKTOP_TOP = "5%";
+const LINE2_SHIFT = "6px";
+const MOBILE_SHIFT = "0px";
+const MOBILE_LINE2_SHIFT = "0px";
 
 export function HeroSection() {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const questionRef = useRef<HTMLButtonElement | null>(null);
   const titleRef = useRef<HTMLHeadingElement | null>(null);
-  const [topButtonsStyle, setTopButtonsStyle] = useState<{ top: number; left: number; width: number; visible: boolean }>({
+  const [topButtonsStyle, setTopButtonsStyle] = useState({
     top: 0,
     left: 0,
     width: 0,
     visible: false,
   });
-  const [connectorStyle, setConnectorStyle] = useState<{ top: number; left: number; height: number; opacity: number }>({
+  const [connectorStyle, setConnectorStyle] = useState({
     top: 0,
     left: 0,
     height: 0,
@@ -47,17 +36,17 @@ export function HeroSection() {
     if (!wrapper || !question || !title) return;
 
     const measure = () => {
-      const w = wrapper.getBoundingClientRect();
-      const q = question.getBoundingClientRect();
-      const t = title.getBoundingClientRect();
-      const top = q.bottom - w.top;
-      const height = Math.max(0, t.top - q.bottom);
-      const left = q.left + q.width / 2 - w.left;
+      const wrapperRect = wrapper.getBoundingClientRect();
+      const questionRect = question.getBoundingClientRect();
+      const titleRect = title.getBoundingClientRect();
+      const top = questionRect.bottom - wrapperRect.top;
+      const height = Math.max(0, titleRect.top - questionRect.bottom);
+      const left = questionRect.left + questionRect.width / 2 - wrapperRect.left;
+
       setTopButtonsStyle({
-        // Keep the exact same visual offset as current design.
-        top: window.scrollY + w.top - 44,
-        left: window.scrollX + w.left + 24,
-        width: Math.max(0, w.width - 48),
+        top: window.scrollY + wrapperRect.top - 44,
+        left: window.scrollX + wrapperRect.left + 24,
+        width: Math.max(0, wrapperRect.width - 48),
         visible: true,
       });
       setConnectorStyle({
@@ -86,11 +75,11 @@ export function HeroSection() {
   };
 
   const planCtaClass =
-    "relative h-14 rounded-[20px] border border-black/10 bg-gradient-to-b from-white to-gray-100/80 px-[18px] text-sm font-semibold text-gray-900 shadow-[0_1px_2px_rgba(0,0,0,0.08),0_8px_20px_rgba(0,0,0,0.10)] transition-shadow duration-200 hover:shadow-[0_2px_6px_rgba(0,0,0,0.12),0_10px_24px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10 active:scale-[0.98] active:shadow-[0_1px_2px_rgba(0,0,0,0.08)]";
+    "relative h-14 rounded-[20px] !border-white/18 !bg-[rgba(15,23,42,0.9)] px-[18px] text-sm font-semibold !text-white shadow-[0_1px_2px_rgba(0,0,0,0.08),0_8px_20px_rgba(0,0,0,0.10)] transition-colors duration-200 hover:!bg-[rgba(15,23,42,0.82)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 active:scale-[0.98] active:!bg-[rgba(15,23,42,0.96)] active:shadow-[0_1px_2px_rgba(0,0,0,0.08)] [&_.font-subheading]:!text-white [&_.font-micro]:!text-white/85 [&_svg]:!text-white/90";
 
   return (
-    <section className="relative w-full px-4 pt-14 sm:pt-16 pb-5 md:pt-8 md:pb-7 lg:pb-9">
-      <div className="mx-auto max-w-7xl relative overflow-visible" ref={wrapperRef}>
+    <section className="relative w-full px-4 pt-14 pb-5 sm:pt-16 md:pt-8 md:pb-7 lg:pb-9">
+      <div className="relative mx-auto max-w-7xl overflow-visible" ref={wrapperRef}>
         <div
           className="pointer-events-none absolute hidden md:block"
           style={{
@@ -105,121 +94,106 @@ export function HeroSection() {
           }}
         />
         <div className="relative h-[68vh] w-full overflow-hidden rounded-3xl md:h-[70vh] lg:h-[74vh] md:rounded-[40px]">
-          {/* Background (hero only) */}
           <div className="pointer-events-none absolute inset-0 z-0">
             <img
               src={heroImageNew}
-              alt="Тихая Память"
+              alt="Белые цветы"
               className="absolute inset-0 h-full w-full rounded-3xl object-cover md:rounded-[40px]"
             />
-            <img
-              src={heroImage}
-              alt=""
-              aria-hidden="true"
-              className="hidden"
-            />
+            <img src={heroImage} alt="" aria-hidden="true" className="hidden" />
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/24 via-black/20 to-black/30 md:rounded-[40px]" />
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/12 via-black/7 to-black/3 md:hidden" />
           </div>
 
-          {/* TEXT LAYER */}
           <div className="absolute inset-0 z-30">
-            {/* MOBILE */}
-            <div className="flex h-full flex-col items-center justify-center px-4 pt-10 pb-16 text-center sm:px-6 sm:pt-12 sm:pb-20 md:hidden">
+            <div className="flex h-full flex-col items-start justify-start px-4 pt-4 pb-16 text-left sm:px-6 sm:pt-6 sm:pb-20 md:hidden">
               <h1
-                className="font-heading mx-auto mb-0 w-full max-w-full whitespace-normal break-words tracking-tight text-white [text-wrap:balance]"
+                className="font-heading mb-0 w-full max-w-full whitespace-normal break-words tracking-tight text-white [text-wrap:balance]"
                 style={{
                   textShadow: "0 10px 24px rgba(0,0,0,0.24)",
                 }}
               >
                 <span
-                  className="mx-auto block w-full"
+                  className="block w-full"
                   style={{
                     maxWidth: "100%",
                     transform: `translateY(${MOBILE_SHIFT})`,
                   }}
-                  >
+                >
                   <span
-                    className="font-heading block text-[24px] min-[375px]:text-[29px] sm:text-[32px] font-extrabold text-center whitespace-normal break-words leading-[1.05]"
+                    className="font-heading block text-[24px] font-extrabold leading-[1.05] text-left whitespace-normal break-words min-[375px]:text-[29px] sm:text-[32px]"
                     style={{
                       fontWeight: 800,
                       transform: `translateY(${MOBILE_LINE2_SHIFT})`,
                     }}
                   >
                     Организация похорон под вашим полным контролем
-                    
                   </span>
                 </span>
               </h1>
-              <div className="flex w-full flex-col items-center">
+              <p
+                className="font-body mt-3 w-full max-w-[22rem] text-[12px] font-normal leading-[1.4] text-left text-white/80 min-[375px]:text-[13px]"
+                style={{
+                  fontWeight: 400,
+                }}
+              >
+                Гарантированная фиксация цены в договоре
+              </p>
+              <div className="mt-24 flex w-full flex-col items-center sm:mt-28">
                 <Button
                   type="button"
                   onClick={handlePlanActionsClick}
-                  className={`${planCtaClass} mt-4 w-full max-w-[22rem]`}
+                  className={`${planCtaClass} mt-4 w-full max-w-[18rem]`}
                 >
                   <span className="flex w-full flex-col items-center text-center">
-                    <span className="font-subheading text-gray-600">Что делать, если умер человек</span>
-                    <span className="font-micro mt-0.5 text-[11px] font-normal text-gray-500">
-                      Нажмите, чтобы показать
-                    </span>
+                    <span className="font-subheading text-gray-600">Что делать, если умер человек?</span>
                   </span>
                   <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
                 </Button>
-                <p
-                  className="font-body mt-5 w-full max-w-[22rem] text-[12px] min-[375px]:text-[13px] leading-[1.4] font-normal text-center text-white/80"
-                  style={{
-                    fontWeight: 400,
-                  }}
-                >
-                  Мы фиксируем цену до подписания договора. Никаких скрытых платежей, доплат в морге и навязывания услуг.
-                </p>
               </div>
             </div>
 
-            {/* DESKTOP */}
             <div
-              className="absolute left-0 right-0 hidden px-6 text-center md:block z-30"
+              className="absolute left-0 right-0 hidden z-30 px-6 text-center md:block"
               style={{ top: DESKTOP_TOP }}
             >
               <h1
                 ref={titleRef}
-                className="font-heading mx-auto mb-4 w-full max-w-full md:max-w-[26ch] lg:max-w-[20ch] whitespace-normal break-words tracking-tight text-white [text-wrap:balance]"
+                className="mx-auto mb-4 w-full max-w-full whitespace-normal break-words font-heading tracking-tight text-white md:max-w-[26ch] lg:max-w-[20ch] [text-wrap:balance]"
                 style={{
                   textShadow: "0 10px 24px rgba(0,0,0,0.24)",
                 }}
               >
                 <span className="block">
                   <span
-                    className="font-heading mx-auto block w-full text-[42px] lg:text-[52px] xl:text-[58px] font-extrabold text-center leading-[1.03] whitespace-normal break-words"
+                    className="mx-auto block w-full whitespace-normal break-words text-center font-heading text-[42px] font-extrabold leading-[1.03] lg:text-[52px] xl:text-[58px]"
                     style={{
                       fontWeight: 800,
                       transform: `translateY(${LINE2_SHIFT})`,
                     }}
                   >
                     Организация похорон под вашим полным контролем
-                   
                   </span>
                   <span
-                    className="font-body relative left-1/2 -translate-x-1/2 mt-4 block w-full md:w-[60ch] lg:w-[72ch] max-w-full text-[14px] lg:text-[16px] xl:text-[18px] leading-[1.4] font-normal text-center text-white/80"
+                    className="relative left-1/2 mt-4 block w-full max-w-full -translate-x-1/2 text-center font-body text-[14px] font-normal leading-[1.4] text-white/80 md:w-[60ch] lg:w-[72ch] lg:text-[16px] xl:text-[18px]"
                     style={{
                       fontWeight: 400,
                     }}
                   >
-                  Мы фиксируем цену до подписания договора. Никаких скрытых платежей, доплат в морге и навязывания услуг.
+                    Мы фиксируем цену до подписания договора. Никаких скрытых платежей, доплат в морге и навязывания услуг.
                   </span>
                 </span>
               </h1>
+
               <div className="mt-3 flex w-full items-center justify-center">
                 <Button
                   type="button"
                   onClick={handlePlanActionsClick}
-                  className={`${planCtaClass} w-full max-w-[26rem]`}
+                  ref={questionRef}
+                  className={`${planCtaClass} w-full max-w-[20rem]`}
                 >
                   <span className="flex w-full flex-col items-center text-center">
-                    <span className="font-subheading text-gray-600">Что делать, если умер человек</span>
-                    <span className="font-micro mt-0.5 text-[11px] font-normal text-gray-500">
-                      Нажмите, чтобы показать
-                    </span>
+                    <span className="font-subheading text-gray-600">Что делать, если умер человек?</span>
                   </span>
                   <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
                 </Button>
@@ -228,10 +202,12 @@ export function HeroSection() {
           </div>
         </div>
       </div>
+
+      {/* TODO: Temporarily hidden to reduce cognitive load and keep an easy rollback path. */}
       {typeof document !== "undefined" &&
         createPortal(
           <div
-            className="pointer-events-none absolute z-[1200]"
+            className="pointer-events-none absolute z-[1200] hidden"
             style={{
               top: topButtonsStyle.top,
               left: topButtonsStyle.left,

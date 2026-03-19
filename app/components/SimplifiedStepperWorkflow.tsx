@@ -2267,7 +2267,9 @@ className="mt-1"
 
 case 4: {
 // Шаг 5: Подтверждение и оплата
-const emailValue = (safeFormData.userEmail || "").trim();
+const rawEmailValue = safeFormData.userEmail || "";
+const emailValue = rawEmailValue.trim();
+const emailStarted = rawEmailValue.length > 0;
 const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue);
 const canSubmit = totalRub > 0 && emailOk;
 const deposit10Rub = Math.max(0, Math.round(totalRub * 0.1));
@@ -2497,10 +2499,6 @@ return (
               </div>
             ) : (
               <>
-                <div className="mb-4 text-sm text-gray-600">
-                  На этом этапе оплата не требуется, цена указана для вашего понимания.
-После нажатия «Оформить» вы получите договор на почту. Координатор свяжется с вами в течение 30 минут для подтверждения.
-                </div>
 	              <div className="rounded-[30px] bg-gray-900 text-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.35)] space-y-5">
 	                <div>
 	                  <div className="text-sm font-semibold text-white/90 mb-2">Email для получения информации</div>
@@ -2511,7 +2509,7 @@ return (
                     className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/50 outline-none focus:border-white/50"
                     inputMode="email"
                   />
-                  {!emailOk && (
+                  {emailStarted && !emailOk && (
                     <div className="mt-2 text-xs text-red-200">
                       Проверьте корректность e-mail.
                     </div>
@@ -2532,9 +2530,14 @@ return (
                       {formatRubLocal(totalRub)} ₽
                     </div>
                     <div className="text-sm text-white/70 whitespace-nowrap">
-                      Депозит {formatRubLocal(deposit10Rub)} ₽
+                      Депозит включен в общую стоимость ({formatRubLocal(deposit10Rub)} ₽)
                     </div>
                   </div>
+                </div>
+
+                <div className="text-sm leading-relaxed text-white/70">
+                  На этом этапе оплата не требуется, цена указана для вашего понимания.
+                  После нажатия «Оформить» вы получите договор на почту. Координатор свяжется с вами в течение 30 минут для подтверждения.
                 </div>
 
                 <Button

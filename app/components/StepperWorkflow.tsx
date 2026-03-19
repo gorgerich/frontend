@@ -1186,23 +1186,62 @@ export function StepperWorkflow({
   const [showHowItWorks, setShowHowItWorks] = useState(true);
   const [showDocumentsHelp, setShowDocumentsHelp] = useState(false);
   const howItWorksRef = useRef<HTMLDivElement | null>(null);
+  const howItWorksScrollRafRef = useRef<number | null>(null);
   const [activeEmergencyTab, setActiveEmergencyTab] = useState<
     "home" | "hospital" | "other-city"
   >("home");
 
+  const scrollToHowItWorks = () => {
+    if (typeof window === "undefined") return;
+    const target = howItWorksRef.current;
+    if (!target) return;
+    const startY = window.scrollY;
+    const targetY = Math.max(0, target.getBoundingClientRect().top + window.scrollY - 16);
+    const distance = targetY - startY;
+
+    if (Math.abs(distance) < 4) return;
+
+    if (howItWorksScrollRafRef.current != null) {
+      window.cancelAnimationFrame(howItWorksScrollRafRef.current);
+    }
+
+    const duration = 520;
+    const startTime = performance.now();
+    const easeInOutCubic = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    const step = (now: number) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = easeInOutCubic(progress);
+      window.scrollTo(0, startY + distance * eased);
+
+      if (progress < 1) {
+        howItWorksScrollRafRef.current = window.requestAnimationFrame(step);
+      } else {
+        howItWorksScrollRafRef.current = null;
+      }
+    };
+
+    howItWorksScrollRafRef.current = window.requestAnimationFrame(step);
+  };
+
   useEffect(() => {
     const handler = () => {
       setShowHowItWorks(true);
-      requestAnimationFrame(() => {
-        howItWorksRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
+      window.setTimeout(() => {
+        requestAnimationFrame(() => {
+          scrollToHowItWorks();
         });
-      });
+      }, 60);
     };
 
     window.addEventListener("td:toggle-how-it-works", handler);
-    return () => window.removeEventListener("td:toggle-how-it-works", handler);
+    return () => {
+      window.removeEventListener("td:toggle-how-it-works", handler);
+      if (howItWorksScrollRafRef.current != null) {
+        window.cancelAnimationFrame(howItWorksScrollRafRef.current);
+      }
+    };
   }, []);
 
   type EmergencyChecklistTabId = "home" | "hospital" | "other-city";
@@ -1237,16 +1276,10 @@ export function StepperWorkflow({
       title: "Дома",
       steps: [
         {
-          title: "Вызовите скорую (103)",
+          title: "Вызовите скорую и полицию (112)",
           details: [
-            "Врачи констатируют факт смерти и выдадут бланк. Без него нельзя двигаться дальше.",
+            "Врачи констатируют факт смерти и выдадут бланк. Без него нельзя двигаться дальше. Сотрудник полиции осмотрит тело и составит протокол (это обязательная процедура для всех).",
             
-          ],
-        },
-        {
-          title: "Вызовите полицию (102)",
-          details: [
-            "Сотрудник должен осмотреть тело и составить протокол (это обязательная процедура для всех).",
           ],
         },
         {
@@ -1402,9 +1435,11 @@ export function StepperWorkflow({
       openPackagesMode();
     } else if (routeFlow === "how-it-works") {
       setShowHowItWorks(true);
-      requestAnimationFrame(() => {
-        howItWorksRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
+      window.setTimeout(() => {
+        requestAnimationFrame(() => {
+          scrollToHowItWorks();
+        });
+      }, 60);
     }
   }, [routeFlow]);
 
@@ -1433,12 +1468,11 @@ export function StepperWorkflow({
     if (nextTab) {
       setActiveEmergencyTab(nextTab.id);
     }
-    requestAnimationFrame(() => {
-      howItWorksRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
+    window.setTimeout(() => {
+      requestAnimationFrame(() => {
+        scrollToHowItWorks();
       });
-    });
+    }, 60);
   }, [routeFlow, routeHowItWorksStep]);
 
   const resetOrderConfirmation = () => {
@@ -2480,7 +2514,9 @@ function formatRub(n: number) {
 
   const totalRub = Math.max(0, Math.round(calculateTotal() || 0));
   const deposit10Rub = Math.max(0, Math.round(totalRub * 0.1));
-  const emailValue = (formData.userEmail || "").trim();
+  const rawEmailValue = formData.userEmail || "";
+  const emailValue = rawEmailValue.trim();
+  const emailStarted = rawEmailValue.length > 0;
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue);
   const breakdown = calculateBreakdown();
   const packageLabel = (() => {
@@ -3993,10 +4029,6 @@ function formatRub(n: number) {
     const effectiveDepositRub = Math.round(effectiveTotalRub * 0.1);
     return (
     <>
-      <div className="mb-4 text-base leading-relaxed text-gray-700">
-        На этом этапе оплата не требуется, цена указана для вашего понимания.
-После нажатия «Оформить» вы получите договор на почту. Координатор свяжется с вами в течение 30 минут для подтверждения.
-      </div>
       <div className="rounded-[30px] bg-gray-900 text-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.35)] space-y-5">
 	                      <div>
 	                        <div className="text-sm font-semibold text-white/90 mb-2">
@@ -4009,7 +4041,7 @@ function formatRub(n: number) {
 	                          className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/50 outline-none focus:border-white/50"
 	                          inputMode="email"
 	                        />
-	                        {!emailOk && (
+	                        {emailStarted && !emailOk && (
 	                          <div className="mt-2 text-sm text-red-200">
 	                            Проверьте корректность e-mail.
 	                          </div>
@@ -4022,20 +4054,25 @@ function formatRub(n: number) {
 	                      <div className="h-px bg-white/15" />
 
                       <div className="space-y-1">
-                      <div className="text-sm font-semibold tracking-[0.12em] uppercase text-white/80">
+                        <div className="text-sm font-semibold tracking-[0.12em] uppercase text-white/80">
                           Депозит:
                         </div>
-                        <div className="flex flex-wrap items-end gap-3">
+                        <div className="flex items-end gap-3 whitespace-nowrap">
                           <div className="text-[32px] leading-none font-semibold whitespace-nowrap">
                             {formatRubLocal(effectiveDepositRub)} ₽
                           </div>
-                          <div className="text-sm leading-tight text-white/85">
-                            депозит включен в итоговую сумму
+                          <div className="text-sm leading-tight text-white/85 whitespace-nowrap">
+                            (включен в общую стоимость)
                           </div>
                         </div>
                         <div className="text-sm text-white/85">
                           Итого: {formatRubLocal(effectiveTotalRub)} ₽
                         </div>
+                      </div>
+
+                      <div className="text-sm leading-relaxed text-white/85">
+                        На этом этапе оплата не требуется, цена указана для вашего понимания.
+                        
                       </div>
 
                       <Button
@@ -4048,7 +4085,7 @@ function formatRub(n: number) {
                       </Button>
 
                       <div className="text-sm text-white/85 leading-relaxed">
-                        После оформления мы отправим договор, детали заказа и ссылку на оплату на указанный email.
+                        После оформления мы отправим договор, детали заказа и ссылку на оплату. Координатор свяжется с вами в течение 30 минут для подтверждения.
                       </div>
 
 	                      <div className="h-px bg-white/15" />
@@ -4162,12 +4199,12 @@ function formatRub(n: number) {
               ref={howItWorksRef}
               className="emergencyChecklistCard relative mb-6 overflow-hidden rounded-2xl rounded-t-none border border-white/32 px-4 py-4 shadow-[0_16px_36px_rgba(15,23,42,0.34)]"
             >
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
                 <div className="text-lg font-semibold text-white sm:text-xl">
                   Экстренный чек-лист
                 </div>
                 <div className="text-sm leading-relaxed text-white/95">
-                  Первые шаги на ближайшие 1–2 часа. Спокойно, по порядку.
+                  Первые шаги на ближайшие 1–2 часа.
                 </div>
                 <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   <div
@@ -4264,7 +4301,8 @@ function formatRub(n: number) {
 </CardHeader>
 
 <CardContent className="relative z-10 px-6 sm:px-8 pb-8 pt-0">
-  <div className="rounded-3xl border border-zinc-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+  <div className="space-y-4">
+    <div className="rounded-3xl border border-zinc-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
     <div className="px-5 py-5 sm:px-7 sm:py-6">
       <div className="mb-3 max-w-full break-words text-left text-[15px] min-[375px]:text-[18px] md:text-2xl font-semibold text-gray-900">
         Выберите, как вам комфортнее организовать прощание
@@ -4336,7 +4374,9 @@ function formatRub(n: number) {
         </div>
       </div>
     </div>
-    <div className="px-5 pb-6 pt-4 sm:px-7 sm:pb-7 sm:pt-5">
+    </div>
+    <div className="rounded-3xl border border-zinc-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+      <div className="px-5 pb-6 pt-4 sm:px-7 sm:pb-7 sm:pt-5">
   {workflowMode === "wizard" ? (
     <div>
       <Stepper
@@ -4518,7 +4558,8 @@ function formatRub(n: number) {
       </div>
     </div>
   )}
-  </div>
+      </div>
+    </div>
   </div>
 </CardContent>
 </Card>

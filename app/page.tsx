@@ -253,6 +253,7 @@ const TRUST_BLOCK_CARDS = [
 const HOT_GUIDE_ARTICLES = [
   {
     id: 'hot-morgue-clothes',
+    imageSrc: '/hero-forest.jpg',
     title: 'Одежда и вещи для морга: точный список',
     description:
       'Что нужно передать в морг, в какие сроки и как ничего не забыть в самый тяжелый день.',
@@ -260,6 +261,7 @@ const HOT_GUIDE_ARTICLES = [
   },
   {
     id: 'hot-benefit',
+    imageSrc: '/images/hearse-lux.jpg',
     title: 'Как получить пособие?',
     description:
       'Пошаговый маршрут: куда обращаться, какие документы подготовить и как получить выплату.',
@@ -267,6 +269,7 @@ const HOT_GUIDE_ARTICLES = [
   },
   {
     id: 'hot-morgue-payments',
+    imageSrc: '/heroIMGnew.PNG',
     title: 'Морг требует деньги: за что вы обязаны платить, а за что — нет',
     description:
       'Граница между бесплатными и платными услугами морга и защита от навязанных доплат.',
@@ -859,11 +862,9 @@ function HomeInner() {
               </a>
             </div>
 
-            <section className="mt-10 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:p-8">
+            <div className="mt-10 flex flex-col gap-8">
+            <section className="order-2 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:p-8">
               <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">Почему нам доверяют</h2>
-              <p className="mt-2 max-w-3xl text-base leading-relaxed text-gray-700">
-                {widontRu('Наша цель — не просто оказать услугу, а стать вашим щитом от бюрократии, скрытых наценок и давления в дни прощания.')}
-              </p>
 
               <div className="mt-5 grid gap-4 md:mt-6 md:grid-cols-3">
                 {TRUST_BLOCK_CARDS.map((card) => (
@@ -871,11 +872,8 @@ function HomeInner() {
                     key={card.id}
                     className="rounded-2xl border border-gray-200 bg-white/90 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)]"
                   >
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-base leading-none shrink-0" aria-hidden="true">
-                        {card.icon}
-                      </span>
-                      <h3 className="min-w-0 flex-1 whitespace-nowrap text-[clamp(14px,3.2vw,16px)] font-semibold leading-none tracking-[-0.01em] text-gray-900">
+                    <div className="flex items-start min-w-0">
+                      <h3 className="min-w-0 flex-1 whitespace-normal break-words text-[clamp(15px,3.8vw,18px)] font-semibold leading-tight tracking-[-0.01em] text-gray-900 [text-wrap:balance]">
                         {widontRu(card.title)}
                       </h3>
                     </div>
@@ -887,17 +885,18 @@ function HomeInner() {
               </div>
             </section>
 
-            <div className="mt-8 flex flex-col gap-2">
+            <div className="order-1 flex flex-col gap-2">
               <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">Отзывы клиентов</h2>
               <p className="text-base text-gray-600">
                 {widontRu('Реальный опыт клиентов: что получилось, что волновало и как всё прошло в итоге.')}
               </p>
             </div>
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <div className="order-1 mt-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:overflow-x-visible">
+              <div className="flex w-max items-start gap-4 pb-1 md:grid md:w-full md:grid-cols-3 md:items-start md:pb-0">
               {TRUST_REVIEWS.map((review) => (
                 <div
                   key={review.id}
-                  className="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+                  className="relative h-fit w-[340px] shrink-0 self-start rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:w-[390px] md:w-auto md:min-w-0 md:shrink"
                 >
                   <div className="absolute right-4 top-4 rounded-full border border-gray-200 bg-white/90 px-2.5 py-1 text-sm font-semibold text-gray-700">
                     {review.rating}
@@ -918,6 +917,8 @@ function HomeInner() {
                   <p className="text-base text-gray-700 leading-relaxed">{widontRu(review.text)}</p>
                 </div>
               ))}
+              </div>
+            </div>
             </div>
 
             <section className="mt-10 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:p-7">
@@ -941,6 +942,15 @@ function HomeInner() {
                     <h3 className="text-base font-semibold leading-snug text-gray-900">
                       {widontRu(article.title)}
                     </h3>
+                    <div className="relative mt-3 h-28 overflow-hidden rounded-xl sm:h-32">
+                      <Image
+                        src={article.imageSrc}
+                        alt={article.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 280px, (max-width: 768px) 320px, 300px"
+                      />
+                    </div>
                     <p className="mt-2 text-base leading-relaxed text-gray-700">
                       {widontRu(article.description)}
                     </p>

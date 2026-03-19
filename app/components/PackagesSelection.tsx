@@ -56,7 +56,7 @@ export function PackagesSelection({
 
   const BASE_MINIMUM: Package = {
     id: "base-minimum",
-    name: "Традиционный",
+    name: "Тариф «Традиционный»",
     price: BASE_TARIFF_TOTAL,
     description:
       "Ниже — только самые необходимые услуги для проведения достойного прощания. Вы сможете добавить нужный транспорт, расширенную атрибутику и услуги по кнопке ниже.",
@@ -280,11 +280,6 @@ export function PackagesSelection({
   return (
     <div className={cn("w-full", embedded ? "pt-0" : "pt-2 md:pt-3")}>
       <div className={cn("mx-auto w-full max-w-6xl", embedded ? "px-0" : "px-2")}>
-        {isSelfMode && (
-        <div className="mb-5 text-left text-[13px] text-gray-500 font-medium leading-relaxed md:hidden">
-          {BASE_MINIMUM.description}
-        </div>
-        )}
         <div
           className={cn(
             isSelfMode
@@ -309,13 +304,13 @@ export function PackagesSelection({
             >
               <div className="text-center">
                 <h3 className={cn(
-                  "font-semibold text-gray-700 break-words",
+                  "font-micro font-[700] text-gray-700 break-words",
                   isCustomizingPlan ? "text-[11px] sm:text-sm uppercase tracking-[0.18em] text-gray-500" : "text-[11px] sm:text-sm uppercase tracking-[0.18em] text-gray-500"
                 )}>
                   {isCustomizingPlan ? "ПРОИСХОДИТ НАСТРОЙКА ПЛАНА" : BASE_MINIMUM.name}
                 </h3>
                 {!isCustomizingPlan && (
-                  <p className="mt-3 text-left text-sm text-gray-500 font-medium leading-relaxed hidden md:block">
+                  <p className="mt-3 text-left text-[13px] font-medium leading-relaxed text-gray-500 md:hidden">
                     {BASE_MINIMUM.description}
                   </p>
                 )}

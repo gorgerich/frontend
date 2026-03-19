@@ -107,8 +107,8 @@ export function StickyHeader() {
   return (
     <>
       <div className="sticky top-0 z-20 w-full bg-[#f6f5f3]">
-        <div className="w-full px-6 sm:px-7">
-          <div className="flex h-16 w-full items-center gap-4">
+        <div className="w-full px-4 pt-2 sm:px-7 md:px-6 md:pt-0">
+          <div className="flex h-16 w-full items-center gap-4 rounded-[24px] border border-[#e7e2da] bg-[#f6f5f3] px-4 shadow-[0_6px_18px_rgba(15,23,42,0.06)] md:rounded-none md:border-0 md:bg-transparent md:px-0 md:shadow-none">
             <Link
               href="/"
               onClick={() => setTopMenuOpen(false)}
