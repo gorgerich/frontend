@@ -402,8 +402,8 @@ export function PackagesSelection({
                         description="Церемония прощания с родными"
                         value={draftConfig.hall}
                         options={[
-                          { value: "none", label: "Выключен" },
-                          { value: "60", label: "Включен", delta: 10000 },
+                          { value: "none", label: "Без зала" },
+                          { value: "60", label: "С залом", delta: 10000 },
                         ]}
                         onChange={(value) =>
                           setDraftConfig((prev) => ({ ...prev, hall: value as TariffDraftConfig["hall"] }))

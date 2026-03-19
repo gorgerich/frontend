@@ -427,7 +427,7 @@ export function PackagesSection({ formData, onUpdateFormData }: PackagesSectionP
                         <Button
                           onClick={() => onUpdateFormData('packageType', pkg.id)}
                           className={cn(
-                            'w-full h-12 rounded-xl text-sm font-medium transition-all duration-300',
+                            'w-full h-12 rounded-full text-sm font-medium transition-all duration-300',
                             formData.packageType === pkg.id
                               ? 'bg-gray-900 text-white shadow-lg shadow-gray-900/20 hover:bg-gray-800 hover:shadow-gray-900/30'
                               : 'bg-white border-2 border-gray-100 text-gray-900 hover:border-gray-900 hover:bg-gray-50',
@@ -587,7 +587,7 @@ export function PackagesSection({ formData, onUpdateFormData }: PackagesSectionP
                           <Button
                             onClick={() => onUpdateFormData('packageType', pkg.id)}
                             className={cn(
-                              'w-full h-12 rounded-xl text-sm font-medium transition-all duration-300',
+                              'w-full h-12 rounded-full text-sm font-medium transition-all duration-300',
                               formData.packageType === pkg.id
                                 ? 'bg-gray-900 text-white shadow-lg shadow-gray-900/20 hover:bg-gray-800'
                                 : 'bg-white border-2 border-gray-100 text-gray-900 hover:border-gray-900 hover:bg-gray-50',

@@ -75,7 +75,7 @@ export function HeroSection() {
   };
 
   const planCtaClass =
-    "relative h-14 rounded-[20px] !border-white/18 !bg-[rgba(15,23,42,0.9)] px-[18px] text-sm font-semibold !text-white shadow-[0_1px_2px_rgba(0,0,0,0.08),0_8px_20px_rgba(0,0,0,0.10)] transition-colors duration-200 hover:!bg-[rgba(15,23,42,0.82)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 active:scale-[0.98] active:!bg-[rgba(15,23,42,0.96)] active:shadow-[0_1px_2px_rgba(0,0,0,0.08)] [&_.font-subheading]:!text-white [&_.font-micro]:!text-white/85 [&_svg]:!text-white/90";
+    "relative h-14 rounded-full !border-white/18 !bg-[rgba(15,23,42,0.9)] px-[18px] text-sm font-semibold !text-white shadow-[0_1px_2px_rgba(0,0,0,0.08),0_8px_20px_rgba(0,0,0,0.10)] transition-colors duration-200 hover:!bg-[rgba(15,23,42,0.82)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 active:scale-[0.98] active:!bg-[rgba(15,23,42,0.96)] active:shadow-[0_1px_2px_rgba(0,0,0,0.08)] [&_.font-subheading]:!text-white [&_.font-micro]:!text-white/85 [&_svg]:!text-white/90";
 
   return (
     <section className="relative w-full px-4 pt-14 pb-5 sm:pt-16 md:pt-8 md:pb-7 lg:pb-9">

@@ -2131,7 +2131,7 @@ variant="outline"
 size="sm"
 type="button"
 onClick={() => handleSkipField("fullName")}
-className="whitespace-nowrap rounded-[30px] min-w-[96px]"
+className="whitespace-nowrap rounded-full min-w-[96px]"
 >
 Позже
 </Button>
@@ -2154,7 +2154,7 @@ variant="outline"
 size="sm"
 type="button"
 onClick={() => handleSkipField("birthDate")}
-className="whitespace-nowrap rounded-[30px] min-w-[96px]"
+className="whitespace-nowrap rounded-full min-w-[96px]"
 >
 Не знаю
 </Button>
@@ -2176,7 +2176,7 @@ variant="outline"
 size="sm"
 type="button"
 onClick={() => handleSkipField("deathDate")}
-className="whitespace-nowrap rounded-[30px] min-w-[96px]"
+className="whitespace-nowrap rounded-full min-w-[96px]"
 >
 Не знаю
 </Button>
@@ -2199,7 +2199,7 @@ variant="outline"
 size="sm"
 type="button"
 onClick={() => handleSkipField("deathCertificate")}
-className="whitespace-nowrap rounded-[30px] min-w-[96px]"
+className="whitespace-nowrap rounded-full min-w-[96px]"
 >
 Не знаю
 </Button>
@@ -2564,7 +2564,7 @@ return (
                     <a href={`tel:${SUPPORT_PHONE_TEL}`} className="block">
                       <Button
                         type="button"
-                        className="w-full rounded-xl !bg-white !text-gray-900 hover:!bg-gray-100 hover:!text-gray-900 px-4 py-2 text-sm font-semibold"
+                        className="w-full rounded-full !bg-white !text-gray-900 hover:!bg-gray-100 hover:!text-gray-900 px-4 py-2 text-sm font-semibold"
                       >
                         Позвонить координатору
                       </Button>
@@ -2573,7 +2573,7 @@ return (
                       <Button
                         type="button"
                         variant="secondary"
-                        className="w-full rounded-xl !bg-white/10 !text-white hover:!bg-white/15 px-4 py-2 text-sm font-semibold"
+                        className="w-full rounded-full !bg-white/10 !text-white hover:!bg-white/15 px-4 py-2 text-sm font-semibold"
                       >
                         Написать в чат
                       </Button>
@@ -2694,7 +2694,7 @@ isTransitioning
 variant="outline"
 onClick={handlePrev}
 disabled={currentStep === 0}
-className="gap-2 rounded-[30px]"
+className="gap-2 rounded-full"
 type="button"
 >
 <ChevronLeft className="h-4 w-4" />
@@ -2708,7 +2708,7 @@ type="button"
 <Button
 onClick={handleNext}
 disabled={currentStep === simplifiedSteps.length - 1}
-className="gap-2 bg-gray-900 hover:bg-gray-800 rounded-[30px]"
+className="gap-2 bg-gray-900 hover:bg-gray-800 rounded-full"
 type="button"
 >
 Далее

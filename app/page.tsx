@@ -856,7 +856,7 @@ function HomeInner() {
                 href={TELEGRAM_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex min-h-12 items-center justify-center rounded-xl border border-gray-200 bg-white px-5 text-base font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
+                className="inline-flex min-h-12 items-center justify-center rounded-full border border-gray-200 bg-white px-5 text-base font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
               >
                 Написать дежурному координатору
               </a>
@@ -962,7 +962,7 @@ function HomeInner() {
               <div className="mt-5 flex justify-center">
                 <Link
                   href="/articles"
-                  className="inline-flex min-h-12 items-center justify-center rounded-xl border border-gray-200 bg-white px-5 text-base font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
+                  className="inline-flex min-h-12 items-center justify-center rounded-full border border-gray-200 bg-white px-5 text-base font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
                 >
                   Перейти в справочник
                 </Link>

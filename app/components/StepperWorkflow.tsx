@@ -3798,7 +3798,7 @@ function formatRub(n: number) {
                   variant="outline"
                   size="sm"
                   onClick={() => handleSkipField("fullName")}
-                  className="whitespace-nowrap rounded-[30px] min-w-[96px]"
+                  className="whitespace-nowrap rounded-full min-w-[96px]"
                 >
                   Позже
                 </Button>
@@ -3816,7 +3816,7 @@ function formatRub(n: number) {
                     onChange={(e) => handleInputChange("birthDate", e.target.value)}
                     className="flex-1"
                   />
-                  <Button type="button" variant="outline" size="sm" onClick={() => handleSkipField("birthDate")} className="whitespace-nowrap rounded-[30px] min-w-[96px]">
+                  <Button type="button" variant="outline" size="sm" onClick={() => handleSkipField("birthDate")} className="whitespace-nowrap rounded-full min-w-[96px]">
                     Не знаю
                   </Button>
                 </div>
@@ -3832,7 +3832,7 @@ function formatRub(n: number) {
                     onChange={(e) => handleInputChange("deathDate", e.target.value)}
                     className="flex-1"
                   />
-                  <Button type="button" variant="outline" size="sm" onClick={() => handleSkipField("deathDate")} className="whitespace-nowrap rounded-[30px] min-w-[96px]">
+                  <Button type="button" variant="outline" size="sm" onClick={() => handleSkipField("deathDate")} className="whitespace-nowrap rounded-full min-w-[96px]">
                     Не знаю
                   </Button>
                 </div>
@@ -3849,7 +3849,7 @@ function formatRub(n: number) {
                   placeholder="AA-000 № 000000"
                   className="flex-1"
                 />
-                <Button type="button" variant="outline" size="sm" onClick={() => handleSkipField("deathCertificate")} className="whitespace-nowrap rounded-[30px] min-w-[96px]">
+                <Button type="button" variant="outline" size="sm" onClick={() => handleSkipField("deathCertificate")} className="whitespace-nowrap rounded-full min-w-[96px]">
                   Позже
                 </Button>
               </div>
@@ -4098,7 +4098,7 @@ function formatRub(n: number) {
                           href={SUPPORT_TELEGRAM_URL}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-2 inline-flex w-full items-center justify-center rounded-xl border border-white/30 bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/20 whitespace-nowrap"
+                          className="mt-2 inline-flex w-full items-center justify-center rounded-full border border-white/30 bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/20 whitespace-nowrap"
                         >
                           Написать координатору
                         </a>
@@ -4210,7 +4210,7 @@ function formatRub(n: number) {
                   <div
                     role="tablist"
                     aria-label="Сценарии экстренного чек-листа"
-                    className="inline-flex min-w-full gap-1 rounded-full border border-white/35 bg-white/18 p-1"
+                    className="inline-flex w-max gap-1 rounded-full border border-white/35 bg-white/18 p-1"
                   >
                     {emergencyChecklistTabs.map((tab) => (
                       <button
@@ -4278,7 +4278,7 @@ function formatRub(n: number) {
                   <div className="mt-5">
                     <Button
                       asChild
-                      className="h-11 w-full rounded-xl !bg-white !text-gray-900 hover:!bg-white/85 text-sm font-semibold shadow-sm"
+                      className="h-11 w-full rounded-full !bg-white !text-gray-900 hover:!bg-white/85 text-sm font-semibold shadow-sm"
                     >
                       <a
                         href={buildTelegramChatUrl(activeEmergencyChecklistTab.ctaPrefill)}
@@ -4311,7 +4311,7 @@ function formatRub(n: number) {
         Можно собрать план самостоятельно или выбрать готовое решение с расширенным пакетом услуг.
       </p>
       <div className="mb-1 mt-2 flex w-full justify-center md:justify-start">
-        <div className="flex w-full max-w-full min-w-0 flex-wrap gap-1 rounded-2xl border border-zinc-200 bg-zinc-100 p-1 md:gap-0 md:rounded-full md:mx-0 md:mr-auto">
+        <div className="flex w-full max-w-full min-w-0 flex-wrap gap-1 rounded-[28px] border border-zinc-200 bg-zinc-100 p-1 md:gap-0 md:mx-0 md:mr-auto md:rounded-full">
           <button
             type="button"
             onClick={() => {
@@ -4440,7 +4440,7 @@ function formatRub(n: number) {
           variant="outline"
           onClick={handlePrev}
           disabled={currentStep === 0}
-          className="gap-2 rounded-[30px]"
+          className="gap-2 rounded-full"
         >
           <ChevronLeft className="h-4 w-4" />
           Назад
@@ -4453,7 +4453,7 @@ function formatRub(n: number) {
         <Button
           onClick={handleNext}
           disabled={currentStep === steps.length - 1}
-          className="gap-2 bg-gray-900 hover:bg-gray-800 rounded-[30px]"
+          className="gap-2 bg-gray-900 hover:bg-gray-800 rounded-full"
         >
           Далее
           <ChevronRight className="h-4 w-4" />
@@ -4465,7 +4465,7 @@ function formatRub(n: number) {
       {showScenarioBlock && (
         <>
           <div className="flex justify-center">
-            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-full border border-white/20 inline-flex w-full max-w-[440px] min-w-0 flex-wrap gap-1">
+            <div className="bg-white/20 backdrop-blur-sm p-1 rounded-[28px] border border-white/20 inline-flex w-full max-w-[440px] min-w-0 flex-wrap gap-1 md:rounded-full">
               <button
                 type="button"
                 onClick={() => handleInputChange("serviceType", "burial")}
@@ -4528,7 +4528,7 @@ function formatRub(n: number) {
                   href={SUPPORT_TELEGRAM_URL}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex w-full items-center justify-center rounded-xl bg-white text-gray-900 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-white/90"
+                  className="inline-flex w-full items-center justify-center rounded-full bg-white text-gray-900 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-white/90"
                 >
                   Написать координатору
                 </a>

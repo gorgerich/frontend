@@ -107,8 +107,20 @@ export function StickyHeader() {
   return (
     <>
       <div className="sticky top-0 z-20 w-full bg-[#f6f5f3]">
-        <div className="w-full px-4 pt-2 sm:px-7 md:px-6 md:pt-0">
-          <div className="flex h-16 w-full items-center gap-4 rounded-[24px] border border-[#e7e2da] bg-[#f6f5f3] px-4 shadow-[0_6px_18px_rgba(15,23,42,0.06)] md:rounded-none md:border-0 md:bg-transparent md:px-0 md:shadow-none">
+        <div
+          className={
+            isDesktopNav
+              ? "w-full px-6 sm:px-7"
+              : "w-full px-4 pt-2 sm:px-7"
+          }
+        >
+          <div
+            className={
+              isDesktopNav
+                ? "flex h-16 w-full items-center gap-4"
+                : "flex h-16 w-full items-center gap-4 rounded-[24px] border border-[#e7e2da] bg-[#f6f5f3] px-4 shadow-[0_6px_18px_rgba(15,23,42,0.06)]"
+            }
+          >
             <Link
               href="/"
               onClick={() => setTopMenuOpen(false)}
@@ -221,7 +233,7 @@ export function StickyHeader() {
                       key={item.id}
                       href={item.href}
                       onClick={() => setTopMenuOpen(false)}
-                      className="rounded-xl px-3 py-3 text-base font-medium text-gray-800 transition hover:bg-gray-100/80"
+                      className="rounded-full px-3 py-3 text-base font-medium text-gray-800 transition hover:bg-gray-100/80"
                     >
                       {item.label}
                     </Link>
@@ -230,7 +242,7 @@ export function StickyHeader() {
                       key={item.id}
                       type="button"
                       onClick={item.onClick}
-                      className="rounded-xl px-3 py-3 text-left text-base font-medium text-gray-800 transition hover:bg-gray-100/80"
+                      className="rounded-full px-3 py-3 text-left text-base font-medium text-gray-800 transition hover:bg-gray-100/80"
                     >
                       {item.label}
                     </button>
@@ -243,14 +255,14 @@ export function StickyHeader() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setTopMenuOpen(false)}
-                  className="inline-flex w-full items-center justify-center rounded-xl bg-[#63ADEC] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0077ED]"
+                  className="inline-flex w-full items-center justify-center rounded-full bg-[#63ADEC] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0077ED]"
                 >
                   Написать координатору
                 </a>
                 <button
                   type="button"
                   onClick={handleTopOpenPackages}
-                  className="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 transition hover:bg-gray-50"
+                  className="inline-flex w-full items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 transition hover:bg-gray-50"
                 >
                   Рассчитать стоимость
                 </button>
