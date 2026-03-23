@@ -233,20 +233,20 @@ const TRUST_BLOCK_CARDS = [
   {
     id: 'trust-card-1',
     icon: '🛡️',
-    title: 'Единый организатор, а не биржа заявок',
-    text: 'Мы не передаем ваш номер телефона сторонним агентствам или случайным ритуальщикам. За вами закрепляется личный координатор «Тихого дома». Он управляет всем процессом — от морга до транспорта',
+    title: 'МЫ ВСЕГДА РЯДОМ',
+    text: 'Координатор ведёт весь процесс от начала до конца. На связи 24/7',
   },
   {
     id: 'trust-card-2',
     icon: '📄',
-    title: 'Юридическая фиксация сметы',
-    text: 'Никаких переводов на личные карты и внезапных доплат наличными в морге. После согласования плана мы присылаем вам официальный договор. Итоговая сумма замораживается. Оплата проходит через защищенный банковский шлюз с выдачей электронного чека.',
+    title: 'ПРОЗРАЧНО',
+    text: 'Вы видите итоговую сумму заранее, мы фиксируем её в договоре',
   },
   {
     id: 'trust-card-3',
     icon: '💬',
-    title: 'Право на тишину и ваше расписание',
-    text: 'Ритуальная сфера часто ассоциируется с агрессивными продажами и постоянными звонками. У нас вы можете выбрать формат «Общаться только текстом в чате». Никто не будет вас торопить, навязывать ненужные услуги или тревожить в моменты, когда вы хотите побыть с близкими.',
+    title: 'БЕЗ ДАВЛЕНИЯ',
+    text: 'Вы сами выбираете формат общения — можно полностью без звонков',
   },
 ] as const;
 
@@ -886,21 +886,17 @@ function HomeInner() {
             </div>
 
             <div className="mt-10 flex flex-col gap-8">
-            <section className="order-2 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:p-8">
-              <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">Почему нам доверяют</h2>
-
-              <div className="mt-5 grid gap-4 md:mt-6 md:grid-cols-3">
+            <section className="order-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 {TRUST_BLOCK_CARDS.map((card) => (
                   <article
                     key={card.id}
-                    className="rounded-2xl border border-gray-200 bg-white/90 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)]"
+                    className="rounded-[28px] border border-zinc-200/80 bg-white px-5 py-6 shadow-[0_10px_28px_rgba(15,23,42,0.05)] md:px-7 md:py-7"
                   >
-                    <div className="flex items-start min-w-0">
-                      <h3 className="min-w-0 flex-1 whitespace-normal break-words text-[clamp(15px,3.8vw,18px)] font-semibold leading-tight tracking-[-0.01em] text-gray-900 [text-wrap:balance]">
-                        {widontRu(card.title)}
-                      </h3>
-                    </div>
-                    <p className="mt-2 text-base leading-relaxed text-gray-700">
+                    <h3 className="max-w-full whitespace-nowrap text-[clamp(24px,6vw,38px)] font-black uppercase leading-none tracking-[-0.05em] text-[#69a9e3] md:text-[clamp(18px,2vw,30px)]">
+                      {widontRu(card.title)}
+                    </h3>
+                    <p className="mt-7 max-w-[22ch] text-[15px] font-medium leading-[1.35] text-[#24364a] md:mt-8 md:text-[18px]">
                       {widontRu(card.text)}
                     </p>
                   </article>

@@ -161,6 +161,14 @@ export function StickyHeader() {
                     </button>
                   ),
                 )}
+                <a
+                  href={TELEGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#d9d5ce] bg-white/40 px-5 text-sm font-medium text-gray-700 transition hover:bg-white/70 hover:text-gray-900 whitespace-nowrap"
+                >
+                  Нужна помощь
+                </a>
               </nav>
             ) : (
               <button

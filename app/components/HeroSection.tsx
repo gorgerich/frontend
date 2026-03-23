@@ -6,11 +6,18 @@ import { TopButtons } from "./TopButtons";
 import { Button } from "./ui/button";
 
 const heroImage = "/hero-forest.jpg";
-const heroImageNew = "/heroIMGnew.PNG";
-const DESKTOP_TOP = "5%";
+const DESKTOP_TOP = "3%";
 const LINE2_SHIFT = "6px";
 const MOBILE_SHIFT = "0px";
 const MOBILE_LINE2_SHIFT = "0px";
+const HERO_BULLETS = [
+  "Без звонков",
+  "Фиксированная цена",
+  "Личный координатор",
+];
+const MOBILE_HERO_BULLETS = HERO_BULLETS.filter(
+  (bullet) => bullet !== "Фиксированная цена",
+);
 
 interface HeroSectionProps {
   isEmergencyChecklistOpen: boolean;
@@ -103,13 +110,12 @@ export function HeroSection({
   return (
     <section className="relative w-full pt-4 pb-5 sm:pt-5 md:pt-8 md:pb-7 lg:pb-9">
       <div className="pointer-events-none absolute inset-x-0 top-4 z-0 h-[68vh] sm:top-5 md:hidden">
-        <div className="absolute left-1/2 h-full w-screen -translate-x-1/2 overflow-hidden rounded-[28px]">
+        <div className="absolute left-1/2 h-full w-[calc(100vw-32px)] -translate-x-1/2 overflow-hidden rounded-[28px] sm:w-[calc(100vw-36px)]">
           <img
-            src={heroImageNew}
+            src={heroImage}
             alt="Белые цветы"
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <img src={heroImage} alt="" aria-hidden="true" className="hidden" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/24 via-black/20 to-black/30" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/12 via-black/7 to-black/3" />
         </div>
@@ -118,11 +124,10 @@ export function HeroSection({
       <div className="pointer-events-none absolute inset-x-0 top-0 z-0 hidden h-[70vh] md:block lg:h-[74vh]">
         <div className="absolute left-1/2 h-full w-[calc(100vw-32px)] -translate-x-1/2 overflow-hidden rounded-[40px] lg:w-[calc(100vw-48px)]">
           <img
-            src={heroImageNew}
+            src={heroImage}
             alt="Белые цветы"
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <img src={heroImage} alt="" aria-hidden="true" className="hidden" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/24 via-black/20 to-black/30" />
         </div>
       </div>
@@ -131,7 +136,18 @@ export function HeroSection({
         <div className="relative h-[68vh] w-full">
           <div className="absolute inset-0 z-30">
             <div className="flex h-full flex-col items-start justify-start px-4 pt-4 pb-16 text-left translate-y-[10%] sm:px-6 sm:pt-6 sm:pb-20">
-              <h1
+              <div className="-translate-y-[5%]">
+                <div className="mb-5 flex w-full max-w-[20rem] flex-wrap gap-2 sm:max-w-[24rem]">
+                {MOBILE_HERO_BULLETS.map((bullet) => (
+                  <span
+                    key={bullet}
+                    className="inline-flex min-h-[34px] items-center rounded-full border border-white/30 bg-white/14 px-3.5 text-[12px] font-medium leading-none text-white shadow-[0_6px_20px_rgba(15,23,42,0.10)] backdrop-blur-md sm:min-h-[36px] sm:px-4 sm:text-[13px]"
+                  >
+                    {bullet}
+                  </span>
+                ))}
+                </div>
+                <h1
                 className="font-heading mb-0 w-full max-w-full whitespace-normal break-words tracking-tight text-white [text-wrap:balance]"
                 style={{
                   textShadow: "0 10px 24px rgba(0,0,0,0.24)",
@@ -154,23 +170,24 @@ export function HeroSection({
                     Достойная организация похорон в Москве и Московской области
                   </span>
                 </span>
-              </h1>
-              <p
+                </h1>
+                <p
                 className="font-body mt-3 w-full max-w-[22rem] text-[12px] font-normal leading-[1.4] text-left text-white/80 min-[375px]:text-[13px]"
                 style={{
                   fontWeight: 400,
                 }}
-              >
+                >
                 Онлайн сервис организации прощания. Расчет без скрытых платежей и
                 доплат. Фиксируем итоговую цену в договоре.
-              </p>
-              <div className="mt-14 flex w-full flex-col items-center sm:mt-16">
+                </p>
+              </div>
+              <div className="mt-14 flex w-full flex-col items-stretch sm:mt-16">
                 <Button
                   type="button"
                   onClick={handlePlanActionsClick}
                   aria-expanded={isEmergencyChecklistOpen}
                   aria-controls="how-it-works"
-                  className={`${planCtaClass} mt-4 w-full max-w-[18rem]`}
+                  className={`${planCtaClass} mt-4 w-full`}
                 >
                   <span className="flex w-full flex-col items-center text-center">
                     <span className="font-subheading text-gray-600">
@@ -204,55 +221,66 @@ export function HeroSection({
         />
         <div className="relative h-[70vh] w-full lg:h-[74vh]">
           <div className="absolute inset-0 z-30">
-            <div
-              className="absolute left-0 right-0 z-30 px-6 text-center"
-              style={{ top: DESKTOP_TOP }}
-            >
-              <h1
-                ref={titleRef}
-                className="mx-auto mb-4 w-full max-w-full whitespace-normal break-words font-heading tracking-tight text-white md:max-w-[26ch] lg:max-w-[20ch] [text-wrap:balance]"
-                style={{
-                  textShadow: "0 10px 24px rgba(0,0,0,0.24)",
-                }}
-              >
-                <span className="block">
-                  <span
-                    className="mx-auto block w-full whitespace-normal break-words text-center font-heading text-[42px] font-extrabold leading-[1.03] lg:text-[52px] xl:text-[58px]"
+            <div className="absolute inset-x-0 z-30 px-3 lg:px-4" style={{ top: DESKTOP_TOP }}>
+              <div className="mx-auto max-w-7xl px-1 lg:px-2 xl:px-3">
+                <div className="max-w-[68rem] text-left lg:-translate-x-[7%]">
+                  <div className="mb-6 flex w-full max-w-[42rem] flex-wrap gap-3 xl:max-w-[46rem]">
+                    {HERO_BULLETS.map((bullet) => (
+                      <span
+                        key={bullet}
+                        className="inline-flex min-h-[40px] items-center rounded-full border border-white/26 bg-white/12 px-5 text-[15px] font-medium leading-none text-white shadow-[0_8px_26px_rgba(15,23,42,0.10)] backdrop-blur-md"
+                      >
+                        {bullet}
+                      </span>
+                    ))}
+                  </div>
+                  <h1
+                    ref={titleRef}
+                    className="mb-4 w-full max-w-[54rem] whitespace-normal break-normal font-heading tracking-tight text-white [text-wrap:balance] xl:max-w-[58rem]"
                     style={{
-                      fontWeight: 800,
-                      transform: `translateY(${LINE2_SHIFT})`,
+                      textShadow: "0 10px 24px rgba(0,0,0,0.24)",
                     }}
                   >
-                    Достойная организация похорон в Москве и Московской области
-                  </span>
-                  <span
-                    className="relative left-1/2 mt-4 block w-full max-w-full -translate-x-1/2 text-center font-body text-[14px] font-normal leading-[1.4] text-white/80 md:w-[60ch] lg:w-[72ch] lg:text-[16px] xl:text-[18px]"
-                    style={{
-                      fontWeight: 400,
-                    }}
-                  >
-                    Онлайн сервис организации прощания. Расчет без скрытых
-                    платежей и доплат. Фиксируем итоговую цену в договоре.
-                  </span>
-                </span>
-              </h1>
-
-              <div className="mt-3 flex w-full items-center justify-center">
-                <Button
-                  type="button"
-                  onClick={handlePlanActionsClick}
-                  ref={questionRef}
-                  aria-expanded={isEmergencyChecklistOpen}
-                  aria-controls="how-it-works"
-                  className={`${planCtaClass} w-full max-w-[20rem]`}
-                >
-                  <span className="flex w-full flex-col items-center text-center">
-                    <span className="font-subheading text-gray-600">
-                      Что делать, если умер человек?
+                    <span className="block">
+                      <span
+                        className="block w-full whitespace-normal break-normal text-left font-heading text-[42px] font-extrabold leading-[1.03] lg:text-[52px] xl:text-[58px]"
+                        style={{
+                          fontWeight: 800,
+                          transform: `translateY(${LINE2_SHIFT})`,
+                        }}
+                      >
+                        Достойная организация похорон в Москве и Московской области
+                      </span>
+                      <span
+                        className="mt-4 block max-w-[40rem] text-left font-body text-[14px] font-normal leading-[1.4] text-white/80 lg:max-w-[68rem] lg:whitespace-nowrap lg:text-[15px] xl:max-w-[72rem] xl:text-[16px]"
+                        style={{
+                          fontWeight: 400,
+                        }}
+                      >
+                        Онлайн сервис организации прощания. Расчет без скрытых
+                        платежей и доплат. Фиксируем итоговую цену в договоре.
+                      </span>
                     </span>
-                  </span>
-                  <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                </Button>
+                  </h1>
+
+                  <div className="mt-2 flex w-full items-center justify-start lg:mt-1">
+                    <Button
+                      type="button"
+                      onClick={handlePlanActionsClick}
+                      ref={questionRef}
+                      aria-expanded={isEmergencyChecklistOpen}
+                      aria-controls="how-it-works"
+                      className={`${planCtaClass} w-full max-w-[20rem]`}
+                    >
+                      <span className="flex w-full flex-col items-center text-center">
+                        <span className="font-subheading text-gray-600">
+                          Что делать, если умер человек?
+                        </span>
+                      </span>
+                      <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
