@@ -524,6 +524,8 @@ function HomeInner() {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedPackageSlug, setSelectedPackageSlug] = useState<string | null>(null);
   const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
+  const [isEmergencyChecklistOpen, setIsEmergencyChecklistOpen] = useState(false);
+  const [emergencyChecklistScrollRequest, setEmergencyChecklistScrollRequest] = useState(0);
   const [selectedCemeteryCategory, setSelectedCemeteryCategory] =
     useState<'standard' | 'comfort' | 'premium'>('standard');
   const trackingSessionId = getTrackingSessionId();
@@ -676,6 +678,12 @@ function HomeInner() {
   }, [routePackage]);
 
   useEffect(() => {
+    if (routeFlow !== 'how-it-works') return;
+    setIsEmergencyChecklistOpen(true);
+    setEmergencyChecklistScrollRequest((value) => value + 1);
+  }, [routeFlow, routeHowItWorksStep]);
+
+  useEffect(() => {
     if (ctaParam && ctaParam !== lastCtaRef.current) {
       lastCtaRef.current = ctaParam;
       if (ctaParam === 'call') {
@@ -686,12 +694,25 @@ function HomeInner() {
     }
   }, [ctaParam]);
 
+  const handleOpenEmergencyChecklist = () => {
+    setIsEmergencyChecklistOpen((current) => {
+      if (current) {
+        return false;
+      }
+      setEmergencyChecklistScrollRequest((value) => value + 1);
+      return true;
+    });
+  };
+
   return (
     <main className="min-h-screen bg-[#f6f5f3] flex flex-col overflow-x-hidden">
       <div className="flex-1">
         <div className="relative">
           <section className="relative overflow-visible">
-            <HeroSection />
+            <HeroSection
+              isEmergencyChecklistOpen={isEmergencyChecklistOpen}
+              onOpenEmergencyChecklist={handleOpenEmergencyChecklist}
+            />
             <div className="relative z-20 stepper-overlay-position">
               <StepperWorkflow
                 formData={formData}
@@ -705,6 +726,8 @@ function HomeInner() {
                 routeStep={routeStep}
                 routePackageSlug={routePackage}
                 routeHowItWorksStep={routeHowItWorksStep}
+                isEmergencyChecklistOpen={isEmergencyChecklistOpen}
+                emergencyChecklistScrollRequest={emergencyChecklistScrollRequest}
                 onPackageSelect={(slug) => {
                   setSelectedPackageSlug(slug);
                   const type = formData.serviceType === 'cremation' ? 'cremation' : 'burial';
@@ -722,7 +745,7 @@ function HomeInner() {
         <section className="mt-12 md:mt-16 mb-12 md:mb-16">
           <div className="mx-auto w-full max-w-6xl px-4">
             <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm md:p-5">
-              <p className="mb-3 whitespace-nowrap text-[clamp(9px,2.6vw,14px)] font-medium leading-tight tracking-[-0.02em] text-gray-900">
+              <p className="mb-4 max-w-full whitespace-normal break-words text-[clamp(15px,3.8vw,22px)] font-semibold leading-snug tracking-[-0.02em] text-gray-900 [text-wrap:balance]">
                 Михаил Семенов, старший координатор сервиса «Тихий дом»:
               </p>
               <div className="flex flex-row items-start gap-3 md:gap-4">

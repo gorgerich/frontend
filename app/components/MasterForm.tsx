@@ -168,6 +168,8 @@ export default function Home() {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedCemeteryCategory, setSelectedCemeteryCategory] =
     useState<'standard' | 'comfort' | 'premium'>('standard');
+  const [isEmergencyChecklistOpen, setIsEmergencyChecklistOpen] = useState(false);
+  const [emergencyChecklistScrollRequest, setEmergencyChecklistScrollRequest] = useState(0);
 
   // Загрузка из localStorage при монтировании
   useEffect(() => {
@@ -260,9 +262,22 @@ export default function Home() {
     setSelectedCemeteryCategory(category);
   };
 
+  const handleOpenEmergencyChecklist = () => {
+    setIsEmergencyChecklistOpen((current) => {
+      if (current) {
+        return false;
+      }
+      setEmergencyChecklistScrollRequest((value) => value + 1);
+      return true;
+    });
+  };
+
   return (
     <div className="min-h-screen bg-white pt-8">
-      <HeroSection />
+      <HeroSection
+        isEmergencyChecklistOpen={isEmergencyChecklistOpen}
+        onOpenEmergencyChecklist={handleOpenEmergencyChecklist}
+      />
 
       <div className="relative z-20 stepper-overlay-position">
         <StepperWorkflow
@@ -270,6 +285,8 @@ export default function Home() {
           onUpdateFormData={handleUpdateFormData}
           onStepChange={handleStepChange}
           onCemeteryCategoryChange={handleCemeteryCategoryChange}
+          isEmergencyChecklistOpen={isEmergencyChecklistOpen}
+          emergencyChecklistScrollRequest={emergencyChecklistScrollRequest}
         />
       </div>
 

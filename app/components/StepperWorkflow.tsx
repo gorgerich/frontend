@@ -1068,6 +1068,8 @@ splitSchedule?: string;
   routePackageSlug?: string | null;
   routeHowItWorksStep?: number | null;
   onPackageSelect?: (slug: string) => void;
+  isEmergencyChecklistOpen: boolean;
+  emergencyChecklistScrollRequest: number;
 }
 
 export function StepperWorkflow({
@@ -1083,6 +1085,8 @@ export function StepperWorkflow({
   routePackageSlug,
   routeHowItWorksStep,
   onPackageSelect,
+  isEmergencyChecklistOpen,
+  emergencyChecklistScrollRequest,
 }: StepperWorkflowProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -1183,7 +1187,6 @@ export function StepperWorkflow({
       method,
     });
 
-  const [showHowItWorks, setShowHowItWorks] = useState(true);
   const [showDocumentsHelp, setShowDocumentsHelp] = useState(false);
   const howItWorksRef = useRef<HTMLDivElement | null>(null);
   const howItWorksScrollRafRef = useRef<number | null>(null);
@@ -1226,23 +1229,20 @@ export function StepperWorkflow({
   };
 
   useEffect(() => {
-    const handler = () => {
-      setShowHowItWorks(true);
-      window.setTimeout(() => {
-        requestAnimationFrame(() => {
-          scrollToHowItWorks();
-        });
-      }, 60);
-    };
+    if (!isEmergencyChecklistOpen || emergencyChecklistScrollRequest === 0) return;
+    const timeoutId = window.setTimeout(() => {
+      requestAnimationFrame(() => {
+        scrollToHowItWorks();
+      });
+    }, 60);
 
-    window.addEventListener("td:toggle-how-it-works", handler);
     return () => {
-      window.removeEventListener("td:toggle-how-it-works", handler);
+      window.clearTimeout(timeoutId);
       if (howItWorksScrollRafRef.current != null) {
         window.cancelAnimationFrame(howItWorksScrollRafRef.current);
       }
     };
-  }, []);
+  }, [isEmergencyChecklistOpen, emergencyChecklistScrollRequest]);
 
   type EmergencyChecklistTabId = "home" | "hospital" | "other-city";
   type EmergencyChecklistStep = {
@@ -1434,7 +1434,6 @@ export function StepperWorkflow({
     } else if (routeFlow === "packages") {
       openPackagesMode();
     } else if (routeFlow === "how-it-works") {
-      setShowHowItWorks(true);
       window.setTimeout(() => {
         requestAnimationFrame(() => {
           scrollToHowItWorks();
@@ -4176,7 +4175,7 @@ function formatRub(n: number) {
       </div>
       <div ref={containerRef}>
       <Card className="relative z-10 bg-white/10 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30">
-        {showHowItWorks && (
+        {isEmergencyChecklistOpen && (
           <div className="pointer-events-none absolute inset-0 z-0 rounded-3xl border border-white/22 bg-black/12 backdrop-blur-2xl" />
         )}
         <CardHeader className="relative z-10 border-b-0 pb-4 pt-8 px-6 sm:px-8">
@@ -4193,7 +4192,7 @@ function formatRub(n: number) {
 
           <div id="start-options" className="mt-3 mb-8" />
 
-          {showHowItWorks && (
+          {isEmergencyChecklistOpen && (
             <div
               id="how-it-works"
               ref={howItWorksRef}
@@ -4201,10 +4200,10 @@ function formatRub(n: number) {
             >
               <div className="flex flex-col gap-2">
                 <div className="text-lg font-semibold text-white sm:text-xl">
-                  Экстренный чек-лист
+                  Экстренный чек-лист на 1-2 часа
                 </div>
                 <div className="text-sm leading-relaxed text-white/95">
-                  Первые шаги на ближайшие 1–2 часа.
+                  Где произошло несчастье?
                 </div>
                 <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   <div

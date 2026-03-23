@@ -12,7 +12,15 @@ const LINE2_SHIFT = "6px";
 const MOBILE_SHIFT = "0px";
 const MOBILE_LINE2_SHIFT = "0px";
 
-export function HeroSection() {
+interface HeroSectionProps {
+  isEmergencyChecklistOpen: boolean;
+  onOpenEmergencyChecklist: () => void;
+}
+
+export function HeroSection({
+  isEmergencyChecklistOpen,
+  onOpenEmergencyChecklist,
+}: HeroSectionProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const questionRef = useRef<HTMLButtonElement | null>(null);
   const titleRef = useRef<HTMLHeadingElement | null>(null);
@@ -39,6 +47,22 @@ export function HeroSection() {
       const wrapperRect = wrapper.getBoundingClientRect();
       const questionRect = question.getBoundingClientRect();
       const titleRect = title.getBoundingClientRect();
+
+      if (
+        wrapperRect.width === 0 ||
+        questionRect.width === 0 ||
+        titleRect.height === 0
+      ) {
+        setTopButtonsStyle((current) => ({ ...current, visible: false }));
+        setConnectorStyle({
+          top: 0,
+          left: 0,
+          height: 0,
+          opacity: 0,
+        });
+        return;
+      }
+
       const top = questionRect.bottom - wrapperRect.top;
       const height = Math.max(0, titleRect.top - questionRect.bottom);
       const left = questionRect.left + questionRect.width / 2 - wrapperRect.left;
@@ -70,43 +94,43 @@ export function HeroSection() {
   }, []);
 
   const handlePlanActionsClick = () => {
-    if (typeof window === "undefined") return;
-    window.dispatchEvent(new Event("td:toggle-how-it-works"));
+    onOpenEmergencyChecklist();
   };
 
   const planCtaClass =
     "relative h-14 rounded-full !border-white/18 !bg-[rgba(15,23,42,0.9)] px-[18px] text-sm font-semibold !text-white shadow-[0_1px_2px_rgba(0,0,0,0.08),0_8px_20px_rgba(0,0,0,0.10)] transition-colors duration-200 hover:!bg-[rgba(15,23,42,0.82)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 active:scale-[0.98] active:!bg-[rgba(15,23,42,0.96)] active:shadow-[0_1px_2px_rgba(0,0,0,0.08)] [&_.font-subheading]:!text-white [&_.font-micro]:!text-white/85 [&_svg]:!text-white/90";
 
   return (
-    <section className="relative w-full px-4 pt-14 pb-5 sm:pt-16 md:pt-8 md:pb-7 lg:pb-9">
-      <div className="relative mx-auto max-w-7xl overflow-visible" ref={wrapperRef}>
-        <div
-          className="pointer-events-none absolute hidden md:block"
-          style={{
-            top: connectorStyle.top,
-            left: connectorStyle.left,
-            height: connectorStyle.height,
-            opacity: connectorStyle.opacity,
-            width: 1,
-            background: "rgba(255,255,255,0.35)",
-            borderRadius: 9999,
-            transform: "translateX(-50%)",
-          }}
-        />
-        <div className="relative h-[68vh] w-full overflow-hidden rounded-3xl md:h-[70vh] lg:h-[74vh] md:rounded-[40px]">
-          <div className="pointer-events-none absolute inset-0 z-0">
-            <img
-              src={heroImageNew}
-              alt="Белые цветы"
-              className="absolute inset-0 h-full w-full rounded-3xl object-cover md:rounded-[40px]"
-            />
-            <img src={heroImage} alt="" aria-hidden="true" className="hidden" />
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/24 via-black/20 to-black/30 md:rounded-[40px]" />
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-black/12 via-black/7 to-black/3 md:hidden" />
-          </div>
+    <section className="relative w-full pt-4 pb-5 sm:pt-5 md:pt-8 md:pb-7 lg:pb-9">
+      <div className="pointer-events-none absolute inset-x-0 top-4 z-0 h-[68vh] sm:top-5 md:hidden">
+        <div className="absolute left-1/2 h-full w-screen -translate-x-1/2 overflow-hidden rounded-[28px]">
+          <img
+            src={heroImageNew}
+            alt="Белые цветы"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <img src={heroImage} alt="" aria-hidden="true" className="hidden" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/24 via-black/20 to-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/12 via-black/7 to-black/3" />
+        </div>
+      </div>
 
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 hidden h-[70vh] md:block lg:h-[74vh]">
+        <div className="absolute left-1/2 h-full w-[calc(100vw-32px)] -translate-x-1/2 overflow-hidden rounded-[40px] lg:w-[calc(100vw-48px)]">
+          <img
+            src={heroImageNew}
+            alt="Белые цветы"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <img src={heroImage} alt="" aria-hidden="true" className="hidden" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/24 via-black/20 to-black/30" />
+        </div>
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-7xl overflow-visible px-4 md:hidden">
+        <div className="relative h-[68vh] w-full">
           <div className="absolute inset-0 z-30">
-            <div className="flex h-full flex-col items-start justify-start px-4 pt-4 pb-16 text-left sm:px-6 sm:pt-6 sm:pb-20 md:hidden">
+            <div className="flex h-full flex-col items-start justify-start px-4 pt-4 pb-16 text-left translate-y-[10%] sm:px-6 sm:pt-6 sm:pb-20">
               <h1
                 className="font-heading mb-0 w-full max-w-full whitespace-normal break-words tracking-tight text-white [text-wrap:balance]"
                 style={{
@@ -137,24 +161,51 @@ export function HeroSection() {
                   fontWeight: 400,
                 }}
               >
-                Онлайн сервис организации прощания. Рассчет без скрытых платежей и доплат.  Фиксируем итоговую цену в договоре.
+                Онлайн сервис организации прощания. Расчет без скрытых платежей и
+                доплат. Фиксируем итоговую цену в договоре.
               </p>
-              <div className="mt-24 flex w-full flex-col items-center sm:mt-28">
+              <div className="mt-14 flex w-full flex-col items-center sm:mt-16">
                 <Button
                   type="button"
                   onClick={handlePlanActionsClick}
+                  aria-expanded={isEmergencyChecklistOpen}
+                  aria-controls="how-it-works"
                   className={`${planCtaClass} mt-4 w-full max-w-[18rem]`}
                 >
                   <span className="flex w-full flex-col items-center text-center">
-                    <span className="font-subheading text-gray-600">Что делать, если умер человек?</span>
+                    <span className="font-subheading text-gray-600">
+                      Что делать, если умер человек?
+                    </span>
                   </span>
                   <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
                 </Button>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
 
+      <div
+        className="relative z-10 mx-auto hidden max-w-7xl overflow-visible px-4 md:block"
+        ref={wrapperRef}
+      >
+        <div
+          className="pointer-events-none absolute"
+          style={{
+            top: connectorStyle.top,
+            left: connectorStyle.left,
+            height: connectorStyle.height,
+            opacity: connectorStyle.opacity,
+            width: 1,
+            background: "rgba(255,255,255,0.35)",
+            borderRadius: 9999,
+            transform: "translateX(-50%)",
+          }}
+        />
+        <div className="relative h-[70vh] w-full lg:h-[74vh]">
+          <div className="absolute inset-0 z-30">
             <div
-              className="absolute left-0 right-0 hidden z-30 px-6 text-center md:block"
+              className="absolute left-0 right-0 z-30 px-6 text-center"
               style={{ top: DESKTOP_TOP }}
             >
               <h1
@@ -180,7 +231,8 @@ export function HeroSection() {
                       fontWeight: 400,
                     }}
                   >
-                    Онлайн сервис организации прощания. Рассчет без скрытых платежей и доплат.  Фиксируем итоговую цену в договоре.
+                    Онлайн сервис организации прощания. Расчет без скрытых
+                    платежей и доплат. Фиксируем итоговую цену в договоре.
                   </span>
                 </span>
               </h1>
@@ -190,10 +242,14 @@ export function HeroSection() {
                   type="button"
                   onClick={handlePlanActionsClick}
                   ref={questionRef}
+                  aria-expanded={isEmergencyChecklistOpen}
+                  aria-controls="how-it-works"
                   className={`${planCtaClass} w-full max-w-[20rem]`}
                 >
                   <span className="flex w-full flex-col items-center text-center">
-                    <span className="font-subheading text-gray-600">Что делать, если умер человек?</span>
+                    <span className="font-subheading text-gray-600">
+                      Что делать, если умер человек?
+                    </span>
                   </span>
                   <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
                 </Button>
