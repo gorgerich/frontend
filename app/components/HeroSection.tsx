@@ -127,7 +127,7 @@ export function HeroSection() {
                       transform: `translateY(${MOBILE_LINE2_SHIFT})`,
                     }}
                   >
-                    Организация похорон под вашим полным контролем
+                    Достойная организация похорон в Москве и Московской области
                   </span>
                 </span>
               </h1>
@@ -137,7 +137,7 @@ export function HeroSection() {
                   fontWeight: 400,
                 }}
               >
-                Гарантированная фиксация цены в договоре
+                Онлайн сервис организации прощания. Рассчет без скрытых платежей и доплат.  Фиксируем итоговую цену в договоре.
               </p>
               <div className="mt-24 flex w-full flex-col items-center sm:mt-28">
                 <Button
@@ -172,7 +172,7 @@ export function HeroSection() {
                       transform: `translateY(${LINE2_SHIFT})`,
                     }}
                   >
-                    Организация похорон под вашим полным контролем
+                    Достойная организация похорон в Москве и Московской области
                   </span>
                   <span
                     className="relative left-1/2 mt-4 block w-full max-w-full -translate-x-1/2 text-center font-body text-[14px] font-normal leading-[1.4] text-white/80 md:w-[60ch] lg:w-[72ch] lg:text-[16px] xl:text-[18px]"
@@ -180,7 +180,7 @@ export function HeroSection() {
                       fontWeight: 400,
                     }}
                   >
-                    Мы фиксируем цену до подписания договора. Никаких скрытых платежей, доплат в морге и навязывания услуг.
+                    Онлайн сервис организации прощания. Рассчет без скрытых платежей и доплат.  Фиксируем итоговую цену в договоре.
                   </span>
                 </span>
               </h1>
