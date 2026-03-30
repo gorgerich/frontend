@@ -233,7 +233,7 @@ const TRUST_BLOCK_CARDS = [
   {
     id: 'trust-card-1',
     icon: '🛡️',
-    title: 'МЫ ВСЕГДА РЯДОМ',
+    title: 'РЯДОМ',
     text: 'Координатор ведёт весь процесс от начала до конца. На связи 24/7',
   },
   {
@@ -893,7 +893,7 @@ function HomeInner() {
                     key={card.id}
                     className="rounded-[28px] border border-zinc-200/80 bg-white px-5 py-6 shadow-[0_10px_28px_rgba(15,23,42,0.05)] md:px-7 md:py-7"
                   >
-                    <h3 className="max-w-full whitespace-nowrap text-[clamp(24px,6vw,38px)] font-black uppercase leading-none tracking-[-0.05em] text-[#69a9e3] md:text-[clamp(18px,2vw,30px)]">
+                    <h3 className="max-w-full whitespace-nowrap text-[clamp(24px,6vw,38px)] font-black uppercase leading-none tracking-[-0.05em] text-[#1794FD] md:text-[clamp(18px,2vw,30px)]">
                       {widontRu(card.title)}
                     </h3>
                     <p className="mt-7 max-w-[22ch] text-[15px] font-medium leading-[1.35] text-[#24364a] md:mt-8 md:text-[18px]">
@@ -910,12 +910,12 @@ function HomeInner() {
                 {widontRu('Реальный опыт клиентов: что получилось, что волновало и как всё прошло в итоге.')}
               </p>
             </div>
-            <div className="order-1 mt-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:overflow-x-visible">
-              <div className="flex w-max items-start gap-4 pb-1 md:grid md:w-full md:grid-cols-3 md:items-start md:pb-0">
+            <div className="order-1 mt-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex w-max items-start gap-4 pb-1">
               {TRUST_REVIEWS.map((review) => (
                 <div
                   key={review.id}
-                  className="relative h-fit w-[340px] shrink-0 self-start rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:w-[390px] md:w-auto md:min-w-0 md:shrink"
+                  className="relative h-fit w-[340px] shrink-0 self-start rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:w-[390px] lg:w-[420px] xl:w-[460px]"
                 >
                   <div className="absolute right-4 top-4 rounded-full border border-gray-200 bg-white/90 px-2.5 py-1 text-sm font-semibold text-gray-700">
                     {review.rating}
