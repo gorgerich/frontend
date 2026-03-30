@@ -135,8 +135,8 @@ export function HeroSection({
       <div className="relative z-10 mx-auto max-w-7xl overflow-visible px-4 md:hidden">
         <div className="relative h-[68vh] w-full">
           <div className="absolute inset-0 z-30">
-            <div className="flex h-full flex-col items-start justify-start px-4 pt-4 pb-16 text-left translate-y-[10%] sm:px-6 sm:pt-6 sm:pb-20">
-              <div className="-translate-y-[5%]">
+            <div className="flex h-full flex-col items-start justify-start px-4 pt-4 pb-16 text-left translate-y-[10%] max-[375px]:translate-y-0 max-[375px]:pt-6 sm:px-6 sm:pt-6 sm:pb-20">
+              <div className="-translate-y-[25%] max-[375px]:-translate-y-[8%]">
                 <div className="mb-5 flex w-full max-w-[20rem] flex-wrap gap-2 sm:max-w-[24rem]">
                 {MOBILE_HERO_BULLETS.map((bullet) => (
                   <span
@@ -160,19 +160,19 @@ export function HeroSection({
                     transform: `translateY(${MOBILE_SHIFT})`,
                   }}
                 >
-                  <span
-                    className="font-heading block text-[24px] font-extrabold leading-[1.05] text-left whitespace-normal break-words min-[375px]:text-[29px] sm:text-[32px]"
-                    style={{
-                      fontWeight: 800,
-                      transform: `translateY(${MOBILE_LINE2_SHIFT})`,
-                    }}
+                    <span
+                      className="font-heading block text-[24px] font-black leading-[1.05] text-left whitespace-normal break-words max-[375px]:text-[21px] max-[375px]:leading-[1.02] min-[390px]:text-[29px] sm:text-[32px]"
+                      style={{
+                        fontWeight: 900,
+                        transform: `translateY(${MOBILE_LINE2_SHIFT})`,
+                      }}
                   >
                     Достойная организация похорон в Москве и Московской области
                   </span>
                 </span>
                 </h1>
                 <p
-                className="font-body mt-3 w-full max-w-[22rem] text-[12px] font-normal leading-[1.4] text-left text-white/80 min-[375px]:text-[13px]"
+                className="font-body mt-3 w-full max-w-[22rem] text-[12px] font-normal leading-[1.4] text-left text-white/80 max-[375px]:mt-2 max-[375px]:text-[11px] max-[375px]:leading-[1.32] min-[390px]:text-[13px]"
                 style={{
                   fontWeight: 400,
                 }}
@@ -181,13 +181,13 @@ export function HeroSection({
                 доплат. Фиксируем итоговую цену в договоре.
                 </p>
               </div>
-              <div className="mt-14 flex w-full flex-col items-stretch sm:mt-16">
+              <div className="mt-2 flex w-full flex-col items-stretch max-[375px]:mt-1 sm:mt-16">
                 <Button
                   type="button"
                   onClick={handlePlanActionsClick}
                   aria-expanded={isEmergencyChecklistOpen}
                   aria-controls="how-it-works"
-                  className={`${planCtaClass} mt-4 w-full`}
+                  className={`${planCtaClass} mt-4 w-full max-[375px]:mt-2 max-[375px]:h-12`}
                 >
                   <span className="flex w-full flex-col items-center text-center">
                     <span className="font-subheading text-gray-600">

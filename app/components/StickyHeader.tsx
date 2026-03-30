@@ -127,7 +127,7 @@ export function StickyHeader() {
             className={
               isDesktopNav
                 ? "flex h-16 w-full items-center gap-4"
-                : "flex h-16 w-full items-center gap-4 rounded-[24px] border border-[#e7e2da] bg-[#f6f5f3] px-4 shadow-[0_6px_18px_rgba(15,23,42,0.06)]"
+                : "flex h-16 w-full items-center gap-4 bg-[#f6f5f3] px-4"
             }
           >
             <Link
