@@ -32,7 +32,7 @@ export function FloatingCalculator({ total, breakdown }: FloatingCalculatorProps
   };
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md transition-all duration-300 ease-out">
+    <div className="floating-calculator-root fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md transition-all duration-300 ease-out">
       <Card className="bg-[#eef5f5]/80 backdrop-blur-2xl border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] overflow-hidden rounded-[32px] ring-1 ring-white/50">
         <CardContent className={cn('relative z-10 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]', isExpanded ? 'p-6' : 'p-4')}>
           <div

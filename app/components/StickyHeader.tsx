@@ -67,6 +67,15 @@ export function StickyHeader() {
     return () => media.removeEventListener('change', handleMediaChange);
   }, []);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const shouldHideFloating = topMenuOpen && !isDesktopNav;
+    document.body.dataset.mobileMenuOpen = shouldHideFloating ? 'true' : 'false';
+    return () => {
+      document.body.dataset.mobileMenuOpen = 'false';
+    };
+  }, [topMenuOpen, isDesktopNav]);
+
   const handleTopContacts = () => {
     setTopMenuOpen(false);
     if (pathname !== '/') {
@@ -167,7 +176,7 @@ export function StickyHeader() {
                   rel="noopener noreferrer"
                   className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#d9d5ce] bg-white/40 px-5 text-sm font-medium text-gray-700 transition hover:bg-white/70 hover:text-gray-900 whitespace-nowrap"
                 >
-                  Нужна помощь
+                  ⚡ Нужна помощь
                 </a>
               </nav>
             ) : (

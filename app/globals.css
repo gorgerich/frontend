@@ -7030,12 +7030,12 @@ html {
 
 /* Keep emergency checklist legible on iOS/Safari even when blur is inconsistent. */
 .emergencyChecklistCard {
-  background-color: rgba(15, 23, 42, 0.9);
+  background-color: #1794fd;
 }
 
 @supports ((-webkit-backdrop-filter: blur(2px)) or (backdrop-filter: blur(2px))) {
   .emergencyChecklistCard {
-    background-color: rgba(15, 23, 42, 0.78);
+    background-color: rgba(23, 148, 253, 0.82);
     -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
   }
@@ -7043,6 +7043,11 @@ html {
 
 @media (prefers-contrast: more) {
   .emergencyChecklistCard {
-    background-color: rgba(15, 23, 42, 0.94);
+    background-color: #1794fd;
   }
+}
+
+body[data-mobile-menu-open="true"] .floating-calculator-root {
+  opacity: 0;
+  pointer-events: none;
 }

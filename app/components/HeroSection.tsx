@@ -105,7 +105,7 @@ export function HeroSection({
   };
 
   const planCtaClass =
-    "relative h-14 rounded-full !border-white/18 !bg-[rgba(15,23,42,0.9)] px-[18px] text-sm font-semibold !text-white shadow-[0_1px_2px_rgba(0,0,0,0.08),0_8px_20px_rgba(0,0,0,0.10)] transition-colors duration-200 hover:!bg-[rgba(15,23,42,0.82)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 active:scale-[0.98] active:!bg-[rgba(15,23,42,0.96)] active:shadow-[0_1px_2px_rgba(0,0,0,0.08)] [&_.font-subheading]:!text-white [&_.font-micro]:!text-white/85 [&_svg]:!text-white/90";
+    "relative h-14 rounded-full !border-[#1794FD]/18 !bg-[#1794FD] px-[18px] text-sm font-semibold !text-white shadow-[0_1px_2px_rgba(0,0,0,0.08),0_8px_20px_rgba(0,0,0,0.10)] transition-colors duration-200 hover:!bg-[#1b58c5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1794FD]/25 active:scale-[0.98] active:!bg-[#184fb0] active:shadow-[0_1px_2px_rgba(0,0,0,0.08)] [&_.font-subheading]:!text-white [&_.font-micro]:!text-white/85 [&_svg]:!text-white/90";
 
   return (
     <section className="relative w-full pt-4 pb-5 sm:pt-5 md:pt-8 md:pb-7 lg:pb-9">
@@ -191,7 +191,7 @@ export function HeroSection({
                 >
                   <span className="flex w-full flex-col items-center text-center">
                     <span className="font-subheading text-gray-600">
-                      Что делать, если умер человек?
+                      ⚡ Что делать, если умер человек?
                     </span>
                   </span>
                   <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
@@ -274,7 +274,7 @@ export function HeroSection({
                     >
                       <span className="flex w-full flex-col items-center text-center">
                         <span className="font-subheading text-gray-600">
-                          Что делать, если умер человек?
+                          ⚡ Что делать, если умер человек?
                         </span>
                       </span>
                       <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
