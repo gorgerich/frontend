@@ -22,10 +22,6 @@ export function Footer() {
               <p className="text-sm text-neutral-500 leading-relaxed mb-6 max-w-sm">
                 Цифровой сервис ритуальных услуг. Мы обеспечиваем прозрачность, фиксацию цен и полную юридическую защиту на каждом этапе.
               </p>
-              <div className="flex items-center gap-2 text-xs font-medium text-neutral-900 bg-neutral-100 w-fit px-3 py-1.5 rounded-full">
-                
-               
-              </div>
             </div>
           </div>
 

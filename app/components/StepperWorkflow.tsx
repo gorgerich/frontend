@@ -4178,7 +4178,7 @@ function formatRub(n: number) {
         {isEmergencyChecklistOpen && (
           <div className="pointer-events-none absolute inset-0 z-0 rounded-3xl border border-white/22 bg-black/12 backdrop-blur-2xl" />
         )}
-        <CardHeader className="relative z-10 border-b-0 pb-4 pt-8 px-6 sm:px-8">
+        <CardHeader className="relative z-10 border-b-0 px-6 pb-2 pt-4 sm:px-8 sm:pt-5">
           <div className="absolute -top-5 right-8 z-50 hidden">
             <button
               type="button"
@@ -4190,7 +4190,7 @@ function formatRub(n: number) {
             </button>
           </div>
 
-          <div id="start-options" className="mt-3 mb-8" />
+          <div id="start-options" className="mt-1 mb-3" />
 
           {isEmergencyChecklistOpen && (
             <div
@@ -4306,7 +4306,7 @@ function formatRub(n: number) {
       <div className="mb-3 max-w-full break-words text-left text-[15px] min-[375px]:text-[18px] md:text-2xl font-semibold text-gray-900">
         Выберите, как вам комфортнее организовать прощание
       </div>
-      <p className="mb-4 max-w-full break-words text-[13px] min-[375px]:text-[14px] md:text-base leading-[1.4] text-gray-600">
+      <p className="hidden">
         Можно собрать план самостоятельно или выбрать готовое решение с расширенным пакетом услуг.
       </p>
       <div className="mb-1 mt-2 flex w-full justify-center md:justify-start">
@@ -4372,6 +4372,9 @@ function formatRub(n: number) {
           </button>
         </div>
       </div>
+      <p className="mt-4 max-w-full break-words text-[13px] min-[375px]:text-[14px] md:text-base leading-[1.4] text-gray-600">
+        Можно собрать план самостоятельно или выбрать готовое решение с расширенным пакетом услуг.
+      </p>
     </div>
     </div>
     <div className="rounded-3xl border border-zinc-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
