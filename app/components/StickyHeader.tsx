@@ -116,20 +116,8 @@ export function StickyHeader() {
   return (
     <>
       <div className="sticky top-0 z-20 w-full bg-[#f6f5f3]">
-        <div
-          className={
-            isDesktopNav
-              ? "w-full px-6 sm:px-7"
-              : "w-full px-4 pt-2 sm:px-7"
-          }
-        >
-          <div
-            className={
-              isDesktopNav
-                ? "flex h-16 w-full items-center gap-4"
-                : "flex h-16 w-full items-center gap-4 bg-[#f6f5f3] px-4"
-            }
-          >
+        <div className="w-full px-4 pt-2 sm:px-7 md:px-6 md:pt-0">
+          <div className="flex h-16 w-full items-center gap-4 bg-[#f6f5f3] px-4 md:bg-transparent md:px-0">
             <Link
               href="/"
               onClick={() => setTopMenuOpen(false)}
@@ -146,50 +134,47 @@ export function StickyHeader() {
                 Тихий дом
               </span>
             </Link>
-            {isDesktopNav ? (
-              <nav className="ml-auto flex items-center justify-end gap-6" style={{ marginRight: 0 }}>
-                {topNavItems.map((item) =>
-                  'href' in item ? (
-                    <Link
-                      key={item.id}
-                      href={item.href}
-                      className="text-sm font-medium text-gray-700 transition hover:text-black whitespace-nowrap"
-                      style={{ marginRight: 0 }}
-                    >
-                      {item.label}
-                    </Link>
-                  ) : (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={item.onClick}
-                      className="text-sm font-medium text-gray-700 transition hover:text-black whitespace-nowrap"
-                      style={{ marginRight: 0 }}
-                    >
-                      {item.label}
-                    </button>
-                  ),
-                )}
-                <a
-                  href={TELEGRAM_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#d9d5ce] bg-white/40 px-5 text-sm font-medium text-gray-700 transition hover:bg-white/70 hover:text-gray-900 whitespace-nowrap"
-                >
-                  ⚡ Нужна помощь
-                </a>
-              </nav>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setTopMenuOpen((prev) => !prev)}
-                className="ml-auto inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/40 bg-white/60 text-gray-700 shadow-sm transition hover:bg-white/85"
-                aria-expanded={topMenuOpen}
-                aria-label="Открыть меню"
+            <nav className="ml-auto hidden items-center justify-end gap-6 md:flex" style={{ marginRight: 0 }}>
+              {topNavItems.map((item) =>
+                'href' in item ? (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className="text-sm font-medium text-gray-700 transition hover:text-black whitespace-nowrap"
+                    style={{ marginRight: 0 }}
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={item.onClick}
+                    className="text-sm font-medium text-gray-700 transition hover:text-black whitespace-nowrap"
+                    style={{ marginRight: 0 }}
+                  >
+                    {item.label}
+                  </button>
+                ),
+              )}
+              <a
+                href={TELEGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#d9d5ce] bg-white/40 px-5 text-sm font-medium text-gray-700 transition hover:bg-white/70 hover:text-gray-900 whitespace-nowrap"
               >
-                <Menu className="h-4 w-4" />
-              </button>
-            )}
+                ⚡ Нужна помощь
+              </a>
+            </nav>
+            <button
+              type="button"
+              onClick={() => setTopMenuOpen((prev) => !prev)}
+              className="ml-auto inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/40 bg-white/60 text-gray-700 shadow-sm transition hover:bg-white/85 md:hidden"
+              aria-expanded={topMenuOpen}
+              aria-label="Открыть меню"
+            >
+              <Menu className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </div>

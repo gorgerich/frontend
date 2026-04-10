@@ -1,9 +1,9 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { HeroSection } from './HeroSection';
 import { StepperWorkflow } from './StepperWorkflow';
 import { PackagesSection } from './PackagesSection';
@@ -22,7 +22,7 @@ type BreakdownItem = { name: string; price?: number };
 type BreakdownSection = { category: string; price: number; items?: BreakdownItem[] };
 type RouteFlow = 'wizard' | 'packages' | 'how-it-works' | null;
 type RouteType = 'cremation' | 'burial' | null;
-type HomeRouteState = {
+export type HomeRouteState = {
   routeFlow: RouteFlow;
   routeType: RouteType;
   routeStep: number | null;
@@ -343,7 +343,8 @@ const applyHearseCategoryToCalculator = (
   };
 };
 
-const normalizeRouteState = (searchParams: ReturnType<typeof useSearchParams>): HomeRouteState => {
+function normalizeRouteStateFromString(search: string): HomeRouteState {
+  const searchParams = new URLSearchParams(search);
   const flowParam = searchParams.get('flow');
   const typeParam = searchParams.get('type');
   const stepParam = searchParams.get('step');
@@ -365,20 +366,6 @@ const normalizeRouteState = (searchParams: ReturnType<typeof useSearchParams>): 
     routePackage: packageParam ? String(packageParam) : null,
     ctaParam,
   };
-};
-
-function HomePageSearchParamsBridge({
-  onChange,
-}: {
-  onChange: (state: HomeRouteState) => void;
-}) {
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    onChange(normalizeRouteState(searchParams));
-  }, [onChange, searchParams]);
-
-  return null;
 }
 
 export default function HomePageClient() {
@@ -390,6 +377,11 @@ export default function HomePageClient() {
   const [isTeamDragging, setIsTeamDragging] = useState(false);
   const [isTeamPaused, setIsTeamPaused] = useState(false);
   const [routeState, setRouteState] = useState<HomeRouteState>(EMPTY_ROUTE_STATE);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setRouteState(normalizeRouteStateFromString(window.location.search));
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -746,9 +738,6 @@ export default function HomePageClient() {
 
   return (
     <main className="min-h-screen bg-[#f6f5f3] flex flex-col overflow-x-hidden">
-      <Suspense fallback={null}>
-        <HomePageSearchParamsBridge onChange={setRouteState} />
-      </Suspense>
       <div className="flex-1">
         <div className="relative">
           <section className="relative overflow-visible">
