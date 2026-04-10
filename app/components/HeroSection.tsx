@@ -191,7 +191,7 @@ export function HeroSection({
                 >
                   <span className="flex w-full flex-col items-center text-center">
                     <span className="font-subheading text-gray-600">
-                      ⚡ Что делать, если умер человек?
+                      Что делать, если умер человек?
                     </span>
                   </span>
                   <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
@@ -274,7 +274,7 @@ export function HeroSection({
                     >
                       <span className="flex w-full flex-col items-center text-center">
                         <span className="font-subheading text-gray-600">
-                          ⚡ Что делать, если умер человек?
+                          Что делать, если умер человек?
                         </span>
                       </span>
                       <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
