@@ -8,19 +8,24 @@ export const metadata: Metadata = {
 
 const links = [
   { href: "/", label: "Главная" },
+  { href: "/articles", label: "Справочник" },
+  { href: "/faq", label: "Частые вопросы" },
   { href: "/info", label: "Политика конфиденциальности" },
   { href: "/info/offer", label: "Публичная оферта" },
-  { href: "/sitemap", label: "Карта сайта" },
+  { href: "/docs/oferta", label: "Договор-оферта" },
+  { href: "/docs/payment-rules", label: "Порядок оплаты" },
+  { href: "/docs/refund", label: "Политика возврата" },
+  { href: "/site-map", label: "Карта сайта" },
 ];
 
 export default function SiteMapPage() {
   return (
-    <main className="max-w-3xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-semibold text-neutral-900 mb-6">Карта сайта</h1>
+    <main className="mx-auto max-w-3xl px-4 py-10">
+      <h1 className="mb-6 text-3xl font-semibold text-neutral-900">Карта сайта</h1>
       <ul className="space-y-3 text-sm text-neutral-700">
         {links.map((link) => (
           <li key={link.href}>
-            <Link href={link.href} className="hover:text-neutral-900 transition-colors">
+            <Link href={link.href} className="transition-colors hover:text-neutral-900">
               {link.label}
             </Link>
           </li>
