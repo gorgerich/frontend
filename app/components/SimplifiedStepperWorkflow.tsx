@@ -706,6 +706,7 @@ const LINING_TO_FILE: Record<string, string> = {
 const packageWoodId = useMemo<"pine" | "oak" | "elite">(() => {
   const id = (selectedPackage?.id || "").toLowerCase();
   if (PACKAGE_TO_WOOD[id]) return PACKAGE_TO_WOOD[id];
+  if (id === "base-minimum") return "pine";
 
   const name = (selectedPackage?.name || "").toLowerCase();
 

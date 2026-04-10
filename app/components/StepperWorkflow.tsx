@@ -1125,7 +1125,7 @@ export function StepperWorkflow({
 
   const [showHearseDialog, setShowHearseDialog] = useState(false);
   const [continueChoice, setContinueChoice] =
-    useState<"self" | "solutions">("self");
+    useState<"solutions" | "wizard">("solutions");
 
   useLayoutEffect(() => {
     const calc = () => {
@@ -2409,7 +2409,7 @@ export function StepperWorkflow({
 
   const openPackagesMode = useCallback(() => {
     setWorkflowMode("packages");
-    setContinueChoice("self");
+    setContinueChoice("solutions");
     if (formData.packageType) {
       handleInputChange("packageType", "");
     }
@@ -2433,6 +2433,7 @@ export function StepperWorkflow({
 
   const openWizardMode = () => {
     setWorkflowMode("wizard");
+    setContinueChoice("wizard");
     setSelectedPackageForSimplified(null);
     setCurrentStep(0);
     setCompletedSteps([]);
@@ -4153,9 +4154,11 @@ function formatRub(n: number) {
     );
   }
 
-  const isSelfScenarioActive = workflowMode !== "wizard" && continueChoice === "self";
   const isSolutionsScenarioActive = workflowMode !== "wizard" && continueChoice === "solutions";
-  const isWizardScenarioActive = workflowMode === "wizard";
+  const isWizardScenarioActive = workflowMode === "wizard" && continueChoice === "wizard";
+  const scenarioDescription = isWizardScenarioActive
+    ? "Индивидуальный расчет. Выберите только те услуги и атрибутику, которые нужны именно вам, и контролируйте итоговую стоимость."
+    : "Сбалансированные пакеты услуг. От базового набора для достойного прощания до полной организации с личным координатором.";
   const baseSegmentBtn =
     "min-w-0 w-full min-h-12 rounded-full px-1.5 inline-flex items-center justify-center gap-1 text-sm font-medium tracking-[-0.005em] whitespace-nowrap transition-all duration-200 overflow-hidden";
   const activeSegmentBtn = "bg-white text-slate-900 shadow-sm ring-1 ring-zinc-200";
@@ -4316,39 +4319,18 @@ function formatRub(n: number) {
             onClick={() => {
               openPackagesMode();
               onModeChange?.("package");
-              setContinueChoice("self");
-            }}
-            className={cn(
-              "basis-[calc(58%-2px)] min-[360px]:basis-[calc(52%-2px)] md:basis-0 md:flex-1",
-              baseSegmentBtn,
-              isSelfScenarioActive ? activeSegmentBtn : inactiveSegmentBtn,
-            )}
-          >
-            {isSelfScenarioActive ? (
-              <span className="shrink-0 leading-none">🔘</span>
-            ) : null}
-            <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
-              Базовый план
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              openPackagesMode();
-              onModeChange?.("package");
               setContinueChoice("solutions");
             }}
             className={cn(
-              "basis-[calc(42%-2px)] min-[360px]:basis-[calc(48%-2px)] md:basis-0 md:flex-1",
+              "basis-[calc(50%-2px)] md:basis-0 md:flex-1",
               baseSegmentBtn,
               isSolutionsScenarioActive ? activeSegmentBtn : inactiveSegmentBtn,
             )}
           >
             {isSolutionsScenarioActive ? (
-              <span className="shrink-0 leading-none">🔘</span>
+              <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-slate-500" />
             ) : null}
-            <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
-              Под ключ
+            <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">{"\u0413\u043e\u0442\u043e\u0432\u044b\u0435 \u0440\u0435\u0448\u0435\u043d\u0438\u044f"}
             </span>
           </button>
           <button
@@ -4356,15 +4338,16 @@ function formatRub(n: number) {
             onClick={() => {
               openWizardMode();
               onModeChange?.("wizard");
+              setContinueChoice("wizard");
             }}
             className={cn(
-              "basis-full md:basis-0 md:flex-1",
+              "basis-[calc(50%-2px)] md:basis-0 md:flex-1",
               baseSegmentBtn,
               isWizardScenarioActive ? activeSegmentBtn : inactiveSegmentBtn,
             )}
           >
             {isWizardScenarioActive ? (
-              <span className="shrink-0 leading-none">🔘</span>
+              <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-slate-500" />
             ) : null}
             <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
               Собрать свой план
@@ -4373,12 +4356,10 @@ function formatRub(n: number) {
         </div>
       </div>
       <p className="mt-4 max-w-full break-words text-[13px] min-[375px]:text-[14px] md:text-base leading-[1.4] text-gray-600">
-        Можно собрать план самостоятельно или выбрать готовое решение с расширенным пакетом услуг.
+        {scenarioDescription}
       </p>
     </div>
-    </div>
-    <div className="rounded-3xl border border-zinc-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
-      <div className="px-5 pb-6 pt-4 sm:px-7 sm:pb-7 sm:pt-5">
+      <div className="px-5 pb-6 pt-0 sm:px-7 sm:pb-7 sm:pt-0">
   {workflowMode === "wizard" ? (
     <div>
       <Stepper
@@ -4553,7 +4534,7 @@ function formatRub(n: number) {
             }}
             paymentSlot={(override) => renderPaymentBlock(override)}
             onAllInclusiveOpen={setShowScenarioBlock}
-            viewMode={continueChoice === "self" ? "self" : "solutions"}
+            viewMode="solutions"
             embedded
           />
         )}

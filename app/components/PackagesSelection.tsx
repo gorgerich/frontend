@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { cn } from "./ui/utils";
 import { Button } from "./ui/button";
 import { calcTariffTotal, formatCurrency, formatDelta, TariffDraftConfig, BASE_TARIFF_TOTAL, TARIFF_PRICING } from "./calculationUtils";
@@ -35,7 +35,7 @@ export function PackagesSelection({
   packages,
   paymentSlot,
   onAllInclusiveOpen,
-  viewMode = "self",
+  viewMode = "solutions",
   embedded = false,
 }: PackagesSelectionProps) {
   const [activePanel, setActivePanel] = React.useState<"base" | "custom">("base");
@@ -92,13 +92,23 @@ export function PackagesSelection({
       subItems: ["Оформление и сопровождение заказа"],
     },
   ];
+  const READY_BASE_PACKAGE: Package = {
+    ...BASE_MINIMUM,
+    features: baseLineItems.flatMap((item) =>
+      item.subItems && item.subItems.length > 0 ? [item.label, ...item.subItems] : [item.label],
+    ),
+  };
 
   const isSelected = selectedPackageId === BASE_MINIMUM.id;
   const pricing = calcTariffTotal(draftConfig);
   const paymentTotal =
     activePanel === "custom" ? pricing.total : BASE_TARIFF_TOTAL;
-  const allInclusivePackages = (packages ?? []).filter((pkg) => !pkg.id.startsWith("cremation"));
-  const isSelfMode = viewMode === "self";
+  const hasCremationPackages = (packages ?? []).some((pkg) => pkg.id.startsWith("cremation"));
+  const allInclusivePackages = hasCremationPackages
+    ? [...(packages ?? [])]
+    : (packages ?? []).filter((pkg) => !pkg.id.startsWith("cremation"));
+  const readyPackages = allInclusivePackages;
+  const showTraditionalLegacyCard = !hasCremationPackages;
   const solutionCardContent: Record<
     string,
     {
@@ -110,6 +120,22 @@ export function PackagesSelection({
       popular?: boolean;
     }
   > = {
+    "base-minimum": {
+      title: "Традиционный формат",
+      priceLabel: "86 600 ₽",
+      description:
+        "Базовый набор для достойного прощания без лишних услуг. Подходит, когда нужно спокойное и понятное решение с фиксированной стоимостью.",
+      coordinatorHelp: [
+        "Помогаем оформить заказ и зафиксировать базовую смету без скрытых доплат.",
+        "Подсказываем следующий шаг и сопровождаем подтверждение заказа.",
+      ],
+      included: [
+        "Санитарно-косметическая подготовка в морге.",
+        "Комплект базовой атрибутики и доставка в морг.",
+        "Катафалк и подготовка места захоронения.",
+        "Базовое сопровождение координатора.",
+      ],
+    },
     basic: {
       title: "Традиционный формат с дистанционной поддержкой",
       priceLabel: "204 900 ₽",
@@ -280,364 +306,361 @@ export function PackagesSelection({
   return (
     <div className={cn("w-full", embedded ? "pt-0" : "pt-2 md:pt-3")}>
       <div className={cn("mx-auto w-full max-w-6xl", embedded ? "px-0" : "px-2")}>
-        <div
-          className={cn(
-            isSelfMode
-              ? "flex gap-6 overflow-x-auto snap-x snap-mandatory pb-2 -mx-2 px-0 md:px-4 no-scrollbar"
-              : "grid gap-4 md:grid-cols-3 pb-2"
-          )}
-        >
-          {isSelfMode && (
-          <div className="shrink-0 snap-start w-full md:w-[92%]">
-            <div
-              data-package-card
-              className={cn(
-                "group relative mx-auto flex w-full max-w-5xl flex-col",
-                embedded
-                  ? "gap-6 rounded-none border-0 bg-transparent p-0 shadow-none"
-                  : "gap-8 rounded-3xl border bg-white p-8 transition-all duration-300",
-                !embedded &&
-                  (isSelected
-                    ? "border-gray-900 shadow-2xl scale-[1.01] z-10"
-                    : "border-gray-100 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1")
-              )}
-            >
-              <div className="text-center">
-                <h3 className={cn(
-                  "font-micro font-[700] text-gray-700 break-words",
-                  isCustomizingPlan ? "text-[11px] sm:text-sm uppercase tracking-[0.18em] text-gray-500" : "text-[11px] sm:text-sm uppercase tracking-[0.18em] text-gray-500"
-                )}>
-                  {isCustomizingPlan ? "ПРОИСХОДИТ НАСТРОЙКА ПЛАНА" : BASE_MINIMUM.name}
-                </h3>
-                {!isCustomizingPlan && (
-                  <p className="mt-3 text-left text-[13px] font-medium leading-relaxed text-gray-500 md:hidden">
-                    {BASE_MINIMUM.description}
-                  </p>
+        <div className="space-y-4">
+          {showTraditionalLegacyCard && (
+            <div className="w-full">
+              <div
+                data-package-card
+                className={cn(
+                  "group relative mx-auto flex w-full max-w-5xl flex-col",
+                  embedded
+                    ? "gap-6 rounded-none border-0 bg-transparent p-0 shadow-none"
+                    : "gap-8 rounded-3xl border bg-white p-8 transition-all duration-300",
+                  !embedded &&
+                    (isSelected
+                      ? "border-gray-900 shadow-2xl scale-[1.01] z-10"
+                      : "border-gray-100 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1")
                 )}
-                {isCustomizingPlan && (
-                  <p className="mt-3 font-medium text-sm text-gray-400">
-                    Вы можете добавлять и убирать услуги. Ничего не фиксируется без вашего подтверждения.
-                  </p>
-                )}
-              </div>
+              >
+                <div className="text-center">
+                  <h3
+                    className={cn(
+                      "font-micro font-[700] text-gray-700 break-words",
+                      "text-[11px] sm:text-sm uppercase tracking-[0.18em] text-gray-500"
+                    )}
+                  >
+                    {isCustomizingPlan ? "ПРОИСХОДИТ НАСТРОЙКА ПЛАНА" : BASE_MINIMUM.name}
+                  </h3>
+                  {!isCustomizingPlan && (
+                    <p className="mt-3 text-left text-[13px] font-medium leading-relaxed text-gray-500 md:hidden">
+                      {BASE_MINIMUM.description}
+                    </p>
+                  )}
+                  {isCustomizingPlan && (
+                    <p className="mt-3 font-medium text-sm text-gray-400">
+                      Вы можете добавлять и убирать услуги. Ничего не фиксируется без вашего подтверждения.
+                    </p>
+                  )}
+                </div>
 
-              <div className="space-y-6">
-                <div className="space-y-4 text-sm text-gray-700">
-                  {baseLineItems.map((item) => (
-                    <div key={item.key} className={item.subItems ? "space-y-2" : undefined}>
-                      <div className="grid grid-cols-[1fr_auto] items-center gap-4">
-                        <span>{item.label}</span>
-                        <span className="font-semibold text-gray-900 whitespace-nowrap">
-                          {formatCurrency(item.price)}
+                <div className="space-y-6">
+                  <div className="space-y-4 text-sm text-gray-700">
+                    {baseLineItems.map((item) => (
+                      <div key={item.key} className={item.subItems ? "space-y-2" : undefined}>
+                        <div className="grid grid-cols-[1fr_auto] items-center gap-4">
+                          <span>{item.label}</span>
+                          <span className="font-semibold text-gray-900 whitespace-nowrap">
+                            {formatCurrency(item.price)}
+                          </span>
+                        </div>
+                        {item.subItems ? (
+                          <div className="ml-3 space-y-1 text-xs text-gray-500">
+                            {item.subItems.map((subItem) => (
+                              <div key={subItem}>• {subItem}</div>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    ))}
+
+                    {addedItems.length > 0 && (
+                      <div className="flex justify-end pt-3">
+                        <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700">
+                          Итого: {formatCurrency(BASE_TARIFF_TOTAL)}
                         </span>
                       </div>
-                      {item.subItems ? (
-                        <div className="ml-3 space-y-1 text-xs text-gray-500">
-                          {item.subItems.map((subItem) => (
-                            <div key={subItem}>• {subItem}</div>
+                    )}
+
+                    {addedItems.length > 0 && (
+                      <div className="pt-3 mt-4 border-t border-gray-200/70">
+                        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400 mb-2">
+                          Добавлено в план
+                        </div>
+                        <div className="space-y-2">
+                          {addedItems.map((item) => (
+                            <div key={item.key} className="flex items-start justify-between gap-4 text-gray-700">
+                              <div className="space-y-1">
+                                <div>{item.label}</div>
+                                {item.detail && (
+                                  <div className="ml-3 text-xs text-gray-500">• {item.detail}</div>
+                                )}
+                              </div>
+                              <span className="font-semibold text-gray-900 whitespace-nowrap">
+                                {formatDelta(item.delta)}
+                              </span>
+                            </div>
                           ))}
                         </div>
-                      ) : null}
-                    </div>
-                  ))}
-
-                  {addedItems.length > 0 && (
-                    <div className="flex justify-end pt-3">
-                      <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700">
-                        Итого: {formatCurrency(BASE_TARIFF_TOTAL)}
-                      </span>
-                    </div>
-                  )}
-
-                  {addedItems.length > 0 && (
-                    <div className="pt-3 mt-4 border-t border-gray-200/70">
-                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400 mb-2">
-                        Добавлено в план
                       </div>
-                      <div className="space-y-2">
-                        {addedItems.map((item) => (
-                          <div key={item.key} className="flex items-start justify-between gap-4 text-gray-700">
-                            <div className="space-y-1">
-                              <div>{item.label}</div>
-                              {item.detail && (
-                                <div className="ml-3 text-xs text-gray-500">• {item.detail}</div>
-                              )}
-                            </div>
-                            <span className="font-semibold text-gray-900 whitespace-nowrap">
-                              {formatDelta(item.delta)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="text-center">
-                  <div className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Итого</div>
-                  <div className="mt-2 text-4xl font-semibold text-gray-900">
-                    {activePanel === "custom" ? formatCurrency(pricing.total) : "86 600 ₽"}
+                    )}
                   </div>
-                </div>
-                {activePanel === "custom" && (
-                  <div ref={configuratorRef} className="space-y-4">
-                    <div>
-                      <OptionRow
-                        label="Формат"
-                        description="Как будет проходить прощание"
-                        value={draftConfig.format}
-                        options={[
-                          { value: "burial", label: "Захоронение", subtitle: "Традиционное погребение" },
-                          { value: "cremation", label: "Кремация", subtitle: "С выдачей урны" },
-                          { value: "unknown", label: "Пока не знаю", subtitle: "Поможем определиться" },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({ ...prev, format: value as TariffDraftConfig["format"] }))
-                        }
-                      />
-                    </div>
-                    <div>
-                      <OptionRow
-                        label="Зал прощания"
-                        description="Церемония прощания с родными"
-                        value={draftConfig.hall}
-                        options={[
-                          { value: "none", label: "Без зала" },
-                          { value: "60", label: "С залом", delta: 10000 },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({ ...prev, hall: value as TariffDraftConfig["hall"] }))
-                        }
-                      />
-                    </div>
 
-                    <div>
-                      <OptionRow
-                        label="Тип церемонии"
-                        value={draftConfig.ceremonyType}
-                        options={[
-                          { value: "secular", label: "Светская", subtitle: "Без религиозных обрядов", delta: 0, showZero: true },
-                          {
-                            value: "religious",
-                            label: "Религиозная",
-                            subtitle: "С участием священнослужителя",
-                            delta: 15000,
-                          },
-                          {
-                            value: "mixed",
-                            label: "Комбинированная",
-                            subtitle: "Светская + религиозная часть",
-                            delta: 20000,
-                          },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({
-                            ...prev,
-                            ceremonyType: value as TariffDraftConfig["ceremonyType"],
-                          }))
-                        }
-                      />
-                    </div>
-
-                    <div>
-                      <OptionRow
-                        label="Катафалк"
-                        description="Специализированный автомобиль для перевозки гроба"
-                        value={draftConfig.hearseTier}
-                        options={[
-                          { value: "standard", label: "Стандарт (включено)", delta: 0, showZero: true },
-                          { value: "comfort", label: "Комфорт", delta: 12000 },
-                          { value: "premium", label: "Премиум", delta: 35000 },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({ ...prev, hearseTier: value as TariffDraftConfig["hearseTier"] }))
-                        }
-                      />
-                    </div>
-
-                    <div>
-                      <OptionRow
-                        label="Транспорт для близких"
-                        description="Автобус или микроавтобус для 12–19 пассажиров"
-                        value={draftConfig.transport}
-                        options={[
-                          { value: "none", label: "Не нужен" },
-                          { value: "standard", label: "Стандарт (12-19 человек)", delta: 11400 },
-                          { value: "comfort", label: "Комфорт (12-19 человек)", delta: 15300 },
-                          { value: "premium", label: "Премиум (до 40 человек)", delta: 39000 },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({ ...prev, transport: value as TariffDraftConfig["transport"] }))
-                        }
-                      />
-                    </div>
-
-                    <div>
-                      <OptionRow
-                        label="Носильщики"
-                        description="Бригада (обычно 4 человека) для погрузки, выноса и заноса гроба"
-                        value={draftConfig.pallbearers}
-                        options={[
-                          { value: "none", label: "Не нужны" },
-                          { value: "standard", label: "Стандарт (4 человека)", delta: 8000 },
-                          { value: "comfort", label: "Комфорт (4 человека)", delta: 16100 },
-                          { value: "premium", label: "Премиум", delta: 24000 },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({ ...prev, pallbearers: value as TariffDraftConfig["pallbearers"] }))
-                        }
-                      />
-                    </div>
-
-                    <div>
-                      <OptionRow
-                        label="Координатор"
-                        description="Помощь в подборе принадлежностей, расчет сметы, координация похорон"
-                        value={draftConfig.coordinationTier}
-                        options={[
-                          { value: "base", label: "Оформление заказа и сопровождение (включено)", delta: 0, showZero: true },
-                          { value: "comfort", label: "Сопровождение церемонии", delta: 30100 },
-                          { value: "premium", label: "Персональный координатор церемонии", delta: 90000 },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({
-                            ...prev,
-                            coordinationTier: value as TariffDraftConfig["coordinationTier"],
-                          }))
-                        }
-                      />
-                    </div>
-
-                    <div>
-                      <OptionRow
-                        label="Отпевание"
-                        description="Религиозный обряд"
-                        value={draftConfig.churchService}
-                        options={[
-                          { value: "none", label: "Не нужно" },
-                          { value: "morgue", label: "Минимальный обряд в морге", delta: 4000 },
-                          { value: "parish", label: "Отпевание в обычном храме", delta: 6000 },
-                          { value: "cathedral", label: "Кафедральный собор/монастырь", delta: 47000 },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({
-                            ...prev,
-                            churchService: value as TariffDraftConfig["churchService"],
-                          }))
-                        }
-                      />
-                    </div>
-
-                    <div>
-                      <OptionRow
-                        label="Панихида"
-                        description="Служба на кладбище или в храме, закрытие гроба, панихида"
-                        value={draftConfig.panikhida}
-                        options={[
-                          { value: "none", label: "Не нужно" },
-                          { value: "standard", label: "Стандарт", delta: 5000 },
-                          { value: "comfort", label: "Комфорт", delta: 10000 },
-                          { value: "premium", label: "Премиум", delta: 20000 },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({
-                            ...prev,
-                            panikhida: value as TariffDraftConfig["panikhida"],
-                          }))
-                        }
-                      />
-                    </div>
-
-                    <div>
-                      <OptionRow
-                        label="Ведущий"
-                        description="Организация траурной церемонии, сценарий, координация служб"
-                        value={draftConfig.host}
-                        options={[
-                          { value: "no", label: "Не нужно" },
-                          { value: "yes", label: "Нужно", delta: 37000 },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({
-                            ...prev,
-                            host: value as TariffDraftConfig["host"],
-                          }))
-                        }
-                      />
-                    </div>
-
-                    <div>
-                      <OptionRow
-                        label="Поминальный обед"
-                        description="Поминки после похорон"
-                        value={draftConfig.memorialMeal}
-                        options={[
-                          { value: "none", label: "Не нужно" },
-                          { value: "standard", label: "Нужно" },
-                        ]}
-                        onChange={(value) =>
-                          setDraftConfig((prev) => ({
-                            ...prev,
-                            memorialMeal: value as TariffDraftConfig["memorialMeal"],
-                          }))
-                        }
-                      />
+                  <div className="text-center">
+                    <div className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Итого</div>
+                    <div className="mt-2 text-4xl font-semibold text-gray-900">
+                      {activePanel === "custom" ? formatCurrency(pricing.total) : "86 600 ₽"}
                     </div>
                   </div>
-                )}
-              </div>
+                  {activePanel === "custom" && (
+                    <div ref={configuratorRef} className="space-y-4">
+                      <div>
+                        <OptionRow
+                          label="Формат"
+                          description="Как будет проходить прощание"
+                          value={draftConfig.format}
+                          options={[
+                            { value: "burial", label: "Захоронение", subtitle: "Традиционное погребение" },
+                            { value: "cremation", label: "Кремация", subtitle: "С выдачей урны" },
+                            { value: "unknown", label: "Пока не знаю", subtitle: "Поможем определиться" },
+                          ]}
+                          onChange={(value) =>
+                            setDraftConfig((prev) => ({ ...prev, format: value as TariffDraftConfig["format"] }))
+                          }
+                        />
+                      </div>
+                      <div>
+                        <OptionRow
+                          label="Зал прощания"
+                          description="Церемония прощания с родными"
+                          value={draftConfig.hall}
+                          options={[
+                            { value: "none", label: "Без зала" },
+                            { value: "60", label: "С залом", delta: 10000 },
+                          ]}
+                          onChange={(value) =>
+                            setDraftConfig((prev) => ({ ...prev, hall: value as TariffDraftConfig["hall"] }))
+                          }
+                        />
+                      </div>
 
-              <div className="flex flex-col gap-3">
-                <Button
-                  onClick={() => {
-                    setActivePanel((prev) => (prev === "custom" ? "base" : "custom"));
-                    setShowInlinePayment(false);
-                  }}
-                  className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide bg-gray-900 text-white hover:bg-gray-800"
-                >
-                  Изменить детали
-                </Button>
-                <div className="text-xs text-gray-500">
-                  Изменить формат, зал, транспорт и другие детали
+                      <div>
+                        <OptionRow
+                          label="Тип церемонии"
+                          value={draftConfig.ceremonyType}
+                          options={[
+                            { value: "secular", label: "Светская", subtitle: "Без религиозных обрядов", delta: 0, showZero: true },
+                            {
+                              value: "religious",
+                              label: "Религиозная",
+                              subtitle: "С участием священнослужителя",
+                              delta: 15000,
+                            },
+                            {
+                              value: "mixed",
+                              label: "Комбинированная",
+                              subtitle: "Светская + религиозная часть",
+                              delta: 20000,
+                            },
+                          ]}
+                          onChange={(value) =>
+                            setDraftConfig((prev) => ({
+                              ...prev,
+                              ceremonyType: value as TariffDraftConfig["ceremonyType"],
+                            }))
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <OptionRow
+                          label="Катафалк"
+                          description="Специализированный автомобиль для перевозки гроба"
+                          value={draftConfig.hearseTier}
+                          options={[
+                            { value: "standard", label: "Стандарт (включено)", delta: 0, showZero: true },
+                            { value: "comfort", label: "Комфорт", delta: 12000 },
+                            { value: "premium", label: "Премиум", delta: 35000 },
+                          ]}
+                          onChange={(value) =>
+                            setDraftConfig((prev) => ({ ...prev, hearseTier: value as TariffDraftConfig["hearseTier"] }))
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <OptionRow
+                          label="Транспорт для близких"
+                          description="Автобус или микроавтобус для 12–19 пассажиров"
+                          value={draftConfig.transport}
+                          options={[
+                            { value: "none", label: "Не нужен" },
+                            { value: "standard", label: "Стандарт (12-19 человек)", delta: 11400 },
+                            { value: "comfort", label: "Комфорт (12-19 человек)", delta: 15300 },
+                            { value: "premium", label: "Премиум (до 40 человек)", delta: 39000 },
+                          ]}
+                          onChange={(value) =>
+                            setDraftConfig((prev) => ({ ...prev, transport: value as TariffDraftConfig["transport"] }))
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <OptionRow
+                          label="Носильщики"
+                          description="Бригада (обычно 4 человека) для погрузки, выноса и заноса гроба"
+                          value={draftConfig.pallbearers}
+                          options={[
+                            { value: "none", label: "Не нужны" },
+                            { value: "standard", label: "Стандарт (4 человека)", delta: 8000 },
+                            { value: "comfort", label: "Комфорт (4 человека)", delta: 16100 },
+                            { value: "premium", label: "Премиум", delta: 24000 },
+                          ]}
+                          onChange={(value) =>
+                            setDraftConfig((prev) => ({ ...prev, pallbearers: value as TariffDraftConfig["pallbearers"] }))
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <OptionRow
+                          label="Координатор"
+                          description="Помощь в подборе принадлежностей, расчет сметы, координация похорон"
+                          value={draftConfig.coordinationTier}
+                          options={[
+                            { value: "base", label: "Оформление заказа и сопровождение (включено)", delta: 0, showZero: true },
+                            { value: "comfort", label: "Сопровождение церемонии", delta: 30100 },
+                            { value: "premium", label: "Персональный координатор церемонии", delta: 90000 },
+                          ]}
+                          onChange={(value) =>
+                            setDraftConfig((prev) => ({
+                              ...prev,
+                              coordinationTier: value as TariffDraftConfig["coordinationTier"],
+                            }))
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <OptionRow
+                          label="Отпевание"
+                          description="Религиозный обряд"
+                          value={draftConfig.churchService}
+                          options={[
+                            { value: "none", label: "Не нужно" },
+                            { value: "morgue", label: "Минимальный обряд в морге", delta: 4000 },
+                            { value: "parish", label: "Отпевание в обычном храме", delta: 6000 },
+                            { value: "cathedral", label: "Кафедральный собор/монастырь", delta: 47000 },
+                          ]}
+                          onChange={(value) =>
+                            setDraftConfig((prev) => ({
+                              ...prev,
+                              churchService: value as TariffDraftConfig["churchService"],
+                            }))
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <OptionRow
+                          label="Панихида"
+                          description="Служба на кладбище или в храме, закрытие гроба, панихида"
+                          value={draftConfig.panikhida}
+                          options={[
+                            { value: "none", label: "Не нужно" },
+                            { value: "standard", label: "Стандарт", delta: 5000 },
+                            { value: "comfort", label: "Комфорт", delta: 10000 },
+                            { value: "premium", label: "Премиум", delta: 20000 },
+                          ]}
+                          onChange={(value) =>
+                            setDraftConfig((prev) => ({
+                              ...prev,
+                              panikhida: value as TariffDraftConfig["panikhida"],
+                            }))
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <OptionRow
+                          label="Ведущий"
+                          description="Организация траурной церемонии, сценарий, координация служб"
+                          value={draftConfig.host}
+                          options={[
+                            { value: "no", label: "Не нужно" },
+                            { value: "yes", label: "Нужно", delta: 37000 },
+                          ]}
+                          onChange={(value) =>
+                            setDraftConfig((prev) => ({
+                              ...prev,
+                              host: value as TariffDraftConfig["host"],
+                            }))
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <OptionRow
+                          label="Поминальный обед"
+                          description="Поминки после похорон"
+                          value={draftConfig.memorialMeal}
+                          options={[
+                            { value: "none", label: "Не нужно" },
+                            { value: "standard", label: "Нужно" },
+                          ]}
+                          onChange={(value) =>
+                            setDraftConfig((prev) => ({
+                              ...prev,
+                              memorialMeal: value as TariffDraftConfig["memorialMeal"],
+                            }))
+                          }
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="space-y-1.5">
+
+                <div className="flex flex-col gap-3">
                   <Button
-                    variant="outline"
                     onClick={() => {
-                      setActivePanel("base");
-                      setShowInlinePayment((v) => !v);
+                      setActivePanel((prev) => (prev === "custom" ? "base" : "custom"));
+                      setShowInlinePayment(false);
                     }}
-                    className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide !bg-gray-100 !text-gray-900 hover:!bg-gray-50 !border-gray-200"
+                    className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide bg-gray-900 text-white hover:bg-gray-800"
                   >
-                    Отправить план на почту
+                    Изменить детали
                   </Button>
-                  {!showInlinePayment && (
-                    <div className="text-xs text-gray-500">
-                      Сейчас оплата не требуется. Сначала вы получите договор, детали заказа и сможете спокойно всё проверить.
-                    </div>
-                  )}
-                  {showInlinePayment && (
-                    <div className="pt-4">
-                      {paymentSlot?.({
-                        totalRub: paymentTotal,
-                        services: paymentServices,
-                        formData: paymentFormData,
-                        orderFlow: activePanel === "custom" ? "custom" : "base_minimum",
-                        package: {
-                          id: BASE_MINIMUM.id,
-                          name: BASE_MINIMUM.name,
-                          price: paymentTotal,
-                        },
-                      })}
-                    </div>
-                  )}
+                  <div className="text-xs text-gray-500">
+                    Изменить формат, зал, транспорт и другие детали
+                  </div>
+                  <div className="space-y-1.5">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setActivePanel("base");
+                        setShowInlinePayment((v) => !v);
+                      }}
+                      className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide !bg-gray-100 !text-gray-900 hover:!bg-gray-50 !border-gray-200"
+                    >
+                      Отправить план на почту
+                    </Button>
+                    {!showInlinePayment && (
+                      <div className="text-xs text-gray-500">
+                        Сейчас оплата не требуется. Сначала вы получите договор, детали заказа и сможете спокойно всё проверить.
+                      </div>
+                    )}
+                    {showInlinePayment && (
+                      <div className="pt-4">
+                        {paymentSlot?.({
+                          totalRub: paymentTotal,
+                          services: paymentServices,
+                          formData: paymentFormData,
+                          orderFlow: activePanel === "custom" ? "custom" : "base_minimum",
+                          package: {
+                            id: BASE_MINIMUM.id,
+                            name: BASE_MINIMUM.name,
+                            price: paymentTotal,
+                          },
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
           )}
 
-          {!isSelfMode && allInclusivePackages.map((pkg) => {
+          <div className="no-scrollbar -mx-2 flex snap-x snap-mandatory gap-3 overflow-x-auto px-2 pb-2 md:!mx-0 md:!grid md:!grid-cols-3 md:!gap-3 md:!overflow-visible md:!px-0 md:!pb-2 md:!snap-none">
+            {readyPackages.map((pkg) => {
             const card = solutionCardContent[pkg.id] ?? {
               title: pkg.name,
               priceLabel: formatCurrency(pkg.price),
@@ -645,34 +668,28 @@ export function PackagesSelection({
               coordinatorHelp: [],
               included: pkg.features.map((feature) => `${feature}`),
             };
-            const isPopular = Boolean(card.popular);
             return (
               <div
                 key={pkg.id}
-                className="w-full"
+                className="w-[88%] max-w-[360px] min-w-[280px] shrink-0 snap-start md:!w-full md:!min-w-0 md:!max-w-none md:!shrink"
               >
-                <div className="relative mx-auto w-full rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm h-full flex flex-col">
-                  {isPopular && (
-                    <div className="absolute left-1/2 -translate-x-1/2 -top-4 rounded-full bg-gray-900 px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white whitespace-nowrap">
-                      Популярный выбор
-                    </div>
-                  )}
-                  <div className="text-center">
-                    <div className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+                <div className="relative mx-auto flex h-full min-w-0 w-full flex-col rounded-[28px] border border-gray-200 bg-white p-5 shadow-sm 2xl:p-6">
+                  <div className="min-w-0 text-center">
+                    <div className="break-words text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-500 xl:text-[9px] 2xl:text-xs">
                       {card.title}
                     </div>
-                    <div className="mt-4 text-4xl font-semibold text-gray-900 whitespace-nowrap leading-none">
+                    <div className="mt-4 text-[clamp(1.9rem,2vw,2.25rem)] font-semibold text-gray-900 whitespace-nowrap leading-none">
                       {card.priceLabel}
                     </div>
                     <div className="mt-2 text-xs text-gray-500">
                       Смета окончательная и фиксируется в договоре
                     </div>
-                    <div className="mt-3 text-sm text-gray-600 leading-relaxed text-left">
+                    <div className="mt-3 min-w-0 text-sm text-gray-600 leading-relaxed text-left">
                       {card.description}
                     </div>
                   </div>
 
-                  <div className="mt-6 space-y-2 text-sm text-gray-700">
+                  <div className="mt-6 min-w-0 space-y-2 text-sm text-gray-700">
                     <div className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">
                       Как помогает координатор
                     </div>
@@ -681,7 +698,7 @@ export function PackagesSelection({
                     ))}
                   </div>
 
-                  <div className="mt-5 space-y-2 text-sm text-gray-700">
+                  <div className="mt-5 min-w-0 space-y-2 text-sm text-gray-700">
                     <div className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">
                       Что входит в стоимость
                     </div>
@@ -728,6 +745,7 @@ export function PackagesSelection({
               </div>
             );
           })}
+          </div>
         </div>
       </div>
     </div>
@@ -804,3 +822,5 @@ function OptionRow({
     </div>
   );
 }
+
+
