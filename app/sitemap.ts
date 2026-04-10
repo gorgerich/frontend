@@ -20,5 +20,17 @@ lastModified: new Date(),
 changeFrequency: 'monthly',
 priority: 0.7,
 },
+{
+url: 'https://tihiydom.com/docs/oferta',
+lastModified: new Date(),
+changeFrequency: 'monthly',
+priority: 0.5,
+},
+{
+url: 'https://tihiydom.com/info',
+lastModified: new Date(),
+changeFrequency: 'monthly',
+priority: 0.5,
+},
 ]
 }
