@@ -3,6 +3,8 @@ import { cn } from "./ui/utils";
 import { Button } from "./ui/button";
 import { calcTariffTotal, formatCurrency, formatDelta, TariffDraftConfig, BASE_TARIFF_TOTAL, TARIFF_PRICING } from "./calculationUtils";
 
+const SUPPORT_TELEGRAM_URL = "https://t.me/tihiydominfo";
+
 export interface Package {
   id: string;
   name: string;
@@ -40,6 +42,7 @@ export function PackagesSelection({
 }: PackagesSelectionProps) {
   const [activePanel, setActivePanel] = React.useState<"base" | "custom">("base");
   const [showInlinePayment, setShowInlinePayment] = React.useState(false);
+  const [deliveryChannel, setDeliveryChannel] = React.useState<"telegram" | "email" | null>(null);
   const [draftConfig, setDraftConfig] = React.useState<TariffDraftConfig>({
     format: "burial",
     transport: "none",
@@ -301,6 +304,38 @@ export function PackagesSelection({
     requestAnimationFrame(() => {
       configuratorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
+  };
+  const traditionalTelegramPrefill = [
+    `Тариф: ${BASE_MINIMUM.name}`,
+    `Стоимость: ${formatCurrency(BASE_TARIFF_TOTAL)}`,
+    "",
+    "Что входит:",
+    ...baseLineItems.map((item) => `- ${item.label}: ${formatCurrency(item.price)}`),
+  ].join("\n");
+  const traditionalTelegramUrl = (() => {
+    const username = SUPPORT_TELEGRAM_URL.split("t.me/")[1]?.split(/[/?#]/)[0];
+    if (!username) return SUPPORT_TELEGRAM_URL;
+    return `https://t.me/${username}?text=${encodeURIComponent(traditionalTelegramPrefill)}`;
+  })();
+  const buildTelegramPlanUrl = (plan: {
+    title: string;
+    priceLabel: string;
+    description: string;
+    included: string[];
+  }) => {
+    const username = SUPPORT_TELEGRAM_URL.split("t.me/")[1]?.split(/[/?#]/)[0];
+    const message = [
+      "Здравствуйте! Хочу сохранить план прощания.",
+      `Тариф: ${plan.title}`,
+      `Стоимость: ${plan.priceLabel}`,
+      "",
+      `Описание: ${plan.description}`,
+      "",
+      "Что входит в стоимость:",
+      ...plan.included.map((item) => `- ${item}`),
+    ].join("\n");
+    if (!username) return SUPPORT_TELEGRAM_URL;
+    return `https://t.me/${username}?text=${encodeURIComponent(message)}`;
   };
 
   return (
@@ -627,11 +662,15 @@ export function PackagesSelection({
                       variant="outline"
                       onClick={() => {
                         setActivePanel("base");
-                        setShowInlinePayment((v) => !v);
+                        setShowInlinePayment((v) => {
+                          const next = !v;
+                          if (!next) setDeliveryChannel(null);
+                          return next;
+                        });
                       }}
                       className="w-full rounded-2xl h-12 text-sm font-semibold tracking-wide !bg-gray-100 !text-gray-900 hover:!bg-gray-50 !border-gray-200"
                     >
-                      Отправить план на почту
+                      Сохранить и отправить план себе
                     </Button>
                     {!showInlinePayment && (
                       <div className="text-xs text-gray-500">
@@ -639,18 +678,43 @@ export function PackagesSelection({
                       </div>
                     )}
                     {showInlinePayment && (
-                      <div className="pt-4">
-                        {paymentSlot?.({
-                          totalRub: paymentTotal,
-                          services: paymentServices,
-                          formData: paymentFormData,
-                          orderFlow: activePanel === "custom" ? "custom" : "base_minimum",
-                          package: {
-                            id: BASE_MINIMUM.id,
-                            name: BASE_MINIMUM.name,
-                            price: paymentTotal,
-                          },
-                        })}
+                      <div className="pt-4 space-y-3">
+                        <div className="text-sm font-medium text-gray-700">
+                          Куда вам удобнее сохранить план?
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            asChild
+                            variant="outline"
+                            className="h-11 rounded-2xl text-sm font-semibold !bg-gray-100 !text-gray-900 hover:!bg-gray-50 !border-gray-200"
+                          >
+                            <a href={traditionalTelegramUrl} target="_blank" rel="noreferrer">
+                              В Telegram
+                            </a>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => setDeliveryChannel("email")}
+                            className="h-11 rounded-2xl text-sm font-semibold !bg-gray-100 !text-gray-900 hover:!bg-gray-50 !border-gray-200"
+                          >
+                            На почту
+                          </Button>
+                        </div>
+                        {deliveryChannel === "email" && (
+                          <div className="pt-1">
+                            {paymentSlot?.({
+                              totalRub: paymentTotal,
+                              services: paymentServices,
+                              formData: paymentFormData,
+                              orderFlow: activePanel === "custom" ? "custom" : "base_minimum",
+                              package: {
+                                id: BASE_MINIMUM.id,
+                                name: BASE_MINIMUM.name,
+                                price: paymentTotal,
+                              },
+                            })}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -659,93 +723,132 @@ export function PackagesSelection({
             </div>
           )}
 
-          <div className="no-scrollbar -mx-2 flex snap-x snap-mandatory gap-3 overflow-x-auto px-2 pb-2 md:!mx-0 md:!grid md:!grid-cols-3 md:!gap-3 md:!overflow-visible md:!px-0 md:!pb-2 md:!snap-none">
-            {readyPackages.map((pkg) => {
-            const card = solutionCardContent[pkg.id] ?? {
-              title: pkg.name,
-              priceLabel: formatCurrency(pkg.price),
-              description: pkg.description,
-              coordinatorHelp: [],
-              included: pkg.features.map((feature) => `${feature}`),
-            };
-            return (
+          {readyPackages.length > 0 && (
+            <section
+              className={cn(
+                showTraditionalLegacyCard ? "pt-14 md:pt-20" : "pt-6 md:pt-10",
+                embedded && "pt-6 md:pt-8",
+              )}
+            >
+              {showTraditionalLegacyCard && (
+                <div className="px-2 md:px-0">
+                  <div className="mx-auto h-px max-w-5xl bg-gray-200/80" />
+                </div>
+              )}
               <div
-                key={pkg.id}
-                className="w-[88%] max-w-[360px] min-w-[280px] shrink-0 snap-start md:!w-full md:!min-w-0 md:!max-w-none md:!shrink"
+                className={cn(
+                  "mt-8 rounded-[28px] bg-[#f9f9f9] px-3 py-8 md:mt-10 md:px-6 md:py-10",
+                  embedded && "mt-6 rounded-none bg-transparent px-0 py-0",
+                )}
               >
-                <div className="relative mx-auto flex h-full min-w-0 w-full flex-col rounded-[28px] border border-gray-200 bg-white p-5 shadow-sm 2xl:p-6">
-                  <div className="min-w-0 text-center">
-                    <div className="break-words text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-500 xl:text-[9px] 2xl:text-xs">
-                      {card.title}
-                    </div>
-                    <div className="mt-4 text-[clamp(1.9rem,2vw,2.25rem)] font-semibold text-gray-900 whitespace-nowrap leading-none">
-                      {card.priceLabel}
-                    </div>
-                    <div className="mt-2 text-xs text-gray-500">
-                      Смета окончательная и фиксируется в договоре
-                    </div>
-                    <div className="mt-3 min-w-0 text-sm text-gray-600 leading-relaxed text-left">
-                      {card.description}
-                    </div>
-                  </div>
+                <div className="mx-auto mb-8 max-w-3xl text-center md:mb-10">
+                  <h3 className="text-xl font-medium text-gray-900 md:text-2xl">
+                    Или делегируйте всю организацию нам
+                  </h3>
+                  <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-gray-500 md:text-base">
+                    Пакеты с личным сопровождением. Мы берем на себя логистику, работу с документами и
+                    защиту от навязанных услуг.
+                  </p>
+                </div>
 
-                  <div className="mt-6 min-w-0 space-y-2 text-sm text-gray-700">
-                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">
-                      Как помогает координатор
-                    </div>
-                    {card.coordinatorHelp.map((line, idx) => (
-                      <p key={`${pkg.id}-help-${idx}`}>{line}</p>
-                    ))}
-                  </div>
+                <div className="no-scrollbar -mx-2 flex snap-x snap-mandatory gap-3 overflow-x-auto px-2 pb-2 md:!mx-0 md:!grid md:!grid-cols-3 md:!gap-3 md:!overflow-visible md:!px-0 md:!pb-2 md:!snap-none">
+                  {readyPackages.map((pkg) => {
+                    const card = solutionCardContent[pkg.id] ?? {
+                      title: pkg.name,
+                      priceLabel: formatCurrency(pkg.price),
+                      description: pkg.description,
+                      coordinatorHelp: [],
+                      included: pkg.features.map((feature) => `${feature}`),
+                    };
+                    const packageTelegramUrl = buildTelegramPlanUrl({
+                      title: card.title,
+                      priceLabel: card.priceLabel,
+                      description: card.description,
+                      included: card.included,
+                    });
+                    return (
+                      <div
+                        key={pkg.id}
+                        className="w-[88%] max-w-[360px] min-w-[280px] shrink-0 snap-start md:!w-full md:!min-w-0 md:!max-w-none md:!shrink"
+                      >
+                        <div className="relative mx-auto flex h-full min-w-0 w-full flex-col rounded-[28px] border border-gray-200 bg-white p-5 shadow-sm 2xl:p-6">
+                          <div className="min-w-0 text-center">
+                            <div className="break-words text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-500 xl:text-[9px] 2xl:text-xs">
+                              {card.title}
+                            </div>
+                            <div className="mt-4 text-[clamp(1.9rem,2vw,2.25rem)] font-semibold text-gray-900 whitespace-nowrap leading-none">
+                              {card.priceLabel}
+                            </div>
+                            <div className="mt-2 text-xs text-gray-500">
+                              Смета окончательная и фиксируется в договоре
+                            </div>
+                            <div className="mt-3 min-w-0 text-sm text-gray-600 leading-relaxed text-left">
+                              {card.description}
+                            </div>
+                          </div>
 
-                  <div className="mt-5 min-w-0 space-y-2 text-sm text-gray-700">
-                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">
-                      Что входит в стоимость
-                    </div>
-                    {card.included.map((line, idx) => (
-                      <p key={`${pkg.id}-included-${idx}`}>{line}</p>
-                    ))}
-                  </div>
+                          <div className="mt-6 min-w-0 space-y-2 text-sm text-gray-700">
+                            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">
+                              Как помогает координатор
+                            </div>
+                            {card.coordinatorHelp.map((line, idx) => (
+                              <p key={`${pkg.id}-help-${idx}`}>{line}</p>
+                            ))}
+                          </div>
 
-                  <Button
-                    className="mt-6 w-full rounded-2xl h-12 text-sm font-semibold tracking-wide"
-                    onClick={() => {
-                      const isCremation = false;
-                      const draft = {
-                        format: isCremation ? "cremation" : "burial",
-                        transport: "standard",
-                        pallbearers: "standard",
-                        hall: "60",
-                        hearseTier: "standard",
-                        coordinationTier: "base",
-                        ceremonyType: "secular",
-                        churchService: "none",
-                        panikhida: "none",
-                        memorialMeal: "none",
-                        host: "no",
-                      } satisfies TariffDraftConfig;
-                      try {
-                        localStorage.setItem("tihiydom_plan_draft_v1", JSON.stringify(draft));
-                      } catch {
-                        // ignore write errors
-                      }
-                      onSelectPackage(pkg);
-                    }}
-                  >
-                    Выбрать этот план
-                  </Button>
-                  <Button
-                    variant="outline"
-                    disabled
-                    className="mt-3 w-full rounded-2xl h-11 text-sm font-semibold tracking-wide"
-                  >
-                    Сохранить план на почту
-                  </Button>
+                          <div className="mt-5 min-w-0 space-y-2 text-sm text-gray-700">
+                            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">
+                              Что входит в стоимость
+                            </div>
+                            {card.included.map((line, idx) => (
+                              <p key={`${pkg.id}-included-${idx}`}>{line}</p>
+                            ))}
+                          </div>
+
+                          <Button
+                            className="mt-6 w-full rounded-2xl h-12 text-sm font-semibold tracking-wide"
+                            onClick={() => {
+                              const isCremation = false;
+                              const draft = {
+                                format: isCremation ? "cremation" : "burial",
+                                transport: "standard",
+                                pallbearers: "standard",
+                                hall: "60",
+                                hearseTier: "standard",
+                                coordinationTier: "base",
+                                ceremonyType: "secular",
+                                churchService: "none",
+                                panikhida: "none",
+                                memorialMeal: "none",
+                                host: "no",
+                              } satisfies TariffDraftConfig;
+                              try {
+                                localStorage.setItem("tihiydom_plan_draft_v1", JSON.stringify(draft));
+                              } catch {
+                                // ignore write errors
+                              }
+                              onSelectPackage(pkg);
+                            }}
+                          >
+                            Выбрать этот план
+                          </Button>
+                          <Button
+                            asChild
+                            variant="outline"
+                            className="mt-3 w-full rounded-2xl h-11 text-sm font-semibold tracking-wide"
+                          >
+                            <a href={packageTelegramUrl} target="_blank" rel="noopener noreferrer">
+                              Сохранить в Telegram
+                            </a>
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            );
-          })}
-          </div>
+            </section>
+          )}
         </div>
       </div>
     </div>

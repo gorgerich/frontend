@@ -160,6 +160,12 @@ const TRUST_REVIEWS = [
   },
 ];
 
+const TRUST_REVIEWS_SORTED = [...TRUST_REVIEWS].sort((a, b) => {
+  const aLength = a.text.replace(/\s+/g, ' ').trim().length + (a.headline?.length ?? 0);
+  const bLength = b.text.replace(/\s+/g, ' ').trim().length + (b.headline?.length ?? 0);
+  return bLength - aLength;
+});
+
 const TEAM_MEMBERS = [
   {
     id: 'member-1',
@@ -944,7 +950,7 @@ export default function HomePageClient() {
             </div>
             <div className="order-1 mt-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <div className="flex w-max items-start gap-4 pb-1">
-              {TRUST_REVIEWS.map((review) => (
+              {TRUST_REVIEWS_SORTED.map((review) => (
                 <div
                   key={review.id}
                   className="relative h-fit w-[340px] shrink-0 self-start rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:w-[390px] lg:w-[420px] xl:w-[460px]"

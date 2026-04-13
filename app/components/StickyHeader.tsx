@@ -134,7 +134,10 @@ export function StickyHeader() {
                 Тихий дом
               </span>
             </Link>
-            <nav className="ml-auto hidden items-center justify-end gap-6 md:flex" style={{ marginRight: 0 }}>
+            <nav
+              className="ml-auto items-center justify-end gap-6"
+              style={{ marginRight: 0, display: isDesktopNav ? 'flex' : 'none' }}
+            >
               {topNavItems.map((item) =>
                 'href' in item ? (
                   <Link
@@ -169,7 +172,8 @@ export function StickyHeader() {
             <button
               type="button"
               onClick={() => setTopMenuOpen((prev) => !prev)}
-              className="ml-auto inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/40 bg-white/60 text-gray-700 shadow-sm transition hover:bg-white/85 md:hidden"
+              className="ml-auto inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/40 bg-white/60 text-gray-700 shadow-sm transition hover:bg-white/85"
+              style={{ display: isDesktopNav ? 'none' : 'inline-flex' }}
               aria-expanded={topMenuOpen}
               aria-label="Открыть меню"
             >
