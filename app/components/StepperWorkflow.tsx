@@ -4313,7 +4313,7 @@ function formatRub(n: number) {
         Можно собрать план самостоятельно или выбрать готовое решение с расширенным пакетом услуг.
       </p>
       <div className="mb-1 mt-2 flex w-full justify-center md:justify-start">
-        <div className="flex w-full max-w-full min-w-0 flex-wrap gap-1 rounded-[28px] border border-zinc-200 bg-zinc-100 p-1 md:gap-0 md:mx-0 md:mr-auto md:rounded-full">
+        <div className="flex w-full max-w-full min-w-0 flex-wrap gap-1 rounded-[28px] border border-zinc-200 bg-zinc-100 p-1 md:gap-0 md:mx-0 md:mr-auto md:rounded-[28px]">
           <button
             type="button"
             onClick={() => {
@@ -4353,11 +4353,11 @@ function formatRub(n: number) {
               Собрать свой план
             </span>
           </button>
+          <p className="basis-full px-3 pb-3 pt-2 text-[13px] leading-[1.4] text-gray-600 min-[375px]:text-[14px] md:px-4 md:pb-4 md:pt-3 md:text-base">
+            {scenarioDescription}
+          </p>
         </div>
       </div>
-      <p className="mt-4 max-w-full break-words text-[13px] min-[375px]:text-[14px] md:text-base leading-[1.4] text-gray-600">
-        {scenarioDescription}
-      </p>
     </div>
       <div className="px-5 pb-6 pt-0 sm:px-7 sm:pb-7 sm:pt-0">
   {workflowMode === "wizard" ? (
