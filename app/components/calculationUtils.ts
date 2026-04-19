@@ -306,7 +306,7 @@ export const PACKAGES = [
   {
     id: "basic",
     name: "С поддержкой координатора",
-    price: 204928,
+    price: 204900,
     description: "Координатор помогает точечно, по необходимости",
     features: [
       "Оформление документов",
@@ -326,7 +326,7 @@ export const PACKAGES = [
   {
     id: "standard",
     name: "Расширенное сопровождение",
-    price: 401193,
+    price: 401100,
     description: "Координатор ведёт процесс и контролирует детали",
     features: [
       "Оформление документов",
@@ -347,7 +347,7 @@ export const PACKAGES = [
   {
     id: "premium",
     name: "Передать всё координатору",
-    price: 609491,
+    price: 609400,
     description: "Персональное сопровождение, вы передаёте процесс полностью",
     features: [
       "Оформление документов",
@@ -1334,3 +1334,4 @@ export function trackEvent(
     console.info("[tracking]", name, params);
   }
 }
+

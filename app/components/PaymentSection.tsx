@@ -5,6 +5,7 @@ import { cn } from './ui/utils';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { buildGoalName, reachMetrikaGoal } from './calculationUtils';
+import { SPLIT_PARTS, calcPayNowRub } from '@/lib/pricingMath';
 
 type PaymentMethod = 'card' | 'sbp' | 'installment';
 type PaymentOption = 'full' | 'deposit_5' | 'split';
@@ -47,14 +48,13 @@ split: 'payment_option_split',
 const lastSentOptionRef = useRef<PaymentOption | null>(null);
 const didMountRef = useRef(false);
 
-const depositAmount = useMemo(() => Math.round(total * 0.05), [total]);
-const splitParts = 4;
-const splitPartAmount = useMemo(() => Math.ceil(total / splitParts), [total]);
+const depositAmount = useMemo(() => calcPayNowRub(total, 'deposit'), [total]);
+const splitPartAmount = useMemo(() => calcPayNowRub(total, 'split'), [total]);
 
 const payNow = useMemo(() => {
 if (paymentOption === 'deposit_5') return depositAmount;
 if (paymentOption === 'split') return splitPartAmount;
-return total;
+return calcPayNowRub(total, 'full');
 }, [paymentOption, depositAmount, splitPartAmount, total]);
 
 useEffect(() => {
@@ -333,7 +333,7 @@ paymentOption === 'split' ? 'border-white bg-white' : 'border-white/40',
 <span className="text-sm text-white/90 truncate">Оплатить сплитом</span>
 </div>
 <span className="text-sm text-white/90 whitespace-nowrap">
-{splitParts}× {splitPartAmount.toLocaleString('ru-RU')} ₽
+{SPLIT_PARTS}× {splitPartAmount.toLocaleString('ru-RU')} ₽
 </span>
 </button>
 

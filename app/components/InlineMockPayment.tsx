@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { buildGoalName, getTrackingSessionId, reachMetrikaGoal, trackEvent } from "./calculationUtils";
+import { DEPOSIT_RATE, SPLIT_PARTS, calcPayNowKopeks } from "@/lib/pricingMath";
 
 
 
@@ -77,16 +78,14 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
   );
 
   const payNowKopeks = useMemo(() => {
-    if (payPlan === "deposit") return Math.max(1, Math.round(totalKopeks * 0.05));
-    if (payPlan === "split") return Math.max(1, Math.round(totalKopeks * 0.25));
-    return totalKopeks;
+    return calcPayNowKopeks(totalKopeks, payPlan);
   }, [payPlan, totalKopeks]);
 
   const payNowRub = useMemo(() => Math.round(payNowKopeks / 100), [payNowKopeks]);
 
   const splitSchedule = useMemo(() => {
     const now = new Date();
-    const p1 = Math.max(1, Math.round(totalKopeks * 0.25));
+    const p1 = Math.max(1, Math.round(totalKopeks / SPLIT_PARTS));
     const p2 = p1;
     const p3 = p1;
     const p4 = Math.max(0, totalKopeks - (p1 + p2 + p3)); // остаток
@@ -253,7 +252,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
           <PlanBtn
             active={payPlan === "deposit"}
             title="Оплатить депозит"
-            subtitle={`5% сейчас: ${rub(Math.round(totalAmount * 0.05))} ₽`}
+            subtitle={`${Math.round(DEPOSIT_RATE * 100)}% сейчас: ${rub(Math.round(totalAmount * DEPOSIT_RATE))} ₽`}
             onClick={() => {
               setPayPlan("deposit");
               trackEvent("payplan_select", {

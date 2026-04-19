@@ -102,6 +102,7 @@ import {
   setMetrikaVisitParams,
   buildGoalName,
 } from "./calculationUtils";
+import { calcPayNowRub } from "@/lib/pricingMath";
 
 
 type PaymentMethod = "deposit_10" | "call_rep";
@@ -165,7 +166,7 @@ const PACKAGES = [
   {
     id: "basic",
     name: "С поддержкой координатора",
-    price: 204928,
+    price: 204900,
     description: "Координатор помогает точечно, по необходимости",
     features: ["Оформление документов",
       "Помощь в оформлении захоронения",
@@ -184,7 +185,7 @@ const PACKAGES = [
   {
     id: "standard",
     name: "Расширенное сопровождение",
-    price: 401193,
+    price: 401100,
     description: "Координатор ведёт процесс и контролирует детали",
     features: [
       "Оформление документов",
@@ -205,7 +206,7 @@ const PACKAGES = [
   {
     id: "premium",
     name: "Передать всё координатору",
-    price: 609491,
+    price: 609400,
     description: "Персональное сопровождение, вы передаёте процесс полностью",
     features: [
       "Оформление документов",
@@ -1170,12 +1171,8 @@ export function StepperWorkflow({
   );
   const payPlanSelectionSeqRef = useRef(0);
   const selectedPayPlan = (formData.paymentPlan || "full") as "full" | "deposit" | "split";
-  const getPayNowRub = (plan: "full" | "deposit" | "split", total: number) => {
-    const normalized = Math.max(0, Math.round(total || 0));
-    if (plan === "deposit") return Math.max(0, Math.round(normalized * 0.05));
-    if (plan === "split") return Math.floor(normalized / 4);
-    return normalized;
-  };
+  const getPayNowRub = (plan: "full" | "deposit" | "split", total: number) =>
+    calcPayNowRub(total, plan);
   const getPaymentSnapshot = (
     plan: "full" | "deposit" | "split",
     email: string,
@@ -4160,7 +4157,7 @@ function formatRub(n: number) {
     ? "Индивидуальный расчет. Выберите только те услуги и атрибутику, которые нужны именно вам, и контролируйте итоговую стоимость."
     : "Сбалансированные пакеты услуг. От базового набора для достойного прощания до полной организации с личным координатором.";
   const baseSegmentBtn =
-    "min-w-0 w-full min-h-12 rounded-full px-1.5 inline-flex items-center justify-center gap-1 text-sm font-medium tracking-[-0.005em] whitespace-nowrap transition-all duration-200 overflow-hidden";
+    "min-w-0 w-full min-h-12 rounded-full px-3 inline-flex items-center justify-center text-sm font-medium tracking-[-0.005em] whitespace-nowrap leading-none transition-all duration-200";
   const activeSegmentBtn = "bg-white text-slate-900 shadow-sm ring-1 ring-zinc-200";
   const inactiveSegmentBtn = "bg-transparent text-slate-600 hover:bg-zinc-200/70";
 
@@ -4313,7 +4310,7 @@ function formatRub(n: number) {
         Можно собрать план самостоятельно или выбрать готовое решение с расширенным пакетом услуг.
       </p>
       <div className="mb-1 mt-2 flex w-full justify-center md:justify-start">
-        <div className="flex w-full max-w-full min-w-0 flex-wrap gap-1 rounded-[28px] border border-zinc-200 bg-zinc-100 p-1 md:gap-0 md:mx-0 md:mr-auto md:rounded-[28px]">
+        <div className="grid w-full max-w-full min-w-0 grid-cols-2 gap-1 rounded-[28px] border border-zinc-200 bg-zinc-100 p-1 md:mx-0 md:mr-auto">
           <button
             type="button"
             onClick={() => {
@@ -4321,15 +4318,8 @@ function formatRub(n: number) {
               onModeChange?.("package");
               setContinueChoice("solutions");
             }}
-            className={cn(
-              "basis-[calc(50%-2px)] md:basis-0 md:flex-1",
-              baseSegmentBtn,
-              isSolutionsScenarioActive ? activeSegmentBtn : inactiveSegmentBtn,
-            )}
+            className={cn(baseSegmentBtn, isSolutionsScenarioActive ? activeSegmentBtn : inactiveSegmentBtn)}
           >
-            {isSolutionsScenarioActive ? (
-              <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-slate-500" />
-            ) : null}
             <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">{"\u0413\u043e\u0442\u043e\u0432\u044b\u0435 \u0440\u0435\u0448\u0435\u043d\u0438\u044f"}
             </span>
           </button>
@@ -4340,20 +4330,13 @@ function formatRub(n: number) {
               onModeChange?.("wizard");
               setContinueChoice("wizard");
             }}
-            className={cn(
-              "basis-[calc(50%-2px)] md:basis-0 md:flex-1",
-              baseSegmentBtn,
-              isWizardScenarioActive ? activeSegmentBtn : inactiveSegmentBtn,
-            )}
+            className={cn(baseSegmentBtn, isWizardScenarioActive ? activeSegmentBtn : inactiveSegmentBtn)}
           >
-            {isWizardScenarioActive ? (
-              <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-slate-500" />
-            ) : null}
             <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
               Собрать свой план
             </span>
           </button>
-          <p className="basis-full px-3 pb-3 pt-2 text-[13px] leading-[1.4] text-gray-600 min-[375px]:text-[14px] md:px-4 md:pb-4 md:pt-3 md:text-base">
+          <p className="col-span-2 px-3 pb-3 pt-2 text-[13px] leading-[1.4] text-gray-600 min-[375px]:text-[14px] md:px-4 md:pb-4 md:pt-3 md:text-base">
             {scenarioDescription}
           </p>
         </div>
@@ -4552,3 +4535,4 @@ function formatRub(n: number) {
     </div>
 );
 }
+

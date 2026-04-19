@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import crypto from "crypto";
 import { prisma } from "../../../../lib/prisma";
+import { calcPayNowKopeks } from "@/lib/pricingMath";
 
 export const runtime = "nodejs";
 
@@ -12,9 +13,7 @@ const ReqSchema = z.object({
 });
 
 function calcPayNowAmount(totalAmount: number, payPlan: "full" | "deposit" | "split") {
-  if (payPlan === "deposit") return Math.max(1, Math.round(totalAmount * 0.05)); // 5%
-  if (payPlan === "split") return Math.max(1, Math.round(totalAmount * 0.25)); // 1/4
-  return totalAmount; // full
+  return calcPayNowKopeks(totalAmount, payPlan);
 }
 
 export async function POST(req: Request) {

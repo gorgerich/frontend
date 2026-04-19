@@ -7,6 +7,7 @@ import { Label } from "./ui/label";
 import { cn } from "./ui/utils";
 import { Download, Share2, RubleSign, CheckCircle2, Search } from "./Icons";
 import { buildGoalName, getTrackingSessionId, reachMetrikaGoal, trackEvent } from "./calculationUtils";
+import { SPLIT_PARTS, calcPayNowRub } from "@/lib/pricingMath";
 import {
 Select,
 SelectContent,
@@ -71,16 +72,15 @@ deposit_5: "payment_option_deposit_5",
 split: "payment_option_split",
 };
 
-const depositAmount = useMemo(() => Math.round(total * 0.05), [total]);
-const splitParts = 4;
-const splitPartAmount = useMemo(() => Math.ceil(total / splitParts), [total]);
+const depositAmount = useMemo(() => calcPayNowRub(total, "deposit"), [total]);
+const splitPartAmount = useMemo(() => calcPayNowRub(total, "split"), [total]);
 
 const payPlanForTracking = paymentOption === "deposit_5" ? "deposit" : paymentOption;
 
 const payNow = useMemo(() => {
 if (paymentOption === "deposit_5") return depositAmount;
 if (paymentOption === "split") return splitPartAmount;
-return total;
+return calcPayNowRub(total, "full");
 }, [paymentOption, depositAmount, splitPartAmount, total]);
 
 const lastSentOptionRef = useRef<PaymentOption | null>(null);
@@ -614,7 +614,7 @@ paymentOption === "split" ? "border-blue-400" : "border-white/50",
 <span className="text-sm text-white truncate">Оплатить сплитом</span>
 </div>
 <span className="text-sm text-white whitespace-nowrap">
-{splitParts}× {splitPartAmount.toLocaleString("ru-RU")} ₽
+{SPLIT_PARTS}× {splitPartAmount.toLocaleString("ru-RU")} ₽
 </span>
 </button>
 

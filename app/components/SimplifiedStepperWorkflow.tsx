@@ -52,6 +52,7 @@ type FormData as CalculatorFormData,
   setMetrikaVisitParams,
   buildGoalName,
 } from "./calculationUtils";
+import { calcPayNowRub } from "@/lib/pricingMath";
 
 import type { ImgHTMLAttributes } from "react";
 
@@ -900,12 +901,8 @@ const floatingBreakdown = simplifiedSections.map((section) => ({
   })),
 }));
 const selectedPayPlan = (safeFormData.paymentPlan || "full") as "full" | "deposit" | "split";
-const getPayNowRub = (plan: "full" | "deposit" | "split", total: number) => {
-  const normalized = Math.max(0, Math.round(total || 0));
-  if (plan === "deposit") return Math.max(0, Math.round(normalized * 0.05));
-  if (plan === "split") return Math.floor(normalized / 4);
-  return normalized;
-};
+const getPayNowRub = (plan: "full" | "deposit" | "split", total: number) =>
+  calcPayNowRub(total, plan);
 
 const handleInputChange = (field: keyof FormDataShape | "hearseRoute", value: any) => {
 setLocalFormData((prev) => ({

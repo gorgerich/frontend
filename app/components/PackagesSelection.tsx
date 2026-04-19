@@ -31,6 +31,18 @@ interface PackagesSelectionProps {
   embedded?: boolean;
 }
 
+type AddedItemKey =
+  | "hearseTier"
+  | "pallbearers"
+  | "transport"
+  | "hall"
+  | "ceremonyType"
+  | "churchService"
+  | "panikhida"
+  | "memorialMeal"
+  | "host"
+  | "coordinationTier";
+
 export function PackagesSelection({
   selectedPackageId,
   onSelectPackage,
@@ -143,7 +155,7 @@ export function PackagesSelection({
       title: "Традиционный формат с дистанционной поддержкой",
       priceLabel: "204 900 ₽",
       description:
-        "Мы выстраиваем маршрут, заказываем транспорт и готовим документы, чтобы вам не пришлось искать подрядчиков самостоятельно.",
+        "Маршрут, транспорт и документы под контролем координатора. Вам не нужно самостоятельно искать подрядчиков.",
       coordinatorHelp: [
         "Дистанционный контроль логистики и времени.",
         "Взаимодействие со всеми инстанциями по телефону (морги, кладбища/крематории).",
@@ -160,7 +172,7 @@ export function PackagesSelection({
       title: "Расширенный формат с личным присутствием",
       priceLabel: "401 100 ₽",
       description:
-        "Мы физически находимся рядом на каждом этапе. Координатор защитит вас от навязанных услуг, очередей и организационного хаоса в день прощания.",
+        "Координатор физически с вами на каждом этапе. Защита от навязанных услуг и организационного хаоса.",
       coordinatorHelp: [
         "Личный выезд в морг: ограждение от давления сотрудников, контроль подготовки.",
         "Сопровождение семьи в день прощания от начала до конца.",
@@ -178,7 +190,7 @@ export function PackagesSelection({
       title: "Премиальный формат и полное делегирование",
       priceLabel: "609 400 ₽",
       description:
-        "Максимальное снятие нагрузки. Вы передаете нам все задачи по доверенности и только присутствуете на церемонии прощания с близким.",
+        "Максимальное снятие нагрузки и полное делегирование. Вы передаете задачи по доверенности и фокусируетесь на семье.",
       coordinatorHelp: [
         "Оформление без вашего участия: сбор всех справок (ЗАГС, морг) по доверенности.",
         "Организация поминального обеда и навигация гостей.",
@@ -192,6 +204,24 @@ export function PackagesSelection({
         "Расширенное время аренды зала для приватного прощания.",
       ],
     },
+  };
+  const resetByAddedItemKey: Record<AddedItemKey, Partial<TariffDraftConfig>> = {
+    hearseTier: { hearseTier: "standard" },
+    pallbearers: { pallbearers: "none" },
+    transport: { transport: "none" },
+    hall: { hall: "none" },
+    ceremonyType: { ceremonyType: "secular" },
+    churchService: { churchService: "none" },
+    panikhida: { panikhida: "none" },
+    memorialMeal: { memorialMeal: "none" },
+    host: { host: "no" },
+    coordinationTier: { coordinationTier: "base" },
+  };
+  const removeAddedItem = (key: AddedItemKey) => {
+    setDraftConfig((prev) => ({
+      ...prev,
+      ...resetByAddedItemKey[key],
+    }));
   };
   const addedItems = [
     draftConfig.hearseTier !== "standard" && {
@@ -282,7 +312,7 @@ export function PackagesSelection({
           : "Персональный координатор церемонии",
       delta: TARIFF_PRICING.coordinationTier[draftConfig.coordinationTier],
     },
-  ].filter(Boolean) as { key: string; label: string; detail?: string; delta: number }[];
+  ].filter(Boolean) as { key: AddedItemKey; label: string; detail?: string; delta: number }[];
   const isCustomizingPlan = activePanel === "custom" && addedItems.length > 0;
   const baseServices = baseLineItems.map((line) => ({
     name: line.label,
@@ -336,6 +366,26 @@ export function PackagesSelection({
     ].join("\n");
     if (!username) return SUPPORT_TELEGRAM_URL;
     return `https://t.me/${username}?text=${encodeURIComponent(message)}`;
+  };
+  const highlightsByPackageId: Record<string, string[]> = {
+    basic: ["Дистанционный контроль"],
+    standard: ["Личный выезд", "Сопровождение семьи", "на месте"],
+    premium: ["без вашего участия", "Выделенный старший координатор"],
+  };
+  const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const renderHighlightedLine = (line: string, phrases: string[]) => {
+    if (phrases.length === 0) return line;
+    const splitRegex = new RegExp(`(${phrases.map(escapeRegExp).join("|")})`, "gi");
+    const strongPhrases = new Set(phrases.map((phrase) => phrase.toLowerCase()));
+    return line.split(splitRegex).map((part, index) => {
+      const shouldHighlight = strongPhrases.has(part.toLowerCase());
+      if (!shouldHighlight) return <React.Fragment key={`${part}-${index}`}>{part}</React.Fragment>;
+      return (
+        <span key={`${part}-${index}`} className="font-semibold text-gray-900">
+          {part}
+        </span>
+      );
+    });
   };
 
   return (
@@ -420,9 +470,20 @@ export function PackagesSelection({
                                   <div className="ml-3 text-xs text-gray-500">• {item.detail}</div>
                                 )}
                               </div>
-                              <span className="font-semibold text-gray-900 whitespace-nowrap">
-                                {formatDelta(item.delta)}
-                              </span>
+                              <div className="flex items-start gap-2">
+                                <span className="font-semibold text-gray-900 whitespace-nowrap">
+                                  {formatDelta(item.delta)}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => removeAddedItem(item.key)}
+                                  className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 text-sm leading-none text-gray-500 transition hover:border-gray-300 hover:text-gray-800"
+                                  aria-label={`Удалить услугу ${item.label}`}
+                                  title="Удалить услугу"
+                                >
+                                  ×
+                                </button>
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -553,7 +614,7 @@ export function PackagesSelection({
                           value={draftConfig.coordinationTier}
                           options={[
                             { value: "base", label: "Оформление заказа и сопровождение (включено)", delta: 0, showZero: true },
-                            { value: "comfort", label: "Сопровождение церемонии", delta: 30100 },
+                            { value: "comfort", label: "Сопровождение церемонии", delta: 14100 },
                             { value: "premium", label: "Персональный координатор церемонии", delta: 90000 },
                           ]}
                           onChange={(value) =>
@@ -661,7 +722,6 @@ export function PackagesSelection({
                     <Button
                       variant="outline"
                       onClick={() => {
-                        setActivePanel("base");
                         setShowInlinePayment((v) => {
                           const next = !v;
                           if (!next) setDeliveryChannel(null);
@@ -760,6 +820,8 @@ export function PackagesSelection({
                       coordinatorHelp: [],
                       included: pkg.features.map((feature) => `${feature}`),
                     };
+                    const isRecommended = pkg.id === "standard";
+                    const highlightPhrases = highlightsByPackageId[pkg.id] ?? [];
                     const packageTelegramUrl = buildTelegramPlanUrl({
                       title: card.title,
                       priceLabel: card.priceLabel,
@@ -771,7 +833,14 @@ export function PackagesSelection({
                         key={pkg.id}
                         className="w-[88%] max-w-[360px] min-w-[280px] shrink-0 snap-start md:!w-full md:!min-w-0 md:!max-w-none md:!shrink"
                       >
-                        <div className="relative mx-auto flex h-full min-w-0 w-full flex-col rounded-[28px] border border-gray-200 bg-white p-5 shadow-sm 2xl:p-6">
+                        <div
+                          className={cn(
+                            "relative mx-auto flex h-full min-w-0 w-full flex-col rounded-[28px] border bg-white p-5 2xl:p-6",
+                            isRecommended
+                              ? "border-gray-300 bg-[#f9fafb] shadow-md"
+                              : "border-gray-200 shadow-sm",
+                          )}
+                        >
                           <div className="min-w-0 text-center">
                             <div className="break-words text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-500 xl:text-[9px] 2xl:text-xs">
                               {card.title}
@@ -779,34 +848,55 @@ export function PackagesSelection({
                             <div className="mt-4 text-[clamp(1.9rem,2vw,2.25rem)] font-semibold text-gray-900 whitespace-nowrap leading-none">
                               {card.priceLabel}
                             </div>
-                            <div className="mt-2 text-xs text-gray-500">
-                              Смета окончательная и фиксируется в договоре
-                            </div>
                             <div className="mt-3 min-w-0 text-sm text-gray-600 leading-relaxed text-left">
                               {card.description}
                             </div>
                           </div>
 
-                          <div className="mt-6 min-w-0 space-y-2 text-sm text-gray-700">
-                            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">
+                          <div className="mt-7 min-w-0 text-sm text-gray-700">
+                            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
                               Как помогает координатор
                             </div>
-                            {card.coordinatorHelp.map((line, idx) => (
-                              <p key={`${pkg.id}-help-${idx}`}>{line}</p>
-                            ))}
+                            <ul className="mt-3 space-y-2.5">
+                              {card.coordinatorHelp.map((line, idx) => (
+                                <li key={`${pkg.id}-help-${idx}`} className="flex items-start gap-2.5">
+                                  <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center text-gray-400">
+                                    <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5" aria-hidden="true">
+                                      <path d="M3 8.25 6.2 11.2 13 4.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                  </span>
+                                  <span>{renderHighlightedLine(line, highlightPhrases)}</span>
+                                </li>
+                              ))}
+                            </ul>
                           </div>
 
-                          <div className="mt-5 min-w-0 space-y-2 text-sm text-gray-700">
-                            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">
+                          <div className="mt-6 min-w-0 text-sm text-gray-700">
+                            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
                               Что входит в стоимость
                             </div>
-                            {card.included.map((line, idx) => (
-                              <p key={`${pkg.id}-included-${idx}`}>{line}</p>
-                            ))}
+                            <ul className="mt-3 space-y-2.5">
+                              {card.included.map((line, idx) => (
+                                <li key={`${pkg.id}-included-${idx}`} className="flex items-start gap-2.5">
+                                  <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center text-gray-400">
+                                    <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5" aria-hidden="true">
+                                      <path d="M3 8.25 6.2 11.2 13 4.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                  </span>
+                                  <span>{line}</span>
+                                </li>
+                              ))}
+                            </ul>
                           </div>
 
                           <Button
-                            className="mt-6 w-full rounded-2xl h-12 text-sm font-semibold tracking-wide"
+                            variant={isRecommended ? "default" : "outline"}
+                            className={cn(
+                              "mt-6 w-full rounded-2xl h-12 text-sm font-semibold tracking-wide",
+                              isRecommended
+                                ? "!bg-black !text-white hover:!bg-black/90"
+                                : "!bg-transparent !text-gray-900 !border-gray-300 hover:!bg-gray-50",
+                            )}
                             onClick={() => {
                               const isCremation = false;
                               const draft = {

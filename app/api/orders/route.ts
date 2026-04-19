@@ -272,7 +272,7 @@ function normalizeServices(body: OrderPayload): ServiceItem[] {
           name: String(section.category),
           description: section.description,
           price,
-          quantity: section.quantity ?? 1,
+          quantity: 1,
         } as ServiceItem;
       })
       .filter(Boolean) as ServiceItem[];
@@ -283,10 +283,21 @@ function normalizeServices(body: OrderPayload): ServiceItem[] {
 
 function computeTotalRub(body: OrderPayload, services: ServiceItem[]): number {
   const totalFromFront = toNumber(body.total);
-  if (totalFromFront && totalFromFront > 0) return totalFromFront;
+  const computed = services.reduce((acc, s) => acc + s.price * (s.quantity ?? 1), 0);
+  const safeComputed = computed > 0 && Number.isFinite(computed) ? Math.round(computed) : 0;
+  const safeFront = totalFromFront && totalFromFront > 0 ? Math.round(totalFromFront) : 0;
 
-  const calc = services.reduce((acc, s) => acc + s.price * (s.quantity ?? 1), 0);
-  return calc > 0 && Number.isFinite(calc) ? calc : 0;
+  if (safeComputed > 0) {
+    if (safeFront > 0 && Math.abs(safeFront - safeComputed) >= 1) {
+      console.warn("order_total_mismatch", {
+        frontTotalRub: safeFront,
+        computedTotalRub: safeComputed,
+      });
+    }
+    return safeComputed;
+  }
+
+  return safeFront;
 }
 
 function buildOrderSummaryHtml(sections: BreakdownSection[], totalRub: number) {
