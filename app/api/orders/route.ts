@@ -6,8 +6,11 @@ import { prisma } from "@/lib/prisma";
 import { sendOrderEmail } from "@/lib/mailer";
 import { buildOrderSummary } from "@/lib/orderSummary";
 import { PUBLIC_OFFER_HREF } from "@/lib/legalLinks";
+import { z } from "zod";
 
 export const runtime = "nodejs";
+const MAX_ORDER_BODY_BYTES = 500_000;
+const MAX_ORDER_TOTAL_RUB = 10_000_000;
 
 type ServiceItem = {
   name: string;
@@ -29,40 +32,6 @@ type BreakdownSection = {
   items?: BreakdownItem[];
 };
 
-type OrderPayload = {
-  customer?: { email?: string; name?: string; phone?: string };
-  deceased?: { name?: string; age?: number; birthDate?: string; deathDate?: string; relationship?: string };
-  ceremony?: {
-    type?: string;
-    order?: string;
-    date?: string;
-    time?: string;
-    timeSlot?: string;
-    place?: string;
-    cemetery?: string;
-    serviceType?: string;
-  };
-  services?: ServiceItem[];
-  notes?: string;
-  breakdown?: Array<{
-    category?: string;
-    name?: string;
-    title?: string;
-    description?: string;
-    price?: number | string;
-    quantity?: number;
-    qty?: number;
-  }>;
-  orderFlow?: string;
-  package?: { id?: string; name?: string; price?: number | string; features?: string[] };
-  addons?: Array<{ name?: string; price?: number | string }>;
-  total?: number | string;
-  paymentMethod?: string;
-  userEmail?: string;
-  userName?: string;
-  formData?: any;
-};
-
 function escapeHtml(input: unknown) {
   const s = input === null || input === undefined ? "" : String(input);
   return s
@@ -80,6 +49,134 @@ function toNumber(v: unknown): number | null {
     if (Number.isFinite(n)) return n;
   }
   return null;
+}
+
+const ShortTextSchema = z.string().trim().max(200);
+const LongTextSchema = z.string().trim().max(5_000);
+const MoneyInputSchema = z
+  .union([
+    z.number().finite(),
+    z.string().trim().regex(/^\d+(?:[.,]\d{1,2})?$/),
+  ])
+  .refine((value) => {
+    const parsed = toNumber(value);
+    return parsed !== null && parsed >= 0 && parsed <= MAX_ORDER_TOTAL_RUB;
+  }, "Некорректная сумма");
+
+const BreakdownItemSchema = z.object({
+  name: ShortTextSchema.optional(),
+  label: ShortTextSchema.optional(),
+  title: ShortTextSchema.optional(),
+  category: ShortTextSchema.optional(),
+  price: MoneyInputSchema.optional(),
+});
+
+const BreakdownSectionSchema = z.object({
+  category: ShortTextSchema.optional(),
+  name: ShortTextSchema.optional(),
+  title: ShortTextSchema.optional(),
+  description: LongTextSchema.optional(),
+  price: MoneyInputSchema.optional(),
+  quantity: z.number().int().min(1).max(100).optional(),
+  qty: z.number().int().min(1).max(100).optional(),
+  items: z.array(BreakdownItemSchema).max(100).optional(),
+});
+
+const FormDataSchema = z
+  .object({
+    specialRequests: LongTextSchema.optional(),
+    paymentMethod: z.enum(["deposit_10", "call_rep"]).optional(),
+    serviceType: z.enum(["burial", "cremation", "unsure"]).optional(),
+    packageType: ShortTextSchema.optional(),
+    paymentPlan: z.enum(["full", "deposit", "split"]).optional(),
+    paidNowRub: MoneyInputSchema.optional(),
+    splitSchedule: z.string().max(20_000).optional(),
+  })
+  .catchall(z.unknown());
+
+const OrderPayloadSchema = z
+  .object({
+    customer: z
+      .object({
+        email: z.string().trim().email().max(254).optional(),
+        name: ShortTextSchema.optional(),
+        phone: z.string().trim().max(30).optional(),
+      })
+      .optional(),
+    deceased: z
+      .object({
+        name: ShortTextSchema.optional(),
+        age: z.number().int().min(0).max(150).optional(),
+        birthDate: z.string().trim().max(40).optional(),
+        deathDate: z.string().trim().max(40).optional(),
+        relationship: ShortTextSchema.optional(),
+      })
+      .optional(),
+    ceremony: z
+      .object({
+        type: ShortTextSchema.optional(),
+        order: ShortTextSchema.optional(),
+        date: z.string().trim().max(40).optional(),
+        time: z.string().trim().max(40).optional(),
+        timeSlot: ShortTextSchema.optional(),
+        place: ShortTextSchema.optional(),
+        cemetery: ShortTextSchema.optional(),
+        serviceType: z.enum(["burial", "cremation", "unsure"]).optional(),
+      })
+      .optional(),
+    services: z
+      .array(
+        z.object({
+          name: ShortTextSchema,
+          description: LongTextSchema.optional(),
+          price: MoneyInputSchema,
+          quantity: z.number().int().min(1).max(100).optional(),
+        }),
+      )
+      .max(100)
+      .optional(),
+    notes: LongTextSchema.optional(),
+    breakdown: z.array(BreakdownSectionSchema).max(50).optional(),
+    orderFlow: ShortTextSchema.optional(),
+    package: z
+      .object({
+        id: ShortTextSchema.optional(),
+        name: ShortTextSchema.optional(),
+        price: MoneyInputSchema.optional(),
+        features: z.array(z.string().trim().max(500)).max(100).optional(),
+      })
+      .optional(),
+    addons: z
+      .array(
+        z.object({
+          name: ShortTextSchema.optional(),
+          price: MoneyInputSchema.optional(),
+        }),
+      )
+      .max(100)
+      .optional(),
+    total: MoneyInputSchema.optional(),
+    paymentMethod: z.enum(["deposit_10", "call_rep"]).optional(),
+    userEmail: z.string().trim().email().max(254).optional(),
+    userName: ShortTextSchema.optional(),
+    formData: FormDataSchema.optional(),
+  })
+  .refine(
+    (body) =>
+      body.total !== undefined ||
+      Boolean(body.services?.length) ||
+      Boolean(body.breakdown?.length) ||
+      body.package?.price !== undefined,
+    {
+      message: "Заказ не содержит цены или состава",
+      path: ["total"],
+    },
+  );
+
+type OrderPayload = z.infer<typeof OrderPayloadSchema>;
+
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
 }
 
 const SITE_URL =
@@ -132,10 +229,6 @@ async function loadPublicOfferAttachment(href: string) {
   return { offerUrl, buffer, ...meta };
 }
 
-function formatRub(value: number) {
-  return `${value.toLocaleString("ru-RU")} ₽`;
-}
-
 function normalizeBreakdownSections(body: OrderPayload): BreakdownSection[] {
   if (Array.isArray(body.breakdown) && body.breakdown.length) {
     return body.breakdown
@@ -148,10 +241,10 @@ function normalizeBreakdownSections(body: OrderPayload): BreakdownSection[] {
         const q2 = toNumber(section?.qty);
         const quantity = q1 && q1 > 0 ? q1 : q2 && q2 > 0 ? q2 : 1;
         const qty = Math.floor(quantity);
-        const rawItems = (section as any)?.items;
+        const rawItems = section.items;
         const items = Array.isArray(rawItems)
           ? rawItems
-              .map((item: any) => {
+              .map((item) => {
                 const nameRaw = item?.name ?? item?.label ?? item?.title ?? item?.category;
                 if (!nameRaw) return null;
                 const itemPrice = toNumber(item?.price);
@@ -245,15 +338,15 @@ function normalizeServices(body: OrderPayload): ServiceItem[] {
   if (Array.isArray(body.services) && body.services.length) {
     return body.services
       .map((s) => {
-        const price = toNumber((s as any)?.price);
+        const price = toNumber(s.price);
         if (!price || price <= 0) return null;
 
-        const quantityRaw = toNumber((s as any)?.quantity);
+        const quantityRaw = toNumber(s.quantity);
         const quantity = quantityRaw && quantityRaw > 0 ? Math.floor(quantityRaw) : 1;
 
         return {
-          name: String((s as any)?.name ?? "Услуга"),
-          description: (s as any)?.description ? String((s as any)?.description) : undefined,
+          name: String(s.name ?? "Услуга"),
+          description: s.description ? String(s.description) : undefined,
           price,
           quantity,
         } as ServiceItem;
@@ -298,66 +391,6 @@ function computeTotalRub(body: OrderPayload, services: ServiceItem[]): number {
   }
 
   return safeFront;
-}
-
-function buildOrderSummaryHtml(sections: BreakdownSection[], totalRub: number) {
-  if (!sections.length) return "";
-
-  const rows = sections
-    .map((section) => {
-      const sectionPriceLabel =
-        typeof section.price === "number" && section.price > 0 ? formatRub(section.price) : "—";
-      const itemsRows = (section.items ?? [])
-        .map((item) => {
-          const itemPriceLabel =
-            typeof item.price === "number" && item.price > 0 ? formatRub(item.price) : "включено";
-          return `
-            <tr>
-              <td style="padding: 6px 10px 6px 24px; border: 1px solid #eee; color:#555;">
-                <span style="color:#888;">•</span> ${escapeHtml(item.name)}
-              </td>
-              <td style="padding: 6px 10px; border: 1px solid #eee; text-align:right; color:#555;">
-                ${itemPriceLabel}
-              </td>
-            </tr>
-          `;
-        })
-        .join("");
-
-      return `
-        <tr>
-          <td style="padding: 8px 10px; border: 1px solid #ddd; font-weight:600;">
-            ${escapeHtml(section.category)}
-          </td>
-          <td style="padding: 8px 10px; border: 1px solid #ddd; text-align:right; font-weight:600;">
-            ${sectionPriceLabel}
-          </td>
-        </tr>
-        ${itemsRows}
-      `;
-    })
-    .join("");
-
-  return `
-    <h2 style="font-size:16px; margin:18px 0 8px;">4. Состав заказа</h2>
-    <table style="border-collapse:collapse; width:100%; font-size:14px; margin:0 0 16px;">
-      <thead>
-        <tr>
-          <th style="padding:6px 10px; border:1px solid #ddd; text-align:left;">Группа / услуга</th>
-          <th style="padding:6px 10px; border:1px solid #ddd; text-align:right;">Стоимость</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows}
-        <tr>
-          <td style="padding:10px; border:1px solid #ddd; text-align:right; font-weight:700;">Итого:</td>
-          <td style="padding:10px; border:1px solid #ddd; text-align:right; font-weight:700;">
-            ${formatRub(totalRub)}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  `;
 }
 
 function buildEmailHtml(
@@ -624,7 +657,29 @@ function buildEmailHtml(
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as OrderPayload;
+    const rawBody = await req.text();
+    if (Buffer.byteLength(rawBody, "utf8") > MAX_ORDER_BODY_BYTES) {
+      return NextResponse.json({ error: "Заказ слишком большой" }, { status: 413 });
+    }
+
+    let input: unknown;
+    try {
+      input = JSON.parse(rawBody);
+    } catch {
+      return NextResponse.json({ error: "Некорректный JSON" }, { status: 400 });
+    }
+
+    const parsed = OrderPayloadSchema.safeParse(input);
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: "Некорректные данные заказа",
+          fields: parsed.error.flatten().fieldErrors,
+        },
+        { status: 400 },
+      );
+    }
+    const body = parsed.data;
 
     const customerEmail = String(body.customer?.email ?? body.userEmail ?? "").trim();
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail);
@@ -633,7 +688,27 @@ export async function POST(req: NextRequest) {
     }
 
     const services = normalizeServices(body);
+    const submittedTotal = toNumber(body.total);
+    const servicesTotal = services.reduce(
+      (sum, service) => sum + service.price * (service.quantity ?? 1),
+      0,
+    );
+    if (
+      submittedTotal !== null &&
+      submittedTotal > 0 &&
+      servicesTotal > 0 &&
+      Math.abs(submittedTotal - servicesTotal) >= 1
+    ) {
+      return NextResponse.json(
+        { error: "Итоговая сумма не совпадает с составом заказа" },
+        { status: 400 },
+      );
+    }
+
     const totalRub = computeTotalRub(body, services);
+    if (totalRub <= 0 || totalRub > MAX_ORDER_TOTAL_RUB) {
+      return NextResponse.json({ error: "Некорректная итоговая сумма" }, { status: 400 });
+    }
     const totalAmount = Math.round(totalRub * 100);
 
     const publicId = "order_" + crypto.randomBytes(6).toString("hex");
@@ -804,10 +879,10 @@ export async function POST(req: NextRequest) {
         filename: offer.filename,
         content: offer.buffer.toString("base64"),
       };
-    } catch (err: any) {
+    } catch (error: unknown) {
       console.warn("offer_attachment_failed", {
         orderId: publicId,
-        error: err?.message || String(err),
+        error: errorMessage(error),
       });
       textParts.push("", `Публичная оферта: ${offerUrl}`);
       const offerHtmlLink = `
@@ -833,13 +908,14 @@ export async function POST(req: NextRequest) {
         attachments: offerAttachment ? [offerAttachment] : undefined,
       });
       console.info("email_sent_success", { orderId: publicId });
-    } catch (e: any) {
-      console.error("email_sent_failed", { orderId: publicId, error: e?.message || String(e) });
+    } catch (error: unknown) {
+      console.error("email_sent_failed", { orderId: publicId, error: errorMessage(error) });
       return NextResponse.json({ error: "Email send failed" }, { status: 500 });
     }
 
     return NextResponse.json(
       {
+        ok: true,
         success: true,
         orderId: publicId, // фронт ждёт строку
         totalAmount,
@@ -849,10 +925,10 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("ORDER API ERROR:", error);
     return NextResponse.json(
-      { error: "Internal Server Error", details: String(error?.message ?? error) },
+      { error: "Internal Server Error", details: errorMessage(error) },
       { status: 500 }
     );
   }

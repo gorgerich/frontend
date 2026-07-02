@@ -37,19 +37,17 @@ export function StickyHeader() {
   }, [topMenuOpen]);
 
   useEffect(() => {
+    const timers: number[] = [];
     if (topMenuOpen) {
-      setTopMenuVisible(true);
-      setTopMenuActive(false);
-      const activate = window.setTimeout(() => {
+      timers.push(window.setTimeout(() => setTopMenuVisible(true), 0));
+      timers.push(window.setTimeout(() => {
         setTopMenuActive(true);
-      }, 20);
-      return () => window.clearTimeout(activate);
+      }, 20));
+    } else {
+      timers.push(window.setTimeout(() => setTopMenuActive(false), 0));
+      timers.push(window.setTimeout(() => setTopMenuVisible(false), 300));
     }
-    setTopMenuActive(false);
-    const timeout = window.setTimeout(() => {
-      setTopMenuVisible(false);
-    }, 300);
-    return () => window.clearTimeout(timeout);
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
   }, [topMenuOpen]);
 
   useEffect(() => {
@@ -172,10 +170,10 @@ export function StickyHeader() {
             <button
               type="button"
               onClick={() => setTopMenuOpen((prev) => !prev)}
-              className="ml-auto inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/40 bg-white/60 text-gray-700 shadow-sm transition hover:bg-white/85"
+              className="ml-auto inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/60 text-gray-700 shadow-sm transition hover:bg-white/85"
               style={{ display: isDesktopNav ? 'none' : 'inline-flex' }}
               aria-expanded={topMenuOpen}
-              aria-label="Открыть меню"
+              aria-label={topMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
             >
               <Menu className="h-4 w-4" />
             </button>
@@ -226,7 +224,7 @@ export function StickyHeader() {
                 <button
                   type="button"
                   onClick={() => setTopMenuOpen(false)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white/80 text-gray-700 shadow-sm transition hover:bg-white"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white/80 text-gray-700 shadow-sm transition hover:bg-white"
                   aria-label="Закрыть меню"
                 >
                   <X className="h-5 w-5" />
@@ -281,4 +279,3 @@ export function StickyHeader() {
     </>
   );
 }
-

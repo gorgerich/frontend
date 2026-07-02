@@ -41,6 +41,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { buildOrderSummary } from "@/lib/orderSummary";
 import { TELEGRAM_URL } from "@/lib/legalLinks";
 import {
+  SIMPLIFIED_DRAFT_KEY,
+  loadSessionDraft,
+  saveSessionDraft,
+} from "@/lib/draftStorage";
+import {
 calculateOrder,
 type CalculatorConfig,
 type FormData as CalculatorFormData,
@@ -68,6 +73,7 @@ function SafeImg(
   return (
     <img
       {...rest}
+      alt={rest.alt ?? ""}
       onError={(e) => {
         if (!fallbackSrc) return;
         const target = e.currentTarget;
@@ -525,8 +531,6 @@ userEmail: "",
 liningColor: "satin-white",
 };
 
-const SIMPLIFIED_FORM_STORAGE_KEY = "TIHIYDOM_SIMPLIFIED_FORM_V1";
-
 type TimeSlot = "morning" | "afternoon" | "evening" | "night";
 
 const TIME_SLOT_OPTIONS: Array<{ id: TimeSlot; label: string; range: string }> = [
@@ -613,22 +617,18 @@ const contactsStartedRef = useRef(false);
 
 const [localFormData, setLocalFormData] = useState<FormDataShape>(() => {
   if (typeof window === "undefined") return DEFAULT_FORM_DATA;
-  try {
-    const saved = localStorage.getItem(SIMPLIFIED_FORM_STORAGE_KEY);
-    if (!saved) return DEFAULT_FORM_DATA;
-    const parsed = JSON.parse(saved);
-    const data = parsed?.formData ?? parsed;
-    return {
-      ...DEFAULT_FORM_DATA,
-      ...(data || {}),
-      hearseRoute: {
-        ...DEFAULT_FORM_DATA.hearseRoute,
-        ...(data?.hearseRoute || {}),
-      },
-    };
-  } catch {
-    return DEFAULT_FORM_DATA;
-  }
+  const saved = loadSessionDraft(SIMPLIFIED_DRAFT_KEY);
+  const data = saved?.formData as Partial<FormDataShape> | undefined;
+  if (!data) return DEFAULT_FORM_DATA;
+
+  return {
+    ...DEFAULT_FORM_DATA,
+    ...data,
+    hearseRoute: {
+      ...DEFAULT_FORM_DATA.hearseRoute,
+      ...(data.hearseRoute || {}),
+    },
+  };
 });
 
 const didInitDefaultsRef = useRef(false);
@@ -925,15 +925,7 @@ handleInputChange("liningColor", "satin-white");
 
 // Сохранение состояния simplified в отдельный ключ
 useEffect(() => {
-  if (typeof window === "undefined") return;
-  try {
-    const draft = { formData: localFormData, savedAt: new Date().toISOString() };
-    const draftString = JSON.stringify(draft);
-    if (draftString.length > 500000) return;
-    localStorage.setItem(SIMPLIFIED_FORM_STORAGE_KEY, draftString);
-  } catch {
-    // ignore
-  }
+  saveSessionDraft(SIMPLIFIED_DRAFT_KEY, localFormData);
 }, [localFormData]);
 
 // Автоматический скролл к началу simplified-stepper при смене шага

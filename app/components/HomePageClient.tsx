@@ -17,6 +17,11 @@ import {
 } from './calculationUtils';
 import { TELEGRAM_URL } from '@/lib/legalLinks';
 import { widontRu } from '@/lib/typography';
+import {
+  MAIN_DRAFT_KEY,
+  loadSessionDraft,
+  saveSessionDraft,
+} from '@/lib/draftStorage';
 
 type BreakdownItem = { name: string; price?: number };
 type BreakdownSection = { category: string; price: number; items?: BreakdownItem[] };
@@ -440,105 +445,6 @@ export default function HomePageClient() {
     return () => container.removeEventListener('wheel', onWheel);
   }, []);
 
-  useEffect(() => {
-    const originalWorkerPostMessage = Worker.prototype.postMessage;
-    const originalPortPostMessage = MessagePort.prototype.postMessage;
-
-    const safePostMessage = (originalMethod: Function, instance: any, args: any[]) => {
-      try {
-        if (args[0]) {
-          try {
-            const dataStr = JSON.stringify(args[0]);
-            if (dataStr.length > 5_000_000) {
-              console.warn('Suppressed postMessage: data too large', dataStr.length);
-              return;
-            }
-          } catch {
-            console.warn('Suppressed postMessage: cannot stringify data');
-            return;
-          }
-        }
-        return originalMethod.apply(instance, args);
-      } catch (error) {
-        console.warn(
-          'Suppressed postMessage error:',
-          error instanceof Error ? error.message : error,
-        );
-        return;
-      }
-    };
-
-    Worker.prototype.postMessage = function (...args) {
-      return safePostMessage(originalWorkerPostMessage, this, args);
-    };
-
-    MessagePort.prototype.postMessage = function (...args) {
-      return safePostMessage(originalPortPostMessage, this, args);
-    };
-
-    const handleError = (event: ErrorEvent) => {
-      if (
-        event.message &&
-        (event.message.includes('DataCloneError') ||
-          event.message.includes('postMessage') ||
-          event.message.includes('hls.js') ||
-          event.message.includes('out of memory') ||
-          event.message.includes('esm.sh/hls') ||
-          event.message.includes('cannot be cloned') ||
-          event.message.includes('DedicatedWorkerGlobalScope'))
-      ) {
-        console.warn('Intercepted and suppressed worker error:', event.message);
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        return false;
-      }
-
-      if (
-        event.error instanceof Error &&
-        (event.error.name === 'DataCloneError' ||
-          event.error.message.includes('out of memory') ||
-          event.error.message.includes('cannot be cloned'))
-      ) {
-        console.warn('Intercepted worker error object:', event.error.message);
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        return false;
-      }
-    };
-
-    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      const message = event.reason?.message || String(event.reason);
-      if (
-        message &&
-        (message.includes('DataCloneError') ||
-          message.includes('postMessage') ||
-          message.includes('hls.js') ||
-          message.includes('out of memory') ||
-          message.includes('esm.sh/hls') ||
-          message.includes('cannot be cloned') ||
-          message.includes('DedicatedWorkerGlobalScope'))
-      ) {
-        console.warn('Intercepted and suppressed worker promise rejection:', message);
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        return false;
-      }
-    };
-
-    window.addEventListener('error', handleError, true);
-    window.addEventListener('unhandledrejection', handleUnhandledRejection, true);
-
-    return () => {
-      window.removeEventListener('error', handleError, true);
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection, true);
-      Worker.prototype.postMessage = originalWorkerPostMessage;
-      MessagePort.prototype.postMessage = originalPortPostMessage;
-    };
-  }, []);
-
   const initialFormData = {
     serviceType: 'burial' as 'burial' | 'cremation',
     hasHall: true,
@@ -590,62 +496,30 @@ export default function HomePageClient() {
   }, [formData, selectedCemeteryCategory]);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('funeral-workflow-draft');
-      if (saved) {
-        if (saved.length > 1000000) {
-          console.warn('Saved draft too large, removing...');
-          localStorage.removeItem('funeral-workflow-draft');
-          return;
-        }
+    const saved = loadSessionDraft(MAIN_DRAFT_KEY);
+    if (!saved) return;
 
-        try {
-          const parsed = JSON.parse(saved);
-          const loadedFormData = {
-            ...initialFormData,
-            ...parsed.formData,
-            hearseRoute: {
-              ...initialFormData.hearseRoute,
-              ...(parsed.formData.hearseRoute || {}),
-            },
-            selectedAdditionalServices: parsed.formData.selectedAdditionalServices || [],
-            birthDate: parsed.formData.birthDate === '—' ? '' : parsed.formData.birthDate,
-            deathDate: parsed.formData.deathDate === '—' ? '' : parsed.formData.deathDate,
-          };
-          setFormData(loadedFormData);
-        } catch (e) {
-          console.error('Failed to parse draft:', e);
-          localStorage.removeItem('funeral-workflow-draft');
-        }
-      }
-    } catch (e) {
-      console.error('Failed to load draft:', e);
-      try {
-        localStorage.removeItem('funeral-workflow-draft');
-      } catch (clearError) {
-        console.error('Failed to clear storage:', clearError);
-      }
-    }
+    setFormData((current) => ({
+      ...current,
+      ...saved.formData,
+      hearseRoute: {
+        ...current.hearseRoute,
+        ...((saved.formData.hearseRoute as Partial<typeof current.hearseRoute> | undefined) ?? {}),
+      },
+      selectedAdditionalServices: Array.isArray(saved.formData.selectedAdditionalServices)
+        ? saved.formData.selectedAdditionalServices.filter(
+            (item): item is string => typeof item === 'string',
+          )
+        : [],
+    }));
   }, []);
 
   useEffect(() => {
-    try {
-      const draft = { formData, savedAt: new Date().toISOString() };
-      const draftString = JSON.stringify(draft);
-
-      if (draftString.length > 500000) {
-        console.warn('Draft too large, skipping save');
-        return;
-      }
-
-      localStorage.setItem('funeral-workflow-draft', draftString);
-    } catch (e) {
-      console.error('Failed to save draft:', e);
-    }
+    saveSessionDraft(MAIN_DRAFT_KEY, formData);
   }, [formData]);
 
-  const handleUpdateFormData = (field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const handleUpdateFormData = (field: string, value: unknown) => {
+    setFormData((prev) => ({ ...prev, [field]: value }) as typeof prev);
     if (field === 'serviceType') {
       const type = value === 'cremation' ? 'cremation' : 'burial';
       const flow = modeRef.current;

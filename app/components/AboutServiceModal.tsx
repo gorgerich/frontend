@@ -46,6 +46,9 @@ export function AboutServiceModal({ isOpen, onClose }: { isOpen: boolean; onClos
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             data-td-topbuttons-overlay-content="true"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="about-service-title"
             className="relative w-full h-full md:h-auto md:max-w-5xl md:max-h-[90vh] md:rounded-[40px] overflow-hidden md:overflow-y-auto bg-slate-900/40 shadow-2xl ring-1 ring-white/10"
           >
             {/* Кнопка закрытия (крестик) */}
@@ -71,7 +74,7 @@ export function AboutServiceModal({ isOpen, onClose }: { isOpen: boolean; onClos
                   transition={{ delay: 0.1 }}
                   className="relative mb-10 md:mb-12 text-center"
                 >
-                  <h2 className="text-4xl md:text-6xl lg:text-7xl font-semibold text-white mb-6 tracking-tight">
+                  <h2 id="about-service-title" className="text-4xl md:text-6xl lg:text-7xl font-semibold text-white mb-6 tracking-tight">
                   Как это <span className="font-serif italic text-blue-200/90">работает?</span>
                   </h2>
                   <p className="text-lg md:text-2xl text-blue-100/90 font-normal max-w-3xl mx-auto leading-relaxed tracking-wide">

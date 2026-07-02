@@ -303,6 +303,9 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
         data-td-topbuttons-overlay-content="true"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ai-chat-title"
         className="fixed inset-0 z-[9999] bg-[#f8f8f7] flex flex-col overflow-hidden"
       >
         {/* Заголовок с кнопкой закрытия */}
@@ -313,7 +316,7 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full animate-pulse" />
             </div>
             <div>
-              <h2 className="text-xl font-medium text-zinc-900 tracking-tight">AI-Помощник</h2>
+              <h2 id="ai-chat-title" className="text-xl font-medium text-zinc-900 tracking-tight">AI-Помощник</h2>
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                 <p className="text-base text-zinc-600 font-medium">Онлайн консультант</p>

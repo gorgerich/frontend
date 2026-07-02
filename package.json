@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint app lib tests",
+    "typecheck": "tsc --noEmit --pretty false",
+    "test": "node --test tests/*.test.ts",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build",
     "postinstall": "prisma generate"
   },
   "dependencies": {

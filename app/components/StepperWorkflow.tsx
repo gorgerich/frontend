@@ -3,10 +3,9 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 
-import { User, CircleDot } from "lucide-react";
+import { CircleDot } from "lucide-react";
 import { PackagesSelection, type Package as PackagesSelectionPackage } from "./PackagesSelection";
 
-import { PersonalAccountModal } from "./PersonalAccountModal";
 import { SimpleCalendar } from "./SimpleCalendar";
 import { SimplifiedStepperWorkflow } from "./SimplifiedStepperWorkflow";
 import { buildOrderSummary } from "@/lib/orderSummary";
@@ -1114,8 +1113,6 @@ export function StepperWorkflow({
   const trackingSessionId = getTrackingSessionId();
   const trackingFlow: "wizard" = "wizard";
   const metrikaVisitSessionRef = useRef<string | null>(null);
-
-  const [isAccountOpen, setIsAccountOpen] = useState(false);
 
   const [showConsentError, setShowConsentError] = useState(false);
 
@@ -4179,17 +4176,6 @@ function formatRub(n: number) {
           <div className="pointer-events-none absolute inset-0 z-0 rounded-3xl border border-white/22 bg-black/12 backdrop-blur-2xl" />
         )}
         <CardHeader className="relative z-10 border-b-0 px-6 pb-2 pt-4 sm:px-8 sm:pt-5">
-          <div className="absolute -top-5 right-8 z-50 hidden">
-            <button
-              type="button"
-              onClick={() => setIsAccountOpen(true)}
-              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-200 text-white hover:scale-105 active:scale-95"
-              aria-label="Личный кабинет"
-            >
-              <User className="w-5 h-5" />
-            </button>
-          </div>
-
           <div id="start-options" className="mt-1 mb-3" />
 
           {isEmergencyChecklistOpen && (
@@ -4530,9 +4516,7 @@ function formatRub(n: number) {
 </CardContent>
 </Card>
 
-<PersonalAccountModal open={isAccountOpen} onOpenChange={setIsAccountOpen} />
       </div>
     </div>
 );
 }
-

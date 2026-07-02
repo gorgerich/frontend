@@ -48,8 +48,11 @@ export function SimpleCalendar({
 
   useEffect(() => {
     if (!selected) return;
-    setYear(selected.getFullYear());
-    setMonth(selected.getMonth());
+    const timer = window.setTimeout(() => {
+      setYear(selected.getFullYear());
+      setMonth(selected.getMonth());
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [selected]);
 
   const disabledBefore = disabled?.before
@@ -97,7 +100,7 @@ export function SimpleCalendar({
     );
   }
 
-  for (let day = 1; day <= daysInMonth; day += 1) {
+  for (const day of Array.from({ length: daysInMonth }, (_, index) => index + 1)) {
     const date = new Date(year, month, day);
     const isDisabled = isDateDisabled(date);
     const isSelected = selected ? isSameDay(date, selected) : false;
@@ -109,6 +112,12 @@ export function SimpleCalendar({
         type="button"
         onClick={() => handleDayClick(day)}
         disabled={isDisabled}
+        aria-label={date.toLocaleDateString("ru-RU", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}
+        aria-pressed={isSelected}
         className={cn(
           "w-[42px] h-[42px] p-0 rounded-xl transition-all duration-200 font-medium",
           "text-[#3a3a5f] text-sm",
@@ -153,14 +162,16 @@ export function SimpleCalendar({
           <button
             type="button"
             onClick={handlePrevMonth}
-            className="size-9 bg-white/90 hover:bg-white border border-gray-200 rounded-xl opacity-70 hover:opacity-100 transition-all duration-200 flex items-center justify-center hover:shadow-sm hover:scale-105 active:scale-95"
+            aria-label="Предыдущий месяц"
+            className="size-11 bg-white/90 hover:bg-white border border-gray-200 rounded-xl opacity-70 hover:opacity-100 transition-all duration-200 flex items-center justify-center hover:shadow-sm hover:scale-105 active:scale-95"
           >
             <ChevronLeft className="size-4 text-[#1a1a4d]" />
           </button>
           <button
             type="button"
             onClick={handleNextMonth}
-            className="size-9 bg-white/90 hover:bg-white border border-gray-200 rounded-xl opacity-70 hover:opacity-100 transition-all duration-200 flex items-center justify-center hover:shadow-sm hover:scale-105 active:scale-95"
+            aria-label="Следующий месяц"
+            className="size-11 bg-white/90 hover:bg-white border border-gray-200 rounded-xl opacity-70 hover:opacity-100 transition-all duration-200 flex items-center justify-center hover:shadow-sm hover:scale-105 active:scale-95"
           >
             <ChevronRight className="size-4 text-[#1a1a4d]" />
           </button>

@@ -1,9 +1,5 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-const FROM_EMAIL = process.env.FROM_EMAIL;
-
 type SendOrderEmailOptions = {
   to: string | string[];
   subject: string;
@@ -14,25 +10,29 @@ type SendOrderEmailOptions = {
 };
 
 export async function sendOrderEmail(options: SendOrderEmailOptions) {
-  if (!process.env.RESEND_API_KEY) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.FROM_EMAIL;
+
+  if (!apiKey) {
     console.error("CRITICAL: RESEND_API_KEY is missing");
     throw new Error("RESEND_API_KEY is missing");
   }
-  if (!FROM_EMAIL) {
+  if (!fromEmail) {
     console.error("CRITICAL: FROM_EMAIL is missing");
     throw new Error("FROM_EMAIL is missing");
   }
-  if (FROM_EMAIL.includes("resend.dev")) {
+  if (fromEmail.includes("resend.dev")) {
     console.error("CRITICAL: FROM_EMAIL must not use resend.dev domain");
     throw new Error("Invalid FROM_EMAIL domain");
   }
 
+  const resend = new Resend(apiKey);
   const { to, subject, html, text, attachments, orderId } = options;
 
-  console.info("email_from", { from: FROM_EMAIL, orderId });
+  console.info("email_from", { from: fromEmail, orderId });
 
   const basePayload = {
-    from: FROM_EMAIL,
+    from: fromEmail,
     subject,
     html,
     ...(text ? { text } : {}),
@@ -46,8 +46,11 @@ export async function sendOrderEmail(options: SendOrderEmailOptions) {
       to,
     });
     console.info("email_customer_sent", { orderId });
-  } catch (error: any) {
-    console.error("email_customer_failed", { orderId, error: error?.message || String(error) });
+  } catch (error: unknown) {
+    console.error("email_customer_failed", {
+      orderId,
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 
@@ -77,8 +80,11 @@ export async function sendOrderEmail(options: SendOrderEmailOptions) {
       to: adminRecipients,
     });
     console.info("email_admin_sent", { orderId });
-  } catch (error: any) {
-    console.error("email_admin_failed", { orderId, error: error?.message || String(error) });
+  } catch (error: unknown) {
+    console.error("email_admin_failed", {
+      orderId,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 
   return result;

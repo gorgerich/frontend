@@ -1,6 +1,5 @@
-import * as DialogPrimitive from "@radix-ui/react-dialog";
-
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { X } from "../Icons";
 import { cn } from "./utils";
 
@@ -83,19 +82,8 @@ function DialogPortal({ children }: { children: React.ReactNode }) {
   
   if (!open) return null;
   
-  return typeof document !== "undefined" 
-    ? ReactDOM?.createPortal?.(children, document.body) ?? null
-    : null;
+  return typeof document !== "undefined" ? createPortal(children, document.body) : null;
 }
-
-// For environments where ReactDOM might not be available, provide fallback
-const ReactDOM = (() => {
-  try {
-    return require("react-dom");
-  } catch {
-    return null;
-  }
-})();
 
 const DialogClose = React.forwardRef<
   HTMLButtonElement,
@@ -168,18 +156,44 @@ const DialogContent = React.forwardRef<
       (firstFocusable ?? root).focus();
     });
 
-    const handleEscape = (event: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
         onOpenChange(false);
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+      const root = contentRef.current;
+      if (!root) return;
+
+      const focusable = Array.from(
+        root.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ),
+      ).filter((element) => !element.hasAttribute("hidden") && element.tabIndex >= 0);
+      if (!focusable.length) {
+        event.preventDefault();
+        root.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
       }
     };
 
-    document.addEventListener("keydown", handleEscape);
+    document.addEventListener("keydown", handleKeyDown);
     
     return () => {
       window.cancelAnimationFrame(frame);
-      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
       const focusTarget = triggerElement ?? previousActiveElementRef.current;
       if (focusTarget && document.contains(focusTarget)) {

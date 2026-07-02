@@ -21,6 +21,7 @@ import { ScrollArea } from "./ui/scroll-area";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
 import { calculateTotal, calculateBreakdown, trackEvent } from "./calculationUtils";
+import { MAIN_DRAFT_KEY, loadSessionDraft } from "@/lib/draftStorage";
 
 // ======================
 // Типы
@@ -134,18 +135,8 @@ export function PersonalAccountModal({ open, onOpenChange }: PersonalAccountModa
     }
 
     // 2) текущий драфт мастера
-    try {
-      const draftRaw = localStorage.getItem("funeral-workflow-draft");
-      if (draftRaw) {
-        const parsed: DraftFromStorage = JSON.parse(draftRaw);
-        if (parsed?.formData) setCurrentDraft(parsed);
-        else setCurrentDraft(null);
-      } else {
-        setCurrentDraft(null);
-      }
-    } catch {
-      setCurrentDraft(null);
-    }
+    const safeDraft = loadSessionDraft(MAIN_DRAFT_KEY);
+    setCurrentDraft(safeDraft as DraftFromStorage | null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -293,6 +284,9 @@ export function PersonalAccountModal({ open, onOpenChange }: PersonalAccountModa
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.96 }}
         transition={{ duration: 0.2 }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="personal-account-title"
         className="relative z-10 flex h-[90vh] w-[min(960px,100vw-32px)] flex-col overflow-hidden rounded-3xl bg-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -303,7 +297,7 @@ export function PersonalAccountModal({ open, onOpenChange }: PersonalAccountModa
               <User className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-sm font-medium text-stone-900">Кабинет</div>
+              <div id="personal-account-title" className="text-sm font-medium text-stone-900">Кабинет</div>
               {isLoggedIn && user?.email && (
                 <div className="text-xs text-stone-500">{user.email}</div>
               )}
