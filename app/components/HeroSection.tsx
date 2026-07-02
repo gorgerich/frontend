@@ -2,6 +2,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronRight } from "lucide-react";
+import Image from "next/image";
 import { TopButtons } from "./TopButtons";
 import { Button } from "./ui/button";
 
@@ -111,9 +112,12 @@ export function HeroSection({
     <section className="relative w-full pt-4 pb-5 sm:pt-5 md:pt-8 md:pb-7 lg:pb-9">
       <div className="pointer-events-none absolute inset-x-0 top-4 z-0 h-[68vh] sm:top-5 md:hidden">
         <div className="absolute left-1/2 h-full w-[calc(100vw-32px)] -translate-x-1/2 overflow-hidden rounded-[28px] sm:w-[calc(100vw-36px)]">
-          <img
+          <Image
             src={heroImage}
             alt="Белые цветы"
+            fill
+            priority
+            sizes="(max-width: 767px) calc(100vw - 32px), 1px"
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/24 via-black/20 to-black/30" />
@@ -123,9 +127,11 @@ export function HeroSection({
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-0 hidden h-[70vh] md:block lg:h-[74vh]">
         <div className="absolute left-1/2 h-full w-[calc(100vw-32px)] -translate-x-1/2 overflow-hidden rounded-[40px] lg:w-[calc(100vw-48px)]">
-          <img
+          <Image
             src={heroImage}
             alt="Белые цветы"
+            fill
+            sizes="(min-width: 1024px) calc(100vw - 48px), calc(100vw - 32px)"
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/24 via-black/20 to-black/30" />

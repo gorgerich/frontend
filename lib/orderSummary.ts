@@ -111,12 +111,6 @@ const RELATIONSHIP_LABELS: Record<string, string> = {
   representative: "Доверенное лицо",
 };
 
-const PAYMENT_PLAN_LABELS: Record<string, string> = {
-  full: "Оплата полностью",
-  deposit: "Депозит (5%)",
-  split: "Оплата частями",
-};
-
 const WREATH_TYPE_LABELS: Record<string, string> = {
   artificial: "Искусственные цветы",
   composition: "Живая композиция",
@@ -171,11 +165,6 @@ const escapeHtml = (value: string) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
-
-const formatRub = (value?: number) =>
-  typeof value === "number" && Number.isFinite(value)
-    ? `${Math.round(value).toLocaleString("ru-RU")} ₽`
-    : "";
 
 const formatDateValue = (value?: string | Date) => {
   if (!value) return "";

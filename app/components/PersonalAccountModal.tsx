@@ -157,7 +157,6 @@ export function PersonalAccountModal({ open, onOpenChange }: PersonalAccountModa
     // 2) текущий драфт мастера
     const safeDraft = loadSessionDraft(MAIN_DRAFT_KEY);
     setCurrentDraft(safeDraft as DraftFromStorage | null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   // ======================

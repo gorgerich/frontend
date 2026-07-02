@@ -3,7 +3,6 @@
 import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 
-import { Check } from './Icons';
 import { cn } from './ui/utils';
 
 interface Step {

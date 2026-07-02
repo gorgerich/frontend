@@ -14,9 +14,7 @@ import { Stepper } from "./Stepper";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
 } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -57,13 +55,11 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  ChevronUp,
   CheckCircle2,
   Clock,
   Church,
   Edit2,
   Info,
-  Search,
   Check,
   Snowflake,
   Sparkles,
@@ -84,9 +80,6 @@ import {
   Car,
   Flower2,
   Music,
-  RubleSign,
-  Download,
-  Share2,
 } from "./Icons";
 
 import { cn } from "./ui/utils";
@@ -115,8 +108,6 @@ type OrderCreateResponse = {
   paymentLink?: string | null;
   error?: string;
 };
-const SUPPORT_PHONE_DISPLAY = "+7 (985) 248-94-25";
-const SUPPORT_PHONE_TEL = "+79852489425";
 const SUPPORT_TELEGRAM_URL = "https://t.me/tihiydominfo";
 const HERO_BG_SRC = "/hero-forest.jpg";
 
@@ -978,31 +969,6 @@ const STEPPER_CALCULATOR_CONFIG: CalculatorConfig = {
   packageSectionMinPrice: 0,
 };
 
-type CemeteryCategory = "standard" | "comfort" | "premium";
-
-const CATEGORY_INFO: Record<
-CemeteryCategory,
-{ subtitle: string; title: string; description: string }
-> = {
-standard: {
-subtitle: "Обычное место",
-title: "Стандарт",
-description:
-"Стандартное место включает участок 2×2.5 м в общедоступных секторах кладбища. Подходит для установки традиционного памятника и базового благоустройства. Размещение в зонах с удобным подъездом.",
-},
-comfort: {
-subtitle: "Удобное расположение",
-title: "Комфорт",
-description:
-"Место в более удобных секторах: проще подъезд и логистика, комфортнее для гостей. Обычно ближе к аллеям/ориентирам.",
-},
-premium: {
-subtitle: "Престижная зона",
-title: "Премиум",
-description:
-"Престижная зона: наиболее удобное и статусное расположение, минимальная сложность подъезда и организации церемонии.",
-},
-};
 
 interface StepperWorkflowProps {
   formData: {
@@ -1090,11 +1056,9 @@ export function StepperWorkflow({
   onModeChange,
   onOrderConfirmed,
   routeFlow,
-  routeType,
   routeStep,
   routePackageSlug,
   routeHowItWorksStep,
-  onPackageSelect,
   isEmergencyChecklistOpen,
   emergencyChecklistScrollRequest,
 }: StepperWorkflowProps) {
@@ -1103,7 +1067,6 @@ export function StepperWorkflow({
   const bgEndWizardRef = useRef<HTMLDivElement | null>(null);
   const bgEndPackagesRef = useRef<HTMLDivElement | null>(null);
   const bgEndPackagesUnsureRef = useRef<HTMLDivElement | null>(null);
-  const bgEndContinueUnsureRef = useRef<HTMLDivElement | null>(null);
   const [bgH, setBgH] = useState(0);
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -1164,7 +1127,7 @@ export function StepperWorkflow({
     setMetrikaVisitParams({ td_flow: "wizard" });
   }, [workflowMode, trackingSessionId]);
 
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("deposit_10");
+  const [paymentMethod] = useState<PaymentMethod>("deposit_10");
   const didInitDefaultsRef = useRef(false);
 
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
@@ -1191,7 +1154,6 @@ export function StepperWorkflow({
       method,
     });
 
-  const [showDocumentsHelp, setShowDocumentsHelp] = useState(false);
   const howItWorksRef = useRef<HTMLDivElement | null>(null);
   const howItWorksScrollRafRef = useRef<number | null>(null);
   const [activeEmergencyTab, setActiveEmergencyTab] = useState<
@@ -1519,22 +1481,6 @@ export function StepperWorkflow({
 
   const handleEntryMethod = (method: "self" | "call" | "telegram") => {
     trackEvent("entry_method_selected", { method, flow: trackingFlow });
-  };
-
-  const handleStartOnline = () => {
-    openPackagesMode();
-    scrollToWizardTop();
-    handleEntryMethod("self");
-  };
-
-  const handleViewPackages = () => {
-    const packagesEl = document.getElementById("packages");
-    if (packagesEl) {
-      packagesEl.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      openPackagesMode();
-      scrollToWizardTop();
-    }
   };
 
   // ✅ “первое монтирование”
@@ -1865,9 +1811,6 @@ export function StepperWorkflow({
   const calculatorViewedRef = useRef(false);
   const contactsStartedRef = useRef(false);
 
-  const savedPickupDateTime = normalizeDateTimeSlot(formData.pickupDateTime);
-  const savedFarewellDateTime = normalizeDateTimeSlot(formData.farewellDateTime);
-  const savedBurialDateTime = normalizeDateTimeSlot(formData.burialDateTime);
   const activeHearseInfo = openHearseCategoryInfo
     ? HEARSE_CATEGORY_INFO[openHearseCategoryInfo]
     : null;
@@ -1877,13 +1820,6 @@ export function StepperWorkflow({
     logisticsSessionRef.current = trackingSessionId;
     logisticsStartedRef.current = false;
   }, [trackingSessionId]);
-
-  const handlePickupDialogOpenChange = (open: boolean) => {
-    setShowPickupDialog(open);
-    if (open) {
-      setPickupDateTime(savedPickupDateTime);
-    }
-  };
 
   useEffect(() => {
     if (currentStep !== 1) return;
@@ -2452,14 +2388,9 @@ export function StepperWorkflow({
     setIsSubmittingOrder(false);
   };
 
-function formatRub(n: number) {
-  return n.toLocaleString("ru-RU");
-}
-
   const formatRubLocal = (v: number) => Math.round(v).toLocaleString("ru-RU");
 
   const totalRub = Math.max(0, Math.round(calculateTotal() || 0));
-  const deposit10Rub = Math.max(0, Math.round(totalRub * 0.1));
   const rawEmailValue = formData.userEmail || "";
   const emailValue = rawEmailValue.trim();
   const emailStarted = rawEmailValue.length > 0;
@@ -2490,30 +2421,6 @@ function formatRub(n: number) {
     "Логистика": 1,
     "Атрибутика": 2,
     "Документы": 3,
-  };
-  const paymentOptions: Array<{ id: PaymentMethod; title: string; subtitle?: string }> = [
-    {
-      id: "deposit_10",
-      title: "Депозит 10%",
-      subtitle:
-        "Депозит гарантирует закрепление координатора за вашей заявкой. Сумма депозита входит в итоговую стоимость вашего заказа.",
-    },
-    {
-      id: "call_rep",
-      title: "Мне нужна консультация",
-    },
-  ];
-  const handlePaymentMethodSelect = (method: PaymentMethod) => {
-    if (paymentMethod === method) return;
-    setPaymentMethod(method);
-    if (method === "deposit_10") {
-      reachMetrikaGoal(buildGoalName(trackingFlow, "payment_option_deposit_10"), { flow: trackingFlow });
-    }
-    if (method === "call_rep") {
-      reachMetrikaGoal(buildGoalName(trackingFlow, "payment_option_call"), {
-        flow: trackingFlow,
-      });
-    }
   };
   const canSubmit = totalRub > 0 && emailOk;
 

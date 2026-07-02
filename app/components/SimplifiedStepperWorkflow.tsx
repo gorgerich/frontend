@@ -4,8 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { Stepper } from "./Stepper";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import ContractButton from "./ContractButton";
+import { Card, CardContent, CardHeader } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -69,8 +68,8 @@ function SafeImg(
 
   const { fallbackSrc, ...rest } = props;
 
-  // eslint-disable-next-line @next/next/no-img-element
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       {...rest}
       alt={rest.alt ?? ""}
@@ -437,29 +436,6 @@ const COFFIN_PHOTOS: Record<string, string> = {
 
 
 
-const PACKAGE_TO_MATERIAL: Record<string, "pine" | "oak" | "elite"> = {
-  base: "pine",
-  standard: "pine",
-  comfort: "oak",
-  premium: "elite",
-};
-
-const LINING_LABELS: Record<string, { title: string; subtitle?: string }> = {
-  "satin-white": {
-    title: "Атлас белый",
-    subtitle: "Классическая светлая отделка",
-  },
-  "silk-cream": {
-    title: "Шёлк кремовый",
-    subtitle: "Тёплый благородный оттенок",
-  },
-  "velvet-burgundy": {
-    title: "Бархат бордовый",
-    subtitle: "Глубокий насыщенный цвет",
-  },
-};
-
-
 type HearseRoute = {
 morgue: boolean;
 hall: boolean;
@@ -592,8 +568,6 @@ const formatDateTimeSlot = (dt: { date?: Date; timeSlot?: TimeSlot }) =>
 export function SimplifiedStepperWorkflow({
 selectedPackage,
 onBack,
-formData,
-onUpdateFormData,
 }: SimplifiedStepperWorkflowProps) {
 const containerRef = useRef<HTMLDivElement>(null);
 const topRef = useRef<HTMLDivElement | null>(null);
@@ -790,7 +764,7 @@ setBurialDateTime(savedBurialDateTime);
 }, [burialDateTime.date, burialDateTime.timeSlot, savedBurialDateTime.date, savedBurialDateTime.timeSlot]);
 
 // Состояния для оплаты
-const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("deposit_10");
+const [paymentMethod] = useState<PaymentMethod>("deposit_10");
 const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
 const [orderConfirmation, setOrderConfirmation] = useState<{
   emailSent: boolean;
@@ -924,7 +898,6 @@ useEffect(() => {
 if (!safeFormData.liningColor) {
 handleInputChange("liningColor", "satin-white");
 }
-// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [safeFormData.liningColor]);
 
 // Сохранение состояния simplified в отдельный ключ
@@ -1325,12 +1298,6 @@ handleInputChange("cemetery", cemetery.name);
 setCemeterySearchQuery("");
 setShowCemeteryResults(false);
 };
-
-const material =
-  PACKAGE_TO_MATERIAL[selectedPackage?.id] ?? "pine";
-
-const coffinPreviewSrc = `/coffins/${material}/${safeFormData.liningColor}.jpg`;
-
 
 const renderStepContent = () => {
 switch (currentStep) {
@@ -2267,34 +2234,6 @@ const emailStarted = rawEmailValue.length > 0;
 const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue);
 const canSubmit = totalRub > 0 && emailOk;
 const deposit10Rub = Math.max(0, Math.round(totalRub * 0.1));
-const paymentOptions: Array<{ id: PaymentMethod; title: string; subtitle?: string }> = [
-  {
-    id: "deposit_10",
-    title: "Депозит 10%",
-    subtitle:
-      "Депозит гарантирует закрепление координатора за вашей заявкой. Сумма депозита входит в итоговую стоимость вашего заказа.",
-  },
-  {
-    id: "call_rep",
-    title: "Мне нужна консультация",
-  },
-];
-const handlePaymentMethodSelect = (method: PaymentMethod) => {
-  if (paymentMethod === method) return;
-  setPaymentMethod(method);
-  if (method === "deposit_10") {
-    reachMetrikaGoal(
-      buildGoalName(trackingFlow, "payment_option_deposit_10"),
-      { flow: trackingFlow },
-    );
-  }
-  if (method === "call_rep") {
-    reachMetrikaGoal(buildGoalName(trackingFlow, "payment_option_call"), {
-      flow: trackingFlow,
-    });
-  }
-};
-
 const breakdown = simplifiedSections;
 const cemeteryCategoryLabel =
 selectedCemeteryCategory === "standard"

@@ -62,11 +62,12 @@ function selectInitial(
 * и без next/image. Работает в любом окружении.
 */
 function SafeImg(props: React.ImgHTMLAttributes<HTMLImageElement> & { fallbackSrc?: string }) {
-const { fallbackSrc, ...rest } = props;
+const { fallbackSrc, alt = '', ...rest } = props;
 return (
 // eslint-disable-next-line @next/next/no-img-element
 <img
 {...rest}
+alt={alt}
 onError={(e) => {
 if (!fallbackSrc) return;
 const target = e.currentTarget;
@@ -224,35 +225,9 @@ coffinPhotos[shortKey] ||
 );
 };
 
-// Опции для (возможного) визуализатора, оставляю как у тебя
-const coffinOptions: ConfiguratorOption[] = [
-{ id: 'pine', name: 'Сосна', image: 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=400', price: 15000 },
-{ id: 'oak', name: 'Дуб', image: 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=400', price: 35000 },
-{ id: 'elite', name: 'Элитное', image: 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=400', price: 65000 },
-];
-
 const wreathOptions: ConfiguratorOption[] = [
 { id: 'artificial', name: 'Искусственные цветы', image: 'https://images.unsplash.com/photo-1741189127247-3f45b0ca6e53?w=400', price: 3500 },
 { id: 'composition', name: 'Живая композиция', image: 'https://images.unsplash.com/photo-1741189127247-3f45b0ca6e53?w=400', price: 7500 },
-];
-
-const liningOptionsConfig: ConfiguratorOption[] = [
-{ id: 'satin-white', name: 'Атлас белый', image: 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=400' },
-{ id: 'silk-cream', name: 'Шелк кремовый', image: 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=400' },
-];
-
-const plaqueOptions: ConfiguratorOption[] = [{ id: 'metal', name: 'Металлическая', image: 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=400' }];
-
-const monumentOptions: ConfiguratorOption[] = [{ id: 'granite', name: 'Гранит', image: 'https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=400' }];
-
-// Цветовые палитры — оставляю как у тебя (если дальше будешь использовать)
-const coffinColors = [
-{ id: 'natural', hex: '#8B7355', name: 'Натуральный' },
-{ id: 'dark', hex: '#3E2723', name: 'Темный' },
-{ id: 'mahogany', hex: '#6D4C3D', name: 'Красное дерево' },
-{ id: 'walnut', hex: '#5D4037', name: 'Орех' },
-{ id: 'cherry', hex: '#A0522D', name: 'Вишня' },
-{ id: 'white', hex: '#E8D5C4', name: 'Белый' },
 ];
 
 const wreathSizes = [

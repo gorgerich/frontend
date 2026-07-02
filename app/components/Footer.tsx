@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Phone, Mail, Shield, Clock, MessageCircle } from "./Icons";
+import { Phone, Mail, Clock, MessageCircle } from "./Icons";
 import { HelpModal } from "./HelpModal";
 import { PUBLIC_OFFER_HREF, TELEGRAM_URL } from "@/lib/legalLinks";
 

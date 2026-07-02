@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   const parsed = WebhookSchema.safeParse(json);
   if (!parsed.success) return NextResponse.json({ ok: false, error: "bad schema" }, { status: 400 });
 
-  const { signature, ...payload } = parsed.data;
+  const { signature } = parsed.data;
 
   if (!safeEqual(signature, expected)) {
     return NextResponse.json({ ok: false, error: "bad signature" }, { status: 401 });
