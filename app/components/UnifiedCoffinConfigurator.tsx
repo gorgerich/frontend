@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -18,8 +18,8 @@ price?: number;
 }
 
 interface UnifiedCoffinConfiguratorProps {
-onConfirm?: (data: any) => void;
-onChange?: (data: any) => void;
+onConfirm?: (data: CoffinConfiguration) => void;
+onChange?: (data: CoffinConfiguration) => void;
 initialSelection?: {
   woodId?: string;
   liningId?: string;
@@ -29,6 +29,32 @@ initialSelection?: {
   wreathText?: string;
   wreathQuantity?: number;
 };
+}
+
+interface CoffinConfiguration {
+  coffin: {
+    wood: { id: string; name: string; texture: string; price: number; description: string } | undefined;
+    lining: { id: string; name: string; texture: string; price: number; description: string } | undefined;
+    hardware: { id: string; name: string; color: string; metallic: string; price: number; description: string } | undefined;
+    quantity: number;
+    price: number;
+  };
+  wreath: {
+    type: string;
+    size: string;
+    text: string;
+    quantity: number;
+    price: number;
+  };
+  total: number;
+}
+
+function selectInitial(
+  value: string | undefined,
+  allowed: readonly string[],
+  fallback: string,
+) {
+  return value && allowed.includes(value) ? value : fallback;
 }
 
 /**
@@ -54,17 +80,28 @@ export function UnifiedCoffinConfigurator({ onConfirm, onChange, initialSelectio
 const [activeTab, setActiveTab] = useState<'coffin' | 'wreath'>('coffin');
 
 // Состояние для гроба
-const [selectedWood, setSelectedWood] = useState('pine');
-const [selectedLining, setSelectedLining] = useState('satin-white');
-const [selectedHardware, setSelectedHardware] = useState('brass');
+const [selectedWood, setSelectedWood] = useState(() =>
+  selectInitial(initialSelection?.woodId, ['pine', 'oak', 'elite'], 'pine'),
+);
+const [selectedLining, setSelectedLining] = useState(() =>
+  selectInitial(initialSelection?.liningId, ['satin-white', 'silk-cream', 'velvet-burgundy'], 'satin-white'),
+);
+const [selectedHardware, setSelectedHardware] = useState(() =>
+  selectInitial(initialSelection?.hardwareId, ['brass', 'silver', 'gold'], 'brass'),
+);
 const coffinQuantity = 1;
 
 // Состояние для венка
-const [wreathType, setWreathType] = useState('artificial');
-const [wreathSize, setWreathSize] = useState('M');
-const [wreathText, setWreathText] = useState('');
-const [wreathQuantity, setWreathQuantity] = useState(1);
-const didInitSelectionRef = useRef(false);
+const [wreathType, setWreathType] = useState(() =>
+  selectInitial(initialSelection?.wreathType, ['artificial', 'composition'], 'artificial'),
+);
+const [wreathSize, setWreathSize] = useState(() =>
+  selectInitial(initialSelection?.wreathSize, ['S', 'M', 'L'], 'M'),
+);
+const [wreathText, setWreathText] = useState(initialSelection?.wreathText ?? '');
+const [wreathQuantity, setWreathQuantity] = useState(() =>
+  Math.max(1, Math.round(initialSelection?.wreathQuantity ?? 1)),
+);
 const onChangeRef = useRef(onChange);
 
 // Опции материалов гроба
@@ -225,41 +262,6 @@ const wreathSizes = [
 ];
 
 useEffect(() => {
-if (didInitSelectionRef.current) return;
-if (!initialSelection) return;
-
-if (initialSelection.woodId && woodOptions.some((item) => item.id === initialSelection.woodId)) {
-  setSelectedWood(initialSelection.woodId);
-}
-if (
-  initialSelection.liningId &&
-  liningOptions.some((item) => item.id === initialSelection.liningId)
-) {
-  setSelectedLining(initialSelection.liningId);
-}
-if (
-  initialSelection.hardwareId &&
-  hardwareOptions.some((item) => item.id === initialSelection.hardwareId)
-) {
-  setSelectedHardware(initialSelection.hardwareId);
-}
-if (initialSelection.wreathType && wreathOptions.some((item) => item.id === initialSelection.wreathType)) {
-  setWreathType(initialSelection.wreathType);
-}
-if (initialSelection.wreathSize && wreathSizes.some((item) => item.id === initialSelection.wreathSize)) {
-  setWreathSize(initialSelection.wreathSize);
-}
-if (typeof initialSelection.wreathText === 'string') {
-  setWreathText(initialSelection.wreathText);
-}
-if (typeof initialSelection.wreathQuantity === 'number') {
-  setWreathQuantity(Math.max(1, Math.round(initialSelection.wreathQuantity)));
-}
-
-didInitSelectionRef.current = true;
-}, [initialSelection, woodOptions, liningOptions, hardwareOptions, wreathOptions, wreathSizes]);
-
-useEffect(() => {
   onChangeRef.current = onChange;
 }, [onChange]);
 
@@ -280,7 +282,6 @@ return ((type?.price || 3500) + (size?.price || 0)) * wreathQuantity;
 
 const getTotalPrice = () => getCoffinPrice() + getWreathPrice();
 
-const getCurrentCoffin = () => coffinOptions.find((c) => c.id === selectedWood) || coffinOptions[0];
 const getCurrentWreath = () => wreathOptions.find((w) => w.id === wreathType) || wreathOptions[0];
 
 const buildConfigData = () => {
@@ -307,31 +308,20 @@ total: getTotalPrice(),
 };
 };
 
-const configData = useMemo(
-() => buildConfigData(),
-[
-selectedWood,
-selectedLining,
-selectedHardware,
-coffinQuantity,
-wreathType,
-wreathSize,
-wreathText,
-wreathQuantity,
-],
-);
+const configData = buildConfigData();
 
 useEffect(() => {
 if (!onChangeRef.current) return;
 onChangeRef.current(configData);
-}, [configData]);
+// Primitive dependencies prevent duplicate callbacks caused by a new object identity.
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [selectedWood, selectedLining, selectedHardware, wreathType, wreathSize, wreathText, wreathQuantity]);
 
 const handleConfirm = () => {
 onConfirm?.(configData);
 };
 
-// Чтобы не пересоздавать строку для img каждый ререндер
-const currentPhoto = useMemo(() => getCurrentCoffinPhoto(), [selectedWood, selectedLining, selectedHardware]);
+const currentPhoto = getCurrentCoffinPhoto();
 
 return (
 <div className="bg-gradient-to-br from-gray-50 via-white to-gray-50 rounded-2xl overflow-hidden">
@@ -404,7 +394,7 @@ selectedWood === wood.id
 >
 <div className="aspect-[16/9] sm:aspect-[4/3] w-full relative">
 <SafeImg
-src={(wood as any).texture}
+src={wood.texture}
 fallbackSrc="https://images.unsplash.com/photo-1718801623795-0762bc858a16?w=800"
 alt={wood.name}
 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
@@ -420,7 +410,7 @@ className="w-full h-full object-cover transition-transform duration-700 group-ho
 <div className="absolute bottom-3 left-3 right-3">
 <div className="text-white font-medium text-sm truncate">{wood.name}</div>
 <div className="text-white/90 text-sm font-normal">
-{(wood as any).price === 0 ? 'Включено' : `+${(wood as any).price.toLocaleString('ru-RU')} ₽`}
+{wood.price === 0 ? 'Включено' : `+${wood.price.toLocaleString('ru-RU')} ₽`}
 </div>
 </div>
 </div>
@@ -450,7 +440,7 @@ selectedLining === lining.id
 >
 <div className="aspect-[16/9] sm:aspect-[4/3] w-full relative">
 <SafeImg
-src={(lining as any).texture}
+src={lining.texture}
 fallbackSrc="https://images.unsplash.com/photo-1619043519379-99df2736108d?w=800"
 alt={lining.name}
 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
@@ -466,7 +456,7 @@ className="w-full h-full object-cover transition-transform duration-700 group-ho
 <div className="absolute bottom-0 inset-x-0 p-3 bg-white/90 backdrop-blur-sm border-t border-white/50">
 <div className="text-gray-900 font-medium text-sm truncate">{lining.name}</div>
 <div className="text-gray-600 text-sm">
-{(lining as any).price === 0 ? 'Включено' : `+${(lining as any).price.toLocaleString('ru-RU')} ₽`}
+{lining.price === 0 ? 'Включено' : `+${lining.price.toLocaleString('ru-RU')} ₽`}
 </div>
 </div>
 </div>

@@ -16,8 +16,8 @@ type Props = {
 
 declare global {
   interface Window {
-    dataLayer?: Array<Record<string, any>>;
-    ym?: (...args: any[]) => void;
+    dataLayer?: Array<Record<string, unknown>>;
+    ym?: (...args: unknown[]) => void;
   }
 }
 
@@ -50,7 +50,7 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
   const isEmailOnlyPayment = paymentMode === "EMAIL_LINK_ONLY";
   const [payPlan, setPayPlan] = useState<PayPlan>("full");
   const [method, setMethod] = useState<"card" | "sbp">("card");
-  const trackingFlow: "wizard" = "wizard";
+  const trackingFlow = "wizard" as const;
   const trackingSessionId = getTrackingSessionId();
   const lastPayPlanRef = useRef<PayPlan>(payPlan);
   const payPlanSelectionSeqRef = useRef(0);
@@ -221,8 +221,8 @@ export default function InlineMockPayment({ orderId, totalAmount, email }: Props
         },
         created.providerPaymentId,
       );
-    } catch (e: any) {
-      const msg = String(e?.message ?? e);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
       setError(msg);
     } finally {
       setLoading(false);

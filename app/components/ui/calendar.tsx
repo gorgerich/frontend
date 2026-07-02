@@ -112,7 +112,7 @@ function Calendar({
       }}
       components={
         {
-          Caption: () => (
+          MonthCaption: () => (
             <div className="grid grid-cols-[1fr_auto_1fr] items-center">
               <div className="text-indigo-900 font-serif italic text-lg">Rowi</div>
               <div className="text-center text-base font-semibold text-indigo-900">
@@ -136,7 +136,7 @@ function Calendar({
               </div>
             </div>
           ),
-        } as any
+        }
       }
       {...props}
     />

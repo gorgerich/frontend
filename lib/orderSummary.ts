@@ -28,6 +28,57 @@ type BuildOrderSummaryOptions = {
   additionalServicesMap?: Record<string, string>;
 };
 
+export type OrderSummaryFormData = {
+  serviceType?: string;
+  hasHall?: boolean;
+  hallDuration?: number;
+  ceremonyType?: string;
+  confession?: string;
+  selectedSlot?: string;
+  cemetery?: string;
+  pickupDateTime?: { date?: string | Date; timeSlot?: TimeSlot | string; time?: string };
+  farewellDateTime?: { date?: string | Date; timeSlot?: TimeSlot | string; time?: string };
+  burialDateTime?: { date?: string | Date; timeSlot?: TimeSlot | string; time?: string };
+  needsHearse?: boolean;
+  hearseCategory?: string;
+  hearseRoute?: {
+    morgue?: boolean;
+    hall?: boolean;
+    church?: boolean;
+    cemetery?: boolean;
+  };
+  needsFamilyTransport?: boolean;
+  familyTransportSeats?: number;
+  needsPallbearers?: boolean;
+  distance?: string;
+  coffinConfig?: {
+    coffin?: {
+      wood?: { name?: string };
+      lining?: { name?: string };
+      hardware?: { name?: string };
+      quantity?: number;
+    };
+    wreath?: {
+      type?: string;
+      size?: string;
+      text?: string;
+      quantity?: number;
+    };
+  };
+  liningColor?: string;
+  selectedAdditionalServices?: string[];
+  specialRequests?: string;
+  fullName?: string;
+  birthDate?: string;
+  deathDate?: string;
+  deathCertificate?: string;
+  relationship?: string;
+  dataConsent?: boolean;
+  clientName?: string;
+  clientEmail?: string;
+  userEmail?: string;
+};
+
 const TIME_SLOT_LABELS: Record<TimeSlot, string> = {
   morning: "Первая половина дня",
   afternoon: "Вторая половина дня",
@@ -181,7 +232,7 @@ const pushItem = (items: OrderSummaryItem[], label: string, value?: string) => {
 };
 
 export function buildOrderSummary(
-  formData: Record<string, any> | undefined,
+  formData: OrderSummaryFormData | undefined,
   options: BuildOrderSummaryOptions = {},
 ): OrderSummaryResult {
   const data = formData || {};
@@ -193,7 +244,9 @@ export function buildOrderSummary(
   };
 
   const formatItems: OrderSummaryItem[] = [];
-  const serviceTypeLabel = SERVICE_TYPE_LABELS[data.serviceType] || data.serviceType;
+  const serviceTypeLabel = data.serviceType
+    ? SERVICE_TYPE_LABELS[data.serviceType] || data.serviceType
+    : undefined;
   pushItem(formatItems, "Формат", serviceTypeLabel);
   pushItem(formatItems, "Пакет", options.packageLabel);
   if (typeof data.hasHall === "boolean") {
@@ -202,7 +255,9 @@ export function buildOrderSummary(
   if (data.hasHall && data.hallDuration) {
     pushItem(formatItems, "Длительность зала", `${data.hallDuration} мин`);
   }
-  const ceremonyTypeLabel = CEREMONY_TYPE_LABELS[data.ceremonyType] || data.ceremonyType;
+  const ceremonyTypeLabel = data.ceremonyType
+    ? CEREMONY_TYPE_LABELS[data.ceremonyType] || data.ceremonyType
+    : undefined;
   pushItem(formatItems, "Тип церемонии", ceremonyTypeLabel);
   pushItem(formatItems, "Конфессия", data.confession);
   pushItem(formatItems, "Слот церемонии", data.selectedSlot);
@@ -221,8 +276,9 @@ export function buildOrderSummary(
   pushItem(logisticsItems, burialLabel, formatDateTimeSlot(data.burialDateTime));
 
   if (data.needsHearse) {
-    const catLabel =
-      HEARSE_CATEGORY_LABELS[data.hearseCategory] || data.hearseCategory;
+    const catLabel = data.hearseCategory
+      ? HEARSE_CATEGORY_LABELS[data.hearseCategory] || data.hearseCategory
+      : undefined;
     pushItem(
       logisticsItems,
       "Катафалк",
@@ -271,8 +327,12 @@ export function buildOrderSummary(
   }
   const wreath = data.coffinConfig?.wreath;
   if (wreath) {
-    const typeLabel = WREATH_TYPE_LABELS[wreath.type] || wreath.type;
-    const sizeLabel = WREATH_SIZE_LABELS[wreath.size] || wreath.size;
+    const typeLabel = wreath.type
+      ? WREATH_TYPE_LABELS[wreath.type] || wreath.type
+      : undefined;
+    const sizeLabel = wreath.size
+      ? WREATH_SIZE_LABELS[wreath.size] || wreath.size
+      : undefined;
     const details = [typeLabel, sizeLabel].filter(Boolean).join(", ");
     const text = (wreath.text || "").trim();
     const qty = Math.max(1, Number(wreath.quantity || 1));

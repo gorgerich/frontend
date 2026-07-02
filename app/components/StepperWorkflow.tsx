@@ -95,6 +95,7 @@ import {
   calculateBreakdown as calculateBreakdownFromUtils,
   calculateTotal as calculateTotalFromUtils,
   type CalculatorConfig,
+  type FormData as CalculatorFormData,
   trackEvent,
   getTrackingSessionId,
   reachMetrikaGoal,
@@ -105,6 +106,15 @@ import { calcPayNowRub } from "@/lib/pricingMath";
 
 
 type PaymentMethod = "deposit_10" | "call_rep";
+type StepperFormData = StepperWorkflowProps["formData"];
+type OrderCreateResponse = {
+  success?: boolean;
+  orderId?: string;
+  totalRub?: number;
+  emailSent?: boolean;
+  paymentLink?: string | null;
+  error?: string;
+};
 const SUPPORT_PHONE_DISPLAY = "+7 (985) 248-94-25";
 const SUPPORT_PHONE_TEL = "+79852489425";
 const SUPPORT_TELEGRAM_URL = "https://t.me/tihiydominfo";
@@ -230,7 +240,7 @@ interface AdditionalService {
   name: string;
   price: number;
   description: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 const PACKAGES_BURIAL = PACKAGES;
@@ -1057,7 +1067,7 @@ splitSchedule?: string;
 
     dataConsent: boolean;
   };
-  onUpdateFormData: (field: string, value: any) => void;
+  onUpdateFormData: (field: string, value: unknown) => void;
   onStepChange?: (step: number) => void;
   onCemeteryCategoryChange?: (category: "standard" | "comfort" | "premium") => void;
   onModeChange?: (mode: "wizard" | "package") => void;
@@ -1111,7 +1121,7 @@ export function StepperWorkflow({
     useState<SimplifiedPackage | null>(null);
 
   const trackingSessionId = getTrackingSessionId();
-  const trackingFlow: "wizard" = "wizard";
+  const trackingFlow = "wizard" as const;
   const metrikaVisitSessionRef = useRef<string | null>(null);
 
   const [showConsentError, setShowConsentError] = useState(false);
@@ -1475,7 +1485,7 @@ export function StepperWorkflow({
 
   useEffect(() => {
     if (didInitDefaultsRef.current) return;
-    const updates: Array<[string, any]> = [];
+    const updates: Array<[string, unknown]> = [];
 
     if (!formData.serviceType) updates.push(["serviceType", "burial"]);
     if (formData.hasHall == null) updates.push(["hasHall", true]);
@@ -1805,7 +1815,7 @@ export function StepperWorkflow({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleInputChange = (field: string, value: any) => onUpdateFormData(field, value);
+  const handleInputChange = (field: string, value: unknown) => onUpdateFormData(field, value);
 
   // В wizard не допускаем пакет из "Готовых решений"
   useEffect(() => {
@@ -1814,8 +1824,10 @@ export function StepperWorkflow({
     }
   }, [workflowMode, formData.packageType, onUpdateFormData]);
 
-  const handleSkipField = (field: string) => {
-    const currentValue = (formData as any)[field];
+  const handleSkipField = (
+    field: "fullName" | "birthDate" | "deathDate" | "deathCertificate",
+  ) => {
+    const currentValue = formData[field];
     onUpdateFormData(field, currentValue === "—" ? "" : "—");
   };
 
@@ -2095,11 +2107,15 @@ export function StepperWorkflow({
   };
 
   const calculateTotal = () =>
-    calculateTotalFromUtils(formData as any, selectedCemeteryCategory, buildCalculatorConfig());
+    calculateTotalFromUtils(
+      formData as CalculatorFormData,
+      selectedCemeteryCategory,
+      buildCalculatorConfig(),
+    );
 
   const calculateBreakdown = () => {
     const breakdown = calculateBreakdownFromUtils(
-      formData as any,
+      formData as CalculatorFormData,
       selectedCemeteryCategory,
       buildCalculatorConfig(),
     );
@@ -2152,7 +2168,7 @@ export function StepperWorkflow({
       const effectiveFormData = {
         ...formData,
         ...(override?.formData || {}),
-      };
+      } as StepperFormData;
       const payloadFormData = {
         ...effectiveFormData,
         pickupDateTime,
@@ -2160,7 +2176,7 @@ export function StepperWorkflow({
         burialDateTime,
       };
 
-      const ceremonyDateTime = (effectiveFormData as any).hasHall ? farewellDateTime : burialDateTime;
+      const ceremonyDateTime = effectiveFormData.hasHall ? farewellDateTime : burialDateTime;
 
       const payload = {
         userEmail: orderEmail,
@@ -2174,22 +2190,22 @@ export function StepperWorkflow({
         paymentMethod,
         customer: { email: orderEmail },
         deceased: {
-          name: (effectiveFormData as any).fullName || undefined,
-          birthDate: (effectiveFormData as any).birthDate || undefined,
-          deathDate: (effectiveFormData as any).deathDate || undefined,
-          relationship: (effectiveFormData as any).relationship || undefined,
+          name: effectiveFormData.fullName || undefined,
+          birthDate: effectiveFormData.birthDate || undefined,
+          deathDate: effectiveFormData.deathDate || undefined,
+          relationship: effectiveFormData.relationship || undefined,
         },
         ceremony: {
-          type: (effectiveFormData as any).ceremonyType || undefined,
-          order: (effectiveFormData as any).ceremonyOrder || undefined,
-          serviceType: (effectiveFormData as any).serviceType || undefined,
-          cemetery: (effectiveFormData as any).cemetery || undefined,
+          type: effectiveFormData.ceremonyType || undefined,
+          order: effectiveFormData.ceremonyOrder || undefined,
+          serviceType: effectiveFormData.serviceType || undefined,
+          cemetery: effectiveFormData.cemetery || undefined,
           date: ceremonyDateTime.date
             ? ceremonyDateTime.date.toLocaleDateString("ru-RU")
             : undefined,
           timeSlot: ceremonyDateTime.timeSlot,
         },
-        notes: (effectiveFormData as any).specialRequests || undefined,
+        notes: effectiveFormData.specialRequests || undefined,
       };
 
       const res = await fetch("/api/orders", {
@@ -2198,7 +2214,7 @@ export function StepperWorkflow({
         body: JSON.stringify(payload),
       });
 
-      const orderData = await res.json().catch(() => ({} as any));
+      const orderData: OrderCreateResponse = await res.json().catch(() => ({}));
 
       if (!res.ok || orderData?.success !== true) {
         console.error("Ошибка при создании заказа", orderData);
@@ -2435,70 +2451,6 @@ export function StepperWorkflow({
     setOrderConfirmation(null);
     setIsSubmittingOrder(false);
   };
-
-type BreakdownLine = {
-  title: string;
-  qty: number;
-  priceRub: number | null; // null = цена не рассчитана/включено
-};
-
-function buildBreakdownLines(params: {
-  formData: any;
-  PACKAGES: any[];
-  additionalServices: any[];
-}): BreakdownLine[] {
-  const { formData, PACKAGES, additionalServices } = params;
-
-  const lines: BreakdownLine[] = [];
-
-  // 1) Пакет (если выбран не custom)
-  if (formData.packageType && formData.packageType !== "custom") {
-    const pkg = PACKAGES.find((p) => p.id === formData.packageType);
-    if (pkg) {
-      lines.push({
-        title: `Пакет: ${pkg.name}`,
-        qty: 1,
-        priceRub: typeof pkg.price === "number" ? pkg.price : null,
-      });
-    }
-  }
-
-  // 2) Индивидуальный пакет (additional services)
-  if (formData.packageType === "custom" && Array.isArray(formData.selectedAdditionalServices)) {
-    for (const serviceId of formData.selectedAdditionalServices) {
-      const s = additionalServices.find((x) => x.id === serviceId);
-      if (!s) continue;
-
-      lines.push({
-        title: s.name,
-        qty: 1,
-        priceRub: typeof s.price === "number" ? s.price : null,
-      });
-    }
-  }
-
-  // 3) Зал прощания (если включён) — цену не выдумываю, если у тебя она не определена
-  if (formData.hasHall) {
-    const minutes = Number(formData.hallDuration || 0);
-    lines.push({
-      title: minutes > 0 ? `Зал прощания (${minutes} мин)` : "Зал прощания",
-      qty: 1,
-      priceRub: null, // если у тебя есть цена — скажи, я подключу без гаданий
-    });
-  }
-
-  // 4) Катафалк / логистика (если включено) — цена неизвестна, не выдумываю
-  if (formData.needsHearse) {
-    lines.push({
-      title: "Катафалк",
-      qty: 1,
-      priceRub: null,
-    });
-  }
-
-  // 5) Если вообще ничего не собралось — возвращаем пусто
-  return lines;
-}
 
 function formatRub(n: number) {
   return n.toLocaleString("ru-RU");
@@ -2744,7 +2696,7 @@ function formatRub(n: number) {
                   <Label className="mb-3 block">Длительность</Label>
                   <p className="text-xs text-gray-500 mb-3">Рекомендуем 60–90 мин</p>
                   <div className="grid grid-cols-3 gap-3">
-                    {[30, 60, 90].map((duration) => (
+                    {([30, 60, 90] as const).map((duration) => (
                       <button
                         key={duration}
                         type="button"
@@ -2758,7 +2710,7 @@ function formatRub(n: number) {
                       >
                         <div className="text-sm mb-1">{duration} мин</div>
                         <div className="text-xs text-gray-500">
-                          {(PRICES.hallDuration as any)[duration].toLocaleString("ru-RU")} ₽
+                          {PRICES.hallDuration[duration].toLocaleString("ru-RU")} ₽
                         </div>
                       </button>
                     ))}
@@ -3614,7 +3566,7 @@ function formatRub(n: number) {
                 <div className="mt-3">
                   <Label className="mb-3 block text-sm">Количество мест:</Label>
                   <div className="grid grid-cols-3 gap-3">
-                    {[5, 10, 15].map((seats) => (
+                    {([5, 10, 15] as const).map((seats) => (
                       <button
                         key={seats}
                         type="button"
@@ -3626,7 +3578,7 @@ function formatRub(n: number) {
                       >
                         <div className="text-sm mb-1">{seats} мест</div>
                         <div className="text-xs text-gray-500">
-                          {(PRICES.familyTransport as any)[seats].toLocaleString("ru-RU")} ₽
+                          {PRICES.familyTransport[seats].toLocaleString("ru-RU")} ₽
                         </div>
                       </button>
                     ))}
@@ -4135,7 +4087,7 @@ function formatRub(n: number) {
       <div ref={wrapRef} className="relative max-w-5xl mx-auto pb-12">
         <div ref={containerRef}>
           <SimplifiedStepperWorkflow
-            selectedPackage={selectedPackageForSimplified as any}
+            selectedPackage={selectedPackageForSimplified}
             onBack={() => {
               setSelectedPackageForSimplified(null);
               setWorkflowMode("packages");
@@ -4332,7 +4284,7 @@ function formatRub(n: number) {
   {workflowMode === "wizard" ? (
     <div>
       <Stepper
-        steps={steps as any}
+        steps={steps}
         currentStep={currentStep}
         completedSteps={completedSteps}
         onStepClick={handleStepClick}

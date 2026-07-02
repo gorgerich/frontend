@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Sparkles, Check } from 'lucide-react';
 
@@ -85,6 +85,11 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
   const [lastClickedActionId, setLastClickedActionId] = useState<number | null>(null);
   const [selectedTariffName, setSelectedTariffName] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageSequenceRef = useRef(0);
+  const nextMessageId = useCallback(() => {
+    messageSequenceRef.current += 1;
+    return `message-${messageSequenceRef.current}`;
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -97,17 +102,18 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       // Приветственное сообщение при открытии
-      setTimeout(() => {
+      const timeout = window.setTimeout(() => {
         const welcomeMessage: Message = {
-          id: Date.now().toString(),
+          id: nextMessageId(),
           text: "Здравствуйте! Я ваш AI-помощник по организации прощания. Готов помочь вам подобрать оптимальный вариант и ответить на все вопросы. Выберите один из быстрых вариантов ниже или напишите свой вопрос.",
           isUser: false,
           timestamp: new Date(),
         };
         setMessages([welcomeMessage]);
       }, 500);
+      return () => window.clearTimeout(timeout);
     }
-  }, [isOpen]);
+  }, [isOpen, messages.length, nextMessageId]);
 
   const simulateAIResponse = (userMessage: string): string => {
     const lowerMessage = userMessage.toLowerCase();
@@ -138,7 +144,7 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
   const handleQuickAction = (actionText: string, actionId: number) => {
     // Добавляем сообщение пользователя
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: nextMessageId(),
       text: actionText,
       isUser: true,
       timestamp: new Date(),
@@ -150,7 +156,7 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
       setIsTyping(true);
       setTimeout(() => {
         const aiResponse: Message = {
-          id: (Date.now() + 1).toString(),
+          id: nextMessageId(),
           text: "Отлично! Вот наши готовые тарифы. Выберите подходящий вариант:",
           isUser: false,
           timestamp: new Date(),
@@ -166,7 +172,7 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
     setIsTyping(true);
     setTimeout(() => {
       const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
+        id: nextMessageId(),
         text: simulateAIResponse(actionText),
         isUser: false,
         timestamp: new Date(),
@@ -182,7 +188,7 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
   const handleTariffSelection = (tariff: typeof tariffs[0]) => {
     // Сообщение пользователя о выборе
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: nextMessageId(),
       text: `Показать детали тарифа "${tariff.name}"`,
       isUser: true,
       timestamp: new Date(),
@@ -193,7 +199,7 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
     setIsTyping(true);
     setTimeout(() => {
       const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
+        id: nextMessageId(),
         text: `Вот подробная информация о тарифе "${tariff.name}":`,
         isUser: false,
         timestamp: new Date(),
@@ -207,7 +213,7 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
 
   const handleSelectTariff = (tariffName: string) => {
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: nextMessageId(),
       text: `Выбрать тариф "${tariffName}"`,
       isUser: true,
       timestamp: new Date(),
@@ -217,7 +223,7 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
     setIsTyping(true);
     setTimeout(() => {
       const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
+        id: nextMessageId(),
         text: `Отлично! Тариф "${tariffName}" выбран. Теперь вы можете перейти к настройке деталей в пошаговом мастере выше или задать мне дополнительные вопросы.`,
         isUser: false,
         timestamp: new Date(),
@@ -238,7 +244,7 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
 
   const handleBackToTariffs = () => {
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: nextMessageId(),
       text: "Вернуться к выбору тарифов",
       isUser: true,
       timestamp: new Date(),
@@ -248,7 +254,7 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
     setIsTyping(true);
     setTimeout(() => {
       const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
+        id: nextMessageId(),
         text: "Конечно! Вот наши готовые тарифы. Выберите подходящий вариант:",
         isUser: false,
         timestamp: new Date(),
@@ -263,7 +269,7 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
     if (!inputValue.trim()) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: nextMessageId(),
       text: inputValue,
       isUser: true,
       timestamp: new Date(),
@@ -275,7 +281,7 @@ export function AIChatModal({ isOpen, onClose, onOpenStepper }: AIChatModalProps
     setIsTyping(true);
     setTimeout(() => {
       const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
+        id: nextMessageId(),
         text: simulateAIResponse(inputValue),
         isUser: false,
         timestamp: new Date(),

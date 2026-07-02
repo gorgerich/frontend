@@ -51,7 +51,7 @@ onConfirm,
 const [offerAccepted, setOfferAccepted] = useState(false);
 const [isSubmitting, setIsSubmitting] = useState(false);
 const trackingSessionId = getTrackingSessionId();
-const trackingFlow: "wizard" = "wizard";
+const trackingFlow = "wizard" as const;
 const checkoutSessionIdRef = useRef<string>("");
 
 const getCheckoutSessionId = () => {
@@ -126,9 +126,7 @@ const openOffer = () => window.open("/docs/offer.pdf", "_blank");
 const shareOffer = async () => {
 const url = `${window.location.origin}/docs/offer.pdf`;
 try {
-// @ts-ignore
-if (navigator.share) {
-// @ts-ignore
+if (typeof navigator.share === "function") {
 await navigator.share({ title: "Договор-оферта", url });
 return;
 }

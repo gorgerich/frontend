@@ -503,12 +503,20 @@ id: string;
 name: string;
 price: number;
 description: string;
-features: string[];
+features: readonly string[];
 };
 onBack: () => void;
 formData: FormDataShape | undefined;
-onUpdateFormData: (field: string, value: any) => void;
+onUpdateFormData: (field: string, value: unknown) => void;
 }
+
+type OrderApiResponse = {
+  error?: string;
+  orderId?: string;
+  totalRub?: number;
+  emailSent?: boolean;
+  paymentLink?: string | null;
+};
 
 const DEFAULT_FORM_DATA: FormDataShape = {
 serviceType: "burial",
@@ -591,7 +599,7 @@ const containerRef = useRef<HTMLDivElement>(null);
 const topRef = useRef<HTMLDivElement | null>(null);
 const didInitialScrollRef = useRef(false);
 const trackingSessionId = getTrackingSessionId();
-const trackingFlow: "tariffs" = "tariffs";
+const trackingFlow = "tariffs" as const;
 const metrikaVisitSessionRef = useRef<string | null>(null);
 
 const [currentStep, setCurrentStep] = useState(0);
@@ -727,12 +735,8 @@ const previewKey = `${packageWoodId}-${currentLiningId}`;
 // если у тебя есть COFFIN_PHOTOS — оставляем поддержку,
 // но чтобы всегда работало даже без него — строим путь напрямую:
 const currentCoffinPreview = useMemo(() => {
-  // 1) если есть словарь COFFIN_PHOTOS (как в основном мастере)
-  // @ts-ignore
-  if (typeof COFFIN_PHOTOS !== "undefined" && COFFIN_PHOTOS?.[previewKey]) {
-    // @ts-ignore
-    return COFFIN_PHOTOS[previewKey];
-  }
+  const storedPhoto = COFFIN_PHOTOS[previewKey];
+  if (storedPhoto) return storedPhoto;
 
   // 2) fallback: путь по твоей структуре public/coffins/{wood}/{wood}-{lining}.jpg
   return `/coffins/${packageWoodId}/${packageWoodId}-${liningFileKey}.jpg`;
@@ -904,7 +908,7 @@ const selectedPayPlan = (safeFormData.paymentPlan || "full") as "full" | "deposi
 const getPayNowRub = (plan: "full" | "deposit" | "split", total: number) =>
   calcPayNowRub(total, plan);
 
-const handleInputChange = (field: keyof FormDataShape | "hearseRoute", value: any) => {
+const handleInputChange = (field: keyof FormDataShape | "hearseRoute", value: unknown) => {
 setLocalFormData((prev) => ({
   ...prev,
   [field]: value,
@@ -1564,7 +1568,7 @@ safeFormData.ceremonyType === "combined" && "border-black bg-gray-50"
 <Label className="mb-3 block">Длительность</Label>
 <p className="text-xs text-gray-500 mb-3">Рекомендуем 60–90 мин</p>
 <div className="grid grid-cols-3 gap-3">
-{[30, 60, 90].map((duration) => (
+{([30, 60, 90] as const).map((duration) => (
 <button
 key={duration}
 type="button"
@@ -1578,7 +1582,7 @@ safeFormData.hallDuration === duration
 >
 <div className="text-sm mb-1">{duration} мин</div>
 <div className="text-xs text-gray-500">
-{(PRICES.hallDuration as any)[duration].toLocaleString("ru-RU")} ₽
+{PRICES.hallDuration[duration].toLocaleString("ru-RU")} ₽
 </div>
 </button>
 ))}
@@ -2383,20 +2387,20 @@ body: JSON.stringify(payload),
 });
 
 if (!res.ok) {
-const data = await res.json().catch(() => ({}));
+const data: OrderApiResponse = await res.json().catch(() => ({}));
 console.error("Order error:", data);
 if (res.status === 400) {
 alert("Укажите корректный email.");
 } else {
 alert(
-(data as any)?.error ||
+data.error ||
 "Ошибка отправки письма или создания заказа. Попробуйте ещё раз."
 );
 }
 return;
 }
 
-const data = await res.json();
+const data: OrderApiResponse = await res.json();
 console.log("Order created:", data);
 trackEvent(
   "order_created",

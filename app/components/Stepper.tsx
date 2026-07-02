@@ -13,7 +13,7 @@ interface Step {
 }
 
 interface StepperProps {
-  steps: Step[];
+  steps: readonly Step[];
   currentStep: number;              // индекс шага: 0, 1, 2...
   onStepClick?: (stepIndex: number) => void;
   completedSteps?: number[];

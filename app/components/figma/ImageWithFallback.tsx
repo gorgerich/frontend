@@ -24,7 +24,7 @@ alt={alt ?? ""}
 onError={() => {
 if (currentSrc !== fallbackSrc) setCurrentSrc(fallbackSrc);
 }}
-{...(rest as any)}
+{...rest}
 />
 );
-} 
+}

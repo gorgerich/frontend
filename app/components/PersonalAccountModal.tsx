@@ -20,7 +20,12 @@ import {
 import { ScrollArea } from "./ui/scroll-area";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
-import { calculateTotal, calculateBreakdown, trackEvent } from "./calculationUtils";
+import {
+  calculateTotal,
+  calculateBreakdown,
+  trackEvent,
+  type FormData as CalculatorFormData,
+} from "./calculationUtils";
 import { MAIN_DRAFT_KEY, loadSessionDraft } from "@/lib/draftStorage";
 
 // ======================
@@ -55,16 +60,31 @@ interface StoredUser {
   name?: string;
 }
 
+type AccountDraftFormData = CalculatorFormData & {
+  fullName?: string;
+};
+
 // структура драфта из localStorage
 interface DraftFromStorage {
-  formData: any;
+  formData: AccountDraftFormData;
   savedAt: string;
 }
 
 // ответ API /api/orders
+interface ApiOrder {
+  id: string | number;
+  createdAt?: string;
+  date?: string;
+  status?: string;
+  totalAmount?: number;
+  serviceType?: string;
+  fullName?: string;
+  user?: { name?: string; email?: string };
+}
+
 interface OrdersApiResponse {
   ok: boolean;
-  orders?: any[];
+  orders?: ApiOrder[];
   error?: string;
 }
 
@@ -84,13 +104,13 @@ function mapServiceType(serviceType: string): "burial" | "cremation" {
   return serviceType === "CREMATION" ? "cremation" : "burial";
 }
 
-function normalizeOrders(apiOrders: any[]): UiOrder[] {
+function normalizeOrders(apiOrders: ApiOrder[]): UiOrder[] {
   return apiOrders.map((o) => ({
-    id: o.id,
+    id: String(o.id),
     date: o.createdAt ?? o.date ?? new Date().toISOString(),
-    status: mapStatus(o.status),
+    status: mapStatus(o.status ?? "PENDING"),
     total: typeof o.totalAmount === "number" ? o.totalAmount : 0,
-    serviceType: mapServiceType(o.serviceType),
+    serviceType: mapServiceType(o.serviceType ?? "BURIAL"),
     name: o.fullName || o.user?.name || o.user?.email || "Заказ без имени",
   }));
 }

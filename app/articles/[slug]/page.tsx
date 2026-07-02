@@ -9,7 +9,7 @@ import { widontRu } from "@/lib/typography";
 export const dynamicParams = true;
 
 type ArticlePageProps = {
-  params?: unknown;
+  params?: { slug?: string | string[] } | Promise<{ slug?: string | string[] }>;
   searchParams?: unknown;
 };
 
@@ -128,7 +128,7 @@ const renderBlock = (block: ArticleBlock, index: number) => {
 };
 
 export default async function Page(props: ArticlePageProps) {
-  const resolvedParams = await Promise.resolve(props?.params as any);
+  const resolvedParams = await Promise.resolve(props.params);
   const slugRaw = resolvedParams?.slug;
   const slug = Array.isArray(slugRaw)
     ? slugRaw.join("/")

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Fragment } from 'react';
+import { useState, Fragment, type ComponentType } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Checkbox } from './ui/checkbox';
@@ -41,7 +41,7 @@ interface AdditionalService {
   name: string;
   price: number;
   description: string;
-  icon: any;
+  icon: ComponentType<{ className?: string }>;
 }
 
 interface CoffinVariant {
@@ -86,7 +86,7 @@ interface PackagesSectionProps {
     selectedAdditionalServices: string[];
     coffinVariant?: string;
   };
-  onUpdateFormData: (field: string, value: any) => void;
+  onUpdateFormData: (field: string, value: unknown) => void;
 }
 
 // --- данные пакетов ---
@@ -263,12 +263,12 @@ const additionalServices: AdditionalService[] = [
 // ===== КОМПОНЕНТ =====
 
 export function PackagesSection({ formData, onUpdateFormData }: PackagesSectionProps) {
-  if (!SHOW_LEGACY_PACKAGES_BLOCK) return null; // полностью скрывает блок
-
   // legacy-состояния (используются в скрываемом блоке)
   const [showDifferencesOnly, setShowDifferencesOnly] = useState(false);
   const [ceremonyType, setCeremonyType] = useState<'burial' | 'cremation'>('burial');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+
+  if (!SHOW_LEGACY_PACKAGES_BLOCK) return null; // полностью скрывает блок
 
   const PACKAGES = ceremonyType === 'burial' ? PACKAGES_BURIAL : PACKAGES_CREMATION;
   const comparisonFeatures = ceremonyType === 'burial' ? comparisonFeaturesBurial : comparisonFeaturesCremation;

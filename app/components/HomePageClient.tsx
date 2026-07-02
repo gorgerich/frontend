@@ -230,34 +230,6 @@ name: 'Елена',
   },
 ] as const;
 
-const TRUST_METRICS = [
-  { label: 'Средняя оценка', value: '4.9/5' },
-  { label: 'Рекомендации', value: '97%' },
-  { label: 'Обращений в месяц', value: '120+' },
-  { label: 'Срок подтверждения', value: 'от 30 минут' },
-];
-
-const TRUST_RATINGS = [
-  { label: 'Яндекс Карты', url: 'https://yandex.ru/maps' },
-  { label: 'Google', url: 'https://www.google.com/maps' },
-  { label: '2ГИС', url: 'https://2gis.ru' },
-];
-
-const TRUST_LEGAL = [
-  'ИП Пачулия Ричард Гарегинович',
-  'ИНН: 773438344967',
-  'ОГРНИП: 323774600033021',
-  'Лицензии: при необходимости предоставляются по запросу',
-];
-
-const TRUST_PARTNERS = [
-  'Митинский крематорий',
-  'Николо-Архангельский крематорий',
-  'Хованский крематорий',
-  'Кладбища Москвы и МО',
-  
-];
-
 const TRUST_BLOCK_CARDS = [
   {
     id: 'trust-card-1',
@@ -391,7 +363,10 @@ export default function HomePageClient() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    setRouteState(normalizeRouteStateFromString(window.location.search));
+    const frame = window.requestAnimationFrame(() => {
+      setRouteState(normalizeRouteStateFromString(window.location.search));
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   useEffect(() => {
@@ -499,19 +474,22 @@ export default function HomePageClient() {
     const saved = loadSessionDraft(MAIN_DRAFT_KEY);
     if (!saved) return;
 
-    setFormData((current) => ({
-      ...current,
-      ...saved.formData,
-      hearseRoute: {
-        ...current.hearseRoute,
-        ...((saved.formData.hearseRoute as Partial<typeof current.hearseRoute> | undefined) ?? {}),
-      },
-      selectedAdditionalServices: Array.isArray(saved.formData.selectedAdditionalServices)
-        ? saved.formData.selectedAdditionalServices.filter(
-            (item): item is string => typeof item === 'string',
-          )
-        : [],
-    }));
+    const frame = window.requestAnimationFrame(() => {
+      setFormData((current) => ({
+        ...current,
+        ...saved.formData,
+        hearseRoute: {
+          ...current.hearseRoute,
+          ...((saved.formData.hearseRoute as Partial<typeof current.hearseRoute> | undefined) ?? {}),
+        },
+        selectedAdditionalServices: Array.isArray(saved.formData.selectedAdditionalServices)
+          ? saved.formData.selectedAdditionalServices.filter(
+              (item): item is string => typeof item === 'string',
+            )
+          : [],
+      }));
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   useEffect(() => {
@@ -572,27 +550,35 @@ export default function HomePageClient() {
 
   useEffect(() => {
     if (routeType && routeType !== formData.serviceType) {
-      handleUpdateFormData('serviceType', routeType);
+      const frame = window.requestAnimationFrame(() => {
+        setFormData((current) => ({ ...current, serviceType: routeType }));
+      });
+      return () => window.cancelAnimationFrame(frame);
     }
-  }, [routeType]);
+  }, [formData.serviceType, routeType]);
 
   useEffect(() => {
     if (routeFlow === 'wizard' && routeStep) {
       const nextStep = Math.max(1, routeStep);
-      setCurrentStep(nextStep - 1);
+      const frame = window.requestAnimationFrame(() => setCurrentStep(nextStep - 1));
+      return () => window.cancelAnimationFrame(frame);
     }
   }, [routeFlow, routeStep]);
 
   useEffect(() => {
     if (routePackage) {
-      setSelectedPackageSlug(routePackage);
+      const frame = window.requestAnimationFrame(() => setSelectedPackageSlug(routePackage));
+      return () => window.cancelAnimationFrame(frame);
     }
   }, [routePackage]);
 
   useEffect(() => {
     if (routeFlow !== 'how-it-works') return;
-    setIsEmergencyChecklistOpen(true);
-    setEmergencyChecklistScrollRequest((value) => value + 1);
+    const frame = window.requestAnimationFrame(() => {
+      setIsEmergencyChecklistOpen(true);
+      setEmergencyChecklistScrollRequest((value) => value + 1);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [routeFlow, routeHowItWorksStep]);
 
   useEffect(() => {
