@@ -898,6 +898,7 @@ export async function POST(req: NextRequest) {
 
     const text = textParts.join("\n");
 
+    let emailSent = false;
     try {
       await sendOrderEmail({
         to: customerEmail,
@@ -907,10 +908,10 @@ export async function POST(req: NextRequest) {
         orderId: publicId,
         attachments: offerAttachment ? [offerAttachment] : undefined,
       });
+      emailSent = true;
       console.info("email_sent_success", { orderId: publicId });
     } catch (error: unknown) {
       console.error("email_sent_failed", { orderId: publicId, error: errorMessage(error) });
-      return NextResponse.json({ error: "Email send failed" }, { status: 500 });
     }
 
     return NextResponse.json(
@@ -920,7 +921,10 @@ export async function POST(req: NextRequest) {
         orderId: publicId, // фронт ждёт строку
         totalAmount,
         totalRub,
-        emailSent: true,
+        emailSent,
+        ...(emailSent
+          ? {}
+          : { warning: "Заявка сохранена, но письмо пока не отправлено" }),
         paymentLink,
       },
       { status: 201 }
