@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   async rewrites() {
     return [
       { source: "/wizard/:type/step-:step", destination: "/?flow=wizard&type=:type&step=:step" },
