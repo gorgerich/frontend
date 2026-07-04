@@ -101,7 +101,7 @@ function mapStatus(status: string): UiOrderStatus {
 
 function mapServiceType(serviceType: string): "burial" | "cremation" {
   // Prisma enum: BURIAL | CREMATION
-  return serviceType === "CREMATION" ? "cremation" : "burial";
+  return serviceType.toUpperCase() === "CREMATION" ? "cremation" : "burial";
 }
 
 function normalizeOrders(apiOrders: ApiOrder[]): UiOrder[] {

@@ -655,6 +655,62 @@ function buildEmailHtml(
   `;
 }
 
+export async function GET(req: NextRequest) {
+  const email = req.nextUrl.searchParams.get("email")?.trim().toLowerCase() ?? "";
+  if (!z.string().email().max(254).safeParse(email).success) {
+    return NextResponse.json({ error: "Некорректный email" }, { status: 400 });
+  }
+
+  try {
+    const orders = await prisma.order.findMany({
+      where: {
+        user: {
+          email,
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 100,
+      select: {
+        publicId: true,
+        createdAt: true,
+        status: true,
+        totalAmount: true,
+        serviceType: true,
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(
+      {
+        ok: true,
+        orders: orders.map((order) => ({
+          id: order.publicId,
+          createdAt: order.createdAt,
+          status: order.status,
+          totalAmount: order.totalAmount / 100,
+          serviceType: order.serviceType.toUpperCase(),
+          user: order.user,
+        })),
+      },
+      {
+        headers: {
+          "Cache-Control": "private, no-store, max-age=0",
+        },
+      },
+    );
+  } catch (error: unknown) {
+    console.error("orders_list_failed", { error: errorMessage(error) });
+    return NextResponse.json({ error: "Не удалось загрузить заказы" }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.text();
