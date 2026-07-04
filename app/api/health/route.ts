@@ -8,6 +8,7 @@ export function GET() {
       ok: true,
       service: "tihiydom-frontend",
       revision:
+        process.env.RAILWAY_GIT_COMMIT_SHA ||
         process.env.APP_REVISION ||
         process.env.VERCEL_GIT_COMMIT_SHA ||
         process.env.GITHUB_SHA ||
