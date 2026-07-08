@@ -131,6 +131,12 @@ export function PackagesSelection({
       title: string;
       priceLabel: string;
       description: string;
+      quick: {
+        mode: string;
+        family: string;
+        bestFor: string;
+        difference: string;
+      };
       coordinatorHelp: string[];
       included: string[];
       popular?: boolean;
@@ -141,6 +147,12 @@ export function PackagesSelection({
       priceLabel: "86 600 ₽",
       description:
         "Базовый набор для достойного прощания без лишних услуг. Подходит, когда нужно спокойное и понятное решение с фиксированной стоимостью.",
+      quick: {
+        mode: "Базовый состав",
+        family: "Семья участвует сама",
+        bestFor: "Когда нужен минимальный понятный набор без расширенного сопровождения.",
+        difference: "Фиксируем основу: подготовка, атрибутика, катафалк, место захоронения и базовый координатор.",
+      },
       coordinatorHelp: [
         "Помогаем оформить заказ и зафиксировать базовую смету без скрытых доплат.",
         "Подсказываем следующий шаг и сопровождаем подтверждение заказа.",
@@ -157,6 +169,12 @@ export function PackagesSelection({
       priceLabel: "204 900 ₽",
       description:
         "Маршрут, транспорт и документы под контролем координатора. Вам не нужно самостоятельно искать подрядчиков.",
+      quick: {
+        mode: "Дистанционный контроль",
+        family: "Семья на ключевых точках",
+        bestFor: "Когда вы готовы быть на месте, но хотите убрать хаос с маршрутом, временем и подрядчиками.",
+        difference: "Координатор держит процесс по телефону: маршрут, документы, подрядчики, контроль времени.",
+      },
       coordinatorHelp: [
         "Дистанционный контроль логистики и времени.",
         "Взаимодействие со всеми инстанциями по телефону (морги, кладбища/крематории).",
@@ -174,6 +192,12 @@ export function PackagesSelection({
       priceLabel: "401 100 ₽",
       description:
         "Координатор физически с вами на каждом этапе. Защита от навязанных услуг и организационного хаоса.",
+      quick: {
+        mode: "Личное присутствие",
+        family: "Меньше решений на месте",
+        bestFor: "Когда нужен человек рядом в день церемонии, чтобы семья не управляла процессом сама.",
+        difference: "Координатор приезжает и ведет день прощания: морг, транспорт, носильщики, тайминг.",
+      },
       coordinatorHelp: [
         "Личный выезд в морг: ограждение от давления сотрудников, контроль подготовки.",
         "Сопровождение семьи в день прощания от начала до конца.",
@@ -192,6 +216,12 @@ export function PackagesSelection({
       priceLabel: "609 400 ₽",
       description:
         "Максимальное снятие нагрузки и полное делегирование. Вы передаете задачи по доверенности и фокусируетесь на семье.",
+      quick: {
+        mode: "Полное делегирование",
+        family: "Минимум участия",
+        bestFor: "Когда нет сил или возможности заниматься организацией и нужно передать процесс старшему координатору.",
+        difference: "Старший координатор берет нестандартные задачи, документы, гостей, обед и связь 24/7.",
+      },
       coordinatorHelp: [
         "Оформление без вашего участия: сбор всех справок (ЗАГС, морг) по доверенности.",
         "Организация поминального обеда и навигация гостей.",
@@ -203,6 +233,84 @@ export function PackagesSelection({
         "Премиальный VIP-катафалк и микроавтобусы высшего класса для семьи.",
         "Авторские композиции из свежих живых цветов.",
         "Расширенное время аренды зала для приватного прощания.",
+      ],
+    },
+    "cremation-standard": {
+      title: "Кремация с дистанционной поддержкой",
+      priceLabel: "200 000 ₽",
+      description:
+        "Координатор помогает с документами, крематорием и временем. Семья участвует в ключевых подтверждениях.",
+      quick: {
+        mode: "Кремация, контроль",
+        family: "Семья подтверждает этапы",
+        bestFor: "Когда нужен понятный маршрут кремации без лишнего сопровождения на месте.",
+        difference: "Фокус на документах, бронировании, транспортировке, кремации и выдаче урны.",
+      },
+      coordinatorHelp: [
+        "Подсказываем порядок документов и времени.",
+        "Помогаем с бронированием крематория и колумбария.",
+        "Контролируем базовую логистику и связь с подрядчиками.",
+      ],
+      included: [
+        "Оформление документов.",
+        "Бронирование места в колумбарии.",
+        "Хранение и базовая подготовка тела.",
+        "Гроб-контейнер для кремации.",
+        "Транспортировка до крематория.",
+        "Кремация и стандартная урна.",
+      ],
+    },
+    "cremation-comfort": {
+      title: "Кремация с расширенным сопровождением",
+      priceLabel: "400 000 ₽",
+      description:
+        "Координатор ведет процесс, зал прощания и поминальный обед. Подходит, если нужно больше присутствия и меньше самостоятельных задач.",
+      quick: {
+        mode: "Кремация, сопровождение",
+        family: "Меньше организационных задач",
+        bestFor: "Когда важно провести прощание в зале и не собирать все элементы отдельно.",
+        difference: "Добавлены зал прощания, расширенная подготовка, урна керамическая и поминальный обед.",
+      },
+      coordinatorHelp: [
+        "Собираем кремацию, зал и обед в один согласованный план.",
+        "Контролируем время и переходы между этапами.",
+        "Помогаем семье не держать в голове подрядчиков и детали.",
+      ],
+      included: [
+        "Оформление документов.",
+        "Бронирование места в колумбарии.",
+        "Хранение и подготовка тела.",
+        "Гроб для прощания и гроб-контейнер.",
+        "Транспортировка до крематория.",
+        "Кремация, керамическая урна, зал прощания на 2 часа.",
+        "Поминальный обед до 20 человек.",
+      ],
+      popular: true,
+    },
+    "cremation-premium": {
+      title: "Кремация под полное делегирование",
+      priceLabel: "600 000 ₽",
+      description:
+        "Индивидуальный координатор берет на себя документы, крематорий, прощание, гостей и расширенные элементы церемонии.",
+      quick: {
+        mode: "Кремация, под ключ",
+        family: "Минимум участия",
+        bestFor: "Когда нужно максимально снять организационную нагрузку с семьи.",
+        difference: "Добавлены премиальные материалы, длинный зал, обед до 40 человек и индивидуальный координатор.",
+      },
+      coordinatorHelp: [
+        "Ведем процесс от документов до дня прощания.",
+        "Согласуем зал, гостей, обед и премиальные элементы.",
+        "Держим связь и закрываем нестандартные вопросы без передачи их семье.",
+      ],
+      included: [
+        "Оформление документов.",
+        "Бронирование места в колумбарии премиум.",
+        "Хранение и подготовка тела.",
+        "Элитный гроб для прощания и контейнер.",
+        "Транспортировка покойного.",
+        "Кремация и премиальная урна.",
+        "Композиция из живых цветов, зал на 4 часа, обед до 40 человек.",
       ],
     },
   };
@@ -438,6 +546,9 @@ export function PackagesSelection({
     basic: ["Дистанционный контроль"],
     standard: ["Личный выезд", "Сопровождение семьи", "на месте"],
     premium: ["без вашего участия", "Выделенный старший координатор"],
+    "cremation-standard": ["документов", "крематорием"],
+    "cremation-comfort": ["зал и обед", "один согласованный план"],
+    "cremation-premium": ["от документов до дня прощания", "нестандартные вопросы"],
   };
   const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const renderHighlightedLine = (line: string, phrases: string[]) => {
@@ -454,6 +565,24 @@ export function PackagesSelection({
       );
     });
   };
+  const getSolutionCardContent = (pkg: Package) =>
+    solutionCardContent[pkg.id] ?? {
+      title: pkg.name,
+      priceLabel: formatCurrency(pkg.price),
+      description: pkg.description,
+      quick: {
+        mode: "Готовый план",
+        family: "Сравните состав",
+        bestFor: pkg.description,
+        difference: pkg.features[0] ?? "Состав и стоимость зафиксированы в карточке.",
+      },
+      coordinatorHelp: [],
+      included: pkg.features.map((feature) => `${feature}`),
+    };
+  const readyComparisonCards = readyPackages.map((pkg) => ({
+    pkg,
+    card: getSolutionCardContent(pkg),
+  }));
 
   return (
     <div className={cn("w-full", embedded ? "pt-0" : "pt-2 md:pt-3")}>
@@ -1002,16 +1131,42 @@ export function PackagesSelection({
                   </p>
                 </div>
 
+                {readyComparisonCards.length > 0 && (
+                  <div className="mb-6">
+                    <div className="mb-3 text-[13px] font-semibold uppercase tracking-[0.14em] text-gray-500">
+                      Быстрое сравнение
+                    </div>
+                    <div className="no-scrollbar -mx-3 flex snap-x snap-mandatory gap-2 overflow-x-auto px-3 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
+                      {readyComparisonCards.map(({ pkg, card }) => (
+                        <div
+                          key={`${pkg.id}-compare`}
+                          className="min-w-[232px] snap-start rounded-[18px] bg-white p-4 shadow-[0_0_0_1px_rgba(0,0,0,0.055),0_5px_18px_rgba(15,23,42,0.055)] md:min-w-0"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="text-[14px] font-semibold leading-snug text-gray-900">
+                                {card.quick.mode}
+                              </div>
+                              <div className="mt-1 text-[13px] leading-snug text-gray-600">
+                                {card.quick.family}
+                              </div>
+                            </div>
+                            <div className="shrink-0 whitespace-nowrap text-[13px] font-semibold tabular-nums text-gray-700">
+                              {card.priceLabel}
+                            </div>
+                          </div>
+                          <div className="mt-3 text-pretty text-[13px] leading-relaxed text-gray-600">
+                            {card.quick.bestFor}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="no-scrollbar -mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-4 pt-2 md:mx-0 md:grid md:grid-cols-3 md:gap-3 md:overflow-visible md:px-0 md:pt-1">
-                  {readyPackages.map((pkg) => {
-                    const card = solutionCardContent[pkg.id] ?? {
-                      title: pkg.name,
-                      priceLabel: formatCurrency(pkg.price),
-                      description: pkg.description,
-                      coordinatorHelp: [],
-                      included: pkg.features.map((feature) => `${feature}`),
-                    };
-                    const isRecommended = pkg.id === "standard";
+                  {readyComparisonCards.map(({ pkg, card }) => {
+                    const isRecommended = Boolean(card.popular || pkg.popular || pkg.id === "standard");
                     const highlightPhrases = highlightsByPackageId[pkg.id] ?? [];
                     const packageTelegramUrl = buildTelegramPlanUrl({
                       title: card.title,
@@ -1046,6 +1201,14 @@ export function PackagesSelection({
                             </div>
                             <div className="mt-3 min-w-0 text-left text-[15px] leading-[1.55] text-pretty text-gray-700">
                               {card.description}
+                            </div>
+                            <div className="mt-4 rounded-[16px] bg-[#f7f7f4] p-3 text-left shadow-[inset_0_0_0_1px_rgba(0,0,0,0.055)]">
+                              <div className="text-[12px] font-semibold uppercase tracking-[0.12em] text-gray-500">
+                                Главное отличие
+                              </div>
+                              <div className="mt-1 text-pretty text-[14px] leading-relaxed text-gray-700">
+                                {card.quick.difference}
+                              </div>
                             </div>
                           </div>
 
