@@ -2432,7 +2432,9 @@ export function StepperWorkflow({
     orderFlow?: string;
     package?: { id?: string; name?: string; price?: number | string; features?: string[] };
   }) => {
-    if (isSubmittingOrder || !canSubmit) return;
+    const effectiveTotalRub =
+      typeof override?.totalRub === "number" ? override.totalRub : totalRub;
+    if (isSubmittingOrder || effectiveTotalRub <= 0 || !emailOk) return;
 
     try {
       lastPaymentSnapshotRef.current = getPaymentSnapshot(
@@ -3879,7 +3881,59 @@ export function StepperWorkflow({
   }) => {
     const effectiveTotalRub =
       typeof override?.totalRub === "number" ? override.totalRub : totalRub;
+    const isSavePlan = override?.orderFlow === "save_plan";
+    const canSubmitEffective = effectiveTotalRub > 0 && emailOk;
     const effectiveDepositRub = Math.round(effectiveTotalRub * 0.1);
+    if (isSavePlan) {
+      if (orderConfirmation) {
+        return (
+          <div className="rounded-[16px] bg-[#f2f7f1] p-3 text-[14px] leading-relaxed text-gray-800 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
+            <div className="font-semibold text-gray-900">План сохранен</div>
+            <div className="mt-1">
+              {orderConfirmation.emailSent
+                ? "Отправили состав услуг и итоговую сумму на почту."
+                : "Заявку приняли. Если письмо не пришло, координатор уточнит адрес вручную."}
+            </div>
+          </div>
+        );
+      }
+      return (
+        <div className="rounded-[16px] bg-[#f7f7f4] p-3 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
+          <div className="text-[14px] font-semibold leading-snug text-gray-900">
+            Куда отправить план?
+          </div>
+          <div className="mt-1 text-[13px] leading-snug text-gray-600">
+            Пришлем состав услуг, итоговую сумму и контакт координатора.
+          </div>
+          <label className="mt-3 block text-[13px] font-semibold leading-snug text-gray-700">
+            Email
+            <input
+              value={emailValue}
+              onChange={(e) => handleInputChange("userEmail", e.target.value)}
+              placeholder="name@email.com"
+              className="mt-1.5 h-11 w-full rounded-[12px] bg-white px-3 text-[15px] text-gray-900 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.10)] outline-none transition-[box-shadow] duration-150 ease-out placeholder:text-gray-400 focus:shadow-[inset_0_0_0_1.5px_#1794FD,0_0_0_3px_rgba(23,148,253,0.12)]"
+              inputMode="email"
+            />
+          </label>
+          {emailStarted && !emailOk ? (
+            <div className="mt-2 text-[13px] leading-snug text-red-700">
+              Проверьте e-mail, в адресе должна быть точка и @.
+            </div>
+          ) : null}
+          <Button
+            type="button"
+            onClick={() => onPayClick(override)}
+            disabled={!canSubmitEffective || isSubmittingOrder}
+            className="mt-3 !h-11 !min-h-11 w-full !rounded-[12px] !bg-gray-950 px-4 text-sm font-semibold !text-white shadow-[0_1px_2px_rgba(0,0,0,0.16),0_6px_16px_rgba(0,0,0,0.12)] transition-[background-color,transform] duration-150 ease-out hover:!bg-gray-800 active:scale-[0.97] disabled:opacity-45 disabled:active:scale-100"
+          >
+            {isSubmittingOrder ? "Отправляем..." : "Отправить план"}
+          </Button>
+          <div className="mt-2 text-[12px] leading-snug text-gray-500">
+            Нажимая кнопку, вы сохраняете план. Оплата не запускается.
+          </div>
+        </div>
+      );
+    }
     return (
     <>
       <div className="rounded-[30px] bg-gray-900 text-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.35)] space-y-5">
@@ -4013,9 +4067,10 @@ export function StepperWorkflow({
     ? "Индивидуальный расчет. Выберите только те услуги и атрибутику, которые нужны именно вам, и контролируйте итоговую стоимость."
     : "Сбалансированные пакеты услуг. От базового набора для достойного прощания до полной организации с личным координатором.";
   const baseSegmentBtn =
-    "min-w-0 w-full min-h-12 rounded-full px-3 inline-flex items-center justify-center text-sm font-medium tracking-[-0.005em] whitespace-nowrap leading-none transition-all duration-200";
-  const activeSegmentBtn = "bg-white text-slate-900 shadow-sm ring-1 ring-zinc-200";
-  const inactiveSegmentBtn = "bg-transparent text-slate-600 hover:bg-zinc-200/70";
+    "inline-flex min-h-11 w-full min-w-0 items-center justify-center whitespace-nowrap !rounded-[13px] px-3 text-sm font-medium leading-none tracking-[-0.005em] transition-[background-color,color,box-shadow,transform] duration-200 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1794FD]/35";
+  const activeSegmentBtn =
+    "bg-white text-slate-900 shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.06),0_4px_12px_rgba(15,23,42,0.06)]";
+  const inactiveSegmentBtn = "bg-transparent text-slate-600 hover:bg-white/55 hover:text-slate-900";
 
   return (
     <div ref={wrapRef} className="relative max-w-5xl mx-auto pb-12">
@@ -4146,42 +4201,47 @@ export function StepperWorkflow({
 
 <CardContent className="relative z-10 px-6 sm:px-8 pb-8 pt-0">
   <div className="space-y-4">
-    <div className="rounded-3xl border border-zinc-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+    <div className="rounded-[28px] bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.055),0_2px_5px_rgba(15,23,42,0.04),0_16px_42px_rgba(15,23,42,0.08)]">
     <div className="px-5 py-5 sm:px-7 sm:py-6">
-      <div className="mb-3 max-w-full break-words text-left text-[15px] min-[375px]:text-[18px] md:text-2xl font-semibold text-gray-900">
+      <div className="mb-3 max-w-2xl text-balance text-left text-[18px] font-semibold leading-snug tracking-[-0.015em] text-gray-900 md:text-2xl">
         Выберите, как вам комфортнее организовать прощание
       </div>
       <p className="hidden">
         Можно собрать план самостоятельно или выбрать готовое решение с расширенным пакетом услуг.
       </p>
       <div className="mb-1 mt-2 flex w-full justify-center md:justify-start">
-        <div className="grid w-full max-w-full min-w-0 grid-cols-2 gap-1 rounded-[28px] border border-zinc-200 bg-zinc-100 p-1 md:mx-0 md:mr-auto">
-          <button
-            type="button"
-            onClick={() => {
-              openPackagesMode();
-              onModeChange?.("package");
-              setContinueChoice("solutions");
-            }}
-            className={cn(baseSegmentBtn, isSolutionsScenarioActive ? activeSegmentBtn : inactiveSegmentBtn)}
-          >
-            <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">{"\u0413\u043e\u0442\u043e\u0432\u044b\u0435 \u0440\u0435\u0448\u0435\u043d\u0438\u044f"}
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              openWizardMode();
-              onModeChange?.("wizard");
-              setContinueChoice("wizard");
-            }}
-            className={cn(baseSegmentBtn, isWizardScenarioActive ? activeSegmentBtn : inactiveSegmentBtn)}
-          >
-            <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
-              Собрать свой план
-            </span>
-          </button>
-          <p className="col-span-2 px-3 pb-3 pt-2 text-[13px] leading-[1.4] text-gray-600 min-[375px]:text-[14px] md:px-4 md:pb-4 md:pt-3 md:text-base">
+        <div className="w-full min-w-0">
+          <div className="grid w-full max-w-[460px] grid-cols-2 gap-1 rounded-[17px] bg-[#f1f1ef] p-1 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.045)]">
+            <button
+              type="button"
+              aria-pressed={isSolutionsScenarioActive}
+              onClick={() => {
+                openPackagesMode();
+                onModeChange?.("package");
+                setContinueChoice("solutions");
+              }}
+              className={cn(baseSegmentBtn, isSolutionsScenarioActive ? activeSegmentBtn : inactiveSegmentBtn)}
+            >
+              <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
+                Готовые
+              </span>
+            </button>
+            <button
+              type="button"
+              aria-pressed={isWizardScenarioActive}
+              onClick={() => {
+                openWizardMode();
+                onModeChange?.("wizard");
+                setContinueChoice("wizard");
+              }}
+              className={cn(baseSegmentBtn, isWizardScenarioActive ? activeSegmentBtn : inactiveSegmentBtn)}
+            >
+              <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
+                Свой план
+              </span>
+            </button>
+          </div>
+          <p className="mt-3 max-w-[65ch] text-pretty text-[14px] leading-relaxed text-gray-600 md:text-base">
             {scenarioDescription}
           </p>
         </div>
