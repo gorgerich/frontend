@@ -43,6 +43,14 @@ type AddedItemKey =
   | "host"
   | "coordinationTier";
 
+type OptionRowOption = {
+  value: string;
+  label: string;
+  subtitle?: string;
+  delta?: number;
+  showZero?: boolean;
+};
+
 const CONFIG_STEPS = [
   { id: "format", label: "Формат", hint: "Формат, зал и тип церемонии" },
   { id: "transport", label: "Транспорт", hint: "Катафалк и транспорт для близких" },
@@ -1316,9 +1324,10 @@ function OptionRow({
   label: string;
   description?: string;
   value: string;
-  options: { value: string; label: string; subtitle?: string; delta?: number; showZero?: boolean }[];
+  options: OptionRowOption[];
   onChange: (value: string) => void;
 }) {
+  const selectedOption = options.find((option) => option.value === value);
   const columnsClass =
     options.length <= 2
       ? "sm:grid-cols-2"
@@ -1379,6 +1388,18 @@ function OptionRow({
           );
         })}
       </div>
+      {selectedOption ? (
+        <div
+          aria-live="polite"
+          className="text-pretty text-[13px] leading-snug text-gray-500"
+        >
+          Выбрано:{" "}
+          <span className="font-semibold text-gray-700">{selectedOption.label}</span>
+          {typeof selectedOption.delta === "number" && (selectedOption.delta !== 0 || selectedOption.showZero) ? (
+            <span className="tabular-nums"> · {formatDelta(selectedOption.delta)}</span>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
