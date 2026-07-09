@@ -7013,6 +7013,12 @@ html {
   transform-origin: calc(100% - 58px) top;
 }
 
+@media (max-width: 360px) {
+  .saveChannelsEnter {
+    right: -1rem;
+  }
+}
+
 @keyframes config-step-forward {
   from {
     opacity: 0;

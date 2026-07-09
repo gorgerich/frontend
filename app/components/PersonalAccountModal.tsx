@@ -32,7 +32,7 @@ import { MAIN_DRAFT_KEY, loadSessionDraft } from "@/lib/draftStorage";
 // Типы
 // ======================
 
-type UiOrderStatus = "pending" | "processing" | "completed";
+type UiOrderStatus = "draft" | "pending" | "processing" | "completed";
 
 interface UiOrder {
   id: string;
@@ -94,6 +94,7 @@ interface OrdersApiResponse {
 
 function mapStatus(status: string): UiOrderStatus {
   // Prisma enum: PENDING | IN_PROGRESS | COMPLETED | CANCELLED
+  if (status === "DRAFT") return "draft";
   if (status === "COMPLETED") return "completed";
   if (status === "PENDING") return "pending";
   return "processing";
@@ -105,14 +106,22 @@ function mapServiceType(serviceType: string): "burial" | "cremation" {
 }
 
 function normalizeOrders(apiOrders: ApiOrder[]): UiOrder[] {
-  return apiOrders.map((o) => ({
-    id: String(o.id),
-    date: o.createdAt ?? o.date ?? new Date().toISOString(),
-    status: mapStatus(o.status ?? "PENDING"),
-    total: typeof o.totalAmount === "number" ? o.totalAmount : 0,
-    serviceType: mapServiceType(o.serviceType ?? "BURIAL"),
-    name: o.fullName || o.user?.name || o.user?.email || "Заказ без имени",
-  }));
+  return apiOrders.map((o) => {
+    const status = mapStatus(o.status ?? "PENDING");
+    return {
+      id: String(o.id),
+      date: o.createdAt ?? o.date ?? new Date().toISOString(),
+      status,
+      total: typeof o.totalAmount === "number" ? o.totalAmount : 0,
+      serviceType: mapServiceType(o.serviceType ?? "BURIAL"),
+      name:
+        o.fullName ||
+        (status === "draft" ? "Сохранённый план" : undefined) ||
+        o.user?.name ||
+        o.user?.email ||
+        "Заказ без имени",
+    };
+  });
 }
 
 // ======================
@@ -528,6 +537,8 @@ export function PersonalAccountModal({ open, onOpenChange }: PersonalAccountModa
                                 className={
                                   order.status === "completed"
                                     ? "bg-green-100 text-green-700"
+                                    : order.status === "draft"
+                                    ? "bg-stone-100 text-stone-700"
                                     : order.status === "pending"
                                     ? "bg-amber-100 text-amber-700"
                                     : "bg-blue-100 text-blue-700"
@@ -535,6 +546,8 @@ export function PersonalAccountModal({ open, onOpenChange }: PersonalAccountModa
                               >
                                 {order.status === "completed"
                                   ? "Завершён"
+                                  : order.status === "draft"
+                                  ? "План сохранён"
                                   : order.status === "pending"
                                   ? "В ожидании"
                                   : "В обработке"}

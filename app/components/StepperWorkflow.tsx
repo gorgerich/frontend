@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 import { CircleDot } from "lucide-react";
 import { PackagesSelection, type Package as PackagesSelectionPackage } from "./PackagesSelection";
@@ -1135,6 +1136,7 @@ export function StepperWorkflow({
     emailSent: boolean;
     paymentLink?: string | null;
   } | null>(null);
+  const [savePlanError, setSavePlanError] = useState<string | null>(null);
   const lastPaymentSnapshotRef = useRef<string>("");
   const lastPayPlanRef = useRef<"full" | "deposit" | "split">(
     (formData.paymentPlan || "full") as "full" | "deposit" | "split",
@@ -1761,14 +1763,17 @@ export function StepperWorkflow({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleInputChange = (field: string, value: unknown) => onUpdateFormData(field, value);
+  const handleInputChange = useCallback(
+    (field: string, value: unknown) => onUpdateFormData(field, value),
+    [onUpdateFormData],
+  );
 
   // В wizard не допускаем пакет из "Готовых решений"
   useEffect(() => {
     if (workflowMode === "wizard" && formData.packageType) {
       handleInputChange("packageType", "");
     }
-  }, [workflowMode, formData.packageType, onUpdateFormData]);
+  }, [workflowMode, formData.packageType, handleInputChange]);
 
   const handleSkipField = (
     field: "fullName" | "birthDate" | "deathDate" | "deathCertificate",
@@ -2081,14 +2086,23 @@ export function StepperWorkflow({
     orderFlow?: string;
     package?: { id?: string; name?: string; price?: number | string; features?: string[] };
   }) => {
+    const isSavePlanFlow = override?.orderFlow === "save_plan";
     try {
       const orderEmail = (formData.userEmail || "").trim();
       const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(orderEmail);
       if (!emailOk) {
-        alert("Укажите корректный email для получения подтверждения.");
+        const message = isSavePlanFlow
+          ? "Проверьте e-mail, чтобы мы отправили план на правильный адрес."
+          : "Укажите корректный email для получения подтверждения.";
+        if (isSavePlanFlow) {
+          setSavePlanError(message);
+        } else {
+          alert(message);
+        }
         setIsSubmittingOrder(false);
         return;
       }
+      if (isSavePlanFlow) setSavePlanError(null);
 
       trackEvent(
         "contacts_filled",
@@ -2154,10 +2168,16 @@ export function StepperWorkflow({
 
       if (!res.ok || orderData?.success !== true) {
         console.error("Ошибка при создании заказа", orderData);
-        if (res.status === 400) {
-          alert("Укажите корректный email.");
+        const message =
+          res.status === 400
+            ? "Проверьте e-mail и состав плана."
+            : isSavePlanFlow
+              ? "Не удалось сохранить план. Проверьте интернет и попробуйте ещё раз."
+              : "Ошибка отправки письма или создания заказа. Попробуйте ещё раз.";
+        if (isSavePlanFlow) {
+          setSavePlanError(message);
         } else {
-          alert("Ошибка отправки письма или создания заказа. Попробуйте ещё раз.");
+          alert(message);
         }
         setIsSubmittingOrder(false);
         return;
@@ -2178,9 +2198,15 @@ export function StepperWorkflow({
         emailSent: Boolean(orderData?.emailSent),
         paymentLink: orderData?.paymentLink ?? null,
       });
+      if (isSavePlanFlow) setSavePlanError(null);
     } catch (e) {
       console.error(e);
-      alert("Сетевая ошибка. Проверьте интернет и попробуйте ещё раз.");
+      const message = "Сетевая ошибка. Проверьте интернет и попробуйте ещё раз.";
+      if (isSavePlanFlow) {
+        setSavePlanError(message);
+      } else {
+        alert(message);
+      }
     } finally {
       setIsSubmittingOrder(false);
     }
@@ -2434,9 +2460,16 @@ export function StepperWorkflow({
   }) => {
     const effectiveTotalRub =
       typeof override?.totalRub === "number" ? override.totalRub : totalRub;
-    if (isSubmittingOrder || effectiveTotalRub <= 0 || !emailOk) return;
+    const isSavePlanFlow = override?.orderFlow === "save_plan";
+    if (isSubmittingOrder || effectiveTotalRub <= 0 || !emailOk) {
+      if (isSavePlanFlow && !emailOk) {
+        setSavePlanError("Проверьте e-mail, чтобы мы отправили план на правильный адрес.");
+      }
+      return;
+    }
 
     try {
+      if (isSavePlanFlow) setSavePlanError(null);
       lastPaymentSnapshotRef.current = getPaymentSnapshot(
         (formData.paymentPlan || "full") as "full" | "deposit" | "split",
         emailValue,
@@ -2457,7 +2490,12 @@ export function StepperWorkflow({
     } catch (e) {
       console.error(e);
       setIsSubmittingOrder(false);
-      alert("Сетевая ошибка. Проверьте интернет и попробуйте ещё раз.");
+      const message = "Сетевая ошибка. Проверьте интернет и попробуйте ещё раз.";
+      if (isSavePlanFlow) {
+        setSavePlanError(message);
+      } else {
+        alert(message);
+      }
     }
   };
 
@@ -3123,10 +3161,12 @@ export function StepperWorkflow({
                       </button>
                       {isHearseInfoOpen && (
                         <div className="fixed left-1/2 top-1/2 z-50 w-[320px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-200 bg-white shadow-xl sm:absolute sm:left-0 sm:top-full sm:mt-2 sm:translate-x-0 sm:translate-y-0">
-                          <div className="h-40 w-full overflow-hidden">
-                            <img
+                          <div className="relative h-40 w-full overflow-hidden">
+                            <Image
                               src="/images/hearse-lux.jpg"
                               alt="Катафалк класса Люкс"
+                              fill
+                              sizes="320px"
                               className="h-full w-full object-cover"
                             />
                           </div>
@@ -3351,9 +3391,11 @@ export function StepperWorkflow({
                     {activeHearseInfo && (
                       <div className="mt-3 w-full max-h-[60vh] overflow-auto rounded-2xl border border-gray-200 bg-white shadow-lg sm:max-w-[520px] sm:max-h-[420px] sm:mx-auto">
                         <div className="relative h-40 w-full bg-gray-100 sm:h-48">
-                          <img
+                          <Image
                             src={activeHearseInfo.imageSrc}
                             alt={activeHearseInfo.title}
+                            fill
+                            sizes="(min-width: 640px) 520px, calc(100vw - 32px)"
                             className="h-full w-full object-cover"
                           />
                         </div>
@@ -3888,11 +3930,11 @@ export function StepperWorkflow({
       if (orderConfirmation) {
         return (
           <div className="rounded-[16px] bg-[#f2f7f1] p-3 text-[14px] leading-relaxed text-gray-800 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
-            <div className="font-semibold text-gray-900">План сохранен</div>
+            <div className="font-semibold text-gray-900">План сохранён</div>
             <div className="mt-1">
               {orderConfirmation.emailSent
                 ? "Отправили состав услуг и итоговую сумму на почту."
-                : "Заявку приняли. Если письмо не пришло, координатор уточнит адрес вручную."}
+                : "План сохранён. Если письмо не пришло, координатор уточнит адрес вручную."}
             </div>
           </div>
         );
@@ -3909,7 +3951,10 @@ export function StepperWorkflow({
             Email
             <input
               value={emailValue}
-              onChange={(e) => handleInputChange("userEmail", e.target.value)}
+              onChange={(e) => {
+                setSavePlanError(null);
+                handleInputChange("userEmail", e.target.value);
+              }}
               placeholder="name@email.com"
               className="mt-1.5 h-11 w-full rounded-[12px] bg-white px-3 text-[15px] text-gray-900 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.10)] outline-none transition-[box-shadow] duration-150 ease-out placeholder:text-gray-400 focus:shadow-[inset_0_0_0_1.5px_#1794FD,0_0_0_3px_rgba(23,148,253,0.12)]"
               inputMode="email"
@@ -3918,6 +3963,11 @@ export function StepperWorkflow({
           {emailStarted && !emailOk ? (
             <div className="mt-2 text-[13px] leading-snug text-red-700">
               Проверьте e-mail, в адресе должна быть точка и @.
+            </div>
+          ) : null}
+          {savePlanError ? (
+            <div className="mt-2 rounded-[12px] bg-red-50 px-3 py-2 text-[13px] leading-snug text-red-800 shadow-[inset_0_0_0_1px_rgba(185,28,28,0.14)]">
+              {savePlanError}
             </div>
           ) : null}
           <Button

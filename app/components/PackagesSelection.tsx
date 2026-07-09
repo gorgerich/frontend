@@ -55,8 +55,7 @@ const CONFIG_STEPS = [
   { id: "format", label: "Формат", hint: "Формат, зал и тип церемонии" },
   { id: "transport", label: "Транспорт", hint: "Катафалк и транспорт для близких" },
   { id: "support", label: "Помощь на месте", hint: "Носильщики и уровень сопровождения" },
-  { id: "rites", label: "Обряды", hint: "Отпевание и панихида" },
-  { id: "extras", label: "Дополнительно", hint: "Поминальный обед и ведущий" },
+  { id: "final", label: "Обряды и доп.", hint: "Отпевание, панихида, обед и ведущий" },
 ] as const;
 
 export function PackagesSelection({
@@ -943,11 +942,6 @@ export function PackagesSelection({
                                   setDraftConfig((prev) => ({ ...prev, panikhida: value as TariffDraftConfig["panikhida"] }))
                                 }
                               />
-                            </>
-                          )}
-
-                          {configStep === 4 && (
-                            <>
                               <OptionRow
                                 label="Поминальный обед"
                                 description="Поминки после похорон"
@@ -1032,7 +1026,7 @@ export function PackagesSelection({
                     >
                       {activePanel === "custom" ? "Свернуть настройки" : "Изменить состав"}
                     </Button>
-                    <div ref={savePopoverRef} className="relative">
+                    <div ref={savePopoverRef} className="relative max-[420px]:w-full">
                       <Button
                         variant="outline"
                         aria-expanded={showInlinePayment}
