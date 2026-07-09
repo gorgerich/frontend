@@ -11,22 +11,44 @@ import { Input } from "./ui/input";
 import { TELEGRAM_URL } from "@/lib/legalLinks";
 import type { Ref } from "react";
 
+const SEARCH_LINKS = [
+  { label: "Тарифы", href: "/#packages", keywords: "цены пакеты стоимость рассчитать план" },
+  { label: "Справочник", href: "/articles", keywords: "статьи инструкции документы морг помощь" },
+  {
+    label: "Что делать в первые 24 часа",
+    href: "/articles/chto-delat-esli-umer-chelovek",
+    keywords: "умер смерть первые часы чеклист 112 скорая полиция",
+  },
+  {
+    label: "Одежда и вещи для морга",
+    href: "/articles/odezhda-i-veshi-dlya-morga",
+    keywords: "морг одежда вещи список что взять",
+  },
+  {
+    label: "Морг требует деньги",
+    href: "/articles/morg-trebuet-dengi",
+    keywords: "доплаты морг деньги платно бесплатно навязали",
+  },
+  {
+    label: "Пособие на погребение",
+    href: "/articles/kak-poluchit-posobie-na-pogrebenie-v-2026-godu",
+    keywords: "выплаты деньги пособие документы",
+  },
+  { label: "Политика конфиденциальности", href: "/info", keywords: "данные privacy" },
+  { label: "Публичная оферта", href: "/docs/oferta", keywords: "договор условия" },
+  { label: "Порядок оплаты", href: "/docs/payment-rules", keywords: "карта платеж ссылка" },
+  { label: "Политика возврата средств", href: "/docs/refund", keywords: "возврат деньги отмена" },
+] as const;
+
 export function TopSearch() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
-  const SEARCH_LINKS = [
-    { label: "Тарифы", href: "#packages" },
-    { label: "Политика конфиденциальности", href: "/info" },
-    { label: "Публичная оферта", href: "/docs/oferta" },
-    { label: "Порядок оплаты", href: "/docs/payment-rules" },
-    { label: "Политика возврата средств", href: "/docs/refund" },
-  ];
-
+  const normalizedQuery = searchQuery.trim().toLowerCase();
   const filteredLinks = SEARCH_LINKS.filter((item) =>
-    item.label.toLowerCase().includes(searchQuery.trim().toLowerCase()),
+    `${item.label} ${item.keywords}`.toLowerCase().includes(normalizedQuery),
   );
 
   useEffect(() => {
@@ -43,7 +65,7 @@ export function TopSearch() {
   return (
     <div className="relative" ref={searchRef}>
       <div
-        className="flex items-center gap-2.5 rounded-full bg-white/40 px-3 py-2 text-sm font-medium text-gray-800 backdrop-blur-md shadow-lg shadow-white/5 transition"
+        className="flex min-h-11 items-center gap-2.5 rounded-full bg-white/40 px-3 py-2 text-sm font-medium text-gray-800 backdrop-blur-md shadow-lg shadow-white/5 transition"
         onClick={() => searchInputRef.current?.focus()}
       >
         <Search className="pointer-events-none h-4 w-4 text-gray-700 drop-shadow-sm" />
@@ -59,17 +81,17 @@ export function TopSearch() {
           onKeyDown={(e) => {
             if (e.key === "Escape") setSearchOpen(false);
           }}
-          placeholder="Поиск"
-          className="h-5 w-full !border-0 !bg-transparent p-0 text-xs font-medium text-gray-900 placeholder:text-gray-600 caret-gray-900 !outline-none !ring-0 focus:!ring-0 focus:!outline-none !shadow-none focus-visible:!ring-0 focus-visible:!ring-offset-0"
+          placeholder="Поиск по сайту"
+          className="h-6 w-full !border-0 !bg-transparent p-0 text-sm font-medium text-gray-900 placeholder:text-gray-600 caret-gray-900 !outline-none !ring-0 focus:!ring-0 focus:!outline-none !shadow-none focus-visible:!ring-0 focus-visible:!ring-offset-0"
         />
       </div>
-      {searchOpen && searchQuery.trim().length > 0 && (
+      {searchOpen && normalizedQuery.length > 0 && (
         <div className="absolute left-0 right-0 z-50 mt-2 max-h-64 overflow-auto rounded-xl border border-white/40 bg-white/95 p-2 text-sm text-gray-800 shadow-lg">
           {filteredLinks.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="block rounded-lg px-3 py-2 hover:bg-gray-100"
+              className="block min-h-10 rounded-lg px-3 py-2 font-medium hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1794FD]/35"
               onClick={() => setSearchOpen(false)}
             >
               {item.label}
@@ -103,13 +125,14 @@ export function TopTelegramButton({ className }: { className?: string }) {
 
 export function TopButtons({ questionButtonRef }: { questionButtonRef?: Ref<HTMLButtonElement> }) {
   const [activeOverlay, setActiveOverlay] = useState<"ai" | "about" | "death" | null>(null);
-  const [selectedTariff, setSelectedTariff] = useState<string | null>(null);
   const interactiveRootRef = useRef<HTMLDivElement | null>(null);
   const shouldReduceMotion = useReducedMotion();
 
-  const handleOpenStepper = (tariffName: string) => {
-    setSelectedTariff(tariffName);
+  const handleOpenStepper = () => {
     setActiveOverlay(null);
+    requestAnimationFrame(() => {
+      document.getElementById("packages")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   };
 
   useEffect(() => {

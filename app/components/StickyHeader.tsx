@@ -106,6 +106,7 @@ export function StickyHeader() {
   };
 
   const topNavItems: NavItem[] = [
+    { id: 'packages', label: 'Тарифы', onClick: handleTopOpenPackages },
     { id: 'faq', label: 'Частые вопросы', href: '/faq' },
     { id: 'articles', label: 'Справочник', href: '/articles' },
     { id: 'contacts', label: 'Контакты', onClick: handleTopContacts },

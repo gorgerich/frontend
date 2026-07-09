@@ -283,24 +283,27 @@ const TRUST_PROOFS = [
 const HOT_GUIDE_ARTICLES = [
   {
     id: 'hot-morgue-clothes',
-    imageSrc: '/hero-forest.jpg',
+    label: 'Перед моргом',
     title: 'Одежда и вещи для морга: точный список',
+    question: 'Что подготовить в первые часы?',
     description:
       'Что нужно передать в морг, в какие сроки и как ничего не забыть в самый тяжелый день.',
     href: '/articles/odezhda-i-veshi-dlya-morga',
   },
   {
     id: 'hot-benefit',
-    imageSrc: '/images/hearse-lux.jpg',
+    label: 'Деньги и документы',
     title: 'Как получить пособие?',
+    question: 'Какие выплаты можно получить?',
     description:
       'Пошаговый маршрут: куда обращаться, какие документы подготовить и как получить выплату.',
     href: '/articles/kak-poluchit-posobie-na-pogrebenie-v-2026-godu',
   },
   {
     id: 'hot-morgue-payments',
-    imageSrc: '/heroIMGnew.PNG',
+    label: 'Защита от доплат',
     title: 'Морг требует деньги: за что вы обязаны платить, а за что — нет',
+    question: 'Где граница между обязательным и навязанным?',
     description:
       'Граница между бесплатными и платными услугами морга и защита от навязанных доплат.',
     href: '/articles/morg-trebuet-dengi',
@@ -906,51 +909,77 @@ export default function HomePageClient() {
               </div>
             </section>
 
-            <section className="mt-10 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:p-7">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">
-                  Ответы на сложные вопросы
-                </h2>
-                <p className="mt-1 text-base leading-relaxed text-gray-600">
-                  
-                </p>
-              </div>
-
-              <div className="mt-5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:overflow-x-visible md:overflow-y-visible">
-                <div className="flex w-max gap-4 pb-1 md:grid md:w-full md:grid-cols-3 md:justify-items-center md:pb-0">
-                {HOT_GUIDE_ARTICLES.map((article) => (
-                  <Link
-                    key={article.id}
-                    href={article.href}
-                    className="w-[280px] max-w-[320px] shrink-0 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:w-[320px] sm:max-w-[360px] md:min-w-0 md:shrink md:w-full md:max-w-[230px] lg:max-w-[270px] xl:max-w-[300px] md:break-words"
-                  >
-                    <h3 className="text-base font-semibold leading-snug text-gray-900">
-                      {widontRu(article.title)}
-                    </h3>
-                    <div className="relative mt-3 h-28 overflow-hidden rounded-xl sm:h-32">
-                      <Image
-                        src={article.imageSrc}
-                        alt={article.title}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 640px) 280px, (max-width: 768px) 320px, 300px"
-                      />
+            <section className="mt-10 overflow-hidden rounded-[30px] bg-[#f7f7f4] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
+              <div className="grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.35fr)]">
+                <div className="flex flex-col justify-between gap-8 p-5 md:p-7">
+                  <div>
+                    <div className="text-[13px] font-semibold uppercase tracking-[0.14em] text-gray-500">
+                      Справочник
                     </div>
-                    <p className="mt-2 text-base leading-relaxed text-gray-700">
-                      {widontRu(article.description)}
+                    <h2 className="mt-3 max-w-[12em] text-2xl font-semibold leading-tight tracking-[-0.02em] text-gray-900 md:text-3xl">
+                      Ответы на сложные вопросы
+                    </h2>
+                    <p className="mt-4 max-w-[58ch] text-[16px] leading-relaxed text-gray-700">
+                      {widontRu('Когда нужно быстро понять порядок действий, лучше читать короткую инструкцию, а не искать ответы по разным сайтам.')}
                     </p>
-                  </Link>
-                ))}
-                </div>
-              </div>
+                  </div>
 
-              <div className="mt-5 flex justify-center">
-                <Link
-                  href="/articles"
-                  className="inline-flex min-h-12 items-center justify-center rounded-full border border-gray-200 bg-white px-5 text-base font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
-                >
-                  Перейти в справочник
-                </Link>
+                  <Link
+                    href="/articles"
+                    className="inline-flex min-h-11 w-fit items-center justify-center rounded-[13px] bg-gray-950 px-4 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(0,0,0,0.16),0_8px_18px_rgba(0,0,0,0.12)] transition hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1794FD]/35"
+                  >
+                    Открыть весь справочник
+                  </Link>
+                </div>
+
+                <div className="min-w-0 border-t border-zinc-200 bg-white lg:border-l lg:border-t-0">
+                  <Link
+                    href={HOT_GUIDE_ARTICLES[0].href}
+                    className="group block p-5 transition hover:bg-[#fbfbfa] md:p-7"
+                  >
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <div className="text-[13px] font-semibold leading-snug text-gray-500">
+                          {HOT_GUIDE_ARTICLES[0].label}
+                        </div>
+                        <h3 className="mt-2 text-xl font-semibold leading-tight tracking-[-0.01em] text-gray-900 md:text-2xl">
+                          {widontRu(HOT_GUIDE_ARTICLES[0].question)}
+                        </h3>
+                        <p className="mt-3 max-w-[62ch] text-[15px] leading-relaxed text-gray-700">
+                          {widontRu(HOT_GUIDE_ARTICLES[0].description)}
+                        </p>
+                      </div>
+                      <span className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-[12px] bg-[#f4f4f2] px-3 text-sm font-semibold text-gray-900 transition group-hover:bg-[#ececea]">
+                        Читать
+                      </span>
+                    </div>
+                  </Link>
+
+                  <div className="border-t border-zinc-200">
+                    {HOT_GUIDE_ARTICLES.slice(1).map((article) => (
+                      <Link
+                        key={article.id}
+                        href={article.href}
+                        className="group grid gap-3 border-b border-zinc-200 px-5 py-4 transition last:border-b-0 hover:bg-[#fbfbfa] md:grid-cols-[150px_minmax(0,1fr)_auto] md:items-center md:px-7"
+                      >
+                        <div className="text-[13px] font-semibold leading-snug text-gray-500">
+                          {article.label}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-[16px] font-semibold leading-snug text-gray-900">
+                            {widontRu(article.question)}
+                          </h3>
+                          <p className="mt-1 text-[14px] leading-relaxed text-gray-600">
+                            {widontRu(article.title)}
+                          </p>
+                        </div>
+                        <span className="text-[14px] font-semibold text-gray-500 transition group-hover:text-gray-900">
+                          Читать
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               </div>
             </section>
           </div>

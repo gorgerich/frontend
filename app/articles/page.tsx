@@ -181,78 +181,160 @@ const GUIDE_SECTIONS: GuideSection[] = [
   },
 ];
 
+const START_HERE = [
+  {
+    id: "first-hours",
+    eyebrow: "Сейчас первые часы",
+    title: "Что делать в первые 24 часа",
+    summary: "Вызовы служб, документы и защита от посторонних агентов.",
+    slug: "chto-delat-esli-umer-chelovek",
+  },
+  {
+    id: "morgue",
+    eyebrow: "Нужно ехать в морг",
+    title: "Одежда и вещи для морга",
+    summary: "Точный список вещей, сроки передачи и что не забыть.",
+    slug: "odezhda-i-veshi-dlya-morga",
+  },
+  {
+    id: "payments",
+    eyebrow: "Просят деньги",
+    title: "За что вы обязаны платить, а за что нет",
+    summary: "Граница между бесплатной подготовкой и коммерческими услугами.",
+    slug: "morg-trebuet-dengi",
+  },
+] as const;
+
 export default function ArticlesPage() {
   const availableSlugs = new Set(articles.map((article) => article.slug));
 
   return (
     <main className="min-h-screen bg-[#f6f5f3]">
-      <div className="mx-auto w-full max-w-6xl px-4 py-12 md:py-16">
-        <div className="mb-10 rounded-3xl border border-white/40 bg-white/70 p-6 backdrop-blur-xl shadow-[0_12px_30px_rgba(15,23,42,0.08)] md:p-8">
-          <h1 className="max-w-[20ch] text-3xl font-semibold leading-tight text-gray-900 text-pretty md:text-4xl">
-            Справочник
-          </h1>
-          <p className="mt-3 max-w-[72ch] text-base leading-relaxed text-gray-700">
-            Короткие и понятные инструкции: как защитить себя от обмана,
-            оформить документы и организовать всё без лишнего стресса.
-          </p>
-        </div>
+      <div className="mx-auto w-full max-w-6xl px-4 py-10 md:py-16">
+        <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="rounded-[30px] bg-[#fbfbf9] p-5 shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_14px_36px_rgba(15,23,42,0.07)] md:p-8">
+            <div className="text-[13px] font-semibold uppercase tracking-[0.14em] text-gray-500">
+              Справочник
+            </div>
+            <h1 className="mt-3 max-w-[17ch] text-3xl font-semibold leading-[1.05] tracking-[-0.03em] text-gray-900 text-pretty md:text-5xl">
+              Инструкции, когда нужно действовать спокойно
+            </h1>
+            <p className="mt-5 max-w-[68ch] text-[16px] leading-relaxed text-gray-700 md:text-[17px]">
+              {widontRu(
+                "Короткие материалы для первых часов, документов, денег, выбора формата и разговоров внутри семьи.",
+              )}
+            </p>
+            <div className="mt-7 flex flex-wrap gap-2">
+              {GUIDE_SECTIONS.map((section) => (
+                <a
+                  key={section.id}
+                  href={`#${section.id}`}
+                  className="inline-flex min-h-11 items-center rounded-[13px] bg-[#f0efec] px-3.5 text-[14px] font-semibold text-gray-700 transition hover:bg-[#e8e7e3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1794FD]/35"
+                >
+                  {section.title}
+                </a>
+              ))}
+            </div>
+          </div>
 
-        <div className="space-y-8 md:space-y-10">
+          <aside className="rounded-[30px] bg-gray-950 p-5 text-white shadow-[0_14px_34px_rgba(15,23,42,0.18)] md:p-6">
+            <div className="text-[13px] font-semibold uppercase tracking-[0.14em] text-gray-400">
+              Если нет времени выбирать
+            </div>
+            <div className="mt-3 text-2xl font-semibold leading-tight tracking-[-0.02em]">
+              Начните с ситуации
+            </div>
+            <div className="mt-5 space-y-2">
+              {START_HERE.map((item) => {
+                const isAvailable = availableSlugs.has(item.slug);
+                const body = (
+                  <div className="group rounded-[18px] bg-white/[0.07] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] transition hover:bg-white/[0.10]">
+                    <div className="text-[13px] font-semibold leading-snug text-gray-300">
+                      {item.eyebrow}
+                    </div>
+                    <div className="mt-1 flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-[16px] font-semibold leading-snug text-white">
+                          {widontRu(item.title)}
+                        </div>
+                        <p className="mt-1 text-[14px] leading-relaxed text-gray-300">
+                          {widontRu(item.summary)}
+                        </p>
+                      </div>
+                      <span className="mt-0.5 shrink-0 text-[15px] font-semibold text-gray-400 transition group-hover:text-white">
+                        →
+                      </span>
+                    </div>
+                  </div>
+                );
+
+                return isAvailable ? (
+                  <Link
+                    key={item.id}
+                    href={`/articles/${item.slug}`}
+                    className="block rounded-[18px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1794FD]/45"
+                  >
+                    {body}
+                  </Link>
+                ) : (
+                  <div key={item.id}>{body}</div>
+                );
+              })}
+            </div>
+          </aside>
+        </section>
+
+        <div className="mt-10 space-y-10 md:mt-12 md:space-y-12">
           {GUIDE_SECTIONS.map((section) => {
             const SectionIcon = section.icon;
             return (
               <section
                 key={section.id}
-                className="rounded-3xl border border-white/35 bg-white/65 p-5 backdrop-blur-xl shadow-[0_10px_26px_rgba(15,23,42,0.07)] md:p-6"
+                id={section.id}
+                className="scroll-mt-24"
               >
-                <div className="mb-5 flex items-start gap-3">
-                  <div className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/70 bg-slate-50/70 text-slate-700">
+                <div className="mb-5 flex items-start gap-3 md:mb-6">
+                  <div className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-[#e9e8e3] text-gray-700 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
                     <SectionIcon className="h-4 w-4" />
                   </div>
-                  <div>
-                    <h2 className="max-w-[24ch] text-xl font-semibold leading-tight text-gray-900 text-pretty md:text-2xl">
+                  <div className="min-w-0">
+                    <h2 className="max-w-[24ch] text-2xl font-semibold leading-tight tracking-[-0.02em] text-gray-900 text-pretty md:text-3xl">
                       {widontRu(section.title)}
                     </h2>
-                    <p className="mt-1 max-w-[68ch] text-base leading-relaxed text-gray-600">
+                    <p className="mt-2 max-w-[68ch] text-[16px] leading-relaxed text-gray-600">
                       {widontRu(section.subtitle)}
                     </p>
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-3 md:grid-cols-2">
                   {section.cards.map((card, index) => {
                     const isAvailable = card.slug
                       ? availableSlugs.has(card.slug)
                       : false;
-                    const gradient =
-                      index % 3 === 0
-                        ? "from-slate-100 via-zinc-100 to-white"
-                        : index % 3 === 1
-                        ? "from-sky-100/70 via-slate-100 to-white"
-                        : "from-zinc-100 via-neutral-100 to-white";
 
                     const cardInner = (
-                      <article className="h-full overflow-hidden rounded-2xl border border-white/40 bg-white/80 shadow-[0_8px_20px_rgba(15,23,42,0.07)] transition hover:shadow-[0_12px_26px_rgba(15,23,42,0.11)]">
-                        <div
-                          className={`relative flex h-24 items-center justify-center bg-gradient-to-br ${gradient}`}
-                        >
-                          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/70 bg-white/75 text-slate-700 shadow-sm">
-                            <SectionIcon className="h-5 w-5" />
+                      <article className="h-full rounded-[22px] bg-[#fbfbf9] p-4 shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_8px_22px_rgba(15,23,42,0.055)] transition hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(0,0,0,0.08),0_12px_28px_rgba(15,23,42,0.08)] md:p-5">
+                        <div className="flex h-full gap-4">
+                          <div className="shrink-0 pt-0.5">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f0efec] text-[14px] font-semibold tabular-nums text-gray-700 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.055)]">
+                              {String(index + 1).padStart(2, "0")}
+                            </div>
                           </div>
-                        </div>
-                        <div className="p-4">
-                          <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-sm font-medium text-slate-600">
+                          <div className="min-w-0">
+                            <div className="inline-flex min-h-8 items-center gap-1.5 rounded-[10px] bg-[#f0efec] px-2.5 text-[13px] font-semibold text-gray-600">
                             <Clock3 className="h-3.5 w-3.5" />
-                            Время чтения: {card.readTimeMin} мин.
-                          </div>
-                          <h3 className="mt-3 max-w-[34ch] text-base font-semibold leading-snug text-slate-900 text-pretty">
-                            {widontRu(card.title)}
-                          </h3>
-                          <p className="mt-2 max-w-[60ch] text-base leading-relaxed text-slate-600">
-                            {widontRu(card.summary)}
-                          </p>
-                          <div className="mt-4 text-sm font-semibold text-slate-900">
-                            {isAvailable ? "Читать" : "Скоро"}
+                              {card.readTimeMin} мин.
+                            </div>
+                            <h3 className="mt-3 text-[17px] font-semibold leading-snug tracking-[-0.01em] text-gray-900 text-pretty">
+                              {widontRu(card.title)}
+                            </h3>
+                            <p className="mt-2 text-[15px] leading-relaxed text-gray-600">
+                              {widontRu(card.summary)}
+                            </p>
+                            <div className="mt-4 text-[14px] font-semibold text-gray-900">
+                              {isAvailable ? "Читать статью" : "Скоро"}
+                            </div>
                           </div>
                         </div>
                       </article>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -121,6 +121,14 @@ const steps = [
 ] as const;
 
 const WIZARD_LOGISTICS_STEP_INDEX = 1;
+const PACKAGE_ID_BY_SLUG: Record<
+  "quiet" | "traditional" | "special",
+  { burial: string; cremation: string }
+> = {
+  quiet: { burial: "basic", cremation: "cremation-standard" },
+  traditional: { burial: "standard", cremation: "cremation-comfort" },
+  special: { burial: "premium", cremation: "cremation-premium" },
+};
 
 const PRICES = {
   hallDuration: { 30: 0, 60: 8000, 90: 12000 },
@@ -1143,6 +1151,51 @@ export function StepperWorkflow({
   );
   const payPlanSelectionSeqRef = useRef(0);
   const selectedPayPlan = (formData.paymentPlan || "full") as "full" | "deposit" | "split";
+  const buildCalculatorConfig = useCallback(() => {
+    const category =
+      (formData.hearseCategory as keyof typeof HEARSE_CATEGORY_PRICE) || "standard";
+    const hearsePrice = HEARSE_CATEGORY_PRICE[category] ?? 0;
+
+    return {
+      ...STEPPER_CALCULATOR_CONFIG,
+      prices: {
+        ...STEPPER_CALCULATOR_CONFIG.prices,
+        hearse: hearsePrice,
+      },
+    };
+  }, [formData.hearseCategory]);
+  const calculateTotal = useCallback(
+    () =>
+      calculateTotalFromUtils(
+        formData as CalculatorFormData,
+        selectedCemeteryCategory,
+        buildCalculatorConfig(),
+      ),
+    [buildCalculatorConfig, formData, selectedCemeteryCategory],
+  );
+  const calculateBreakdown = useCallback(() => {
+    const breakdown = calculateBreakdownFromUtils(
+      formData as CalculatorFormData,
+      selectedCemeteryCategory,
+      buildCalculatorConfig(),
+    );
+
+    if (!formData.needsHearse) return breakdown;
+
+    const category =
+      (formData.hearseCategory as keyof typeof HEARSE_CATEGORY_LABELS) || "standard";
+    const categoryLabel = HEARSE_CATEGORY_LABELS[category] || "Стандарт";
+    const hearseLabel =
+      category === "standard" ? "Катафалк" : `Катафалк (${categoryLabel})`;
+
+    return breakdown.map((section) => {
+      if (section.category !== "Логистика" || !section.items?.length) return section;
+      const items = section.items.map((item) =>
+        item.name === "Катафалк" ? { ...item, name: hearseLabel } : item,
+      );
+      return { ...section, items };
+    });
+  }, [buildCalculatorConfig, formData, selectedCemeteryCategory]);
   const getPayNowRub = (plan: "full" | "deposit" | "split", total: number) =>
     calcPayNowRub(total, plan);
   const getPaymentSnapshot = (
@@ -1238,7 +1291,7 @@ export function StepperWorkflow({
     return `https://t.me/${username}?text=${encodeURIComponent(prefilledText)}`;
   };
 
-  const emergencyChecklistTabs: EmergencyChecklistTab[] = [
+  const emergencyChecklistTabs = useMemo<EmergencyChecklistTab[]>(() => [
     {
       id: "home",
       title: "Дома",
@@ -1333,8 +1386,8 @@ export function StepperWorkflow({
         "Координатор оценит стоимость перевозки из нужного региона и предложит варианты.",
       ctaPrefill: "Нужен расчёт маршрута и логистики (город/регион: ___)",
     },
-  ];
-  const emergencyCoordinatorNames = [
+  ], []);
+  const emergencyCoordinatorNames = useMemo(() => [
     "Денис",
     "Михаил",
     "Анна",
@@ -1343,7 +1396,7 @@ export function StepperWorkflow({
     "Ольга",
     "Павел",
     "Наталья",
-  ] as const;
+  ] as const, []);
   const [emergencyCoordinatorName, setEmergencyCoordinatorName] = useState<string>(
     emergencyCoordinatorNames[0],
   );
@@ -1364,7 +1417,7 @@ export function StepperWorkflow({
     }
 
     setEmergencyCoordinatorName(emergencyCoordinatorNames[nextIndex]);
-  }, []);
+  }, [emergencyCoordinatorNames]);
 
   const activeEmergencyChecklistTab =
     emergencyChecklistTabs.find((tab) => tab.id === activeEmergencyTab) ??
@@ -1374,16 +1427,7 @@ export function StepperWorkflow({
       ? `Координатор ${emergencyCoordinatorName} на связи. Поможем вызвать службы и подскажем, какие документы подготовить прямо сейчас.`
       : activeEmergencyChecklistTab.ctaHint;
 
-  const PACKAGE_ID_BY_SLUG: Record<
-    "quiet" | "traditional" | "special",
-    { burial: string; cremation: string }
-  > = {
-    quiet: { burial: "basic", cremation: "cremation-standard" },
-    traditional: { burial: "standard", cremation: "cremation-comfort" },
-    special: { burial: "premium", cremation: "cremation-premium" },
-  };
-
-  const getPackageBySlug = (slug: string | null | undefined) => {
+  const getPackageBySlug = useCallback((slug: string | null | undefined) => {
     if (!slug) return null;
     if (!["quiet", "traditional", "special"].includes(slug)) return null;
     const list =
@@ -1393,54 +1437,7 @@ export function StepperWorkflow({
         formData.serviceType === "cremation" ? "cremation" : "burial"
       ];
     return list.find((pkg) => pkg.id === id) ?? null;
-  };
-
-  useEffect(() => {
-    if (!routeFlow) return;
-    if (routeFlow === "wizard") {
-      openWizardMode();
-    } else if (routeFlow === "packages") {
-      openPackagesMode();
-    } else if (routeFlow === "how-it-works") {
-      window.setTimeout(() => {
-        requestAnimationFrame(() => {
-          scrollToHowItWorks();
-        });
-      }, 60);
-    }
-  }, [routeFlow]);
-
-  useEffect(() => {
-    if (routeFlow !== "wizard" || !routeStep) return;
-    const maxStep = steps.length - 1;
-    const nextStep = Math.min(Math.max(routeStep - 1, 0), maxStep);
-    setCurrentStep(nextStep);
-  }, [routeFlow, routeStep, steps.length]);
-
-  useEffect(() => {
-    if (routeFlow !== "packages" || !routePackageSlug) return;
-    const pkg = getPackageBySlug(routePackageSlug);
-    if (pkg) {
-      setSelectedPackageForSimplified(pkg);
-    }
-  }, [routeFlow, routePackageSlug, formData.serviceType]);
-
-  useEffect(() => {
-    if (routeFlow !== "how-it-works" || !routeHowItWorksStep) return;
-    const idx = Math.min(
-      Math.max(routeHowItWorksStep - 1, 0),
-      emergencyChecklistTabs.length - 1,
-    );
-    const nextTab = emergencyChecklistTabs[idx];
-    if (nextTab) {
-      setActiveEmergencyTab(nextTab.id);
-    }
-    window.setTimeout(() => {
-      requestAnimationFrame(() => {
-        scrollToHowItWorks();
-      });
-    }, 60);
-  }, [routeFlow, routeHowItWorksStep]);
+  }, [formData.serviceType]);
 
   const resetOrderConfirmation = () => {
     if (!orderConfirmation) return;
@@ -1567,7 +1564,15 @@ export function StepperWorkflow({
       },
       `${trackingSessionId}:${trackingFlow}:ceremony_type:${formData.serviceType}:${formData.hasHall}`,
     );
-  }, [workflowMode, currentStep, formData.serviceType, formData.hasHall]);
+  }, [
+    workflowMode,
+    currentStep,
+    formData.serviceType,
+    formData.hasHall,
+    calculateTotal,
+    trackingFlow,
+    trackingSessionId,
+  ]);
 
   useEffect(() => {
     if (workflowMode !== "wizard" || currentStep !== 0) return;
@@ -1594,7 +1599,16 @@ export function StepperWorkflow({
       },
       `${trackingSessionId}:${trackingFlow}:ceremony_format:${ceremonyFormat}:${hallDuration}`,
     );
-  }, [workflowMode, currentStep, formData.hasHall, formData.ceremonyType, formData.hallDuration]);
+  }, [
+    workflowMode,
+    currentStep,
+    formData.hasHall,
+    formData.ceremonyType,
+    formData.hallDuration,
+    calculateTotal,
+    trackingFlow,
+    trackingSessionId,
+  ]);
 
   useEffect(() => {
     if (workflowMode !== "wizard") return;
@@ -1606,7 +1620,7 @@ export function StepperWorkflow({
       { flow: trackingFlow },
       `${trackingSessionId}:${trackingFlow}:step2`,
     );
-  }, [workflowMode, currentStep]);
+  }, [workflowMode, currentStep, trackingFlow, trackingSessionId]);
 
   useEffect(() => {
     if (workflowMode !== "wizard" || currentStep !== 2) return;
@@ -1642,6 +1656,9 @@ export function StepperWorkflow({
     formData.coffinConfig,
     formData.selectedAdditionalServices,
     formData.specialRequests,
+    calculateTotal,
+    trackingFlow,
+    trackingSessionId,
   ]);
 
   useEffect(() => {
@@ -1667,7 +1684,7 @@ export function StepperWorkflow({
       { flow: trackingFlow },
       `${trackingSessionId}:${trackingFlow}:step5`,
     );
-  }, [workflowMode, currentStep]);
+  }, [workflowMode, currentStep, trackingFlow, trackingSessionId]);
 
   useEffect(() => {
     if (workflowMode !== "wizard") return;
@@ -1710,7 +1727,15 @@ export function StepperWorkflow({
         `${trackingSessionId}:${trackingFlow}:contacts`,
       );
     }
-  }, [workflowMode, currentStep, formData.serviceType]);
+  }, [
+    workflowMode,
+    currentStep,
+    formData.serviceType,
+    calculateBreakdown,
+    calculateTotal,
+    trackingFlow,
+    trackingSessionId,
+  ]);
 
   useEffect(() => {
     if (workflowMode !== "wizard") return;
@@ -1731,7 +1756,7 @@ export function StepperWorkflow({
       },
       `${trackingSessionId}:${trackingFlow}:pay_plan:${selectedPayPlan}:${payPlanSelectionSeqRef.current}`,
     );
-  }, [workflowMode, currentStep, selectedPayPlan]);
+  }, [workflowMode, currentStep, selectedPayPlan, calculateTotal, trackingFlow, trackingSessionId]);
 
   useEffect(() => {
     if (!isSubmittingOrder) return;
@@ -1850,7 +1875,7 @@ export function StepperWorkflow({
     setBurialDateTime(normalized);
   }, [currentStep, formData.burialDateTime, burialDateTime.date, burialDateTime.timeSlot]);
 
-  const getPresetCoffinConfig = (presetId: AttributesPresetId) => {
+  const getPresetCoffinConfig = useCallback((presetId: AttributesPresetId) => {
     const preset = ATTRIBUTES_PRESETS.find((item) => item.id === presetId);
     if (!preset) return undefined;
     const basePrice = 15000;
@@ -1876,16 +1901,16 @@ export function StepperWorkflow({
       },
       wreath,
     };
-  };
+  }, [formData.coffinConfig?.wreath]);
 
-  const applyAttributesPreset = (presetId: AttributesPresetId) => {
+  const applyAttributesPreset = useCallback((presetId: AttributesPresetId) => {
     const config = getPresetCoffinConfig(presetId);
     if (!config) return;
     setSelectedAttributesPreset(presetId);
     handleInputChange("coffinConfig", config);
-  };
+  }, [getPresetCoffinConfig, handleInputChange]);
 
-  const detectPresetIdFromConfig = () => {
+  const detectPresetIdFromConfig = useCallback(() => {
     const coffin = formData.coffinConfig?.coffin as
       | {
           wood?: { id?: string; name?: string };
@@ -1910,7 +1935,7 @@ export function StepperWorkflow({
         preset.coffin.lining.id === liningId &&
         preset.coffin.hardware.id === hardwareId,
     )?.id;
-  };
+  }, [formData.coffinConfig]);
 
   const attributesInitialSelection = (() => {
     const coffin = formData.coffinConfig?.coffin as
@@ -1962,7 +1987,7 @@ export function StepperWorkflow({
 
     applyAttributesPreset("recommended");
     presetInitializedRef.current = true;
-  }, [currentStep, formData.coffinConfig]);
+  }, [currentStep, formData.coffinConfig, detectPresetIdFromConfig, applyAttributesPreset]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -2032,51 +2057,6 @@ export function StepperWorkflow({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.hasHall]);
-
-  const buildCalculatorConfig = () => {
-    const category =
-      (formData.hearseCategory as keyof typeof HEARSE_CATEGORY_PRICE) || "standard";
-    const hearsePrice = HEARSE_CATEGORY_PRICE[category] ?? 0;
-
-    return {
-      ...STEPPER_CALCULATOR_CONFIG,
-      prices: {
-        ...STEPPER_CALCULATOR_CONFIG.prices,
-        hearse: hearsePrice,
-      },
-    };
-  };
-
-  const calculateTotal = () =>
-    calculateTotalFromUtils(
-      formData as CalculatorFormData,
-      selectedCemeteryCategory,
-      buildCalculatorConfig(),
-    );
-
-  const calculateBreakdown = () => {
-    const breakdown = calculateBreakdownFromUtils(
-      formData as CalculatorFormData,
-      selectedCemeteryCategory,
-      buildCalculatorConfig(),
-    );
-
-    if (!formData.needsHearse) return breakdown;
-
-    const category =
-      (formData.hearseCategory as keyof typeof HEARSE_CATEGORY_LABELS) || "standard";
-    const categoryLabel = HEARSE_CATEGORY_LABELS[category] || "Стандарт";
-    const hearseLabel =
-      category === "standard" ? "Катафалк" : `Катафалк (${categoryLabel})`;
-
-    return breakdown.map((section) => {
-      if (section.category !== "Логистика" || !section.items?.length) return section;
-      const items = section.items.map((item) =>
-        item.name === "Катафалк" ? { ...item, name: hearseLabel } : item,
-      );
-      return { ...section, items };
-    });
-  };
 
   const handleConfirmBooking = async (override?: {
     totalRub?: number;
@@ -2403,7 +2383,7 @@ export function StepperWorkflow({
     return () => window.removeEventListener("td:open-packages", handler);
   }, [openPackagesMode]);
 
-  const openWizardMode = () => {
+  const openWizardMode = useCallback(() => {
     setWorkflowMode("wizard");
     setContinueChoice("wizard");
     setSelectedPackageForSimplified(null);
@@ -2412,7 +2392,54 @@ export function StepperWorkflow({
     setIsTransitioning(false);
     setOrderConfirmation(null);
     setIsSubmittingOrder(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!routeFlow) return;
+    if (routeFlow === "wizard") {
+      openWizardMode();
+    } else if (routeFlow === "packages") {
+      openPackagesMode();
+    } else if (routeFlow === "how-it-works") {
+      window.setTimeout(() => {
+        requestAnimationFrame(() => {
+          scrollToHowItWorks();
+        });
+      }, 60);
+    }
+  }, [routeFlow, openWizardMode, openPackagesMode]);
+
+  useEffect(() => {
+    if (routeFlow !== "wizard" || !routeStep) return;
+    const maxStep = steps.length - 1;
+    const nextStep = Math.min(Math.max(routeStep - 1, 0), maxStep);
+    setCurrentStep(nextStep);
+  }, [routeFlow, routeStep]);
+
+  useEffect(() => {
+    if (routeFlow !== "packages" || !routePackageSlug) return;
+    const pkg = getPackageBySlug(routePackageSlug);
+    if (pkg) {
+      setSelectedPackageForSimplified(pkg);
+    }
+  }, [routeFlow, routePackageSlug, getPackageBySlug]);
+
+  useEffect(() => {
+    if (routeFlow !== "how-it-works" || !routeHowItWorksStep) return;
+    const idx = Math.min(
+      Math.max(routeHowItWorksStep - 1, 0),
+      emergencyChecklistTabs.length - 1,
+    );
+    const nextTab = emergencyChecklistTabs[idx];
+    if (nextTab) {
+      setActiveEmergencyTab(nextTab.id);
+    }
+    window.setTimeout(() => {
+      requestAnimationFrame(() => {
+        scrollToHowItWorks();
+      });
+    }, 60);
+  }, [routeFlow, routeHowItWorksStep, emergencyChecklistTabs]);
 
   const formatRubLocal = (v: number) => Math.round(v).toLocaleString("ru-RU");
 

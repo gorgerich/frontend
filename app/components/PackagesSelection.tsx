@@ -65,7 +65,7 @@ export function PackagesSelection({
   paymentSlot,
   embedded = false,
 }: PackagesSelectionProps) {
-  const [activePanel, setActivePanel] = React.useState<"base" | "custom">("base");
+  const [activePanel, setActivePanel] = React.useState<"base" | "custom" | "configured">("base");
   const [showInlinePayment, setShowInlinePayment] = React.useState(false);
   const [deliveryChannel, setDeliveryChannel] = React.useState<"telegram" | "email" | null>(null);
   const [configStep, setConfigStep] = React.useState(0);
@@ -124,8 +124,8 @@ export function PackagesSelection({
   ];
   const isSelected = selectedPackageId === BASE_MINIMUM.id;
   const pricing = calcTariffTotal(draftConfig);
-  const paymentTotal =
-    activePanel === "custom" ? pricing.total : BASE_TARIFF_TOTAL;
+  const hasCustomPlan = activePanel !== "base";
+  const paymentTotal = hasCustomPlan ? pricing.total : BASE_TARIFF_TOTAL;
   const hasCremationPackages = (packages ?? []).some((pkg) => pkg.id.startsWith("cremation"));
   const allInclusivePackages = hasCremationPackages
     ? [...(packages ?? [])]
@@ -429,7 +429,7 @@ export function PackagesSelection({
       delta: TARIFF_PRICING.coordinationTier[draftConfig.coordinationTier],
     },
   ].filter(Boolean) as { key: AddedItemKey; label: string; detail?: string; delta: number }[];
-  const isCustomizingPlan = activePanel === "custom" && addedItems.length > 0;
+  const isCustomizingPlan = hasCustomPlan && addedItems.length > 0;
   const baseServices = baseLineItems.map((line) => ({
     name: line.label,
     price: line.price,
@@ -438,15 +438,14 @@ export function PackagesSelection({
     name: item.detail ? `${item.label} (${item.detail})` : item.label,
     price: item.delta,
   }));
-  const paymentServices =
-    activePanel === "custom" ? [...baseServices, ...addedServices] : baseServices;
+  const paymentServices = hasCustomPlan ? [...baseServices, ...addedServices] : baseServices;
   const paymentFormData = {
     serviceType: draftConfig.format,
   };
   const addedTotal = Math.max(0, pricing.total - BASE_TARIFF_TOTAL);
-  const planTitle =
-    activePanel === "custom" ? `${BASE_MINIMUM.name}, изменённый состав` : BASE_MINIMUM.name;
+  const planTitle = hasCustomPlan ? `${BASE_MINIMUM.name}, изменённый состав` : BASE_MINIMUM.name;
   const configuratorRef = React.useRef<HTMLDivElement | null>(null);
+  const configuredSummaryRef = React.useRef<HTMLDivElement | null>(null);
   const configTabsRef = React.useRef<HTMLDivElement | null>(null);
   const savePopoverRef = React.useRef<HTMLDivElement | null>(null);
   const pluralizeServices = (count: number) => {
@@ -586,7 +585,7 @@ export function PackagesSelection({
       coordinatorHelp: [],
       included: pkg.features.map((feature) => `${feature}`),
     };
-  const readyComparisonCards = readyPackages.map((pkg) => ({
+  const readyPackageCards = readyPackages.map((pkg) => ({
     pkg,
     card: getSolutionCardContent(pkg),
   }));
@@ -622,9 +621,9 @@ export function PackagesSelection({
                         >
                           {BASE_MINIMUM.name}
                         </h3>
-                        {activePanel === "custom" ? (
+                        {hasCustomPlan ? (
                           <span className="inline-flex min-h-7 items-center rounded-full bg-white px-2.5 text-[12px] font-semibold text-gray-600 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.07)]">
-                            Настройка
+                            {activePanel === "custom" ? "Настройка" : "Собранный тариф"}
                           </span>
                         ) : null}
                         <span className="group relative inline-flex shrink-0 items-center">
@@ -722,9 +721,34 @@ export function PackagesSelection({
                       aria-live="polite"
                       className="mt-2 whitespace-nowrap text-4xl font-semibold leading-none tabular-nums tracking-[-0.03em] text-gray-900"
                     >
-                      {activePanel === "custom" ? formatCurrency(pricing.total) : "86 600 ₽"}
+                      {hasCustomPlan ? formatCurrency(pricing.total) : "86 600 ₽"}
                     </div>
                   </div>
+                  {activePanel === "configured" && (
+                    <div
+                      ref={configuredSummaryRef}
+                      className="rounded-[18px] bg-white px-4 py-4 shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_6px_20px_rgba(15,23,42,0.06)]"
+                    >
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <div className="text-[16px] font-semibold leading-snug text-gray-900">
+                            Ваш собранный тариф
+                          </div>
+                          <div className="mt-1 max-w-[65ch] text-[14px] leading-relaxed text-gray-600">
+                            Состав и итоговая сумма пересчитаны. Можно вернуться к настройке или сохранить план.
+                          </div>
+                        </div>
+                        <div className="shrink-0 text-left sm:text-right">
+                          <div className="whitespace-nowrap text-[22px] font-semibold leading-none tabular-nums tracking-[-0.02em] text-gray-900">
+                            {formatCurrency(pricing.total)}
+                          </div>
+                          <div className="mt-1 text-[13px] font-semibold tabular-nums text-gray-500">
+                            {addedTotal > 0 ? formatDelta(addedTotal) : "без доплат"}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {activePanel === "custom" && (
                     <div
                       ref={configuratorRef}
@@ -995,7 +1019,10 @@ export function PackagesSelection({
                           type="button"
                           onClick={() => {
                             if (configStep === CONFIG_STEPS.length - 1) {
-                              setActivePanel("base");
+                              setActivePanel("configured");
+                              requestAnimationFrame(() => {
+                                configuredSummaryRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                              });
                               return;
                             }
                             goToConfigStep(configStep + 1);
@@ -1015,7 +1042,7 @@ export function PackagesSelection({
                     <Button
                       onClick={() => {
                         if (activePanel === "custom") {
-                          setActivePanel("base");
+                          setActivePanel("configured");
                           setShowInlinePayment(false);
                           setDeliveryChannel(null);
                           return;
@@ -1108,6 +1135,7 @@ export function PackagesSelection({
             <section
               data-ready-packages
               className={cn(
+                "w-full min-w-0 overflow-hidden",
                 showTraditionalLegacyCard ? "pt-14 md:pt-20" : "pt-6 md:pt-10",
                 embedded && "pt-6 md:pt-8",
               )}
@@ -1119,7 +1147,7 @@ export function PackagesSelection({
               )}
               <div
                 className={cn(
-                  "mt-8 rounded-[28px] bg-[#f9f9f9] px-3 py-8 md:mt-10 md:px-6 md:py-10",
+                  "mt-8 min-w-0 rounded-[28px] bg-[#f9f9f9] px-3 py-8 md:mt-10 md:px-6 md:py-10",
                   embedded && "mt-6 rounded-none bg-transparent px-0 py-0",
                 )}
               >
@@ -1133,41 +1161,8 @@ export function PackagesSelection({
                   </p>
                 </div>
 
-                {readyComparisonCards.length > 0 && (
-                  <div className="mb-6">
-                    <div className="mb-3 text-[13px] font-semibold uppercase tracking-[0.14em] text-gray-500">
-                      Быстрое сравнение
-                    </div>
-                    <div className="no-scrollbar -mx-3 flex snap-x snap-mandatory gap-2 overflow-x-auto px-3 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
-                      {readyComparisonCards.map(({ pkg, card }) => (
-                        <div
-                          key={`${pkg.id}-compare`}
-                          className="min-w-[232px] snap-start rounded-[18px] bg-white p-4 shadow-[0_0_0_1px_rgba(0,0,0,0.055),0_5px_18px_rgba(15,23,42,0.055)] md:min-w-0"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <div className="text-[14px] font-semibold leading-snug text-gray-900">
-                                {card.quick.mode}
-                              </div>
-                              <div className="mt-1 text-[13px] leading-snug text-gray-600">
-                                {card.quick.family}
-                              </div>
-                            </div>
-                            <div className="shrink-0 whitespace-nowrap text-[13px] font-semibold tabular-nums text-gray-700">
-                              {card.priceLabel}
-                            </div>
-                          </div>
-                          <div className="mt-3 text-pretty text-[13px] leading-relaxed text-gray-600">
-                            {card.quick.bestFor}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="no-scrollbar -mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-4 pt-2 md:mx-0 md:grid md:grid-cols-3 md:gap-3 md:overflow-visible md:px-0 md:pt-1">
-                  {readyComparisonCards.map(({ pkg, card }) => {
+                <div className="no-scrollbar -mx-3 grid auto-cols-[minmax(280px,88%)] grid-flow-col snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-4 pt-2 md:mx-0 md:grid-flow-row md:grid-cols-[repeat(3,minmax(0,1fr))] md:auto-cols-auto md:gap-3 md:overflow-visible md:px-0 md:pt-1">
+                  {readyPackageCards.map(({ pkg, card }) => {
                     const isRecommended = Boolean(card.popular || pkg.popular || pkg.id === "standard");
                     const highlightPhrases = highlightsByPackageId[pkg.id] ?? [];
                     const packageTelegramUrl = buildTelegramPlanUrl({
@@ -1179,7 +1174,7 @@ export function PackagesSelection({
                     return (
                       <div
                         key={pkg.id}
-                        className="w-[88%] max-w-[360px] min-w-[280px] shrink-0 snap-start md:w-full md:max-w-none md:min-w-0 md:shrink"
+                        className="min-w-0 snap-start"
                       >
                         <div
                           className={cn(
