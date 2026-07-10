@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 import { CircleDot } from "lucide-react";
 import { PackagesSelection, type Package as PackagesSelectionPackage } from "./PackagesSelection";
@@ -120,6 +121,14 @@ const steps = [
 ] as const;
 
 const WIZARD_LOGISTICS_STEP_INDEX = 1;
+const PACKAGE_ID_BY_SLUG: Record<
+  "quiet" | "traditional" | "special",
+  { burial: string; cremation: string }
+> = {
+  quiet: { burial: "basic", cremation: "cremation-standard" },
+  traditional: { burial: "standard", cremation: "cremation-comfort" },
+  special: { burial: "premium", cremation: "cremation-premium" },
+};
 
 const PRICES = {
   hallDuration: { 30: 0, 60: 8000, 90: 12000 },
@@ -1135,12 +1144,58 @@ export function StepperWorkflow({
     emailSent: boolean;
     paymentLink?: string | null;
   } | null>(null);
+  const [savePlanError, setSavePlanError] = useState<string | null>(null);
   const lastPaymentSnapshotRef = useRef<string>("");
   const lastPayPlanRef = useRef<"full" | "deposit" | "split">(
     (formData.paymentPlan || "full") as "full" | "deposit" | "split",
   );
   const payPlanSelectionSeqRef = useRef(0);
   const selectedPayPlan = (formData.paymentPlan || "full") as "full" | "deposit" | "split";
+  const buildCalculatorConfig = useCallback(() => {
+    const category =
+      (formData.hearseCategory as keyof typeof HEARSE_CATEGORY_PRICE) || "standard";
+    const hearsePrice = HEARSE_CATEGORY_PRICE[category] ?? 0;
+
+    return {
+      ...STEPPER_CALCULATOR_CONFIG,
+      prices: {
+        ...STEPPER_CALCULATOR_CONFIG.prices,
+        hearse: hearsePrice,
+      },
+    };
+  }, [formData.hearseCategory]);
+  const calculateTotal = useCallback(
+    () =>
+      calculateTotalFromUtils(
+        formData as CalculatorFormData,
+        selectedCemeteryCategory,
+        buildCalculatorConfig(),
+      ),
+    [buildCalculatorConfig, formData, selectedCemeteryCategory],
+  );
+  const calculateBreakdown = useCallback(() => {
+    const breakdown = calculateBreakdownFromUtils(
+      formData as CalculatorFormData,
+      selectedCemeteryCategory,
+      buildCalculatorConfig(),
+    );
+
+    if (!formData.needsHearse) return breakdown;
+
+    const category =
+      (formData.hearseCategory as keyof typeof HEARSE_CATEGORY_LABELS) || "standard";
+    const categoryLabel = HEARSE_CATEGORY_LABELS[category] || "Стандарт";
+    const hearseLabel =
+      category === "standard" ? "Катафалк" : `Катафалк (${categoryLabel})`;
+
+    return breakdown.map((section) => {
+      if (section.category !== "Логистика" || !section.items?.length) return section;
+      const items = section.items.map((item) =>
+        item.name === "Катафалк" ? { ...item, name: hearseLabel } : item,
+      );
+      return { ...section, items };
+    });
+  }, [buildCalculatorConfig, formData, selectedCemeteryCategory]);
   const getPayNowRub = (plan: "full" | "deposit" | "split", total: number) =>
     calcPayNowRub(total, plan);
   const getPaymentSnapshot = (
@@ -1236,7 +1291,7 @@ export function StepperWorkflow({
     return `https://t.me/${username}?text=${encodeURIComponent(prefilledText)}`;
   };
 
-  const emergencyChecklistTabs: EmergencyChecklistTab[] = [
+  const emergencyChecklistTabs = useMemo<EmergencyChecklistTab[]>(() => [
     {
       id: "home",
       title: "Дома",
@@ -1331,8 +1386,8 @@ export function StepperWorkflow({
         "Координатор оценит стоимость перевозки из нужного региона и предложит варианты.",
       ctaPrefill: "Нужен расчёт маршрута и логистики (город/регион: ___)",
     },
-  ];
-  const emergencyCoordinatorNames = [
+  ], []);
+  const emergencyCoordinatorNames = useMemo(() => [
     "Денис",
     "Михаил",
     "Анна",
@@ -1341,7 +1396,7 @@ export function StepperWorkflow({
     "Ольга",
     "Павел",
     "Наталья",
-  ] as const;
+  ] as const, []);
   const [emergencyCoordinatorName, setEmergencyCoordinatorName] = useState<string>(
     emergencyCoordinatorNames[0],
   );
@@ -1362,7 +1417,7 @@ export function StepperWorkflow({
     }
 
     setEmergencyCoordinatorName(emergencyCoordinatorNames[nextIndex]);
-  }, []);
+  }, [emergencyCoordinatorNames]);
 
   const activeEmergencyChecklistTab =
     emergencyChecklistTabs.find((tab) => tab.id === activeEmergencyTab) ??
@@ -1372,16 +1427,7 @@ export function StepperWorkflow({
       ? `Координатор ${emergencyCoordinatorName} на связи. Поможем вызвать службы и подскажем, какие документы подготовить прямо сейчас.`
       : activeEmergencyChecklistTab.ctaHint;
 
-  const PACKAGE_ID_BY_SLUG: Record<
-    "quiet" | "traditional" | "special",
-    { burial: string; cremation: string }
-  > = {
-    quiet: { burial: "basic", cremation: "cremation-standard" },
-    traditional: { burial: "standard", cremation: "cremation-comfort" },
-    special: { burial: "premium", cremation: "cremation-premium" },
-  };
-
-  const getPackageBySlug = (slug: string | null | undefined) => {
+  const getPackageBySlug = useCallback((slug: string | null | undefined) => {
     if (!slug) return null;
     if (!["quiet", "traditional", "special"].includes(slug)) return null;
     const list =
@@ -1391,54 +1437,7 @@ export function StepperWorkflow({
         formData.serviceType === "cremation" ? "cremation" : "burial"
       ];
     return list.find((pkg) => pkg.id === id) ?? null;
-  };
-
-  useEffect(() => {
-    if (!routeFlow) return;
-    if (routeFlow === "wizard") {
-      openWizardMode();
-    } else if (routeFlow === "packages") {
-      openPackagesMode();
-    } else if (routeFlow === "how-it-works") {
-      window.setTimeout(() => {
-        requestAnimationFrame(() => {
-          scrollToHowItWorks();
-        });
-      }, 60);
-    }
-  }, [routeFlow]);
-
-  useEffect(() => {
-    if (routeFlow !== "wizard" || !routeStep) return;
-    const maxStep = steps.length - 1;
-    const nextStep = Math.min(Math.max(routeStep - 1, 0), maxStep);
-    setCurrentStep(nextStep);
-  }, [routeFlow, routeStep, steps.length]);
-
-  useEffect(() => {
-    if (routeFlow !== "packages" || !routePackageSlug) return;
-    const pkg = getPackageBySlug(routePackageSlug);
-    if (pkg) {
-      setSelectedPackageForSimplified(pkg);
-    }
-  }, [routeFlow, routePackageSlug, formData.serviceType]);
-
-  useEffect(() => {
-    if (routeFlow !== "how-it-works" || !routeHowItWorksStep) return;
-    const idx = Math.min(
-      Math.max(routeHowItWorksStep - 1, 0),
-      emergencyChecklistTabs.length - 1,
-    );
-    const nextTab = emergencyChecklistTabs[idx];
-    if (nextTab) {
-      setActiveEmergencyTab(nextTab.id);
-    }
-    window.setTimeout(() => {
-      requestAnimationFrame(() => {
-        scrollToHowItWorks();
-      });
-    }, 60);
-  }, [routeFlow, routeHowItWorksStep]);
+  }, [formData.serviceType]);
 
   const resetOrderConfirmation = () => {
     if (!orderConfirmation) return;
@@ -1565,7 +1564,15 @@ export function StepperWorkflow({
       },
       `${trackingSessionId}:${trackingFlow}:ceremony_type:${formData.serviceType}:${formData.hasHall}`,
     );
-  }, [workflowMode, currentStep, formData.serviceType, formData.hasHall]);
+  }, [
+    workflowMode,
+    currentStep,
+    formData.serviceType,
+    formData.hasHall,
+    calculateTotal,
+    trackingFlow,
+    trackingSessionId,
+  ]);
 
   useEffect(() => {
     if (workflowMode !== "wizard" || currentStep !== 0) return;
@@ -1592,7 +1599,16 @@ export function StepperWorkflow({
       },
       `${trackingSessionId}:${trackingFlow}:ceremony_format:${ceremonyFormat}:${hallDuration}`,
     );
-  }, [workflowMode, currentStep, formData.hasHall, formData.ceremonyType, formData.hallDuration]);
+  }, [
+    workflowMode,
+    currentStep,
+    formData.hasHall,
+    formData.ceremonyType,
+    formData.hallDuration,
+    calculateTotal,
+    trackingFlow,
+    trackingSessionId,
+  ]);
 
   useEffect(() => {
     if (workflowMode !== "wizard") return;
@@ -1604,7 +1620,7 @@ export function StepperWorkflow({
       { flow: trackingFlow },
       `${trackingSessionId}:${trackingFlow}:step2`,
     );
-  }, [workflowMode, currentStep]);
+  }, [workflowMode, currentStep, trackingFlow, trackingSessionId]);
 
   useEffect(() => {
     if (workflowMode !== "wizard" || currentStep !== 2) return;
@@ -1640,6 +1656,9 @@ export function StepperWorkflow({
     formData.coffinConfig,
     formData.selectedAdditionalServices,
     formData.specialRequests,
+    calculateTotal,
+    trackingFlow,
+    trackingSessionId,
   ]);
 
   useEffect(() => {
@@ -1665,7 +1684,7 @@ export function StepperWorkflow({
       { flow: trackingFlow },
       `${trackingSessionId}:${trackingFlow}:step5`,
     );
-  }, [workflowMode, currentStep]);
+  }, [workflowMode, currentStep, trackingFlow, trackingSessionId]);
 
   useEffect(() => {
     if (workflowMode !== "wizard") return;
@@ -1708,7 +1727,15 @@ export function StepperWorkflow({
         `${trackingSessionId}:${trackingFlow}:contacts`,
       );
     }
-  }, [workflowMode, currentStep, formData.serviceType]);
+  }, [
+    workflowMode,
+    currentStep,
+    formData.serviceType,
+    calculateBreakdown,
+    calculateTotal,
+    trackingFlow,
+    trackingSessionId,
+  ]);
 
   useEffect(() => {
     if (workflowMode !== "wizard") return;
@@ -1729,7 +1756,7 @@ export function StepperWorkflow({
       },
       `${trackingSessionId}:${trackingFlow}:pay_plan:${selectedPayPlan}:${payPlanSelectionSeqRef.current}`,
     );
-  }, [workflowMode, currentStep, selectedPayPlan]);
+  }, [workflowMode, currentStep, selectedPayPlan, calculateTotal, trackingFlow, trackingSessionId]);
 
   useEffect(() => {
     if (!isSubmittingOrder) return;
@@ -1761,14 +1788,17 @@ export function StepperWorkflow({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleInputChange = (field: string, value: unknown) => onUpdateFormData(field, value);
+  const handleInputChange = useCallback(
+    (field: string, value: unknown) => onUpdateFormData(field, value),
+    [onUpdateFormData],
+  );
 
   // В wizard не допускаем пакет из "Готовых решений"
   useEffect(() => {
     if (workflowMode === "wizard" && formData.packageType) {
       handleInputChange("packageType", "");
     }
-  }, [workflowMode, formData.packageType, onUpdateFormData]);
+  }, [workflowMode, formData.packageType, handleInputChange]);
 
   const handleSkipField = (
     field: "fullName" | "birthDate" | "deathDate" | "deathCertificate",
@@ -1845,7 +1875,7 @@ export function StepperWorkflow({
     setBurialDateTime(normalized);
   }, [currentStep, formData.burialDateTime, burialDateTime.date, burialDateTime.timeSlot]);
 
-  const getPresetCoffinConfig = (presetId: AttributesPresetId) => {
+  const getPresetCoffinConfig = useCallback((presetId: AttributesPresetId) => {
     const preset = ATTRIBUTES_PRESETS.find((item) => item.id === presetId);
     if (!preset) return undefined;
     const basePrice = 15000;
@@ -1871,16 +1901,16 @@ export function StepperWorkflow({
       },
       wreath,
     };
-  };
+  }, [formData.coffinConfig?.wreath]);
 
-  const applyAttributesPreset = (presetId: AttributesPresetId) => {
+  const applyAttributesPreset = useCallback((presetId: AttributesPresetId) => {
     const config = getPresetCoffinConfig(presetId);
     if (!config) return;
     setSelectedAttributesPreset(presetId);
     handleInputChange("coffinConfig", config);
-  };
+  }, [getPresetCoffinConfig, handleInputChange]);
 
-  const detectPresetIdFromConfig = () => {
+  const detectPresetIdFromConfig = useCallback(() => {
     const coffin = formData.coffinConfig?.coffin as
       | {
           wood?: { id?: string; name?: string };
@@ -1905,7 +1935,7 @@ export function StepperWorkflow({
         preset.coffin.lining.id === liningId &&
         preset.coffin.hardware.id === hardwareId,
     )?.id;
-  };
+  }, [formData.coffinConfig]);
 
   const attributesInitialSelection = (() => {
     const coffin = formData.coffinConfig?.coffin as
@@ -1957,7 +1987,7 @@ export function StepperWorkflow({
 
     applyAttributesPreset("recommended");
     presetInitializedRef.current = true;
-  }, [currentStep, formData.coffinConfig]);
+  }, [currentStep, formData.coffinConfig, detectPresetIdFromConfig, applyAttributesPreset]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -2028,51 +2058,6 @@ export function StepperWorkflow({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.hasHall]);
 
-  const buildCalculatorConfig = () => {
-    const category =
-      (formData.hearseCategory as keyof typeof HEARSE_CATEGORY_PRICE) || "standard";
-    const hearsePrice = HEARSE_CATEGORY_PRICE[category] ?? 0;
-
-    return {
-      ...STEPPER_CALCULATOR_CONFIG,
-      prices: {
-        ...STEPPER_CALCULATOR_CONFIG.prices,
-        hearse: hearsePrice,
-      },
-    };
-  };
-
-  const calculateTotal = () =>
-    calculateTotalFromUtils(
-      formData as CalculatorFormData,
-      selectedCemeteryCategory,
-      buildCalculatorConfig(),
-    );
-
-  const calculateBreakdown = () => {
-    const breakdown = calculateBreakdownFromUtils(
-      formData as CalculatorFormData,
-      selectedCemeteryCategory,
-      buildCalculatorConfig(),
-    );
-
-    if (!formData.needsHearse) return breakdown;
-
-    const category =
-      (formData.hearseCategory as keyof typeof HEARSE_CATEGORY_LABELS) || "standard";
-    const categoryLabel = HEARSE_CATEGORY_LABELS[category] || "Стандарт";
-    const hearseLabel =
-      category === "standard" ? "Катафалк" : `Катафалк (${categoryLabel})`;
-
-    return breakdown.map((section) => {
-      if (section.category !== "Логистика" || !section.items?.length) return section;
-      const items = section.items.map((item) =>
-        item.name === "Катафалк" ? { ...item, name: hearseLabel } : item,
-      );
-      return { ...section, items };
-    });
-  };
-
   const handleConfirmBooking = async (override?: {
     totalRub?: number;
     breakdown?: Array<{ category?: string; name?: string; title?: string; description?: string; price?: number | string; quantity?: number; qty?: number }>;
@@ -2081,14 +2066,23 @@ export function StepperWorkflow({
     orderFlow?: string;
     package?: { id?: string; name?: string; price?: number | string; features?: string[] };
   }) => {
+    const isSavePlanFlow = override?.orderFlow === "save_plan";
     try {
       const orderEmail = (formData.userEmail || "").trim();
       const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(orderEmail);
       if (!emailOk) {
-        alert("Укажите корректный email для получения подтверждения.");
+        const message = isSavePlanFlow
+          ? "Проверьте e-mail, чтобы мы отправили план на правильный адрес."
+          : "Укажите корректный email для получения подтверждения.";
+        if (isSavePlanFlow) {
+          setSavePlanError(message);
+        } else {
+          alert(message);
+        }
         setIsSubmittingOrder(false);
         return;
       }
+      if (isSavePlanFlow) setSavePlanError(null);
 
       trackEvent(
         "contacts_filled",
@@ -2154,10 +2148,16 @@ export function StepperWorkflow({
 
       if (!res.ok || orderData?.success !== true) {
         console.error("Ошибка при создании заказа", orderData);
-        if (res.status === 400) {
-          alert("Укажите корректный email.");
+        const message =
+          res.status === 400
+            ? "Проверьте e-mail и состав плана."
+            : isSavePlanFlow
+              ? "Не удалось сохранить план. Проверьте интернет и попробуйте ещё раз."
+              : "Ошибка отправки письма или создания заказа. Попробуйте ещё раз.";
+        if (isSavePlanFlow) {
+          setSavePlanError(message);
         } else {
-          alert("Ошибка отправки письма или создания заказа. Попробуйте ещё раз.");
+          alert(message);
         }
         setIsSubmittingOrder(false);
         return;
@@ -2178,9 +2178,15 @@ export function StepperWorkflow({
         emailSent: Boolean(orderData?.emailSent),
         paymentLink: orderData?.paymentLink ?? null,
       });
+      if (isSavePlanFlow) setSavePlanError(null);
     } catch (e) {
       console.error(e);
-      alert("Сетевая ошибка. Проверьте интернет и попробуйте ещё раз.");
+      const message = "Сетевая ошибка. Проверьте интернет и попробуйте ещё раз.";
+      if (isSavePlanFlow) {
+        setSavePlanError(message);
+      } else {
+        alert(message);
+      }
     } finally {
       setIsSubmittingOrder(false);
     }
@@ -2377,7 +2383,7 @@ export function StepperWorkflow({
     return () => window.removeEventListener("td:open-packages", handler);
   }, [openPackagesMode]);
 
-  const openWizardMode = () => {
+  const openWizardMode = useCallback(() => {
     setWorkflowMode("wizard");
     setContinueChoice("wizard");
     setSelectedPackageForSimplified(null);
@@ -2386,7 +2392,54 @@ export function StepperWorkflow({
     setIsTransitioning(false);
     setOrderConfirmation(null);
     setIsSubmittingOrder(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!routeFlow) return;
+    if (routeFlow === "wizard") {
+      openWizardMode();
+    } else if (routeFlow === "packages") {
+      openPackagesMode();
+    } else if (routeFlow === "how-it-works") {
+      window.setTimeout(() => {
+        requestAnimationFrame(() => {
+          scrollToHowItWorks();
+        });
+      }, 60);
+    }
+  }, [routeFlow, openWizardMode, openPackagesMode]);
+
+  useEffect(() => {
+    if (routeFlow !== "wizard" || !routeStep) return;
+    const maxStep = steps.length - 1;
+    const nextStep = Math.min(Math.max(routeStep - 1, 0), maxStep);
+    setCurrentStep(nextStep);
+  }, [routeFlow, routeStep]);
+
+  useEffect(() => {
+    if (routeFlow !== "packages" || !routePackageSlug) return;
+    const pkg = getPackageBySlug(routePackageSlug);
+    if (pkg) {
+      setSelectedPackageForSimplified(pkg);
+    }
+  }, [routeFlow, routePackageSlug, getPackageBySlug]);
+
+  useEffect(() => {
+    if (routeFlow !== "how-it-works" || !routeHowItWorksStep) return;
+    const idx = Math.min(
+      Math.max(routeHowItWorksStep - 1, 0),
+      emergencyChecklistTabs.length - 1,
+    );
+    const nextTab = emergencyChecklistTabs[idx];
+    if (nextTab) {
+      setActiveEmergencyTab(nextTab.id);
+    }
+    window.setTimeout(() => {
+      requestAnimationFrame(() => {
+        scrollToHowItWorks();
+      });
+    }, 60);
+  }, [routeFlow, routeHowItWorksStep, emergencyChecklistTabs]);
 
   const formatRubLocal = (v: number) => Math.round(v).toLocaleString("ru-RU");
 
@@ -2432,9 +2485,18 @@ export function StepperWorkflow({
     orderFlow?: string;
     package?: { id?: string; name?: string; price?: number | string; features?: string[] };
   }) => {
-    if (isSubmittingOrder || !canSubmit) return;
+    const effectiveTotalRub =
+      typeof override?.totalRub === "number" ? override.totalRub : totalRub;
+    const isSavePlanFlow = override?.orderFlow === "save_plan";
+    if (isSubmittingOrder || effectiveTotalRub <= 0 || !emailOk) {
+      if (isSavePlanFlow && !emailOk) {
+        setSavePlanError("Проверьте e-mail, чтобы мы отправили план на правильный адрес.");
+      }
+      return;
+    }
 
     try {
+      if (isSavePlanFlow) setSavePlanError(null);
       lastPaymentSnapshotRef.current = getPaymentSnapshot(
         (formData.paymentPlan || "full") as "full" | "deposit" | "split",
         emailValue,
@@ -2455,7 +2517,12 @@ export function StepperWorkflow({
     } catch (e) {
       console.error(e);
       setIsSubmittingOrder(false);
-      alert("Сетевая ошибка. Проверьте интернет и попробуйте ещё раз.");
+      const message = "Сетевая ошибка. Проверьте интернет и попробуйте ещё раз.";
+      if (isSavePlanFlow) {
+        setSavePlanError(message);
+      } else {
+        alert(message);
+      }
     }
   };
 
@@ -3121,10 +3188,12 @@ export function StepperWorkflow({
                       </button>
                       {isHearseInfoOpen && (
                         <div className="fixed left-1/2 top-1/2 z-50 w-[320px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-200 bg-white shadow-xl sm:absolute sm:left-0 sm:top-full sm:mt-2 sm:translate-x-0 sm:translate-y-0">
-                          <div className="h-40 w-full overflow-hidden">
-                            <img
+                          <div className="relative h-40 w-full overflow-hidden">
+                            <Image
                               src="/images/hearse-lux.jpg"
                               alt="Катафалк класса Люкс"
+                              fill
+                              sizes="320px"
                               className="h-full w-full object-cover"
                             />
                           </div>
@@ -3349,9 +3418,11 @@ export function StepperWorkflow({
                     {activeHearseInfo && (
                       <div className="mt-3 w-full max-h-[60vh] overflow-auto rounded-2xl border border-gray-200 bg-white shadow-lg sm:max-w-[520px] sm:max-h-[420px] sm:mx-auto">
                         <div className="relative h-40 w-full bg-gray-100 sm:h-48">
-                          <img
+                          <Image
                             src={activeHearseInfo.imageSrc}
                             alt={activeHearseInfo.title}
+                            fill
+                            sizes="(min-width: 640px) 520px, calc(100vw - 32px)"
                             className="h-full w-full object-cover"
                           />
                         </div>
@@ -3879,7 +3950,67 @@ export function StepperWorkflow({
   }) => {
     const effectiveTotalRub =
       typeof override?.totalRub === "number" ? override.totalRub : totalRub;
+    const isSavePlan = override?.orderFlow === "save_plan";
+    const canSubmitEffective = effectiveTotalRub > 0 && emailOk;
     const effectiveDepositRub = Math.round(effectiveTotalRub * 0.1);
+    if (isSavePlan) {
+      if (orderConfirmation) {
+        return (
+          <div className="rounded-[16px] bg-[#f2f7f1] p-3 text-[14px] leading-relaxed text-gray-800 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
+            <div className="font-semibold text-gray-900">План сохранён</div>
+            <div className="mt-1">
+              {orderConfirmation.emailSent
+                ? "Отправили состав услуг и итоговую сумму на почту."
+                : "План сохранён. Если письмо не пришло, координатор уточнит адрес вручную."}
+            </div>
+          </div>
+        );
+      }
+      return (
+        <div className="rounded-[16px] bg-[#f7f7f4] p-3 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
+          <div className="text-[14px] font-semibold leading-snug text-gray-900">
+            Куда отправить план?
+          </div>
+          <div className="mt-1 text-[13px] leading-snug text-gray-600">
+            Пришлем состав услуг, итоговую сумму и контакт координатора.
+          </div>
+          <label className="mt-3 block text-[13px] font-semibold leading-snug text-gray-700">
+            Email
+            <input
+              value={emailValue}
+              onChange={(e) => {
+                setSavePlanError(null);
+                handleInputChange("userEmail", e.target.value);
+              }}
+              placeholder="name@email.com"
+              className="mt-1.5 h-11 w-full rounded-[12px] bg-white px-3 text-[15px] text-gray-900 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.10)] outline-none transition-[box-shadow] duration-150 ease-out placeholder:text-gray-400 focus:shadow-[inset_0_0_0_1.5px_#1794FD,0_0_0_3px_rgba(23,148,253,0.12)]"
+              inputMode="email"
+            />
+          </label>
+          {emailStarted && !emailOk ? (
+            <div className="mt-2 text-[13px] leading-snug text-red-700">
+              Проверьте e-mail, в адресе должна быть точка и @.
+            </div>
+          ) : null}
+          {savePlanError ? (
+            <div className="mt-2 rounded-[12px] bg-red-50 px-3 py-2 text-[13px] leading-snug text-red-800 shadow-[inset_0_0_0_1px_rgba(185,28,28,0.14)]">
+              {savePlanError}
+            </div>
+          ) : null}
+          <Button
+            type="button"
+            onClick={() => onPayClick(override)}
+            disabled={!canSubmitEffective || isSubmittingOrder}
+            className="mt-3 !h-11 !min-h-11 w-full !rounded-[12px] !bg-gray-950 px-4 text-sm font-semibold !text-white shadow-[0_1px_2px_rgba(0,0,0,0.16),0_6px_16px_rgba(0,0,0,0.12)] transition-[background-color,transform] duration-150 ease-out hover:!bg-gray-800 active:scale-[0.97] disabled:opacity-45 disabled:active:scale-100"
+          >
+            {isSubmittingOrder ? "Отправляем..." : "Отправить план"}
+          </Button>
+          <div className="mt-2 text-[12px] leading-snug text-gray-500">
+            Нажимая кнопку, вы сохраняете план. Оплата не запускается.
+          </div>
+        </div>
+      );
+    }
     return (
     <>
       <div className="rounded-[30px] bg-gray-900 text-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.35)] space-y-5">
@@ -4013,9 +4144,10 @@ export function StepperWorkflow({
     ? "Индивидуальный расчет. Выберите только те услуги и атрибутику, которые нужны именно вам, и контролируйте итоговую стоимость."
     : "Сбалансированные пакеты услуг. От базового набора для достойного прощания до полной организации с личным координатором.";
   const baseSegmentBtn =
-    "min-w-0 w-full min-h-12 rounded-full px-3 inline-flex items-center justify-center text-sm font-medium tracking-[-0.005em] whitespace-nowrap leading-none transition-all duration-200";
-  const activeSegmentBtn = "bg-white text-slate-900 shadow-sm ring-1 ring-zinc-200";
-  const inactiveSegmentBtn = "bg-transparent text-slate-600 hover:bg-zinc-200/70";
+    "inline-flex min-h-11 w-full min-w-0 items-center justify-center whitespace-nowrap !rounded-[13px] px-3 text-sm font-medium leading-none tracking-[-0.005em] transition-[background-color,color,box-shadow,transform] duration-200 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1794FD]/35";
+  const activeSegmentBtn =
+    "bg-white text-slate-900 shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.06),0_4px_12px_rgba(15,23,42,0.06)]";
+  const inactiveSegmentBtn = "bg-transparent text-slate-600 hover:bg-white/55 hover:text-slate-900";
 
   return (
     <div ref={wrapRef} className="relative max-w-5xl mx-auto pb-12">
@@ -4146,42 +4278,47 @@ export function StepperWorkflow({
 
 <CardContent className="relative z-10 px-6 sm:px-8 pb-8 pt-0">
   <div className="space-y-4">
-    <div className="rounded-3xl border border-zinc-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+    <div className="rounded-[28px] bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.055),0_2px_5px_rgba(15,23,42,0.04),0_16px_42px_rgba(15,23,42,0.08)]">
     <div className="px-5 py-5 sm:px-7 sm:py-6">
-      <div className="mb-3 max-w-full break-words text-left text-[15px] min-[375px]:text-[18px] md:text-2xl font-semibold text-gray-900">
+      <div className="mb-3 max-w-2xl text-balance text-left text-[18px] font-semibold leading-snug tracking-[-0.015em] text-gray-900 md:text-2xl">
         Выберите, как вам комфортнее организовать прощание
       </div>
       <p className="hidden">
         Можно собрать план самостоятельно или выбрать готовое решение с расширенным пакетом услуг.
       </p>
       <div className="mb-1 mt-2 flex w-full justify-center md:justify-start">
-        <div className="grid w-full max-w-full min-w-0 grid-cols-2 gap-1 rounded-[28px] border border-zinc-200 bg-zinc-100 p-1 md:mx-0 md:mr-auto">
-          <button
-            type="button"
-            onClick={() => {
-              openPackagesMode();
-              onModeChange?.("package");
-              setContinueChoice("solutions");
-            }}
-            className={cn(baseSegmentBtn, isSolutionsScenarioActive ? activeSegmentBtn : inactiveSegmentBtn)}
-          >
-            <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">{"\u0413\u043e\u0442\u043e\u0432\u044b\u0435 \u0440\u0435\u0448\u0435\u043d\u0438\u044f"}
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              openWizardMode();
-              onModeChange?.("wizard");
-              setContinueChoice("wizard");
-            }}
-            className={cn(baseSegmentBtn, isWizardScenarioActive ? activeSegmentBtn : inactiveSegmentBtn)}
-          >
-            <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
-              Собрать свой план
-            </span>
-          </button>
-          <p className="col-span-2 px-3 pb-3 pt-2 text-[13px] leading-[1.4] text-gray-600 min-[375px]:text-[14px] md:px-4 md:pb-4 md:pt-3 md:text-base">
+        <div className="w-full min-w-0">
+          <div className="grid w-full max-w-[460px] grid-cols-2 gap-1 rounded-[17px] bg-[#f1f1ef] p-1 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.045)]">
+            <button
+              type="button"
+              aria-pressed={isSolutionsScenarioActive}
+              onClick={() => {
+                openPackagesMode();
+                onModeChange?.("package");
+                setContinueChoice("solutions");
+              }}
+              className={cn(baseSegmentBtn, isSolutionsScenarioActive ? activeSegmentBtn : inactiveSegmentBtn)}
+            >
+              <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
+                Готовые
+              </span>
+            </button>
+            <button
+              type="button"
+              aria-pressed={isWizardScenarioActive}
+              onClick={() => {
+                openWizardMode();
+                onModeChange?.("wizard");
+                setContinueChoice("wizard");
+              }}
+              className={cn(baseSegmentBtn, isWizardScenarioActive ? activeSegmentBtn : inactiveSegmentBtn)}
+            >
+              <span className="min-w-0 max-w-full whitespace-nowrap text-center leading-none">
+                Свой план
+              </span>
+            </button>
+          </div>
+          <p className="mt-3 max-w-[65ch] text-pretty text-[14px] leading-relaxed text-gray-600 md:text-base">
             {scenarioDescription}
           </p>
         </div>

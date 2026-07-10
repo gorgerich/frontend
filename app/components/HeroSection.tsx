@@ -1,9 +1,7 @@
 // app/components/HeroSection.tsx
 import { useLayoutEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
-import { TopButtons } from "./TopButtons";
 import { Button } from "./ui/button";
 
 const heroImage = "/hero-forest.jpg";
@@ -32,12 +30,6 @@ export function HeroSection({
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const questionRef = useRef<HTMLButtonElement | null>(null);
   const titleRef = useRef<HTMLHeadingElement | null>(null);
-  const [topButtonsStyle, setTopButtonsStyle] = useState({
-    top: 0,
-    left: 0,
-    width: 0,
-    visible: false,
-  });
   const [connectorStyle, setConnectorStyle] = useState({
     top: 0,
     left: 0,
@@ -61,7 +53,6 @@ export function HeroSection({
         questionRect.width === 0 ||
         titleRect.height === 0
       ) {
-        setTopButtonsStyle((current) => ({ ...current, visible: false }));
         setConnectorStyle({
           top: 0,
           left: 0,
@@ -75,12 +66,6 @@ export function HeroSection({
       const height = Math.max(0, titleRect.top - questionRect.bottom);
       const left = questionRect.left + questionRect.width / 2 - wrapperRect.left;
 
-      setTopButtonsStyle({
-        top: window.scrollY + wrapperRect.top - 44,
-        left: window.scrollX + wrapperRect.left + 24,
-        width: Math.max(0, wrapperRect.width - 48),
-        visible: true,
-      });
       setConnectorStyle({
         top,
         left,
@@ -110,7 +95,7 @@ export function HeroSection({
 
   return (
     <section className="relative w-full pt-4 pb-5 sm:pt-5 md:pt-8 md:pb-7 lg:pb-9">
-      <div className="pointer-events-none absolute inset-x-0 top-4 z-0 h-[68vh] sm:top-5 md:hidden">
+      <div className="pointer-events-none absolute inset-x-0 top-4 z-0 h-[68vh] max-[375px]:h-[80vh] sm:top-5 md:hidden">
         <div className="absolute left-1/2 h-full w-[calc(100vw-32px)] -translate-x-1/2 overflow-hidden rounded-[28px] sm:w-[calc(100vw-36px)]">
           <Image
             src={heroImage}
@@ -139,7 +124,7 @@ export function HeroSection({
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl overflow-visible px-4 md:hidden">
-        <div className="relative h-[68vh] w-full">
+        <div className="relative h-[68vh] w-full max-[375px]:h-[80vh]">
           <div className="absolute inset-0 z-30">
             <div className="flex h-full flex-col items-start justify-start px-4 pt-4 pb-16 text-left translate-y-[10%] max-[375px]:translate-y-0 max-[375px]:pt-6 sm:px-6 sm:pt-6 sm:pb-20">
               <div className="-translate-y-[25%] max-[375px]:-translate-y-[8%]">
@@ -147,7 +132,7 @@ export function HeroSection({
                 {MOBILE_HERO_BULLETS.map((bullet) => (
                   <span
                     key={bullet}
-                    className="inline-flex min-h-[34px] items-center rounded-full border border-white/30 bg-white/14 px-3.5 text-[12px] font-medium leading-none text-white shadow-[0_6px_20px_rgba(15,23,42,0.10)] backdrop-blur-md sm:min-h-[36px] sm:px-4 sm:text-[13px]"
+                    className="inline-flex min-h-[36px] items-center rounded-full border border-white/30 bg-white/14 px-3.5 text-[14px] font-medium leading-none text-white shadow-[0_6px_20px_rgba(15,23,42,0.10)] backdrop-blur-md sm:px-4"
                   >
                     {bullet}
                   </span>
@@ -178,7 +163,7 @@ export function HeroSection({
                 </span>
                 </h1>
                 <p
-                className="font-body mt-3 w-full max-w-[22rem] text-[12px] font-normal leading-[1.4] text-left text-white/80 max-[375px]:mt-2 max-[375px]:text-[11px] max-[375px]:leading-[1.32] min-[390px]:text-[13px]"
+                className="font-body mt-3 w-full max-w-[22rem] text-left text-[14px] font-normal leading-[1.45] text-white/85 max-[375px]:mt-2"
                 style={{
                   fontWeight: 400,
                 }}
@@ -292,25 +277,6 @@ export function HeroSection({
           </div>
         </div>
       </div>
-
-      {/* TODO: Temporarily hidden to reduce cognitive load and keep an easy rollback path. */}
-      {typeof document !== "undefined" &&
-        createPortal(
-          <div
-            className="pointer-events-none absolute z-[1200] hidden"
-            style={{
-              top: topButtonsStyle.top,
-              left: topButtonsStyle.left,
-              width: topButtonsStyle.width,
-              visibility: topButtonsStyle.visible ? "visible" : "hidden",
-            }}
-          >
-            <div className="pointer-events-auto">
-              <TopButtons questionButtonRef={questionRef} />
-            </div>
-          </div>,
-          document.body,
-        )}
     </section>
   );
 }

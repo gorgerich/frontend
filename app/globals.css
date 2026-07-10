@@ -6980,28 +6980,117 @@ html {
   }
 }
 
-@keyframes coordinator-marquee {
+@keyframes package-config-enter {
   from {
-    transform: translateX(0);
+    opacity: 0;
+    transform: translateY(8px);
   }
 
   to {
-    transform: translateX(-50%);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-.coordinatorMarqueeTrack {
-  animation: coordinator-marquee 28s linear infinite;
-  will-change: transform;
+.packageConfigEnter {
+  animation: package-config-enter 260ms cubic-bezier(.2, 0, 0, 1) both;
 }
 
-.coordinatorMarqueeTrack.isPaused {
-  animation-play-state: paused;
+@keyframes save-channels-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-@media (hover: hover) {
-  .coordinatorMarqueeTrack:hover {
-    animation-play-state: paused;
+.saveChannelsEnter {
+  animation: save-channels-enter 180ms cubic-bezier(.22, 1, .36, 1) both;
+  transform-origin: calc(100% - 58px) top;
+}
+
+@media (max-width: 360px) {
+  .saveChannelsEnter {
+    right: -1rem;
+  }
+}
+
+@keyframes config-step-forward {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes config-step-back {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.configStepForward {
+  animation: config-step-forward 220ms cubic-bezier(.22, 1, .36, 1) both;
+}
+
+.configStepBack {
+  animation: config-step-back 220ms cubic-bezier(.22, 1, .36, 1) both;
+}
+
+@keyframes team-detail-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.teamDetailEnter {
+  animation: team-detail-enter 200ms cubic-bezier(.22, 1, .36, 1) both;
+}
+
+@keyframes team-dialog-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.teamDialogEnter {
+  animation: team-dialog-enter 220ms cubic-bezier(.22, 1, .36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .packageConfigEnter,
+  .saveChannelsEnter,
+  .configStepForward,
+  .configStepBack,
+  .teamDetailEnter,
+  .teamDialogEnter {
+    animation: none;
   }
 }
 

@@ -8,6 +8,7 @@ import { HeroSection } from './HeroSection';
 import { StepperWorkflow } from './StepperWorkflow';
 import { PackagesSection } from './PackagesSection';
 import { FloatingCalculator } from './FloatingCalculator';
+import { cn } from './ui/utils';
 
 import {
   calculateTotal,
@@ -171,107 +172,138 @@ const TRUST_REVIEWS_SORTED = [...TRUST_REVIEWS].sort((a, b) => {
   return bLength - aLength;
 });
 
-const TEAM_MEMBERS = [
+const COORDINATOR_STAGES = [
   {
-    id: 'member-1',
-    name: 'Михаил',
-    role: 'Старший координатор',
-    imageSrc: '/team/male-2.jpg',
-    description: 'Сопровождаю организационные вопросы и координирую день прощания.',
+    id: 'before',
+    title: 'До прощания',
+    text: 'Сверяет документы, подтверждает место, транспорт и время.',
   },
   {
-    id: 'member-2',
-name: 'Елена',
-    role: 'Координатор',
-    imageSrc: '/team/elena-2.jpg',
-    description: 'Согласовываю этапы с площадками и веду организацию в спокойном ритме.',
+    id: 'ceremony',
+    title: 'В день прощания',
+    text: 'Следит за таймингом и решает организационные вопросы на месте.',
   },
   {
-    id: 'member-3',
-    name: 'Денис',
-    role: 'Координатор',
-    imageSrc: '/team/male-1.jpg',
-    description: 'Проверяю документы, фиксирую план и держу связь без давления.',
-  },
-  {
-    id: 'member-4',
-    name: 'Анна',
-    role: 'Координатор',
-    imageSrc: '/team/female-1.jpg',
-    description: 'Помогаю собрать маршрут церемонии и заранее проверить важные детали.',
-  },
-  {
-    id: 'member-5',
-    name: 'Сергей',
-    role: 'Координатор',
-    imageSrc: '/team/male-3.jpg',
-    description: 'Контролирую транспорт и тайминг, чтобы в день прощания всё прошло ровно.',
-  },
-  {
-    id: 'member-6',
-    name: 'Ольга',
-    role: 'Координатор',
-    imageSrc: '/team/female-3.jpg',
-    description: 'Подсказываю по документам и остаюсь на связи до полного подтверждения плана.',
-  },
-  {
-    id: 'member-7',
-    name: 'Павел',
-    role: 'Координатор',
-    imageSrc: '/team/male-4.jpg',
-    description: 'Помогаю согласовать услуги без спешки и лишних решений.',
-  },
-  {
-    id: 'member-8',
-    name: 'Наталья',
-    role: 'Координатор',
-    imageSrc: '/team/female-4.jpg',
-    description: 'Веду коммуникацию с родственниками и фиксирую все договорённости прозрачно.',
+    id: 'after',
+    title: 'После',
+    text: 'Передаёт документы и остаётся на связи по следующим шагам.',
   },
 ] as const;
 
-const TRUST_BLOCK_CARDS = [
+const SUPPORT_TEAM = [
   {
-    id: 'trust-card-1',
-    icon: '🛡️',
-    title: 'РЯДОМ',
-    text: 'Координатор ведёт весь процесс от начала до конца. На связи 24/7',
+    id: 'support-elena',
+    name: 'Елена',
+    role: 'Площадки и церемония',
+    imageSrc: '/team/elena-2.jpg',
+    description: 'Проверяет доступность залов и площадок, согласует время и требования к церемонии.',
   },
   {
-    id: 'trust-card-2',
-    icon: '📄',
-    title: 'ПРОЗРАЧНО',
-    text: 'Вы видите итоговую сумму заранее, мы фиксируем её в договоре',
+    id: 'support-denis',
+    name: 'Денис',
+    role: 'Документы и смета',
+    imageSrc: '/team/male-1.jpg',
+    description: 'Сверяет документы, договор и смету, чтобы состав и стоимость были понятны заранее.',
   },
   {
-    id: 'trust-card-3',
-    icon: '💬',
-    title: 'БЕЗ ДАВЛЕНИЯ',
-    text: 'Вы сами выбираете формат общения — можно полностью без звонков',
+    id: 'support-anna',
+    name: 'Анна',
+    role: 'Маршрут прощания',
+    imageSrc: '/team/female-1.jpg',
+    description: 'Собирает маршрут между моргом, местом прощания и кладбищем, сообщает об изменениях.',
+  },
+  {
+    id: 'support-sergey',
+    name: 'Сергей',
+    role: 'Транспорт и тайминг',
+    imageSrc: '/team/male-3.jpg',
+    description: 'Координирует катафалк, транспорт для близких и время подачи машин.',
+  },
+] as const;
+
+const RESPONSIBILITY_CARDS = [
+  {
+    id: 'responsibility-service',
+    number: '01',
+    title: 'МЫ ОРГАНИЗУЕМ',
+    text: 'Берём на себя согласованные задачи и контролируем исполнение.',
+    items: ['Документы и морг', 'Место и транспорт', 'Подрядчики и тайминг'],
+  },
+  {
+    id: 'responsibility-family',
+    number: '02',
+    title: 'ВЫ РЕШАЕТЕ',
+    text: 'Мы объясняем варианты, окончательное решение остаётся за вами.',
+    items: ['Формат прощания', 'Состав услуг', 'Итоговую сумму'],
+  },
+  {
+    id: 'responsibility-consent',
+    number: '03',
+    title: 'ВСЁ СОГЛАСОВЫВАЕМ',
+    text: 'Состав услуг и стоимость меняются только после вашего подтверждения.',
+    items: ['Новые услуги', 'Изменение цены', 'Замена выбранного варианта'],
+  },
+] as const;
+
+const TRUST_PROOFS = [
+  {
+    id: 'proof-contract',
+    number: '01',
+    title: 'Договор заранее',
+    text: 'Состав заказа и условия доступны до подтверждения и оплаты.',
+    href: '/docs/oferta',
+    linkLabel: 'Открыть оферту',
+  },
+  {
+    id: 'proof-estimate',
+    number: '02',
+    title: 'Фиксированная смета',
+    text: 'Итоговая сумма и согласованный состав услуг закрепляются в договоре.',
+    href: null,
+    linkLabel: null,
+  },
+  {
+    id: 'proof-details',
+    number: '03',
+    title: 'Реквизиты на сайте',
+    text: 'ИНН 773438344967 · ОГРНИП 323774600033021',
+    href: null,
+    linkLabel: null,
+  },
+  {
+    id: 'proof-payment',
+    number: '04',
+    title: 'Оплата и возврат',
+    text: 'Порядок оплаты и условия возврата опубликованы заранее.',
+    href: '/docs/payment-rules',
+    linkLabel: 'Правила оплаты',
   },
 ] as const;
 
 const HOT_GUIDE_ARTICLES = [
   {
     id: 'hot-morgue-clothes',
-    imageSrc: '/hero-forest.jpg',
+    label: 'Перед моргом',
     title: 'Одежда и вещи для морга: точный список',
+    question: 'Что подготовить в первые часы?',
     description:
       'Что нужно передать в морг, в какие сроки и как ничего не забыть в самый тяжелый день.',
     href: '/articles/odezhda-i-veshi-dlya-morga',
   },
   {
     id: 'hot-benefit',
-    imageSrc: '/images/hearse-lux.jpg',
+    label: 'Деньги и документы',
     title: 'Как получить пособие?',
+    question: 'Какие выплаты можно получить?',
     description:
       'Пошаговый маршрут: куда обращаться, какие документы подготовить и как получить выплату.',
     href: '/articles/kak-poluchit-posobie-na-pogrebenie-v-2026-godu',
   },
   {
     id: 'hot-morgue-payments',
-    imageSrc: '/heroIMGnew.PNG',
+    label: 'Защита от доплат',
     title: 'Морг требует деньги: за что вы обязаны платить, а за что — нет',
+    question: 'Где граница между обязательным и навязанным?',
     description:
       'Граница между бесплатными и платными услугами морга и защита от навязанных доплат.',
     href: '/articles/morg-trebuet-dengi',
@@ -354,11 +386,6 @@ function normalizeRouteStateFromString(search: string): HomeRouteState {
 export default function HomePageClient() {
   const router = useRouter();
   const lastCtaRef = useRef<string | null>(null);
-  const teamCarouselRef = useRef<HTMLDivElement | null>(null);
-  const teamPauseTimeoutRef = useRef<number | null>(null);
-  const teamDragStateRef = useRef({ isDown: false, startX: 0, startScrollLeft: 0 });
-  const [isTeamDragging, setIsTeamDragging] = useState(false);
-  const [isTeamPaused, setIsTeamPaused] = useState(false);
   const [routeState, setRouteState] = useState<HomeRouteState>(EMPTY_ROUTE_STATE);
 
   useEffect(() => {
@@ -378,46 +405,6 @@ export default function HomePageClient() {
     requestAnimationFrame(() => {
       window.scrollTo(0, 0);
     });
-  }, []);
-
-  const pauseTeamAutoscroll = (resumeDelay = 1500) => {
-    setIsTeamPaused(true);
-    if (teamPauseTimeoutRef.current) {
-      window.clearTimeout(teamPauseTimeoutRef.current);
-    }
-    if (resumeDelay > 0) {
-      teamPauseTimeoutRef.current = window.setTimeout(() => {
-        setIsTeamPaused(false);
-      }, resumeDelay);
-    }
-  };
-
-  const resumeTeamAutoscroll = () => {
-    if (teamPauseTimeoutRef.current) {
-      window.clearTimeout(teamPauseTimeoutRef.current);
-    }
-    setIsTeamPaused(false);
-  };
-
-  useEffect(() => {
-    const container = teamCarouselRef.current;
-    if (!container) return;
-
-    const onWheel = (event: WheelEvent) => {
-      if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
-        event.preventDefault();
-        pauseTeamAutoscroll();
-        container.scrollLeft += event.deltaY;
-        return;
-      }
-
-      if (event.deltaX !== 0) {
-        pauseTeamAutoscroll();
-      }
-    };
-
-    container.addEventListener('wheel', onWheel, { passive: false });
-    return () => container.removeEventListener('wheel', onWheel);
   }, []);
 
   const initialFormData = {
@@ -461,14 +448,73 @@ export default function HomePageClient() {
   const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
   const [isEmergencyChecklistOpen, setIsEmergencyChecklistOpen] = useState(false);
   const [emergencyChecklistScrollRequest, setEmergencyChecklistScrollRequest] = useState(0);
+  const [selectedSupportMemberId, setSelectedSupportMemberId] = useState<string | null>(null);
   const [selectedCemeteryCategory, setSelectedCemeteryCategory] =
     useState<'standard' | 'comfort' | 'premium'>('standard');
+  const selectedSupportMemberIndex = selectedSupportMemberId
+    ? SUPPORT_TEAM.findIndex((member) => member.id === selectedSupportMemberId)
+    : -1;
+  const selectedSupportMember =
+    selectedSupportMemberIndex >= 0 ? SUPPORT_TEAM[selectedSupportMemberIndex] ?? null : null;
+  const showPreviousSupportMember = () => {
+    setSelectedSupportMemberId((currentId) => {
+      const currentIndex = SUPPORT_TEAM.findIndex((member) => member.id === currentId);
+      const nextIndex =
+        currentIndex <= 0 ? SUPPORT_TEAM.length - 1 : currentIndex - 1;
+      return SUPPORT_TEAM[nextIndex].id;
+    });
+  };
+  const showNextSupportMember = () => {
+    setSelectedSupportMemberId((currentId) => {
+      const currentIndex = SUPPORT_TEAM.findIndex((member) => member.id === currentId);
+      const nextIndex =
+        currentIndex < 0 || currentIndex >= SUPPORT_TEAM.length - 1 ? 0 : currentIndex + 1;
+      return SUPPORT_TEAM[nextIndex].id;
+    });
+  };
   const trackingSessionId = getTrackingSessionId();
   const calculatorSummary = useMemo(() => {
     const baseTotal = calculateTotal(formData, selectedCemeteryCategory);
     const baseBreakdown = calculateBreakdown(formData, selectedCemeteryCategory);
     return applyHearseCategoryToCalculator(baseTotal, baseBreakdown, formData);
   }, [formData, selectedCemeteryCategory]);
+
+  useEffect(() => {
+    if (!selectedSupportMember) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSelectedSupportMemberId(null);
+        return;
+      }
+      if (event.key === 'ArrowLeft') {
+        setSelectedSupportMemberId((currentId) => {
+          const currentIndex = SUPPORT_TEAM.findIndex((member) => member.id === currentId);
+          const nextIndex =
+            currentIndex <= 0 ? SUPPORT_TEAM.length - 1 : currentIndex - 1;
+          return SUPPORT_TEAM[nextIndex].id;
+        });
+        return;
+      }
+      if (event.key === 'ArrowRight') {
+        setSelectedSupportMemberId((currentId) => {
+          const currentIndex = SUPPORT_TEAM.findIndex((member) => member.id === currentId);
+          const nextIndex =
+            currentIndex < 0 || currentIndex >= SUPPORT_TEAM.length - 1 ? 0 : currentIndex + 1;
+          return SUPPORT_TEAM[nextIndex].id;
+        });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedSupportMember]);
 
   useEffect(() => {
     const saved = loadSessionDraft(MAIN_DRAFT_KEY);
@@ -642,247 +688,298 @@ export default function HomePageClient() {
         )}
         <section className="mt-12 md:mt-16 mb-12 md:mb-16">
           <div className="mx-auto w-full max-w-6xl px-4">
-            <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm md:p-5">
-              <p className="mb-4 max-w-full whitespace-normal break-words text-[clamp(15px,3.8vw,22px)] font-semibold leading-snug tracking-[-0.02em] text-gray-900 [text-wrap:balance]">
-                Михаил Семенов, старший координатор сервиса «Тихий дом»:
-              </p>
-              <div className="flex flex-row items-start gap-3 md:gap-4">
-                <Image
-                  src="/team/male-2(bg).PNG"
-                  alt="Денис, старший координатор сервиса Тихий дом"
-                  width={220}
-                  height={260}
-                  className="-mt-1 h-[120px] w-[96px] shrink-0 rounded-xl object-cover object-top md:-mt-2 md:h-[260px] md:w-[220px]"
-                />
-                <div className="min-w-0 flex-1 border-l border-gray-200 pl-3">
-                  <p className="whitespace-normal break-words text-sm leading-relaxed text-gray-700 md:text-base">
-                    «Каждый день мы видим, как люди теряются, сталкиваясь с системой моргов и кладбищ. Моя личная задача и задача моей команды — забрать у вас этот стресс. Мы создали «Тихий дом» для того, чтобы в самые тяжелые дни вы могли сфокусироваться на семье и памяти о близком, а не на спорах с грузчиками и поиске правильных справок. Я лично гарантирую, что мы проведем прощание достойно и честно».
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="mt-6 flex flex-col gap-2">
-              <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">
-                Кто будет вам помогать
-              </h2>
+            <section aria-labelledby="coordinator-heading">
+              <div className="flex max-w-3xl flex-col gap-2">
+                <h2 id="coordinator-heading" className="text-xl font-semibold text-gray-900 md:text-2xl">
+                  Один координатор на всём пути
+                </h2>
                 <p className="text-base leading-relaxed text-gray-700">
-                  {widontRu('За каждой заявкой в «Тихом доме» стоит не робот, а ваш личный координатор. Мы берем на себя всю бюрократию и защиту от скрытых наценок.')}
+                  {widontRu('После подтверждения плана все вопросы можно решать с одним человеком. Координатор знает вашу ситуацию, согласованный состав услуг и остаётся на связи до завершения прощания.')}
                 </p>
               </div>
-            <div className="relative left-1/2 right-1/2 mt-5 w-screen -ml-[50vw] -mr-[50vw]">
-              <div className="px-2 sm:px-3 md:px-4">
-                <div
-                  ref={teamCarouselRef}
-                  onMouseEnter={() => pauseTeamAutoscroll(0)}
-                  onMouseDown={(event) => {
-                    const container = teamCarouselRef.current;
-                    if (!container) return;
-                    teamDragStateRef.current = {
-                      isDown: true,
-                      startX: event.clientX,
-                      startScrollLeft: container.scrollLeft,
-                    };
-                    setIsTeamDragging(true);
-                    pauseTeamAutoscroll(0);
-                  }}
-                  onMouseMove={(event) => {
-                    const container = teamCarouselRef.current;
-                    if (!container || !teamDragStateRef.current.isDown) return;
-                    event.preventDefault();
-                    pauseTeamAutoscroll(0);
-                    const delta = event.clientX - teamDragStateRef.current.startX;
-                    container.scrollLeft = teamDragStateRef.current.startScrollLeft - delta;
-                  }}
-                  onMouseUp={() => {
-                    teamDragStateRef.current.isDown = false;
-                    setIsTeamDragging(false);
-                    pauseTeamAutoscroll(800);
-                  }}
-                  onMouseLeave={() => {
-                    teamDragStateRef.current.isDown = false;
-                    setIsTeamDragging(false);
-                    resumeTeamAutoscroll();
-                  }}
-                  onTouchStart={() => {
-                    pauseTeamAutoscroll(0);
-                  }}
-                  onTouchMove={() => {
-                    pauseTeamAutoscroll(0);
-                  }}
-                  onTouchEnd={() => {
-                    pauseTeamAutoscroll(800);
-                  }}
-                  onPointerDown={() => {
-                    pauseTeamAutoscroll(0);
-                  }}
-                  className={`overflow-x-auto overscroll-x-contain touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${isTeamDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
-                >
-                  <div className={`flex w-max gap-2.5 py-1 md:gap-3 coordinatorMarqueeTrack${isTeamPaused ? ' isPaused' : ''}`}>
-                    <div className="flex gap-2.5 md:gap-3">
-                      {TEAM_MEMBERS.map((member) => (
-                        <article
-                          key={`${member.id}-set-1`}
-                          className="w-[148px] rounded-xl border border-gray-200 bg-white p-2 shadow-sm md:w-[164px]"
+
+              <article className="mt-5 overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-[0_10px_28px_rgba(15,23,42,0.05)]">
+                <div className="grid md:grid-cols-[220px_minmax(0,1fr)]">
+                  <div className="relative min-h-[260px] overflow-hidden bg-[#eef0f2] md:min-h-full">
+                    <Image
+                      src="/team/male-2(bg).PNG"
+                      alt="Михаил Семенов, старший координатор сервиса Тихий дом"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 220px"
+                      className="object-contain object-bottom"
+                    />
+                  </div>
+                  <div className="min-w-0 px-5 py-6 md:px-7 md:py-7">
+                    <div className="text-[14px] font-semibold leading-snug text-gray-600">
+                      Михаил Семенов · старший координатор
+                    </div>
+                    <p className="mt-4 max-w-3xl text-[17px] font-medium leading-relaxed text-[#24364a] md:text-xl">
+                      {widontRu('«Моя задача — заранее проверить договорённости, скоординировать участников и спокойно провести семью через весь процесс».')}
+                    </p>
+
+                    <div className="mt-6 grid border-t border-zinc-200 md:grid-cols-3">
+                      {COORDINATOR_STAGES.map((stage, index) => (
+                        <div
+                          key={stage.id}
+                          className={`py-4 md:px-4 md:py-5 ${index > 0 ? 'border-t border-zinc-200 md:border-l md:border-t-0' : ''} ${index === 0 ? 'md:pl-0' : ''}`}
                         >
-                          {/* TODO: replace with real photo */}
-                          <div className="relative aspect-[3/5] overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
-                            <Image
-                              src={member.imageSrc}
-                              alt={`${member.name}, ${member.role}`}
-                              fill
-                              sizes="(max-width: 768px) 148px, 164px"
-                              className="object-cover"
-                            />
-                          </div>
-                          <div className="mt-2 text-sm font-semibold text-gray-900 leading-tight">
-                            {widontRu(`${member.name} — ${member.role.toLowerCase()}`)}
-                          </div>
-                          <p className="mt-1.5 text-sm leading-snug text-gray-700">
-                            {widontRu(member.description)}
+                          <h3 className="text-sm font-semibold text-gray-900">{stage.title}</h3>
+                          <p className="mt-1.5 text-sm leading-relaxed text-gray-600">
+                            {widontRu(stage.text)}
                           </p>
-                        </article>
+                        </div>
                       ))}
                     </div>
-                    <div className="flex gap-2.5 md:gap-3" aria-hidden="true">
-                      {TEAM_MEMBERS.map((member) => (
-                        <article
-                          key={`${member.id}-set-2`}
-                          className="w-[148px] rounded-xl border border-gray-200 bg-white p-2 shadow-sm md:w-[164px]"
-                        >
-                          {/* TODO: replace with real photo */}
-                          <div className="relative aspect-[3/5] overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
-                            <Image
-                              src={member.imageSrc}
-                              alt=""
-                              fill
-                              sizes="(max-width: 768px) 148px, 164px"
-                              className="object-cover"
-                            />
-                          </div>
-                          <div className="mt-2 text-sm font-semibold text-gray-900 leading-tight">
-                            {widontRu(`${member.name} — ${member.role.toLowerCase()}`)}
-                          </div>
-                          <p className="mt-1.5 text-sm leading-snug text-gray-700">
-                            {widontRu(member.description)}
+
+                    <div className="mt-5 border-t border-zinc-200 pt-5">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900">Команда рядом</h3>
+                          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-gray-600">
+                            Координатор остаётся вашим основным контактом, а коллеги помогают ему с документами, площадками, маршрутом и транспортом.
                           </p>
-                        </article>
-                      ))}
+                        </div>
+                        <a
+                          href={TELEGRAM_URL}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[13px] border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1794FD]/30"
+                        >
+                          Написать координатору
+                        </a>
+                      </div>
+
+                      <div className="mt-5 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+                        {SUPPORT_TEAM.map((member) => (
+                          <button
+                            key={member.id}
+                            type="button"
+                            aria-haspopup="dialog"
+                            aria-expanded={selectedSupportMemberId === member.id}
+                            aria-controls="support-member-details"
+                            onClick={() => setSelectedSupportMemberId(member.id)}
+                            className={cn(
+                              "flex min-h-[72px] min-w-0 items-center gap-2.5 rounded-[14px] p-2.5 text-left transition-[background-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1794FD]/35",
+                              selectedSupportMemberId === member.id
+                                ? "bg-[#eef7ff] shadow-[inset_0_0_0_1.5px_#1794FD,0_4px_12px_rgba(23,148,253,0.08)]"
+                                : "bg-[#f9f9f9] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.08)] hover:bg-white",
+                            )}
+                          >
+                            <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-[#eef0f2]">
+                              <Image
+                                src={member.imageSrc}
+                                alt={`${member.name}, команда сервиса Тихий дом`}
+                                fill
+                                sizes="48px"
+                                className="object-cover object-top"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-sm font-semibold leading-tight text-gray-900">
+                                {member.name}
+                              </div>
+                              <div className="mt-1 text-[14px] leading-snug text-gray-600">
+                                {widontRu(member.role)}
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div className="mt-4 flex justify-center">
-              <a
-                href={TELEGRAM_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex min-h-12 items-center justify-center rounded-full border border-gray-200 bg-white px-5 text-base font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
-              >
-                Написать дежурному координатору
-              </a>
-            </div>
+              </article>
+            </section>
 
-            <div className="mt-10 flex flex-col gap-8">
-            <section className="order-2">
-              <div className="grid gap-4 md:grid-cols-3">
-                {TRUST_BLOCK_CARDS.map((card) => (
+            <section className="mt-10" aria-labelledby="responsibility-heading">
+              <div className="flex max-w-3xl flex-col gap-2">
+                <h2 id="responsibility-heading" className="text-xl font-semibold text-gray-900 md:text-2xl">
+                  Зона ответственности
+                </h2>
+                <p className="text-base leading-relaxed text-gray-700">
+                  Вы заранее знаете, какие задачи берём на себя и какие решения остаются за вами.
+                </p>
+              </div>
+
+              <div className="mt-5 grid gap-4 md:grid-cols-3">
+                {RESPONSIBILITY_CARDS.map((card) => (
                   <article
                     key={card.id}
-                    className="rounded-[28px] border border-zinc-200/80 bg-white px-5 py-6 shadow-[0_10px_28px_rgba(15,23,42,0.05)] md:px-7 md:py-7"
+                    className="flex min-h-full flex-col rounded-[28px] border border-zinc-200/80 bg-white px-5 py-6 shadow-[0_10px_28px_rgba(15,23,42,0.05)] md:px-7 md:py-7"
                   >
-                    <h3 className="max-w-full whitespace-nowrap text-[clamp(24px,6vw,38px)] font-black uppercase leading-none tracking-[-0.05em] text-[#1794FD] md:text-[clamp(18px,2vw,30px)]">
+                    <div className="text-[11px] font-semibold tracking-[0.18em] text-gray-400">
+                      {card.number}
+                    </div>
+                    <h3 className="mt-5 break-words text-[clamp(24px,5vw,34px)] font-black uppercase leading-[0.95] tracking-[-0.05em] text-[#1794FD] md:text-[clamp(21px,2vw,30px)]">
                       {widontRu(card.title)}
                     </h3>
-                    <p className="mt-7 max-w-[22ch] text-[15px] font-medium leading-[1.35] text-[#24364a] md:mt-8 md:text-[18px]">
+                    <p className="mt-6 max-w-[25ch] text-[15px] font-medium leading-[1.4] text-[#24364a] md:text-[17px]">
                       {widontRu(card.text)}
                     </p>
+                    <ul className="mt-6 space-y-3 border-t border-zinc-200 pt-5 text-sm leading-snug text-gray-700">
+                      {card.items.map((item) => (
+                        <li key={item} className="flex items-start gap-2.5">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-[#1794FD]" aria-hidden="true" />
+                          <span>{widontRu(item)}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </article>
                 ))}
               </div>
             </section>
 
-            <div className="order-1 flex flex-col gap-2">
-              <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">Отзывы клиентов</h2>
-              <p className="text-base text-gray-600">
-                {widontRu('Реальный опыт клиентов: что получилось, что волновало и как всё прошло в итоге.')}
-              </p>
-            </div>
-            <div className="order-1 mt-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <div className="flex w-max items-start gap-4 pb-1">
-              {TRUST_REVIEWS_SORTED.map((review) => (
-                <div
-                  key={review.id}
-                  className="relative h-fit w-[340px] shrink-0 self-start rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:w-[390px] lg:w-[420px] xl:w-[460px]"
-                >
-                  <div className="absolute right-4 top-4 rounded-full border border-gray-200 bg-white/90 px-2.5 py-1 text-sm font-semibold text-gray-700">
-                    {review.rating}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div>
+            <section
+              className="mt-10 overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-[0_10px_28px_rgba(15,23,42,0.05)]"
+              aria-labelledby="trust-heading"
+            >
+              <div className="border-b border-zinc-200 px-5 py-6 md:px-7 md:py-7">
+                <h2 id="trust-heading" className="text-xl font-semibold text-gray-900 md:text-2xl">
+                  Проверяемое доверие
+                </h2>
+                <p className="mt-2 max-w-3xl text-base leading-relaxed text-gray-700">
+                  Важные условия можно проверить заранее: договор, смету, реквизиты и правила оплаты.
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2">
+                {TRUST_PROOFS.map((proof, index) => (
+                  <article
+                    key={proof.id}
+                    className={`px-5 py-6 md:px-7 md:py-7 ${index > 0 ? 'border-t border-zinc-200' : ''} ${index % 2 === 1 ? 'md:border-l' : ''} ${index === 1 ? 'md:border-t-0' : ''}`}
+                  >
+                    <div className="text-[11px] font-semibold tracking-[0.18em] text-[#1794FD]">
+                      {proof.number}
+                    </div>
+                    <h3 className="mt-3 text-lg font-semibold text-gray-900">{proof.title}</h3>
+                    <p className="mt-2 max-w-[48ch] text-sm leading-relaxed text-gray-600">
+                      {widontRu(proof.text)}
+                    </p>
+                    {proof.href && proof.linkLabel ? (
+                      <Link
+                        href={proof.href}
+                        className="mt-4 inline-flex min-h-11 items-center border-b border-gray-300 text-sm font-semibold text-gray-900 transition hover:border-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1794FD]/30"
+                      >
+                        {proof.linkLabel}
+                      </Link>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-x-5 gap-y-2 border-t border-zinc-200 bg-[#f9f9f9] px-5 py-4 text-sm md:px-7">
+                <Link href="/docs/refund" className="inline-flex min-h-11 items-center font-medium text-gray-700 underline decoration-gray-300 underline-offset-4 hover:decoration-gray-700">
+                  Политика возврата
+                </Link>
+                <Link href="/info" className="inline-flex min-h-11 items-center font-medium text-gray-700 underline decoration-gray-300 underline-offset-4 hover:decoration-gray-700">
+                  Политика конфиденциальности
+                </Link>
+              </div>
+            </section>
+
+            <section className="mt-10" aria-labelledby="reviews-heading">
+              <div className="flex flex-col gap-2">
+                <h2 id="reviews-heading" className="text-xl font-semibold text-gray-900 md:text-2xl">
+                  Отзывы клиентов
+                </h2>
+                <p className="text-base text-gray-600">
+                  {widontRu('Что волновало семьи, как проходила организация и что получилось в итоге.')}
+                </p>
+              </div>
+
+              <div className="mt-5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="flex w-max items-start gap-4 pb-1">
+                  {TRUST_REVIEWS_SORTED.map((review) => (
+                    <article
+                      key={review.id}
+                      className="h-fit w-[340px] shrink-0 self-start rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:w-[390px] lg:w-[420px] xl:w-[460px]"
+                    >
                       <div className="text-base font-semibold text-gray-900">{widontRu(review.name)}</div>
                       <div className="text-sm text-gray-600">
                         {widontRu(`${review.date} · ${review.service}`)}
                       </div>
+                      {review.headline ? (
+                        <p className="mb-2 mt-3 text-base font-bold text-gray-900">
+                          {widontRu(review.headline)}
+                        </p>
+                      ) : null}
+                      <p className="text-base leading-relaxed text-gray-700">{widontRu(review.text)}</p>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            <section className="mt-10 overflow-hidden rounded-[30px] bg-[#f7f7f4] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
+              <div className="grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.35fr)]">
+                <div className="flex flex-col justify-between gap-8 p-5 md:p-7">
+                  <div>
+                    <div className="text-[13px] font-semibold uppercase tracking-[0.14em] text-gray-500">
+                      Справочник
                     </div>
+                    <h2 className="mt-3 max-w-[12em] text-2xl font-semibold leading-tight tracking-[-0.02em] text-gray-900 md:text-3xl">
+                      Ответы на сложные вопросы
+                    </h2>
+                    <p className="mt-4 max-w-[58ch] text-[16px] leading-relaxed text-gray-700">
+                      {widontRu('Когда нужно быстро понять порядок действий, лучше читать короткую инструкцию, а не искать ответы по разным сайтам.')}
+                    </p>
                   </div>
-                  {review.headline ? (
-                    <p className="mt-3 mb-2 text-base font-bold text-gray-900">
-                      {widontRu(review.headline)}
-                    </p>
-                  ) : null}
-                  <p className="text-base text-gray-700 leading-relaxed">{widontRu(review.text)}</p>
-                </div>
-              ))}
-              </div>
-            </div>
-            </div>
 
-            <section className="mt-10 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:p-7">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 md:text-2xl">
-                  Ответы на сложные вопросы
-                </h2>
-                <p className="mt-1 text-base leading-relaxed text-gray-600">
-                  
-                </p>
-              </div>
-
-              <div className="mt-5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:overflow-x-visible md:overflow-y-visible">
-                <div className="flex w-max gap-4 pb-1 md:grid md:w-full md:grid-cols-3 md:justify-items-center md:pb-0">
-                {HOT_GUIDE_ARTICLES.map((article) => (
                   <Link
-                    key={article.id}
-                    href={article.href}
-                    className="w-[280px] max-w-[320px] shrink-0 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:w-[320px] sm:max-w-[360px] md:min-w-0 md:shrink md:w-full md:max-w-[230px] lg:max-w-[270px] xl:max-w-[300px] md:break-words"
+                    href="/articles"
+                    className="inline-flex min-h-11 w-fit items-center justify-center rounded-[13px] bg-gray-950 px-4 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(0,0,0,0.16),0_8px_18px_rgba(0,0,0,0.12)] transition hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1794FD]/35"
                   >
-                    <h3 className="text-base font-semibold leading-snug text-gray-900">
-                      {widontRu(article.title)}
-                    </h3>
-                    <div className="relative mt-3 h-28 overflow-hidden rounded-xl sm:h-32">
-                      <Image
-                        src={article.imageSrc}
-                        alt={article.title}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 640px) 280px, (max-width: 768px) 320px, 300px"
-                      />
-                    </div>
-                    <p className="mt-2 text-base leading-relaxed text-gray-700">
-                      {widontRu(article.description)}
-                    </p>
+                    Открыть весь справочник
                   </Link>
-                ))}
                 </div>
-              </div>
 
-              <div className="mt-5 flex justify-center">
-                <Link
-                  href="/articles"
-                  className="inline-flex min-h-12 items-center justify-center rounded-full border border-gray-200 bg-white px-5 text-base font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
-                >
-                  Перейти в справочник
-                </Link>
+                <div className="min-w-0 border-t border-zinc-200 bg-white lg:border-l lg:border-t-0">
+                  <Link
+                    href={HOT_GUIDE_ARTICLES[0].href}
+                    className="group block p-5 transition hover:bg-[#fbfbfa] md:p-7"
+                  >
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <div className="text-[13px] font-semibold leading-snug text-gray-500">
+                          {HOT_GUIDE_ARTICLES[0].label}
+                        </div>
+                        <h3 className="mt-2 text-xl font-semibold leading-tight tracking-[-0.01em] text-gray-900 md:text-2xl">
+                          {widontRu(HOT_GUIDE_ARTICLES[0].question)}
+                        </h3>
+                        <p className="mt-3 max-w-[62ch] text-[15px] leading-relaxed text-gray-700">
+                          {widontRu(HOT_GUIDE_ARTICLES[0].description)}
+                        </p>
+                      </div>
+                      <span className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-[12px] bg-[#f4f4f2] px-3 text-sm font-semibold text-gray-900 transition group-hover:bg-[#ececea]">
+                        Читать
+                      </span>
+                    </div>
+                  </Link>
+
+                  <div className="border-t border-zinc-200">
+                    {HOT_GUIDE_ARTICLES.slice(1).map((article) => (
+                      <Link
+                        key={article.id}
+                        href={article.href}
+                        className="group grid gap-3 border-b border-zinc-200 px-5 py-4 transition last:border-b-0 hover:bg-[#fbfbfa] md:grid-cols-[150px_minmax(0,1fr)_auto] md:items-center md:px-7"
+                      >
+                        <div className="text-[13px] font-semibold leading-snug text-gray-500">
+                          {article.label}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-[16px] font-semibold leading-snug text-gray-900">
+                            {widontRu(article.question)}
+                          </h3>
+                          <p className="mt-1 text-[14px] leading-relaxed text-gray-600">
+                            {widontRu(article.title)}
+                          </p>
+                        </div>
+                        <span className="text-[14px] font-semibold text-gray-500 transition group-hover:text-gray-900">
+                          Читать
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               </div>
             </section>
           </div>
@@ -891,6 +988,91 @@ export default function HomePageClient() {
           <FloatingCalculator total={calculatorSummary.total} breakdown={calculatorSummary.breakdown} />
         )}
       </div>
+      {selectedSupportMember ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-end justify-center bg-[rgba(3,7,18,0.34)] px-3 pb-3 pt-10 backdrop-blur-[2px] sm:items-center sm:p-6"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setSelectedSupportMemberId(null);
+            }
+          }}
+        >
+          <section
+            id="support-member-details"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="support-member-title"
+            className="teamDialogEnter w-full max-w-[520px] overflow-hidden rounded-[26px] bg-[#fbfbf9] shadow-[0_24px_70px_rgba(15,23,42,0.26),0_0_0_1px_rgba(255,255,255,0.72)]"
+          >
+            <div className="relative h-[300px] bg-[#eef0f2] sm:h-[340px]">
+              <Image
+                src={selectedSupportMember.imageSrc}
+                alt={`${selectedSupportMember.name}, команда сервиса Тихий дом`}
+                fill
+                sizes="(max-width: 640px) 100vw, 520px"
+                className="object-contain object-center p-3 sm:p-4"
+                priority={false}
+              />
+              <button
+                type="button"
+                onClick={() => setSelectedSupportMemberId(null)}
+                aria-label="Закрыть карточку участника команды"
+                className="absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/92 text-2xl leading-none text-gray-700 shadow-[0_2px_10px_rgba(15,23,42,0.16)] transition-[background-color,color,transform] duration-150 hover:bg-white hover:text-gray-950 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1794FD]/35"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="px-5 py-5 sm:px-6 sm:py-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="text-[13px] font-semibold uppercase tracking-[0.14em] text-gray-500">
+                    Команда рядом
+                  </div>
+                  <h3
+                    id="support-member-title"
+                    className="mt-2 text-2xl font-semibold tracking-[-0.02em] text-gray-900"
+                  >
+                    {selectedSupportMember.name}
+                  </h3>
+                  <p className="mt-1 text-[15px] font-medium leading-snug text-gray-600">
+                    {widontRu(selectedSupportMember.role)}
+                  </p>
+                </div>
+                <div className="shrink-0 pt-1 text-[13px] font-semibold tabular-nums text-gray-500">
+                  {selectedSupportMemberIndex + 1} / {SUPPORT_TEAM.length}
+                </div>
+              </div>
+
+              <p className="mt-4 text-[16px] leading-relaxed text-gray-700">
+                {widontRu(selectedSupportMember.description)}
+              </p>
+
+              <div className="mt-5 flex items-center justify-between gap-3 border-t border-zinc-200 pt-4">
+                <button
+                  type="button"
+                  onClick={showPreviousSupportMember}
+                  aria-label="Показать предыдущего участника команды"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-[14px] bg-white px-4 text-sm font-semibold text-gray-900 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.08)] transition-[background-color,transform] duration-150 hover:bg-[#f2f2f0] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1794FD]/35"
+                >
+                  <span aria-hidden="true">←</span>
+                  Назад
+                </button>
+                <button
+                  type="button"
+                  onClick={showNextSupportMember}
+                  aria-label="Показать следующего участника команды"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-[14px] bg-gray-950 px-4 text-sm font-semibold text-white shadow-[0_6px_16px_rgba(15,23,42,0.18)] transition-[background-color,transform] duration-150 hover:bg-gray-800 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/30"
+                >
+                  Далее
+                  <span aria-hidden="true">→</span>
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }

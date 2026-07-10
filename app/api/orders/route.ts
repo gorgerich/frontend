@@ -393,6 +393,200 @@ function computeTotalRub(body: OrderPayload, services: ServiceItem[]): number {
   return safeFront;
 }
 
+function buildSavePlanEmail(
+  body: OrderPayload,
+  services: ServiceItem[],
+  totalRub: number,
+  options: {
+    planId: string;
+    createdAtLabel: string;
+  },
+) {
+  const planName = body.package?.name ?? "Сохранённый план";
+  const serviceType = body.formData?.serviceType ?? body.ceremony?.serviceType;
+  const serviceTypeLabel =
+    serviceType === "cremation" ? "Кремация" : serviceType === "burial" ? "Погребение" : "Формат уточняется";
+
+  const rows = services.length
+    ? services
+        .map((service, index) => {
+          const qty = service.quantity ?? 1;
+          const sum = service.price * qty;
+          return `
+            <tr>
+              <td style="padding:8px 10px;border:1px solid #e5e7eb;color:#6b7280;">${index + 1}</td>
+              <td style="padding:8px 10px;border:1px solid #e5e7eb;">
+                <div style="font-weight:600;color:#111827;">${escapeHtml(service.name)}</div>
+                ${service.description ? `<div style="margin-top:2px;color:#6b7280;font-size:12px;">${escapeHtml(service.description)}</div>` : ""}
+              </td>
+              <td style="padding:8px 10px;border:1px solid #e5e7eb;text-align:right;color:#374151;">${qty}</td>
+              <td style="padding:8px 10px;border:1px solid #e5e7eb;text-align:right;color:#111827;">${sum.toLocaleString("ru-RU")} ₽</td>
+            </tr>
+          `;
+        })
+        .join("")
+    : `
+      <tr>
+        <td colspan="4" style="padding:10px;border:1px solid #e5e7eb;text-align:center;color:#6b7280;">
+          Состав плана не заполнен
+        </td>
+      </tr>
+    `;
+
+  const textLines = services.length
+    ? services.map((service, index) => {
+        const qty = service.quantity ?? 1;
+        const sum = service.price * qty;
+        return `${index + 1}. ${service.name}, ${qty} шт., ${sum.toLocaleString("ru-RU")} ₽`;
+      })
+    : ["Состав плана не заполнен"];
+
+  const subject = "Ваш сохранённый план в Тихом доме";
+  const text = [
+    subject,
+    `Номер плана: ${options.planId}`,
+    `Дата: ${options.createdAtLabel}`,
+    "",
+    `План: ${planName}`,
+    `Формат: ${serviceTypeLabel}`,
+    `Итоговая сумма: ${totalRub.toLocaleString("ru-RU")} ₽`,
+    "",
+    "Состав плана",
+    ...textLines,
+    "",
+    "Оплата сейчас не требуется. Это сохранённый план, не подтверждённый заказ.",
+    "Координатор может проверить состав, ответить на вопросы и помочь изменить план.",
+    "",
+    "Если хотите уточнить детали, ответьте на это письмо или напишите на info@tihiydom.com.",
+  ].join("\n");
+
+  const html = `
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>${escapeHtml(subject)}</title>
+  </head>
+  <body style="margin:0;padding:0;background:#f6f7f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#111;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
+      План сохранён. Оплата сейчас не требуется.
+    </div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7f9;padding:24px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="width:600px;max-width:600px;">
+            <tr>
+              <td style="padding:0 18px 24px 18px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:16px;">
+                  <tr>
+                    <td style="padding:20px 22px 14px 22px;">
+                      <div style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;">
+                        Тихий дом
+                      </div>
+                      <div style="margin-top:10px;font-size:26px;line-height:1.2;font-weight:700;color:#111;">
+                        План сохранён
+                      </div>
+                      <div style="margin-top:10px;font-size:15px;line-height:1.6;color:#374151;">
+                        Ниже состав услуг и итоговая сумма. Оплата сейчас не требуется. План можно изменить перед подтверждением.
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 22px 10px 22px;">
+                      <div style="height:1px;background:#e5e7eb;"></div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 22px 14px 22px;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                        <tr>
+                          <td style="font-size:12px;color:#6b7280;">Номер плана</td>
+                          <td align="right" style="font-size:12px;color:#6b7280;">Дата</td>
+                        </tr>
+                        <tr>
+                          <td style="font-size:16px;font-weight:700;color:#111;">${escapeHtml(options.planId)}</td>
+                          <td align="right" style="font-size:14px;color:#111;">${escapeHtml(options.createdAtLabel)}</td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 22px 10px 22px;">
+                      <div style="height:1px;background:#e5e7eb;"></div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 22px 14px 22px;">
+                      <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:8px;">Кратко</div>
+                      <div style="font-size:14px;line-height:1.7;color:#374151;">
+                        План: <b>${escapeHtml(planName)}</b><br/>
+                        Формат: <b>${escapeHtml(serviceTypeLabel)}</b><br/>
+                        Итоговая сумма: <b>${totalRub.toLocaleString("ru-RU")} ₽</b>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 22px 10px 22px;">
+                      <div style="height:1px;background:#e5e7eb;"></div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 22px 14px 22px;">
+                      <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:8px;">Состав плана</div>
+                      <table style="border-collapse:collapse;width:100%;font-size:13px;margin:0 0 14px;table-layout:fixed;">
+                        <thead>
+                          <tr>
+                            <th style="padding:8px 10px;border:1px solid #e5e7eb;text-align:left;width:36px;">№</th>
+                            <th style="padding:8px 10px;border:1px solid #e5e7eb;text-align:left;">Услуга</th>
+                            <th style="padding:8px 10px;border:1px solid #e5e7eb;text-align:right;width:70px;">Кол-во</th>
+                            <th style="padding:8px 10px;border:1px solid #e5e7eb;text-align:right;width:96px;">Сумма</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          ${rows}
+                          <tr>
+                            <td colspan="3" style="padding:10px;border:1px solid #e5e7eb;text-align:right;font-weight:700;">Итого:</td>
+                            <td style="padding:10px;border:1px solid #e5e7eb;text-align:right;font-weight:700;">${totalRub.toLocaleString("ru-RU")} ₽</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 22px 10px 22px;">
+                      <div style="height:1px;background:#e5e7eb;"></div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 22px 18px 22px;">
+                      <div style="padding:12px;border-radius:12px;background:#f7f7f4;border:1px solid #e5e7eb;color:#374151;font-size:13px;line-height:1.7;">
+                        Это сохранённый план, не подтверждённый заказ. Координатор может проверить состав, ответить на вопросы и помочь изменить план.
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 22px 18px 22px;color:#6b7280;font-size:12px;line-height:1.6;">
+                      Если хотите уточнить детали, ответьте на это письмо или напишите на
+                      <a href="mailto:info@tihiydom.com" style="color:#6b7280;text-decoration:underline;">info@tihiydom.com</a>.
+                      <br/><br/>
+                      © ${new Date().getFullYear()} Тихий дом
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+  `;
+
+  return { subject, html, text };
+}
+
 function buildEmailHtml(
   body: OrderPayload,
   services: ServiceItem[],
@@ -736,6 +930,7 @@ export async function POST(req: NextRequest) {
       );
     }
     const body = parsed.data;
+    const isSavePlan = body.orderFlow === "save_plan";
 
     const customerEmail = String(body.customer?.email ?? body.userEmail ?? "").trim();
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail);
@@ -767,8 +962,10 @@ export async function POST(req: NextRequest) {
     }
     const totalAmount = Math.round(totalRub * 100);
 
-    const publicId = "order_" + crypto.randomBytes(6).toString("hex");
-    const paymentMethodRaw = String(body.paymentMethod ?? body.formData?.paymentMethod ?? "").trim();
+    const publicId = `${isSavePlan ? "plan" : "order"}_` + crypto.randomBytes(6).toString("hex");
+    const paymentMethodRaw = isSavePlan
+      ? ""
+      : String(body.paymentMethod ?? body.formData?.paymentMethod ?? "").trim();
     const paymentMethod =
       paymentMethodRaw === "deposit_10" || paymentMethodRaw === "call_rep"
         ? paymentMethodRaw
@@ -780,7 +977,9 @@ export async function POST(req: NextRequest) {
           ? "Мне нужна консультация"
           : undefined;
     const paymentLink =
-      paymentMethod === "deposit_10"
+      isSavePlan
+        ? null
+        : paymentMethod === "deposit_10"
         ? process.env.PAYMENT_LINK_CARD || null
         : paymentMethod === "call_rep"
           ? null
@@ -798,7 +997,7 @@ export async function POST(req: NextRequest) {
       data: {
         publicId,
         userId: user.id,
-        status: "PENDING",
+        status: isSavePlan ? "DRAFT" : "PENDING",
         serviceType,
         totalAmount,
         customerEmail,
@@ -865,104 +1064,122 @@ export async function POST(req: NextRequest) {
       ? new Date(createdOrder.createdAt).toLocaleDateString("ru-RU")
       : new Date().toLocaleDateString("ru-RU");
 
-    let html = buildEmailHtml(bodyForEmail, services, totalRub, {
-      orderSummaryHtml,
-      showServicesTable: true,
-      paymentMethodLabel,
-      paymentMethod,
-      paymentLink,
-      orderId: publicId,
-      createdAtLabel,
-    });
-
-    const notes = bodyForEmail.notes ?? bodyForEmail.formData?.specialRequests;
-    const servicesTextLines = services.length
-      ? services.map((service, index) => {
-          const qty = service.quantity ?? 1;
-          const sum = service.price * qty;
-          return `${index + 1}. ${service.name} ×${qty} — ${sum.toLocaleString("ru-RU")} ₽`;
-        })
-      : ["Перечень услуг не заполнен"];
-
-    const textParts: string[] = [
-      "Договор-оферта и детали заказа",
-      `Номер заявки: № ${publicId}`,
-      `Дата: ${createdAtLabel}`,
-      "",
-      "Что будет дальше",
-      "1. Мы проверим детали заявки и при необходимости уточним важные моменты.",
-      "2. Если вы выбрали оплату по защищённой ссылке — отправим ссылку отдельным письмом.",
-      "3. После подтверждения — передадим заказ партнёрам и будем держать в курсе статуса.",
-      "",
-      "Состав заказа",
-      summary.plainText || "Данные не заполнены",
-      "",
-      "Перечень услуг и стоимость",
-      ...servicesTextLines,
-      `Итого: ${totalRub.toLocaleString("ru-RU")} ₽`,
-    ];
-    if (paymentMethodLabel) {
-      textParts.push("", "Оплата", `Способ оплаты: ${paymentMethodLabel}`);
-      if (paymentMethod === "call_rep") {
-        textParts.push("Наш представитель свяжется с вами для уточнения деталей оплаты.");
-      } else if (paymentLink) {
-        textParts.push(`Ссылка на оплату: ${paymentLink}`);
-      } else {
-        textParts.push("Ссылка на оплату будет направлена отдельным письмом.");
-      }
-      textParts.push(
-        "Важно: мы не просим номер карты и CVC. Оплата только на защищённой странице банка/провайдера. Если сомневаетесь — напишите на info@tihiydom.com",
-      );
-    }
-    if (notes) {
-      textParts.push("", "Дополнительные пожелания:", String(notes));
-    }
-
-    // Attach the same public offer that is linked in the footer.
-    const offerHref = PUBLIC_OFFER_HREF;
-    let offerUrl = buildOfferUrl(offerHref);
-    let offerAttachment:
-      | {
+    let emailSubject: string;
+    let html: string;
+    let text: string;
+    let emailAttachments:
+      | Array<{
           filename: string;
           content: string;
-        }
+        }>
       | undefined;
 
-    try {
-      const offer = await loadPublicOfferAttachment(offerHref);
-      offerUrl = offer.offerUrl;
-      offerAttachment = {
-        filename: offer.filename,
-        content: offer.buffer.toString("base64"),
-      };
-    } catch (error: unknown) {
-      console.warn("offer_attachment_failed", {
-        orderId: publicId,
-        error: errorMessage(error),
+    if (isSavePlan) {
+      const savePlanEmail = buildSavePlanEmail(bodyForEmail, services, totalRub, {
+        planId: publicId,
+        createdAtLabel,
       });
-      textParts.push("", `Публичная оферта: ${offerUrl}`);
-      const offerHtmlLink = `
-        <p style="margin:12px 22px 0 22px;font-size:12px;line-height:1.6;color:#6b7280;">
-          Публичная оферта:
-          <a href="${escapeHtml(offerUrl)}" style="color:#6b7280;text-decoration:underline;">
-            ${escapeHtml(offerUrl)}
-          </a>
-        </p>
-      `;
-      html = html.replace("</body>", `${offerHtmlLink}</body>`);
-    }
+      emailSubject = savePlanEmail.subject;
+      html = savePlanEmail.html;
+      text = savePlanEmail.text;
+      emailAttachments = undefined;
+    } else {
+      emailSubject = "Договор, детали заказа и оплата";
+      html = buildEmailHtml(bodyForEmail, services, totalRub, {
+        orderSummaryHtml,
+        showServicesTable: true,
+        paymentMethodLabel,
+        paymentMethod,
+        paymentLink,
+        orderId: publicId,
+        createdAtLabel,
+      });
 
-    const text = textParts.join("\n");
+      const notes = bodyForEmail.notes ?? bodyForEmail.formData?.specialRequests;
+      const servicesTextLines = services.length
+        ? services.map((service, index) => {
+            const qty = service.quantity ?? 1;
+            const sum = service.price * qty;
+            return `${index + 1}. ${service.name} ×${qty} — ${sum.toLocaleString("ru-RU")} ₽`;
+          })
+        : ["Перечень услуг не заполнен"];
+
+      const textParts: string[] = [
+        "Договор-оферта и детали заказа",
+        `Номер заявки: № ${publicId}`,
+        `Дата: ${createdAtLabel}`,
+        "",
+        "Что будет дальше",
+        "1. Мы проверим детали заявки и при необходимости уточним важные моменты.",
+        "2. Если вы выбрали оплату по защищённой ссылке — отправим ссылку отдельным письмом.",
+        "3. После подтверждения — передадим заказ партнёрам и будем держать в курсе статуса.",
+        "",
+        "Состав заказа",
+        summary.plainText || "Данные не заполнены",
+        "",
+        "Перечень услуг и стоимость",
+        ...servicesTextLines,
+        `Итого: ${totalRub.toLocaleString("ru-RU")} ₽`,
+      ];
+      if (paymentMethodLabel) {
+        textParts.push("", "Оплата", `Способ оплаты: ${paymentMethodLabel}`);
+        if (paymentMethod === "call_rep") {
+          textParts.push("Наш представитель свяжется с вами для уточнения деталей оплаты.");
+        } else if (paymentLink) {
+          textParts.push(`Ссылка на оплату: ${paymentLink}`);
+        } else {
+          textParts.push("Ссылка на оплату будет направлена отдельным письмом.");
+        }
+        textParts.push(
+          "Важно: мы не просим номер карты и CVC. Оплата только на защищённой странице банка/провайдера. Если сомневаетесь — напишите на info@tihiydom.com",
+        );
+      }
+      if (notes) {
+        textParts.push("", "Дополнительные пожелания:", String(notes));
+      }
+
+      // Attach the same public offer that is linked in the footer.
+      const offerHref = PUBLIC_OFFER_HREF;
+      let offerUrl = buildOfferUrl(offerHref);
+
+      try {
+        const offer = await loadPublicOfferAttachment(offerHref);
+        offerUrl = offer.offerUrl;
+        emailAttachments = [
+          {
+            filename: offer.filename,
+            content: offer.buffer.toString("base64"),
+          },
+        ];
+      } catch (error: unknown) {
+        console.warn("offer_attachment_failed", {
+          orderId: publicId,
+          error: errorMessage(error),
+        });
+        textParts.push("", `Публичная оферта: ${offerUrl}`);
+        const offerHtmlLink = `
+          <p style="margin:12px 22px 0 22px;font-size:12px;line-height:1.6;color:#6b7280;">
+            Публичная оферта:
+            <a href="${escapeHtml(offerUrl)}" style="color:#6b7280;text-decoration:underline;">
+              ${escapeHtml(offerUrl)}
+            </a>
+          </p>
+        `;
+        html = html.replace("</body>", `${offerHtmlLink}</body>`);
+      }
+
+      text = textParts.join("\n");
+    }
 
     let emailSent = false;
     try {
       await sendOrderEmail({
         to: customerEmail,
-        subject: "Договор, детали заказа и оплата",
+        subject: emailSubject,
         html,
         text,
         orderId: publicId,
-        attachments: offerAttachment ? [offerAttachment] : undefined,
+        attachments: emailAttachments,
       });
       emailSent = true;
       console.info("email_sent_success", { orderId: publicId });
@@ -980,7 +1197,11 @@ export async function POST(req: NextRequest) {
         emailSent,
         ...(emailSent
           ? {}
-          : { warning: "Заявка сохранена, но письмо пока не отправлено" }),
+          : {
+              warning: isSavePlan
+                ? "План сохранён, но письмо пока не отправлено"
+                : "Заявка сохранена, но письмо пока не отправлено",
+            }),
         paymentLink,
       },
       { status: 201 }
